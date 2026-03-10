@@ -1,0 +1,156 @@
+import { notFound } from 'next/navigation'
+import Link from 'next/link'
+import { createSupabaseServer } from '@/lib/supabase-server'
+import { centsToAud, scoreColor, scoreLabel, sourceLabel, sourceBadgeColor, auctionUrgency } from '@/lib/utils'
+import AuctionBanner from '@/components/ui/AuctionBanner'
+import type { Listing } from '@/types'
+
+export async function generateMetadata({ params }: { params: { id: string } }) {
+  const supabase = createSupabaseServer()
+  const { data } = await supabase.from('listings').select('model_name, model_year').eq('id', params.id).single()
+  return { title: data ? `${data.model_year} ${data.model_name}` : 'Van Detail' }
+}
+
+export default async function VanDetailPage({ params }: { params: { id: string } }) {
+  const supabase = createSupabaseServer()
+  const { data } = await supabase.from('listings').select('*').eq('id', params.id).single()
+  if (!data) notFound()
+
+  const listing = data as Listing
+  const sColor  = scoreColor(listing.inspection_score)
+  const urgency = listing.source === 'auction' ? auctionUrgency(listing.auction_date) : null
+
+  const displayPrice = listing.source === 'au_stock' && listing.au_price_aud
+    ? centsToAud(listing.au_price_aud)
+    : listing.aud_estimate
+    ? `~${centsToAud(listing.aud_estimate)} AUD est.`
+    : listing.start_price_jpy
+    ? `¥${listing.start_price_jpy.toLocaleString()} start`
+    : 'POA'
+
+  const specs: [string, string][] = [
+    ['Model',          listing.model_name],
+    ['Grade',          listing.grade ?? '—'],
+    ['Year',           listing.model_year?.toString() ?? '—'],
+    ['Chassis',        listing.chassis_code ?? '—'],
+    ['Engine',         listing.displacement_cc ? `${(listing.displacement_cc / 1000).toFixed(1)}L ${listing.displacement_cc > 2500 ? 'Diesel' : 'Petrol'}` : '—'],
+    ['Transmission',   listing.transmission === 'IA' ? 'Auto (CVT/IA)' : listing.transmission ?? '—'],
+    ['Drive',          listing.drive ?? '—'],
+    ['Mileage',        listing.mileage_km ? `${listing.mileage_km.toLocaleString()} km` : '—'],
+    ['Colour',         listing.body_colour ?? '—'],
+    ['Grade Score',    listing.inspection_score ? `${listing.inspection_score} — ${scoreLabel(listing.inspection_score)}` : '—'],
+  ]
+
+  const ctaLabel = listing.source === 'auction' ? 'Hold This Van — $500 Deposit'
+    : listing.source === 'au_stock' ? 'Reserve Now — $500 Deposit'
+    : 'Express Interest — Book a Call'
+
+  return (
+    <div className="min-h-screen">
+      <AuctionBanner />
+
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <Link href="/browse" className="text-forest-600 text-sm font-medium hover:underline mb-6 inline-block">
+          ← Back to Browse
+        </Link>
+
+        <div className="grid lg:grid-cols-2 gap-10">
+          {/* ---- Photos ---- */}
+          <div>
+            <div className="relative rounded-2xl overflow-hidden bg-gray-100 aspect-video mb-3">
+              {listing.photos[0] ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={listing.photos[0]} alt={listing.model_name} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-gray-300 text-7xl">🚐</div>
+              )}
+              <div className="absolute top-3 left-3 flex gap-2">
+                <span className={`${sourceBadgeColor(listing.source)} text-white text-xs font-bold px-2 py-0.5 rounded`}>
+                  {sourceLabel(listing.source)}
+                </span>
+                {urgency === 'closing_soon' && <span className="bg-amber-400 text-amber-900 text-xs font-bold px-2 py-0.5 rounded">CLOSING SOON</span>}
+                {urgency === 'last_chance'  && <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded">LAST CHANCE</span>}
+              </div>
+            </div>
+            {listing.photos.length > 1 && (
+              <div className="grid grid-cols-5 gap-2">
+                {listing.photos.slice(1, 6).map((p, i) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img key={i} src={p} alt="" className="rounded-lg aspect-square object-cover cursor-pointer hover:opacity-90" />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* ---- Details ---- */}
+          <div>
+            <div className={`inline-flex items-center score-${sColor} text-xs font-bold px-2.5 py-1 rounded mb-3`}>
+              {listing.inspection_score ? `Grade ${listing.inspection_score} — ${scoreLabel(listing.inspection_score)}` : 'No grade'}
+            </div>
+            <h1 className="font-display text-3xl text-forest-900 mb-2">{listing.model_name}</h1>
+
+            {listing.source === 'auction' && listing.auction_date && (
+              <p className="text-amber-700 font-medium text-sm mb-4">
+                Auction: {new Date(listing.auction_date).toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+              </p>
+            )}
+            {listing.source === 'au_stock' && listing.eta_date && (
+              <p className="text-forest-600 font-medium text-sm mb-4">
+                ETA in Australia: ~{new Date(listing.eta_date).toLocaleDateString('en-AU', { month: 'long', year: 'numeric' })}
+              </p>
+            )}
+
+            <div className="text-3xl font-display text-forest-700 mb-6">{displayPrice}</div>
+
+            {/* Spec table */}
+            <div className="border border-gray-200 rounded-xl overflow-hidden mb-6">
+              {specs.map(([k, v], i) => (
+                <div key={k} className={`flex justify-between px-4 py-2.5 text-sm ${i % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}>
+                  <span className="text-gray-500 font-medium">{k}</span>
+                  <span className="text-gray-800">{v}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Equipment */}
+            {(listing.has_nav || listing.has_leather || listing.has_sunroof || listing.has_alloys) && (
+              <div className="flex flex-wrap gap-2 mb-6">
+                {listing.has_nav      && <Chip>Navigation</Chip>}
+                {listing.has_leather  && <Chip>Leather Seats</Chip>}
+                {listing.has_sunroof  && <Chip>Sunroof</Chip>}
+                {listing.has_alloys   && <Chip>Alloy Wheels</Chip>}
+              </div>
+            )}
+
+            {/* CTAs */}
+            <div className="space-y-3">
+              <Link href={`/build?listing=${listing.id}`}
+                className="btn-primary w-full text-center text-base py-4 block">
+                Build This Van →
+              </Link>
+              <Link href={`/build?listing=${listing.id}&deposit=1`}
+                className="btn-secondary w-full text-center text-base py-3 block">
+                {ctaLabel}
+              </Link>
+              <Link href="/quiz"
+                className="text-forest-600 font-semibold hover:underline text-sm text-center block">
+                Not sure? Take the Van Match Quiz →
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {listing.description && (
+          <div className="mt-10 bg-sand-50 rounded-2xl p-6">
+            <h2 className="font-display text-xl mb-2">About this van</h2>
+            <p className="text-gray-600 leading-relaxed">{listing.description}</p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function Chip({ children }: { children: React.ReactNode }) {
+  return <span className="bg-forest-50 text-forest-700 border border-forest-200 text-xs font-medium px-3 py-1 rounded-full">{children}</span>
+}
