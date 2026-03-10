@@ -1,4 +1,4 @@
-import { createAdminClient } from '@/lib/supabase-server'
+import { createAdminClient } from '@/lib/supabase'
 
 export const metadata = { title: 'Settings' }
 

@@ -1,4 +1,4 @@
-import { createAdminClient } from '@/lib/supabase-server'
+import { createAdminClient } from '@/lib/supabase'
 import { centsToAud, sourceLabel } from '@/lib/utils'
 import type { Listing } from '@/types'
 

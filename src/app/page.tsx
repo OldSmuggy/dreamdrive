@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { createSupabaseServer } from '@/lib/supabase'
+import { createSupabaseServer } from '@/lib/supabase-server'
 import { centsToAud } from '@/lib/utils'
 import AuctionBanner from '@/components/ui/AuctionBanner'
 import type { Listing } from '@/types'
