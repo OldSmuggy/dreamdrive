@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient, createSupabaseServer } from '@/lib/supabase'
+import { createAdminClient } from '@/lib/supabase'
+import { createSupabaseServer } from '@/lib/supabase-server'
 import { shortSlug } from '@/lib/utils'
 
 export async function POST(req: NextRequest) {
