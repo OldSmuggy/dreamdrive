@@ -42,7 +42,7 @@ async function scrapeNinja() {
   let totalNew   = 0
 
   try {
-    browser = await chromium.launch({ headless: true })
+    browser = await chromium.launch({ headless: false })
     const context = await browser.newContext({ userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36' })
     const page = await context.newPage()
 
@@ -51,9 +51,13 @@ async function scrapeNinja() {
     await page.goto(`${BASE}/`)
     await page.fill('[name="loginId"]',  process.env.NINJA_LOGIN_ID!)
     await page.fill('[name="password"]', process.env.NINJA_PASSWORD!)
-    await page.click('[type="submit"]')
+    await page.locator('text=Login').first().click({ timeout: 60000 })
     await page.waitForNavigation({ timeout: 15000 })
     console.log('[ninja] Logged in.')
+    const loginHtml = await page.content()
+    require('fs').writeFileSync('/tmp/ninja-login.html', loginHtml)
+    console.log('[ninja] Login page HTML saved to /tmp/ninja-login.html')
+    console.log('[ninja] Current URL:', page.url())
 
     const jpyToAud = await getJpyAudRate()
     const results: Record<string, unknown>[] = []
@@ -61,7 +65,7 @@ async function scrapeNinja() {
     // ---- Paginate search results ----
     for (let pageNum = 1; pageNum <= 3; pageNum++) {
       console.log(`[ninja] Fetching page ${pageNum}...`)
-      await page.goto(`${BASE}/searchresultlist.action`, { waitUntil: 'domcontentloaded' })
+      await page.goto(`${BASE}/makersearch.action`, { waitUntil: 'domcontentloaded' })
 
       // POST the search form
       await page.evaluate(({ pageNum }) => {
@@ -102,7 +106,9 @@ async function scrapeNinja() {
         }))
       ).catch(() => [])
 
-      console.log(`[ninja] Page ${pageNum}: ${rows.length} rows found`)
+      const html = await page.content()
+      require('fs').writeFileSync(`/tmp/ninja-page-${pageNum}.html`, html)
+      console.log(`[ninja] Page ${pageNum}: ${rows.length} rows found, HTML saved to /tmp/ninja-page-${pageNum}.html`)
 
       // For each row, try to get the cardetail link/params
       // This is highly site-specific — adjust selectors as needed
