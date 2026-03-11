@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { DM_Serif_Display, DM_Sans } from 'next/font/google'
 import './globals.css'
+import Header from '@/components/ui/Header'
 
 const display = DM_Serif_Display({
   weight: ['400'],
@@ -17,7 +18,7 @@ const body = DM_Sans({
 
 export const metadata: Metadata = {
   title: { default: 'Dream Drive — Find it. Build it. Drive it.', template: '%s | Dream Drive' },
-  description: `Source a Toyota Hiace H200 from Japan and build your dream campervan with Dream Drive's TAMA, MANA, and pop top range.`,
+  description: 'Source a Toyota Hiace H200 from Japan and build your dream campervan with Dream Drive\'s TAMA, MANA, and pop top range.',
   openGraph: {
     siteName: 'Dream Drive',
     type: 'website',
@@ -29,6 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${display.variable} ${body.variable}`}>
       <body className="font-body bg-white text-gray-900 antialiased">
+        <Header />
         {children}
       </body>
     </html>
