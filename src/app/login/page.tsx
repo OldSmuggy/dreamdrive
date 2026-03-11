@@ -1,54 +1,111 @@
 'use client'
+
 import { useState, Suspense } from 'react'
-import { createSupabaseBrowser } from '@/lib/supabase'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { createBrowserClient } from '@/lib/supabase'
 
 function LoginForm() {
   const router = useRouter()
-  const sp = useSearchParams()
-  const next = sp.get('next') ?? '/admin'
+  const searchParams = useSearchParams()
+  const next = searchParams.get('next') || '/admin'
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const supabase = createSupabaseBrowser()
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState(false)
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setLoading(true); setError('')
+  const handleLogin = async () => {
+    setError('')
+    setLoading(true)
+
+    const supabase = createBrowserClient()
     const { error } = await supabase.auth.signInWithPassword({ email, password })
+
     if (error) {
       setError(error.message)
       setLoading(false)
-    } else {
-      router.refresh()
-      setTimeout(() => router.push(next), 800)
+      return
     }
+
+    setSuccess(true)
+    // Use window.location for hard redirect — avoids Next.js router refresh issues
+    setTimeout(() => {
+      window.location.href = next
+    }, 800)
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') handleLogin()
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <input type="email" placeholder="Email" required value={email} onChange={e => setEmail(e.target.value)}
-        className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-forest-500" />
-      <input type="password" placeholder="Password" required value={password} onChange={e => setPassword(e.target.value)}
-        className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-forest-500" />
-      {error && <p className="text-red-500 text-sm">{error}</p>}
-      <button type="submit" disabled={loading} className="btn-primary w-full py-3 disabled:opacity-60">
-        {loading ? 'Signing in…' : 'Sign In'}
-      </button>
-    </form>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="w-full max-w-sm">
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-bold text-gray-900">Dream Drive</h1>
+          <p className="text-gray-500 text-sm mt-1">Admin login</p>
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+          {success && (
+            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl text-center">
+              <p className="text-green-700 font-semibold text-sm">✅ Logged in! Redirecting…</p>
+            </div>
+          )}
+
+          {error && (
+            <div className="mb-5 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-700 text-sm">{error}</p>
+            </div>
+          )}
+
+          {!success && (
+            <>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="you@example.com"
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-700 focus:border-transparent"
+                  autoFocus
+                />
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="••••••••"
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-700 focus:border-transparent"
+                />
+              </div>
+
+              <button
+                onClick={handleLogin}
+                disabled={loading || !email || !password}
+                className="w-full py-2.5 bg-green-800 text-white font-semibold rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+              >
+                {loading ? 'Signing in…' : 'Sign in'}
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
   )
 }
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      <div className="max-w-sm w-full bg-white rounded-2xl shadow border border-gray-200 p-8">
-        <h1 className="font-display text-2xl text-forest-900 mb-6">Sign In</h1>
-        <Suspense fallback={<div className="text-gray-400 text-sm">Loading…</div>}>
-          <LoginForm />
-        </Suspense>
-      </div>
-    </div>
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   )
 }
