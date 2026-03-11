@@ -1,12 +1,12 @@
 'use client'
-import { useState, Suspense } from 'react'
+import { useState } from 'react'
 import { createSupabaseBrowser } from '@/lib/supabase'
 import { useRouter, useSearchParams } from 'next/navigation'
 
-function LoginForm() {
+export default function LoginPage() {
   const router = useRouter()
   const sp     = useSearchParams()
-  const next   = sp.get('next') ?? '/'
+  const next   = sp.get('next') ?? '/admin'
 
   const [email,    setEmail]    = useState('')
   const [password, setPassword] = useState('')
@@ -19,8 +19,13 @@ function LoginForm() {
     e.preventDefault()
     setLoading(true); setError('')
     const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) { setError(error.message); setLoading(false) }
-    else router.push(next)
+    if (error) {
+      setError(error.message)
+      setLoading(false)
+    } else {
+      router.refresh()
+      setTimeout(() => router.push(next), 800)
+    }
   }
 
   return (
@@ -40,13 +45,5 @@ function LoginForm() {
         </form>
       </div>
     </div>
-  )
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense>
-      <LoginForm />
-    </Suspense>
   )
 }
