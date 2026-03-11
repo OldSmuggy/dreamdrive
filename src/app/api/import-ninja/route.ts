@@ -134,4 +134,40 @@ export async function POST(req: NextRequest) {
       model_name: cleanModel,
       grade,
       chassis_code: chassisCode,
-      mode
+      model_year: modelYear,
+      transmission,
+      displacement_cc: displacementCc,
+      drive,
+      mileage_km: mileageKm,
+      inspection_score: inspectionScore,
+      body_colour: bodyColour,
+      start_price_jpy: startPriceJpy,
+      aud_estimate: audEstimate,
+      status: 'available',
+      has_nav: html.includes('ナビ'),
+      has_leather: html.includes('レザー'),
+      has_sunroof: html.includes('サンルーフ'),
+      has_alloys: html.includes('アルミ'),
+      photos,
+      raw_data: { url, params },
+      scraped_at: new Date().toISOString(),
+    }).select().single()
+
+    if (insertError) return NextResponse.json({ error: `Database error: ${insertError.message}` }, { status: 500 })
+
+    return NextResponse.json({
+      success: true,
+      listing: {
+        id: inserted.id,
+        model_name: inserted.model_name,
+        model_year: inserted.model_year,
+        mileage_km: inserted.mileage_km,
+        inspection_score: inserted.inspection_score,
+        photos: inserted.photos,
+        aud_estimate: inserted.aud_estimate,
+      }
+    })
+  } catch (err) {
+    return NextResponse.json({ error: String(err) }, { status: 500 })
+  }
+}
