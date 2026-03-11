@@ -1,11 +1,10 @@
 'use client'
 
 import { useState, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { createBrowserClient } from '@/lib/supabase'
+import { useSearchParams } from 'next/navigation'
+import { createClient } from '@supabase/supabase-js'
 
 function LoginForm() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const next = searchParams.get('next') || '/admin'
 
@@ -19,7 +18,11 @@ function LoginForm() {
     setError('')
     setLoading(true)
 
-    const supabase = createBrowserClient()
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+
     const { error } = await supabase.auth.signInWithPassword({ email, password })
 
     if (error) {
@@ -29,7 +32,6 @@ function LoginForm() {
     }
 
     setSuccess(true)
-    // Use window.location for hard redirect — avoids Next.js router refresh issues
     setTimeout(() => {
       window.location.href = next
     }, 800)
