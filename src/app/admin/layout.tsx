@@ -5,6 +5,7 @@ export const metadata = { title: { template: '%s | Admin — Dream Drive', defau
 const NAV = [
   { href: '/admin/products',  label: '💰 Products & Pricing' },
   { href: '/admin/listings',  label: '🚐 Listings' },
+  { href: '/admin/import',    label: '📥 Import from NINJA' },
   { href: '/admin/leads',     label: '📋 Leads' },
   { href: '/admin/settings',  label: '⚙️ Settings' },
 ]
