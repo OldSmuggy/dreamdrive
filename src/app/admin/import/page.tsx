@@ -33,10 +33,7 @@ export default function AdminImportPage() {
   }
 
   const handleImport = async () => {
-    const urlList = urls
-      .split('\n')
-      .map(u => u.trim())
-      .filter(u => u.includes('ninja-cartrade.jp'))
+    const urlList = urls.split('\n').map(u => u.trim()).filter(u => u.includes('ninja-cartrade.jp'))
     if (urlList.length === 0) { alert('Paste at least one NINJA URL'); return }
     if (!sessionCookie.trim()) { alert('Paste your session cookie first'); return }
     setLoading(true)
