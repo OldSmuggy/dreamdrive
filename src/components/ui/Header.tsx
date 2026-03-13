@@ -36,6 +36,7 @@ export default function Header() {
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-6 text-sm">
           <Link href="/browse" className="text-white/70 hover:text-white transition-colors">Browse Vans</Link>
+          <Link href="/finance" className="text-white/70 hover:text-white transition-colors">Finance</Link>
           <Link href="/build" className="text-white/70 hover:text-white transition-colors">Build My Van</Link>
           {user ? (
             <div className="flex items-center gap-4">
@@ -64,6 +65,7 @@ export default function Header() {
       {menuOpen && (
         <div className="md:hidden bg-forest-900 border-t border-white/10 px-4 py-4 space-y-3 text-sm">
           <Link href="/browse" onClick={() => setMenuOpen(false)} className="block text-white/70 hover:text-white py-2">Browse Vans</Link>
+          <Link href="/finance" onClick={() => setMenuOpen(false)} className="block text-white/70 hover:text-white py-2">Finance</Link>
           <Link href="/build" onClick={() => setMenuOpen(false)} className="block text-white/70 hover:text-white py-2">Build My Van</Link>
           {user ? (
             <>
