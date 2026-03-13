@@ -7,6 +7,7 @@ const NAV = [
   { href: '/admin/listings',    label: '🚐 Listings' },
   { href: '/admin/add-listing', label: '➕ Add Listing' },
   { href: '/admin/import',      label: '📥 Import from NINJA' },
+  { href: '/admin/scrape',      label: '🤖 Full Auto-Scrape' },
   { href: '/admin/leads',       label: '📋 Leads' },
   { href: '/admin/settings',    label: '⚙️ Settings' },
 ]

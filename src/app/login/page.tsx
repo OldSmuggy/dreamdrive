@@ -14,27 +14,22 @@ function LoginForm() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
 
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+
   const handleLogin = async () => {
     setError('')
     setLoading(true)
-
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
-
     const { error } = await supabase.auth.signInWithPassword({ email, password })
-
     if (error) {
       setError(error.message)
       setLoading(false)
       return
     }
-
     setSuccess(true)
-    setTimeout(() => {
-      window.location.href = next
-    }, 800)
+    setTimeout(() => { window.location.href = next }, 800)
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -48,20 +43,17 @@ function LoginForm() {
           <h1 className="text-2xl font-bold text-gray-900">Dream Drive</h1>
           <p className="text-gray-500 text-sm mt-1">Admin login</p>
         </div>
-
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
           {success && (
             <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl text-center">
-              <p className="text-green-700 font-semibold text-sm">✅ Logged in! Redirecting…</p>
+              <p className="text-green-700 font-semibold text-sm">Logged in! Redirecting...</p>
             </div>
           )}
-
           {error && (
             <div className="mb-5 p-3 bg-red-50 border border-red-200 rounded-lg">
               <p className="text-red-700 text-sm">{error}</p>
             </div>
           )}
-
           {!success && (
             <>
               <div className="mb-4">
@@ -76,7 +68,6 @@ function LoginForm() {
                   autoFocus
                 />
               </div>
-
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
                 <input
@@ -88,13 +79,12 @@ function LoginForm() {
                   className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-700 focus:border-transparent"
                 />
               </div>
-
               <button
                 onClick={handleLogin}
                 disabled={loading || !email || !password}
                 className="w-full py-2.5 bg-green-800 text-white font-semibold rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
               >
-                {loading ? 'Signing in…' : 'Sign in'}
+                {loading ? 'Signing in...' : 'Sign in'}
               </button>
             </>
           )}
