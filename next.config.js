@@ -7,6 +7,14 @@ const nextConfig = {
       { protocol: 'https', hostname: 'pub-*.r2.dev' },
     ],
   },
+  // Prevent webpack from bundling Playwright and Chromium — they are
+  // native server-only modules used exclusively in /api/scrape at runtime.
+  experimental: {
+    serverComponentsExternalPackages: [
+      'playwright-core',
+      '@sparticuz/chromium',
+    ],
+  },
 }
 
 module.exports = nextConfig
