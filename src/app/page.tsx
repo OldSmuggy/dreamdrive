@@ -5,28 +5,34 @@ import AuctionBanner from '@/components/ui/AuctionBanner'
 import type { Listing } from '@/types'
 
 export default async function HomePage() {
-  const supabase = createSupabaseServer()
+  let featuredVans: Listing[] = []
+  let auctionVans: Listing[] = []
 
-  // Featured AU stock vans
-  const { data: featured } = await supabase
-    .from('listings')
-    .select('*')
-    .eq('source', 'au_stock')
-    .eq('featured', true)
-    .order('created_at', { ascending: false })
-    .limit(3)
+  try {
+    const supabase = createSupabaseServer()
 
-  // Latest auction listings
-  const { data: latest } = await supabase
-    .from('listings')
-    .select('*')
-    .eq('source', 'auction')
-    .eq('status', 'available')
-    .order('auction_date', { ascending: true })
-    .limit(6)
+    const [{ data: featured }, { data: latest }] = await Promise.all([
+      supabase
+        .from('listings')
+        .select('*')
+        .eq('source', 'au_stock')
+        .eq('featured', true)
+        .order('created_at', { ascending: false })
+        .limit(3),
+      supabase
+        .from('listings')
+        .select('*')
+        .eq('source', 'auction')
+        .eq('status', 'available')
+        .order('auction_date', { ascending: true })
+        .limit(6),
+    ])
 
-  const featuredVans = (featured ?? []) as Listing[]
-  const auctionVans  = (latest  ?? []) as Listing[]
+    featuredVans = (featured ?? []) as Listing[]
+    auctionVans  = (latest  ?? []) as Listing[]
+  } catch {
+    // Supabase unreachable — render page without listings
+  }
 
   return (
     <div className="min-h-screen">

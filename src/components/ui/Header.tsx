@@ -8,10 +8,13 @@ import { useRouter } from 'next/navigation'
 export default function Header() {
   const [user, setUser] = useState<any>(null)
   const [menuOpen, setMenuOpen] = useState(false)
-  const supabase = createSupabaseBrowser()
   const router = useRouter()
 
+  // Only create the Supabase client inside useEffect so it never runs
+  // during SSR. createBrowserClient + its ramda dependency can throw in
+  // certain Node/Edge environments and would crash the root layout.
   useEffect(() => {
+    const supabase = createSupabaseBrowser()
     supabase.auth.getUser().then(({ data }) => setUser(data.user))
     const { data: listener } = supabase.auth.onAuthStateChange((_e, session) => {
       setUser(session?.user ?? null)
@@ -20,6 +23,7 @@ export default function Header() {
   }, [])
 
   const handleSignOut = async () => {
+    const supabase = createSupabaseBrowser()
     await supabase.auth.signOut()
     router.push('/')
     router.refresh()
