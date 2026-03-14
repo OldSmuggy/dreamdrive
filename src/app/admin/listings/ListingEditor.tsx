@@ -108,6 +108,17 @@ function ListingRow({
         <span className="flex-1 font-medium text-gray-800 truncate">
           {l.model_name}{l.grade ? ` — ${l.grade}` : ''}
         </span>
+        {(l.raw_data as Record<string, string> | null)?.url && (
+          <a
+            href={(l.raw_data as Record<string, string>).url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-blue-600 hover:underline shrink-0"
+            onClick={e => e.stopPropagation()}
+          >
+            Source ↗
+          </a>
+        )}
         <span className="text-gray-400 shrink-0 text-xs">{l.model_year ?? '—'}</span>
         <span className="text-gray-400 shrink-0 text-xs">{l.mileage_km?.toLocaleString() ?? '—'} km</span>
         <span className="text-forest-700 font-semibold shrink-0 text-xs">{price}</span>
