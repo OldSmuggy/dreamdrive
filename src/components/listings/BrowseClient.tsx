@@ -140,7 +140,7 @@ function ListingCard({ listing }: { listing: Listing }) {
     : 'POA'
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow group">
+    <Link href={`/van/${listing.id}`} className="bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow group block">
       {/* Photo */}
       <div className="relative h-[220px] overflow-hidden">
         {photo ? (
@@ -154,6 +154,7 @@ function ListingCard({ listing }: { listing: Listing }) {
         ) : (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-100 text-gray-300 text-5xl">🚐</div>
         )}
+        {/* Top-left: source + urgency + featured */}
         <div className="absolute top-3 left-3 flex gap-1 flex-wrap">
           <span className={`${badgeColor} text-white text-xs font-bold px-2 py-0.5 rounded`}>
             {sourceLabel(listing.source)}
@@ -167,14 +168,17 @@ function ListingCard({ listing }: { listing: Listing }) {
           {listing.featured && listing.source === 'au_stock' && (
             <span className="bg-forest-500 text-white text-xs font-bold px-2 py-0.5 rounded">FEATURED</span>
           )}
-          {listing.has_fitout && (
-            <span className="bg-purple-600 text-white text-xs font-bold px-2 py-0.5 rounded">🏕 Campervan Build</span>
-          )}
         </div>
+        {/* Top-right: inspection score + campervan build + power */}
         <div className="absolute top-3 right-3 flex flex-col items-end gap-1">
           {listing.inspection_score && (
             <div className={`score-${sColor} text-xs font-bold px-2 py-0.5 rounded`}>
               Grade {listing.inspection_score}
+            </div>
+          )}
+          {listing.has_fitout && (
+            <div className="text-white text-xs font-bold px-2 py-0.5 rounded" style={{ background: '#92400e' }}>
+              🏕 Campervan Build{listing.fitout_grade ? ` · ${listing.fitout_grade}` : ''}
             </div>
           )}
           {listing.power_system && listing.power_system !== 'None' && (
@@ -207,13 +211,10 @@ function ListingCard({ listing }: { listing: Listing }) {
 
         <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
           <span className="font-display text-forest-700 text-base font-semibold">{displayPrice}</span>
-          <Link href={`/van/${listing.id}`}
-            className="btn-primary btn-sm text-xs">
-            View & Build
-          </Link>
+          <span className="btn-primary btn-sm text-xs">View & Build</span>
         </div>
       </div>
-    </div>
+    </Link>
   )
 }
 

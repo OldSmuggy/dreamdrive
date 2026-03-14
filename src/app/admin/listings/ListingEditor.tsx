@@ -33,6 +33,8 @@ type EditState = {
   power_system: string
   image_focal_point: string
   photos: string[]
+  internal_photos: string[]
+  show_interior_gallery: boolean
 }
 
 function toEditState(l: Listing): EditState {
@@ -64,6 +66,8 @@ function toEditState(l: Listing): EditState {
     power_system: l.power_system ?? '',
     image_focal_point: l.image_focal_point ?? '50% 50%',
     photos: [...(l.photos ?? [])],
+    internal_photos: [...(l.internal_photos ?? [])],
+    show_interior_gallery: l.show_interior_gallery ?? false,
   }
 }
 
@@ -120,12 +124,18 @@ interface RowProps {
   onMovePhoto: (from: number, to: number) => void
   onClearPhotos: () => void
   onUploadPhoto: (url: string) => void
+  newInteriorPhotoUrl: string
+  onSetNewInteriorPhotoUrl: (v: string) => void
+  onAddInteriorPhoto: () => void
+  onRemoveInteriorPhoto: (i: number) => void
+  onUploadInteriorPhoto: (url: string) => void
 }
 
 function ListingRow({
   listing: l, isEditing, isSaved, isSelected, isTranslating, editState, saving, error,
   newPhotoUrl, onToggleSelect, onStartEdit, onCancelEdit, onSave, onDelete, onRetranslate, onSet,
   onSetNewPhotoUrl, onAddPhoto, onRemovePhoto, onMovePhoto, onClearPhotos, onUploadPhoto,
+  newInteriorPhotoUrl, onSetNewInteriorPhotoUrl, onAddInteriorPhoto, onRemoveInteriorPhoto, onUploadInteriorPhoto,
 }: RowProps) {
   const price = l.source === 'au_stock' && l.au_price_aud
     ? centsToAud(l.au_price_aud)
@@ -474,6 +484,48 @@ function ListingRow({
             </div>
           </div>
 
+          {/* Interior / Campervan Photos */}
+          <div className="border-t border-gray-200 pt-4 mb-4">
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-xs font-semibold text-gray-600">
+                Interior / Campervan Photos <span className="text-gray-400 font-normal">({editState.internal_photos.length})</span>
+              </label>
+            </div>
+            <label className="flex items-center gap-2 cursor-pointer select-none mb-3">
+              <input
+                type="checkbox"
+                checked={editState.show_interior_gallery}
+                onChange={e => onSet('show_interior_gallery', e.target.checked)}
+                className="w-4 h-4 accent-forest-600"
+              />
+              <span className="text-sm text-gray-700">Show interior gallery on listing page</span>
+            </label>
+            <div className="flex flex-wrap gap-2 mb-3">
+              {editState.internal_photos.map((url, i) => (
+                <div key={i} className="relative group">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={url} alt="" className="w-24 h-16 object-cover rounded-lg border border-gray-200" />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+                    <button onClick={() => onRemoveInteriorPhoto(i)} className="text-white text-xs bg-red-600/80 rounded px-1.5 py-0.5">✕</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <input
+                value={newInteriorPhotoUrl}
+                onChange={e => onSetNewInteriorPhotoUrl(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && onAddInteriorPhoto()}
+                placeholder="Paste interior photo URL"
+                className={`${inputClass} flex-1`}
+              />
+              <button onClick={onAddInteriorPhoto} className="px-4 py-2 bg-forest-600 text-white text-sm rounded-lg hover:bg-forest-700 shrink-0">
+                Add URL
+              </button>
+              <PhotoUploadButton onUploaded={onUploadInteriorPhoto} />
+            </div>
+          </div>
+
           {error && (
             <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-4">{error}</p>
           )}
@@ -506,6 +558,7 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
   const [savedId, setSavedId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [newPhotoUrl, setNewPhotoUrl] = useState('')
+  const [newInteriorPhotoUrl, setNewInteriorPhotoUrl] = useState('')
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [bulkWorking, setBulkWorking] = useState(false)
   const [translatingId, setTranslatingId] = useState<string | null>(null)
@@ -589,6 +642,22 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
     setEditState(s => s ? { ...s, photos: [...s.photos, url] } : s)
   }
 
+  const addInteriorPhoto = () => {
+    const raw = newInteriorPhotoUrl.trim()
+    if (!raw || !editState) return
+    set('internal_photos', [...editState.internal_photos, upgradeImageUrl(raw)])
+    setNewInteriorPhotoUrl('')
+  }
+
+  const removeInteriorPhoto = (index: number) => {
+    if (!editState) return
+    set('internal_photos', editState.internal_photos.filter((_, i) => i !== index))
+  }
+
+  const uploadInteriorPhoto = (url: string) => {
+    setEditState(s => s ? { ...s, internal_photos: [...s.internal_photos, url] } : s)
+  }
+
   const handleRetranslate = async (id: string) => {
     setTranslatingId(id)
     try {
@@ -637,6 +706,8 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
         power_system: editState.power_system || null,
         image_focal_point: editState.image_focal_point || null,
         photos: editState.photos,
+        internal_photos: editState.internal_photos,
+        show_interior_gallery: editState.show_interior_gallery,
       }
 
       const res = await fetch(`/api/listings/${id}`, {
@@ -703,6 +774,11 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
               onMovePhoto={movePhoto}
               onClearPhotos={clearPhotos}
               onUploadPhoto={uploadPhoto}
+              newInteriorPhotoUrl={newInteriorPhotoUrl}
+              onSetNewInteriorPhotoUrl={setNewInteriorPhotoUrl}
+              onAddInteriorPhoto={addInteriorPhoto}
+              onRemoveInteriorPhoto={removeInteriorPhoto}
+              onUploadInteriorPhoto={uploadInteriorPhoto}
             />
           ))}
         </div>

@@ -39,19 +39,14 @@ export default function PhotoGallery({ photos, modelName, focalPoint }: Props) {
     return () => window.removeEventListener('keydown', handler)
   }, [lightboxOpen, lightboxPrev, lightboxNext])
 
-  // Lock body scroll when lightbox is open
   useEffect(() => {
-    if (lightboxOpen) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = ''
-    }
+    document.body.style.overflow = lightboxOpen ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
   }, [lightboxOpen])
 
   if (photos.length === 0) {
     return (
-      <div className="rounded-2xl overflow-hidden bg-[#f5f5f5] aspect-video flex items-center justify-center text-gray-300 text-7xl mb-3">
+      <div className="rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center text-gray-300 text-7xl mb-3" style={{ height: 400 }}>
         🚐
       </div>
     )
@@ -59,17 +54,18 @@ export default function PhotoGallery({ photos, modelName, focalPoint }: Props) {
 
   return (
     <>
-      {/* Main image */}
+      {/* Main image — fixed height, cover, click to open lightbox */}
       <div
-        className="relative rounded-2xl overflow-hidden bg-[#f5f5f5] aspect-video mb-3 cursor-zoom-in"
+        className="relative rounded-2xl overflow-hidden cursor-zoom-in mb-3"
+        style={{ height: 400 }}
         onClick={() => openLightbox(activeIndex)}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={photos[activeIndex]}
           alt={modelName}
-          className="w-full h-full object-contain"
-          style={{ objectPosition: focalPoint ?? '50% 50%' }}
+          className="w-full h-full object-cover"
+          style={{ objectPosition: focalPoint ?? 'center' }}
         />
         {/* Counter */}
         {photos.length > 1 && (
@@ -77,18 +73,14 @@ export default function PhotoGallery({ photos, modelName, focalPoint }: Props) {
             {activeIndex + 1} / {photos.length}
           </div>
         )}
-        {/* Expand hint */}
-        <div className="absolute bottom-3 left-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full select-none opacity-0 hover:opacity-100 transition-opacity">
+        <div className="absolute bottom-3 left-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full select-none opacity-0 group-hover:opacity-100 transition-opacity">
           Click to expand
         </div>
       </div>
 
-      {/* Scrollable thumbnails */}
+      {/* Thumbnail grid */}
       {photos.length > 1 && (
-        <div
-          className="flex gap-2 overflow-x-auto pb-2"
-          style={{ scrollbarWidth: 'thin' }}
-        >
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
           {photos.map((p, i) => (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -96,12 +88,10 @@ export default function PhotoGallery({ photos, modelName, focalPoint }: Props) {
               src={p}
               alt=""
               onClick={() => setActiveIndex(i)}
-              className="rounded-lg object-cover cursor-pointer shrink-0 transition-opacity"
+              className="w-full rounded object-cover cursor-pointer transition-opacity"
               style={{
-                width: 80,
-                height: 60,
-                minWidth: 80,
-                opacity: i === activeIndex ? 1 : 0.65,
+                height: 100,
+                opacity: i === activeIndex ? 1 : 0.72,
                 outline: i === activeIndex ? '2px solid #1a3a2a' : '2px solid transparent',
                 outlineOffset: 2,
               }}
@@ -117,7 +107,6 @@ export default function PhotoGallery({ photos, modelName, focalPoint }: Props) {
           style={{ background: 'rgba(0,0,0,0.92)' }}
           onClick={closeLightbox}
         >
-          {/* Close button */}
           <button
             onClick={closeLightbox}
             className="absolute top-4 right-4 text-white/80 hover:text-white text-3xl leading-none z-10 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors"
@@ -126,7 +115,6 @@ export default function PhotoGallery({ photos, modelName, focalPoint }: Props) {
             ×
           </button>
 
-          {/* Left arrow */}
           {photos.length > 1 && (
             <button
               onClick={e => { e.stopPropagation(); lightboxPrev() }}
@@ -137,7 +125,6 @@ export default function PhotoGallery({ photos, modelName, focalPoint }: Props) {
             </button>
           )}
 
-          {/* Right arrow */}
           {photos.length > 1 && (
             <button
               onClick={e => { e.stopPropagation(); lightboxNext() }}
@@ -148,7 +135,6 @@ export default function PhotoGallery({ photos, modelName, focalPoint }: Props) {
             </button>
           )}
 
-          {/* Image */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={photos[lightboxIndex]}
@@ -158,7 +144,6 @@ export default function PhotoGallery({ photos, modelName, focalPoint }: Props) {
             style={{ maxWidth: '90vw', maxHeight: '85vh', objectFit: 'contain' }}
           />
 
-          {/* Counter */}
           {photos.length > 1 && (
             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-black/60 text-white text-sm font-medium px-3 py-1.5 rounded-full select-none">
               {lightboxIndex + 1} / {photos.length}

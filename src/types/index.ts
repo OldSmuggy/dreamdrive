@@ -56,6 +56,8 @@ export interface Listing {
   fitout_grade: FitoutGrade | null
   power_system: PowerSystem | null
   image_focal_point: string | null
+  internal_photos: string[]
+  show_interior_gallery: boolean
   inspection_sheet: string | null
   raw_data: Record<string, unknown> | null
   scraped_at: string | null

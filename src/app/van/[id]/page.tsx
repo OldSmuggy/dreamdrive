@@ -94,8 +94,15 @@ export default async function VanDetailPage({ params }: { params: { id: string }
 
           {/* ---- Details ---- */}
           <div>
-            <div className={`inline-flex items-center score-${sColor} text-xs font-bold px-2.5 py-1 rounded mb-3`}>
-              {listing.inspection_score ? `Grade ${listing.inspection_score} — ${scoreLabel(listing.inspection_score)}` : 'No grade'}
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              <div className={`inline-flex items-center score-${sColor} text-xs font-bold px-2.5 py-1 rounded`}>
+                {listing.inspection_score ? `Grade ${listing.inspection_score} — ${scoreLabel(listing.inspection_score)}` : 'No grade'}
+              </div>
+              {listing.has_fitout && (
+                <div className="inline-flex items-center text-white text-xs font-bold px-2.5 py-1 rounded" style={{ background: '#92400e' }}>
+                  🏕 Campervan Build{listing.fitout_grade ? ` · ${listing.fitout_grade}` : ''}
+                </div>
+              )}
             </div>
             <h1 className="font-display text-3xl text-forest-900 mb-2">{listing.model_name}</h1>
 
@@ -167,6 +174,16 @@ export default async function VanDetailPage({ params }: { params: { id: string }
           <div className="mt-10 bg-sand-50 rounded-2xl p-6">
             <h2 className="font-display text-xl mb-2">About this van</h2>
             <p className="text-gray-600 leading-relaxed">{listing.description}</p>
+          </div>
+        )}
+
+        {listing.has_fitout && listing.show_interior_gallery && (listing.internal_photos ?? []).length > 0 && (
+          <div className="mt-10">
+            <h2 className="font-display text-xl text-forest-900 mb-4">Campervan Interior &amp; Features</h2>
+            <PhotoGallery
+              photos={listing.internal_photos ?? []}
+              modelName={`${listing.model_name} — Interior`}
+            />
           </div>
         )}
       </div>
