@@ -59,14 +59,47 @@ function extractNumber(str: string | null): number | null {
   return isNaN(n) ? null : n
 }
 
-// Parse Japanese yen prices: "121.8万円" or "1,218,000円" → integer yen
+// Parse Japanese yen prices: "298万円", "1,280万円", "2,980,000円" → integer yen
+// Returns null for POA ("応談", "お問い合わせ")
 function parseJpyPrice(html: string): number | null {
-  // Man-en (万円) format — most common on Japanese dealer sites
-  const manMatch = html.match(/(\d+(?:\.\d+)?)\s*万円/)
-  if (manMatch) return Math.round(parseFloat(manMatch[1]) * 10000)
-  // Full digits with commas
+  // POA indicators — check before trying to parse a number
+  if (/応談|価格応談|お問い合わせ/.test(html.slice(0, 5000))) {
+    // Only treat as POA if there's genuinely no price number nearby
+    // Fall through and try to parse anyway; if no match we return null below
+  }
+
+  // Man-en (万円) format — handles "298万円", "1,280万円", "121.8万円"
+  // The number before 万 can have commas (e.g. 1,280) or a decimal (121.8)
+  const manMatch = html.match(/([\d,]+(?:\.\d+)?)\s*万円/)
+  if (manMatch) {
+    const num = parseFloat(manMatch[1].replace(/,/g, ''))
+    if (!isNaN(num) && num > 0) return Math.round(num * 10000)
+  }
+
+  // Full digit format: "2,980,000円"
   const yenMatch = html.match(/([1-9]\d{0,2}(?:,\d{3}){1,4})円/)
   if (yenMatch) return parseInt(yenMatch[1].replace(/,/g, ''), 10)
+
+  return null
+}
+
+// Extract dealer/seller notes from the HTML
+function extractSellerNotes(html: string): string | null {
+  // Goo-net: 販売店コメント section
+  // Car Sensor: 販売店からのコメント or コメント
+  const patterns = [
+    /販売店コメント[^<]*<\/[^>]+>\s*<[^>]+>\s*([^<]{20,500})/i,
+    /コメント[^<]*<\/th>\s*<td[^>]*>\s*([^<]{20,500})/i,
+    /コメント[^<]*<\/dt>\s*<dd[^>]*>\s*([^<]{20,500})/i,
+    /seller.comment[^>]*>\s*([^<]{20,500})/i,
+  ]
+  for (const re of patterns) {
+    const m = html.match(re)
+    if (m) {
+      const text = m[1].trim().replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ')
+      if (text.length > 15) return text.slice(0, 500)
+    }
+  }
   return null
 }
 
@@ -141,6 +174,7 @@ function parseGooNet(html: string) {
   const bodyColour = colorRaw ? colorRaw.split(/[（(]/)[0].trim() : null
 
   const priceJpy = parseJpyPrice(html)
+  const sellerNotes = extractSellerNotes(html)
 
   return {
     modelName: gradeField ? `TOYOTA HIACE ${gradeField}` : modelName,
@@ -152,6 +186,7 @@ function parseGooNet(html: string) {
     displacementCc: extractNumber(dispRaw),
     bodyColour,
     priceJpy,
+    sellerNotes,
     hasNav: html.includes('ナビ') || html.includes('カーナビ'),
     hasLeather: html.includes('レザー') || html.includes('本革'),
     hasSunroof: html.includes('サンルーフ') || html.includes('ムーンルーフ'),
@@ -189,6 +224,7 @@ function parseCarSensor(html: string) {
   const bodyColour = colorRaw ? colorRaw.split(/[（(]/)[0].trim() : null
 
   const priceJpy = parseJpyPrice(html)
+  const sellerNotes = extractSellerNotes(html)
 
   return {
     modelName: gradeField ? `TOYOTA HIACE ${gradeField}` : modelName,
@@ -200,6 +236,7 @@ function parseCarSensor(html: string) {
     displacementCc: extractNumber(dispRaw),
     bodyColour,
     priceJpy,
+    sellerNotes,
     hasNav: html.includes('ナビ') || html.includes('カーナビ'),
     hasLeather: html.includes('レザー') || html.includes('本革'),
     hasSunroof: html.includes('サンルーフ') || html.includes('ムーンルーフ'),
@@ -218,6 +255,7 @@ async function translateListing(parsed: {
   drive: string | null
   displacementCc: number | null
   priceJpy: number | null
+  sellerNotes: string | null
   hasNav: boolean
   hasLeather: boolean
   hasSunroof: boolean
@@ -237,6 +275,10 @@ async function translateListing(parsed: {
       parsed.hasAlloys && 'Alloy wheels',
     ].filter(Boolean).join(', ')
 
+    const notesSection = parsed.sellerNotes
+      ? `\nDealer notes (Japanese — use for description context):\n"${parsed.sellerNotes}"`
+      : ''
+
     const prompt = `You are helping list a Japanese import Toyota Hiace van on an Australian car sales website.
 
 Translate and clean up these fields into natural Australian English:
@@ -244,8 +286,8 @@ Translate and clean up these fields into natural Australian English:
 - Grade: ${parsed.grade ?? 'unknown'}
 - Body colour: ${parsed.bodyColour ?? 'unknown'}
 
-Also write a short 2-sentence listing description (max 60 words) for this van using these specs:
-Year: ${parsed.modelYear ?? 'unknown'} | Mileage: ${parsed.mileageKm ? parsed.mileageKm.toLocaleString() + ' km' : 'unknown'} | Transmission: ${parsed.transmission ?? 'unknown'} | Drive: ${parsed.drive ?? 'unknown'} | Engine: ${parsed.displacementCc ? parsed.displacementCc + 'cc' : 'unknown'} | Features: ${features || 'none listed'} | Price: ${parsed.priceJpy ? '¥' + parsed.priceJpy.toLocaleString() : 'unknown'}
+Also write a short 2-sentence listing description (max 80 words) for this van using these specs:
+Year: ${parsed.modelYear ?? 'unknown'} | Mileage: ${parsed.mileageKm ? parsed.mileageKm.toLocaleString() + ' km' : 'unknown'} | Transmission: ${parsed.transmission ?? 'unknown'} | Drive: ${parsed.drive ?? 'unknown'} | Engine: ${parsed.displacementCc ? parsed.displacementCc + 'cc' : 'unknown'} | Features: ${features || 'none listed'} | Price: ${parsed.priceJpy ? '¥' + parsed.priceJpy.toLocaleString() : 'unknown'}${notesSection}
 
 Respond ONLY with valid JSON in this exact format:
 {
