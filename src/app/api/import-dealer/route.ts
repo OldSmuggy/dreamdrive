@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
+import Anthropic from '@anthropic-ai/sdk'
 
 // ============================================================
 // POST /api/import-dealer
@@ -206,6 +207,78 @@ function parseCarSensor(html: string) {
   }
 }
 
+// ---------- AI Translation ----------
+async function translateListing(parsed: {
+  modelName: string
+  grade: string | null
+  bodyColour: string | null
+  mileageKm: number | null
+  modelYear: number | null
+  transmission: string | null
+  drive: string | null
+  displacementCc: number | null
+  priceJpy: number | null
+  hasNav: boolean
+  hasLeather: boolean
+  hasSunroof: boolean
+  hasAlloys: boolean
+}): Promise<{ modelName: string; grade: string | null; bodyColour: string | null; description: string }> {
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  if (!apiKey) {
+    return { modelName: parsed.modelName, grade: parsed.grade, bodyColour: parsed.bodyColour, description: '' }
+  }
+
+  try {
+    const client = new Anthropic({ apiKey })
+    const features = [
+      parsed.hasNav && 'Navigation system',
+      parsed.hasLeather && 'Leather seats',
+      parsed.hasSunroof && 'Sunroof',
+      parsed.hasAlloys && 'Alloy wheels',
+    ].filter(Boolean).join(', ')
+
+    const prompt = `You are helping list a Japanese import Toyota Hiace van on an Australian car sales website.
+
+Translate and clean up these fields into natural Australian English:
+- Model name: ${parsed.modelName}
+- Grade: ${parsed.grade ?? 'unknown'}
+- Body colour: ${parsed.bodyColour ?? 'unknown'}
+
+Also write a short 2-sentence listing description (max 60 words) for this van using these specs:
+Year: ${parsed.modelYear ?? 'unknown'} | Mileage: ${parsed.mileageKm ? parsed.mileageKm.toLocaleString() + ' km' : 'unknown'} | Transmission: ${parsed.transmission ?? 'unknown'} | Drive: ${parsed.drive ?? 'unknown'} | Engine: ${parsed.displacementCc ? parsed.displacementCc + 'cc' : 'unknown'} | Features: ${features || 'none listed'} | Price: ${parsed.priceJpy ? '¥' + parsed.priceJpy.toLocaleString() : 'unknown'}
+
+Respond ONLY with valid JSON in this exact format:
+{
+  "modelName": "translated model name",
+  "grade": "translated grade or null",
+  "bodyColour": "translated colour in English or null",
+  "description": "short listing description"
+}`
+
+    const msg = await client.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 300,
+      messages: [{ role: 'user', content: prompt }],
+    })
+
+    const text = (msg.content[0] as { type: string; text: string }).text.trim()
+    const jsonMatch = text.match(/\{[\s\S]*\}/)
+    if (jsonMatch) {
+      const result = JSON.parse(jsonMatch[0])
+      return {
+        modelName: result.modelName || parsed.modelName,
+        grade: result.grade || null,
+        bodyColour: result.bodyColour || null,
+        description: result.description || '',
+      }
+    }
+  } catch {
+    // Fall through to raw values
+  }
+
+  return { modelName: parsed.modelName, grade: parsed.grade, bodyColour: parsed.bodyColour, description: '' }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { url } = await req.json()
@@ -268,28 +341,32 @@ export async function POST(req: NextRequest) {
       ? Math.round(parsed.priceJpy * 0.0095 + 8500) * 100
       : null
 
+    // Translate Japanese fields and generate English description
+    const translated = await translateListing(parsed)
+
     const { data: inserted, error: insertError } = await supabase
       .from('listings')
       .insert({
         source,
         external_id,
-        model_name: parsed.modelName,
-        grade: parsed.grade ?? null,
+        model_name: translated.modelName,
+        grade: translated.grade ?? null,
         model_year: parsed.modelYear,
         mileage_km: parsed.mileageKm,
         transmission: parsed.transmission,
         drive: parsed.drive,
         displacement_cc: parsed.displacementCc,
-        body_colour: parsed.bodyColour,
+        body_colour: translated.bodyColour,
+        description: translated.description || null,
         start_price_jpy: parsed.priceJpy,
         aud_estimate: audEstimate,
-        status: 'available',
+        status: 'draft',
         has_nav: parsed.hasNav,
         has_leather: parsed.hasLeather,
         has_sunroof: parsed.hasSunroof,
         has_alloys: parsed.hasAlloys,
         photos,
-        raw_data: { url, source },
+        raw_data: { url, source, raw_grade: parsed.grade, raw_colour: parsed.bodyColour },
         scraped_at: new Date().toISOString(),
       })
       .select()
