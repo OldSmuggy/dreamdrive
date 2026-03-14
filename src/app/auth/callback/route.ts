@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
+import { createAdminClient } from '@/lib/supabase'
 import { cookies } from 'next/headers'
 import type { ResponseCookie } from 'next/dist/compiled/@edge-runtime/cookies'
 
@@ -25,8 +26,28 @@ export async function GET(req: NextRequest) {
         },
       }
     )
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
-    if (!error) return NextResponse.redirect(`${origin}${next}`)
+
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+
+    if (!error && data.user) {
+      // Create profile for new OAuth users (ON CONFLICT DO NOTHING via upsert ignoreDuplicates)
+      const meta = data.user.user_metadata ?? {}
+      const fullName: string = meta.full_name ?? meta.name ?? ''
+      const [firstName, ...rest] = fullName.trim().split(' ')
+      const lastName = rest.join(' ') || null
+
+      const admin = createAdminClient()
+      await admin.from('profiles').upsert(
+        {
+          id: data.user.id,
+          first_name: firstName || null,
+          last_name: lastName,
+        },
+        { onConflict: 'id', ignoreDuplicates: true }
+      )
+
+      return NextResponse.redirect(`${origin}${next}`)
+    }
   }
 
   return NextResponse.redirect(`${origin}/login?error=auth-callback-failed`)
