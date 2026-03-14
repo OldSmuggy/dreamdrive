@@ -129,7 +129,7 @@ export default function AdminImportPage() {
   return (
     <div className="max-w-3xl">
       <div className="mb-6">
-        <h1 className="font-display text-3xl text-forest-900">Import Listings</h1>
+        <h1 className="font-display text-3xl text-forest-900">Import Vehicle</h1>
         <p className="text-gray-500 text-sm mt-1">
           Import vehicles from Japan auction or dealer sites directly into your database.
         </p>
@@ -145,7 +145,7 @@ export default function AdminImportPage() {
               : 'text-gray-500 hover:text-gray-700'
           }`}
         >
-          NINJA Auction
+          Import Vehicle
         </button>
         <button
           onClick={() => setTab('dealer')}
