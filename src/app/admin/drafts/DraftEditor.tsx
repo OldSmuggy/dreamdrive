@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import type { Listing } from '@/types'
+import PhotoUploadButton from '@/components/ui/PhotoUploadButton'
 
 type DraftState = {
   model_name: string
@@ -400,12 +401,13 @@ export default function DraftEditor({ initial }: { initial: Listing[] }) {
                       value={newPhotoUrl}
                       onChange={e => setNewPhotoUrl(e.target.value)}
                       onKeyDown={e => e.key === 'Enter' && addPhoto()}
-                      placeholder="Paste Goo-net or any image URL — auto-upgraded to full resolution"
+                      placeholder="Paste image URL (auto-upgraded to full res)"
                       className={`${inputClass} flex-1`}
                     />
                     <button onClick={addPhoto} className="px-4 py-2 bg-forest-600 text-white text-sm rounded-lg hover:bg-forest-700 shrink-0">
-                      Add
+                      Add URL
                     </button>
+                    <PhotoUploadButton onUploaded={url => setDraft(s => s ? { ...s, photos: [...s.photos, url] } : s)} />
                   </div>
                 </div>
 

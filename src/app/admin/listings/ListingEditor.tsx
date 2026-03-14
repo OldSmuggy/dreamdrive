@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { centsToAud, sourceLabel } from '@/lib/utils'
 import type { Listing, Source } from '@/types'
+import PhotoUploadButton from '@/components/ui/PhotoUploadButton'
 
 type EditState = {
   model_name: string
@@ -110,12 +111,13 @@ interface RowProps {
   onRemovePhoto: (i: number) => void
   onMovePhoto: (from: number, to: number) => void
   onClearPhotos: () => void
+  onUploadPhoto: (url: string) => void
 }
 
 function ListingRow({
   listing: l, isEditing, isSaved, isSelected, isTranslating, editState, saving, error,
   newPhotoUrl, onToggleSelect, onStartEdit, onCancelEdit, onSave, onDelete, onRetranslate, onSet,
-  onSetNewPhotoUrl, onAddPhoto, onRemovePhoto, onMovePhoto, onClearPhotos,
+  onSetNewPhotoUrl, onAddPhoto, onRemovePhoto, onMovePhoto, onClearPhotos, onUploadPhoto,
 }: RowProps) {
   const price = l.source === 'au_stock' && l.au_price_aud
     ? centsToAud(l.au_price_aud)
@@ -398,12 +400,13 @@ function ListingRow({
                 value={newPhotoUrl}
                 onChange={e => onSetNewPhotoUrl(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && onAddPhoto()}
-                placeholder="Paste Goo-net or any image URL — URL is auto-upgraded to full resolution"
+                placeholder="Paste image URL (auto-upgraded to full res)"
                 className={`${inputClass} flex-1`}
               />
               <button onClick={onAddPhoto} className="px-4 py-2 bg-forest-600 text-white text-sm rounded-lg hover:bg-forest-700 shrink-0">
-                Add
+                Add URL
               </button>
+              <PhotoUploadButton onUploaded={onUploadPhoto} />
             </div>
           </div>
 
@@ -518,6 +521,10 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
     set('photos', [])
   }
 
+  const uploadPhoto = (url: string) => {
+    setEditState(s => s ? { ...s, photos: [...s.photos, url] } : s)
+  }
+
   const handleRetranslate = async (id: string) => {
     setTranslatingId(id)
     try {
@@ -627,6 +634,7 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
               onRemovePhoto={removePhoto}
               onMovePhoto={movePhoto}
               onClearPhotos={clearPhotos}
+              onUploadPhoto={uploadPhoto}
             />
           ))}
         </div>
