@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import { createAdminClient } from '@/lib/supabase'
 import { centsToAud, effectivePrice, activeSpecial } from '@/lib/utils'
 import type { Product } from '@/types'
+import ImageCarousel from '@/components/ui/ImageCarousel'
 
 // ---- Static feature lists per known product slug ----
 const EXTRAS: Record<string, { icon: string; tagline: string; features: string[] }> = {
@@ -178,6 +179,13 @@ export default async function ProductPage({ params }: { params: { slug: string }
           </Link>
         </div>
       </section>
+
+      {/* ---- Image carousel ---- */}
+      {product.images && product.images.length > 0 && (
+        <section className="max-w-4xl mx-auto px-4 pt-10">
+          <ImageCarousel images={product.images} alt={product.name} />
+        </section>
+      )}
 
       {/* ---- Description + Features ---- */}
       <section className="max-w-6xl mx-auto px-4 py-14">

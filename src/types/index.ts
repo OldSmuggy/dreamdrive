@@ -11,7 +11,7 @@ export type InspectionScore = 'S' | '6' | '5.5' | '5' | '4.5' | '4' | '3.5' | '3
 export type Transmission = 'IA' | 'AT' | 'MT'
 export type Drive = '2WD' | '4WD'
 export type ProductCategory = 'fitout' | 'electrical' | 'poptop'
-export type LeadType = 'consultation' | 'interest' | 'quiz_result'
+export type LeadType = 'consultation' | 'interest' | 'quiz_result' | 'finance_enquiry'
 export type LeadStatus = 'new' | 'contacted' | 'qualified' | 'closed'
 export type DepositStatus = 'pending' | 'held' | 'refunded' | 'converted'
 
@@ -69,6 +69,7 @@ export interface Product {
   special_end: string | null
   description: string | null
   brand: string | null
+  images: string[]
   visible: boolean
   sort_order: number
   created_at: string

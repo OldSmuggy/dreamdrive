@@ -5,20 +5,21 @@ import AuctionBanner from '@/components/ui/AuctionBanner'
 import type { Listing } from '@/types'
 
 export default async function HomePage() {
-  let featuredVans: Listing[] = []
+  let availableVans: Listing[] = []
   let auctionVans: Listing[] = []
 
   try {
     const supabase = createSupabaseServer()
 
-    const [{ data: featured }, { data: latest }] = await Promise.all([
+    // AU stock first (up to 4), then fill remaining slots from other sources
+    const [{ data: auStock }, { data: latest }, { data: others }] = await Promise.all([
       supabase
         .from('listings')
         .select('*')
         .eq('source', 'au_stock')
-        .eq('featured', true)
+        .eq('status', 'available')
         .order('created_at', { ascending: false })
-        .limit(3),
+        .limit(4),
       supabase
         .from('listings')
         .select('*')
@@ -26,10 +27,20 @@ export default async function HomePage() {
         .eq('status', 'available')
         .order('auction_date', { ascending: true })
         .limit(6),
+      supabase
+        .from('listings')
+        .select('*')
+        .neq('source', 'au_stock')
+        .eq('status', 'available')
+        .order('created_at', { ascending: false })
+        .limit(4),
     ])
 
-    featuredVans = (featured ?? []) as Listing[]
-    auctionVans  = (latest  ?? []) as Listing[]
+    const auList = (auStock ?? []) as Listing[]
+    const otherList = (others ?? []) as Listing[]
+    // AU stock first, then others to fill up to 4 total
+    availableVans = [...auList, ...otherList.filter(v => v.source !== 'auction')].slice(0, 4)
+    auctionVans   = (latest ?? []) as Listing[]
   } catch {
     // Supabase unreachable — render page without listings
   }
@@ -64,20 +75,20 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ---- AU Stock (featured) ---- */}
-      {featuredVans.length > 0 && (
+      {/* ---- Available Vans ---- */}
+      {availableVans.length > 0 && (
         <section className="max-w-6xl mx-auto px-4 py-16">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h2 className="font-display text-3xl text-forest-900">Available Now in Australia</h2>
-              <p className="text-gray-500 mt-1">Import approved, ready to reserve</p>
+              <h2 className="font-display text-3xl text-forest-900">Available Vans</h2>
+              <p className="text-gray-500 mt-1">AU stock, Japan dealers and auction — ready to build</p>
             </div>
-            <Link href="/browse?source=au_stock" className="text-forest-600 font-semibold hover:underline text-sm">
+            <Link href="/browse" className="text-forest-600 font-semibold hover:underline text-sm">
               View all →
             </Link>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredVans.map(van => (
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {availableVans.map(van => (
               <VanCard key={van.id} listing={van} />
             ))}
           </div>

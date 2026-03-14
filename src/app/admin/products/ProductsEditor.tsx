@@ -8,6 +8,7 @@ type EditState = {
   name: string
   description: string
   brand: string
+  images: string[]
   rrp_dollars: string
   special_dollars: string
   special_label: string
@@ -22,6 +23,7 @@ function toEditState(p: Product): EditState {
     name: p.name,
     description: p.description ?? '',
     brand: p.brand ?? '',
+    images: p.images ?? [],
     rrp_dollars: p.rrp_aud > 0 ? (p.rrp_aud / 100).toFixed(0) : '0',
     special_dollars: p.special_price_aud ? (p.special_price_aud / 100).toFixed(0) : '',
     special_label: p.special_label ?? '',
@@ -39,11 +41,25 @@ export default function ProductsEditor({ initial }: { initial: Product[] }) {
   const [saving, setSaving] = useState(false)
   const [savedId, setSavedId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [newImageUrl, setNewImageUrl] = useState('')
 
   const startEdit = (p: Product) => {
     setEditingId(p.id)
     setEditState(toEditState(p))
     setError(null)
+    setNewImageUrl('')
+  }
+
+  const addImage = () => {
+    const url = newImageUrl.trim()
+    if (!url || !editState) return
+    set('images', [...editState.images, url])
+    setNewImageUrl('')
+  }
+
+  const removeImage = (i: number) => {
+    if (!editState) return
+    set('images', editState.images.filter((_, idx) => idx !== i))
   }
 
   const cancelEdit = () => {
@@ -52,7 +68,7 @@ export default function ProductsEditor({ initial }: { initial: Product[] }) {
     setError(null)
   }
 
-  const set = (field: keyof EditState, value: string | boolean) =>
+  const set = (field: keyof EditState, value: string | boolean | string[]) =>
     setEditState(s => s ? { ...s, [field]: value } : s)
 
   const handleSave = async (id: string) => {
@@ -65,6 +81,7 @@ export default function ProductsEditor({ initial }: { initial: Product[] }) {
       name: editState.name.trim(),
       description: editState.description.trim() || null,
       brand: editState.brand.trim() || null,
+      images: editState.images,
       rrp_aud: Math.round(parseFloat(editState.rrp_dollars || '0') * 100),
       special_price_aud: editState.special_dollars
         ? Math.round(parseFloat(editState.special_dollars) * 100)
@@ -283,6 +300,44 @@ export default function ProductsEditor({ initial }: { initial: Product[] }) {
                         className={inputClass}
                       />
                     </div>
+                  </div>
+                </div>
+
+                {/* Product images */}
+                <div className="border-t border-gray-200 pt-4 mt-2">
+                  <p className="text-xs font-semibold text-gray-600 mb-3">
+                    Product Images
+                    <span className="font-normal text-gray-400 ml-1.5">(shown as carousel on the product page)</span>
+                  </p>
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {editState.images.map((url, i) => (
+                      <div key={i} className="relative group">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={url} alt="" className="w-24 h-16 object-cover rounded-lg border border-gray-200" />
+                        <button
+                          onClick={() => removeImage(i)}
+                          className="absolute top-0.5 right-0.5 w-5 h-5 bg-red-600 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        >✕</button>
+                        {i === 0 && (
+                          <span className="absolute bottom-0.5 left-0.5 bg-forest-600 text-white text-[9px] font-bold px-1 rounded">1st</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      value={newImageUrl}
+                      onChange={e => setNewImageUrl(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && addImage()}
+                      placeholder="Paste image URL (Supabase storage, S3, or any HTTPS URL)"
+                      className={`${inputClass} flex-1`}
+                    />
+                    <button
+                      onClick={addImage}
+                      className="px-4 py-2 bg-forest-600 text-white text-sm rounded-lg hover:bg-forest-700 shrink-0"
+                    >
+                      Add
+                    </button>
                   </div>
                 </div>
 
