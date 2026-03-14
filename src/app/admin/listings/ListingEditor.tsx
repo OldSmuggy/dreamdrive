@@ -262,7 +262,7 @@ function ListingRow({
 
       {/* Edit form */}
       {isEditing && editState && (
-        <div className="border-t border-forest-100 bg-gray-50 p-5">
+        <div className="border-t border-forest-100 bg-gray-50 p-5 pb-24 md:pb-5">
 
           {/* Lead image — large preview with focal point picker */}
           {editState.photos[0] && (
@@ -587,17 +587,50 @@ function ListingRow({
             <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-4">{error}</p>
           )}
 
-          <div className="flex flex-col md:flex-row gap-3">
-            <button onClick={onSave} disabled={saving} className="btn-primary btn-sm disabled:opacity-50 min-h-[44px] md:min-h-0 w-full md:w-auto">
+          {/* Desktop buttons */}
+          <div className="hidden md:flex gap-3">
+            <button onClick={onSave} disabled={saving} className="btn-primary btn-sm disabled:opacity-50">
               {saving ? 'Saving…' : 'Save Changes'}
             </button>
-            <button onClick={onCancelEdit} className="btn-secondary btn-sm min-h-[44px] md:min-h-0 w-full md:w-auto">Cancel</button>
+            <button onClick={onCancelEdit} className="btn-secondary btn-sm">Cancel</button>
             <button
               onClick={onRetranslate}
               disabled={isTranslating}
-              className="text-sm px-3 py-2 rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50 disabled:opacity-50 min-h-[44px] md:min-h-0 w-full md:w-auto md:ml-auto"
+              className="text-sm px-3 py-1.5 rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50 disabled:opacity-50 ml-auto"
             >
               {isTranslating ? 'Translating…' : '🌐 Re-translate with AI'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Sticky mobile save bar — fixed at viewport bottom when editing */}
+      {isEditing && (
+        <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 px-4 py-3 shadow-[0_-4px_12px_rgba(0,0,0,0.08)]">
+          {error && (
+            <p className="text-red-600 text-sm mb-2 font-medium">{error}</p>
+          )}
+          {isSaved && (
+            <p className="text-green-600 text-sm mb-2 font-semibold">✓ Saved!</p>
+          )}
+          <div className="flex gap-2">
+            <button
+              onClick={onSave}
+              disabled={saving}
+              className="flex-1 py-3 bg-green-800 text-white font-semibold rounded-xl disabled:opacity-50 flex items-center justify-center gap-2 text-base"
+            >
+              {saving ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin shrink-0" />
+                  Saving…
+                </>
+              ) : 'Save Changes'}
+            </button>
+            <button
+              onClick={onCancelEdit}
+              className="px-5 py-3 border border-gray-300 text-gray-700 font-semibold rounded-xl text-base"
+            >
+              Cancel
             </button>
           </div>
         </div>

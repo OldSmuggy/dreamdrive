@@ -2,30 +2,70 @@
 
 import { useRef, useState } from 'react'
 
-export default function PhotoUploadButton({ onUploaded }: { onUploaded: (url: string) => void }) {
+function uploadWithProgress(
+  file: File,
+  onProgress: (pct: number) => void
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const form = new FormData()
+    form.append('file', file)
+
+    const xhr = new XMLHttpRequest()
+
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) {
+        onProgress(Math.round((e.loaded / e.total) * 100))
+      }
+    }
+
+    xhr.onload = () => {
+      try {
+        const data = JSON.parse(xhr.responseText)
+        if (xhr.status >= 200 && xhr.status < 300 && data.url) {
+          resolve(data.url)
+        } else {
+          reject(new Error(data.error ?? `HTTP ${xhr.status}`))
+        }
+      } catch {
+        reject(new Error(`HTTP ${xhr.status}`))
+      }
+    }
+
+    xhr.onerror = () => reject(new Error('Network error during upload'))
+    xhr.open('POST', '/api/upload')
+    xhr.send(form)
+  })
+}
+
+export default function PhotoUploadButton({
+  onUploaded,
+  label = '📁 Upload',
+}: {
+  onUploaded: (url: string) => void
+  label?: string
+}) {
   const inputRef = useRef<HTMLInputElement>(null)
-  const [uploading, setUploading] = useState(false)
+  const [progress, setProgress] = useState<number | null>(null)
 
   const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? [])
     if (!files.length) return
-    setUploading(true)
-    try {
-      for (const file of files) {
-        const form = new FormData()
-        form.append('file', file)
-        const res = await fetch('/api/upload', { method: 'POST', body: form })
-        const data = await res.json()
-        if (!res.ok) throw new Error(data.error ?? 'Upload failed')
-        onUploaded(data.url)
+
+    for (const file of files) {
+      setProgress(0)
+      try {
+        const url = await uploadWithProgress(file, setProgress)
+        onUploaded(url)
+      } catch (err) {
+        alert(String(err))
       }
-    } catch (err) {
-      alert(String(err))
-    } finally {
-      setUploading(false)
-      e.target.value = ''
     }
+
+    setProgress(null)
+    e.target.value = ''
   }
+
+  const uploading = progress !== null
 
   return (
     <>
@@ -33,15 +73,15 @@ export default function PhotoUploadButton({ onUploaded }: { onUploaded: (url: st
         type="button"
         onClick={() => inputRef.current?.click()}
         disabled={uploading}
-        className="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50 disabled:opacity-50 shrink-0 flex items-center gap-1.5"
+        className="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50 disabled:opacity-60 shrink-0 flex items-center gap-1.5 min-h-[44px] md:min-h-0"
       >
         {uploading ? (
           <>
-            <span className="inline-block w-3.5 h-3.5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
-            Uploading…
+            <span className="inline-block w-3.5 h-3.5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin shrink-0" />
+            {progress! < 100 ? `${progress}%` : 'Processing…'}
           </>
         ) : (
-          <>📁 Upload</>
+          label
         )}
       </button>
       <input
