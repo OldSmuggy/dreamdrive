@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { createSupabaseServer } from '@/lib/supabase-server'
 import { centsToAud, scoreColor, scoreLabel, sourceLabel, sourceBadgeColor, auctionUrgency } from '@/lib/utils'
 import AuctionBanner from '@/components/ui/AuctionBanner'
-import VanGallery from '@/components/listings/VanGallery'
+import PhotoGallery from '@/components/van/PhotoGallery'
 import type { Listing } from '@/types'
 
 export async function generateMetadata({ params }: { params: { id: string } }) {
@@ -71,7 +71,7 @@ export default async function VanDetailPage({ params }: { params: { id: string }
           <div>
             {/* Badges overlay (server-rendered, sits above the gallery) */}
             <div className="relative">
-              <VanGallery
+              <PhotoGallery
                 photos={listing.photos}
                 modelName={listing.model_name}
                 focalPoint={listing.image_focal_point}
