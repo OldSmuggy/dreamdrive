@@ -10,7 +10,9 @@ export type VanInternals = 'empty' | 'seats' | 'campervan'
 export type InspectionScore = 'S' | '6' | '5.5' | '5' | '4.5' | '4' | '3.5' | '3' | 'R' | 'RA' | 'X'
 export type Transmission = 'IA' | 'AT' | 'MT'
 export type Drive = '2WD' | '4WD'
-export type ProductCategory = 'fitout' | 'electrical' | 'poptop'
+export type ProductCategory = 'fitout' | 'electrical' | 'poptop' | 'addon'
+export type FitoutGrade = 'Excellent' | 'Good' | 'Fair' | 'Unknown'
+export type PowerSystem = '100V Japanese' | '240V Australian' | 'None'
 export type LeadType = 'consultation' | 'interest' | 'quiz_result' | 'finance_enquiry'
 export type LeadStatus = 'new' | 'contacted' | 'qualified' | 'closed'
 export type DepositStatus = 'pending' | 'held' | 'refunded' | 'converted'
@@ -50,6 +52,10 @@ export interface Listing {
   photos: string[]
   size: VanSize | null
   internals: VanInternals | null
+  has_fitout: boolean
+  fitout_grade: FitoutGrade | null
+  power_system: PowerSystem | null
+  image_focal_point: string | null
   inspection_sheet: string | null
   raw_data: Record<string, unknown> | null
   scraped_at: string | null

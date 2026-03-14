@@ -41,6 +41,8 @@ export default async function VanDetailPage({ params }: { params: { id: string }
     ['Year',           listing.model_year?.toString() ?? '—'],
     ...(listing.size ? [['Size', listing.size] as [string, string]] : []),
     ...(listing.internals ? [['Internals', internalsLabel[listing.internals] ?? listing.internals] as [string, string]] : []),
+    ...(listing.has_fitout && listing.fitout_grade ? [['Fitout Condition', listing.fitout_grade] as [string, string]] : []),
+    ...(listing.power_system && listing.power_system !== 'None' ? [['Power System', listing.power_system] as [string, string]] : []),
     ['Chassis',        listing.chassis_code ?? '—'],
     ['Engine',         listing.displacement_cc ? `${(listing.displacement_cc / 1000).toFixed(1)}L ${listing.displacement_cc > 2500 ? 'Diesel' : 'Petrol'}` : '—'],
     ['Transmission',   listing.transmission === 'IA' ? 'Auto (CVT/IA)' : listing.transmission ?? '—'],
@@ -66,20 +68,31 @@ export default async function VanDetailPage({ params }: { params: { id: string }
         <div className="grid lg:grid-cols-2 gap-10">
           {/* ---- Photos ---- */}
           <div>
-            <div className="relative rounded-2xl overflow-hidden bg-gray-100 aspect-video mb-3">
+            <div className="relative rounded-2xl overflow-hidden bg-[#f5f5f5] aspect-video mb-3">
               {listing.photos[0] ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={listing.photos[0]} alt={listing.model_name} className="w-full h-full object-cover" />
+                <img
+                  src={listing.photos[0]}
+                  alt={listing.model_name}
+                  className="w-full h-full object-contain"
+                  style={{ objectPosition: listing.image_focal_point ?? '50% 50%' }}
+                />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-gray-300 text-7xl">🚐</div>
               )}
-              <div className="absolute top-3 left-3 flex gap-2">
+              <div className="absolute top-3 left-3 flex gap-2 flex-wrap">
                 <span className={`${sourceBadgeColor(listing.source)} text-white text-xs font-bold px-2 py-0.5 rounded`}>
                   {sourceLabel(listing.source)}
                 </span>
                 {urgency === 'closing_soon' && <span className="bg-amber-400 text-amber-900 text-xs font-bold px-2 py-0.5 rounded">CLOSING SOON</span>}
                 {urgency === 'last_chance'  && <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded">LAST CHANCE</span>}
+                {listing.has_fitout && <span className="bg-purple-600 text-white text-xs font-bold px-2 py-0.5 rounded">🏕 Campervan Build</span>}
               </div>
+              {listing.power_system && listing.power_system !== 'None' && (
+                <div className="absolute top-3 right-3 bg-gray-900/80 text-white text-xs px-2 py-0.5 rounded">
+                  🔌 {listing.power_system === '240V Australian' ? '240V AU Ready' : '100V JP'}
+                </div>
+              )}
             </div>
             {listing.photos.length > 1 && (
               <div className="grid grid-cols-5 gap-2">

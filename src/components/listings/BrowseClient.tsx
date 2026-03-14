@@ -142,10 +142,15 @@ function ListingCard({ listing }: { listing: Listing }) {
   return (
     <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow group">
       {/* Photo */}
-      <div className="relative h-44 bg-gray-100">
+      <div className="relative h-44 bg-[#f5f5f5]">
         {photo ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={photo} alt={listing.model_name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+          <img
+            src={photo}
+            alt={listing.model_name}
+            className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
+            style={{ objectPosition: listing.image_focal_point ?? '50% 50%' }}
+          />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-300 text-5xl">🚐</div>
         )}
@@ -162,12 +167,22 @@ function ListingCard({ listing }: { listing: Listing }) {
           {listing.featured && listing.source === 'au_stock' && (
             <span className="bg-forest-500 text-white text-xs font-bold px-2 py-0.5 rounded">FEATURED</span>
           )}
+          {listing.has_fitout && (
+            <span className="bg-purple-600 text-white text-xs font-bold px-2 py-0.5 rounded">🏕 Campervan Build</span>
+          )}
         </div>
-        {listing.inspection_score && (
-          <div className={`absolute top-3 right-3 score-${sColor} text-xs font-bold px-2 py-0.5 rounded`}>
-            Grade {listing.inspection_score}
-          </div>
-        )}
+        <div className="absolute top-3 right-3 flex flex-col items-end gap-1">
+          {listing.inspection_score && (
+            <div className={`score-${sColor} text-xs font-bold px-2 py-0.5 rounded`}>
+              Grade {listing.inspection_score}
+            </div>
+          )}
+          {listing.power_system && listing.power_system !== 'None' && (
+            <div className="bg-gray-900/80 text-white text-xs px-2 py-0.5 rounded">
+              🔌 {listing.power_system === '240V Australian' ? '240V AU Ready' : '100V JP'}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Info */}

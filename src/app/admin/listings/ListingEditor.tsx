@@ -28,6 +28,10 @@ type EditState = {
   has_leather: boolean
   has_sunroof: boolean
   has_alloys: boolean
+  has_fitout: boolean
+  fitout_grade: string
+  power_system: string
+  image_focal_point: string
   photos: string[]
 }
 
@@ -55,6 +59,10 @@ function toEditState(l: Listing): EditState {
     has_leather: l.has_leather,
     has_sunroof: l.has_sunroof,
     has_alloys: l.has_alloys,
+    has_fitout: l.has_fitout ?? false,
+    fitout_grade: l.fitout_grade ?? '',
+    power_system: l.power_system ?? '',
+    image_focal_point: l.image_focal_point ?? '50% 50%',
     photos: [...(l.photos ?? [])],
   }
 }
@@ -189,16 +197,50 @@ function ListingRow({
       {isEditing && editState && (
         <div className="border-t border-forest-100 bg-gray-50 p-5">
 
-          {/* Lead image — large preview */}
+          {/* Lead image — large preview with focal point picker */}
           {editState.photos[0] && (
             <div className="mb-5">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={editState.photos[0]}
-                alt="Cover"
-                className="w-full max-h-72 object-cover rounded-xl border border-gray-200"
-              />
-              <p className="text-xs text-gray-400 mt-1.5">Cover image — drag to reorder below</p>
+              <p className="text-xs text-gray-500 mb-1.5">
+                Cover image — <span className="text-forest-600 font-medium">click to set focal point</span>
+                <span className="text-gray-400 ml-1.5">({editState.image_focal_point || '50% 50%'})</span>
+              </p>
+              <div
+                className="relative cursor-crosshair rounded-xl overflow-hidden border border-gray-200"
+                onClick={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect()
+                  const x = Math.round(((e.clientX - rect.left) / rect.width) * 100)
+                  const y = Math.round(((e.clientY - rect.top) / rect.height) * 100)
+                  onSet('image_focal_point', `${x}% ${y}%`)
+                }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={editState.photos[0]}
+                  alt="Cover"
+                  className="w-full max-h-72 object-contain bg-[#f5f5f5]"
+                  style={{ objectPosition: editState.image_focal_point || '50% 50%' }}
+                />
+                {/* Focal point crosshair */}
+                {editState.image_focal_point && (() => {
+                  const [fx, fy] = editState.image_focal_point.split(' ')
+                  return (
+                    <div
+                      className="absolute w-7 h-7 pointer-events-none"
+                      style={{ left: fx, top: fy, transform: 'translate(-50%,-50%)' }}
+                    >
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-full h-0.5 bg-white" style={{ boxShadow: '0 0 3px rgba(0,0,0,0.8)' }} />
+                      </div>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="h-full w-0.5 bg-white" style={{ boxShadow: '0 0 3px rgba(0,0,0,0.8)' }} />
+                      </div>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-4 h-4 border-2 border-white rounded-full" style={{ boxShadow: '0 0 3px rgba(0,0,0,0.8)' }} />
+                      </div>
+                    </div>
+                  )
+                })()}
+              </div>
             </div>
           )}
 
@@ -345,6 +387,7 @@ function ListingRow({
                   ['has_leather', '🪑 Leather seats'],
                   ['has_sunroof', '☀️ Sunroof'],
                   ['has_alloys',  '🔘 Alloy wheels'],
+                  ['has_fitout',  '🏕 Has Campervan Fit-Out'],
                 ] as [keyof EditState, string][]).map(([field, label]) => (
                   <label key={field} className="flex items-center gap-2 cursor-pointer select-none">
                     <input
@@ -356,6 +399,27 @@ function ListingRow({
                     <span className="text-sm text-gray-700">{label}</span>
                   </label>
                 ))}
+              </div>
+
+              {/* Fitout & power fields */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Fitout Condition</label>
+                <select value={editState.fitout_grade} onChange={e => onSet('fitout_grade', e.target.value)} className={inputClass}>
+                  <option value="">—</option>
+                  <option value="Excellent">Excellent</option>
+                  <option value="Good">Good</option>
+                  <option value="Fair">Fair</option>
+                  <option value="Unknown">Unknown</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Power System</label>
+                <select value={editState.power_system} onChange={e => onSet('power_system', e.target.value)} className={inputClass}>
+                  <option value="">—</option>
+                  <option value="None">None</option>
+                  <option value="100V Japanese">100V Japanese</option>
+                  <option value="240V Australian">240V Australian</option>
+                </select>
               </div>
             </div>
           </div>
@@ -568,6 +632,10 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
         has_leather: editState.has_leather,
         has_sunroof: editState.has_sunroof,
         has_alloys: editState.has_alloys,
+        has_fitout: editState.has_fitout,
+        fitout_grade: editState.fitout_grade || null,
+        power_system: editState.power_system || null,
+        image_focal_point: editState.image_focal_point || null,
         photos: editState.photos,
       }
 

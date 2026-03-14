@@ -27,10 +27,11 @@ export default async function BuildPage({ searchParams }: Props) {
     .order('sort_order')
 
   const allProducts = (products ?? []) as Product[]
-  const fitouts     = allProducts.filter(p => p.category === 'fitout'     && p.slug !== 'poptop-only')
-  const electricals = allProducts.filter(p => p.category === 'electrical')
-  const poptop      = allProducts.find(p => p.category === 'poptop') ?? null
-  const poptopOnly  = allProducts.find(p => p.slug === 'poptop-only') ?? null
+  const fitouts      = allProducts.filter(p => p.category === 'fitout'     && p.slug !== 'poptop-only')
+  const electricals  = allProducts.filter(p => p.category === 'electrical')
+  const poptop       = allProducts.find(p => p.category === 'poptop') ?? null
+  const poptopOnly   = allProducts.find(p => p.slug === 'poptop-only') ?? null
+  const rearACProduct = allProducts.find(p => p.slug === 'rear_aircon') ?? null
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -41,6 +42,7 @@ export default async function BuildPage({ searchParams }: Props) {
         electricals={electricals}
         poptop={poptop}
         poptopOnly={poptopOnly}
+        rearACProduct={rearACProduct}
         openDeposit={searchParams.deposit === '1'}
       />
     </div>

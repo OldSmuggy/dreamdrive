@@ -10,22 +10,41 @@ interface Props {
   electricals: Product[]
   poptop: Product | null
   poptopOnly: Product | null
+  rearACProduct: Product | null
   openDeposit: boolean
 }
 
-const STEPS = ['Base Van', 'Fit-Out', 'Electrical', 'Pop Top', 'Summary']
+const STEPS = ['Base Van', 'Fit-Out', 'Electrical & Battery', 'Pop Top', 'Import Costs', 'Summary']
 
-// Grid bed kit is only compatible with cabinet-level electrical
-const GRID_SLUG = 'grid-bed-kit'
+const GRID_SLUG    = 'grid-bed-kit'
 const CABINET_SLUG = 'elec-cabinet'
 
-export default function ConfiguratorClient({ initialListing, fitouts, electricals, poptop, poptopOnly, openDeposit }: Props) {
+// Detect LWB vs SLWB from listing fields
+function detectVanSize(listing: Listing | null): 'LWB' | 'SLWB' {
+  if (listing?.size === 'SLWB') return 'SLWB'
+  if (listing?.size === 'LWB' || listing?.size === 'MWB') return 'LWB'
+  const chassis = listing?.chassis_code ?? ''
+  if (/221|206K|SLWB/i.test(chassis)) return 'SLWB'
+  return 'LWB'
+}
+
+// Import cost constants (in cents)
+const SHIPPING_LWB  = 260000   // $2,600
+const SHIPPING_SLWB = 320000   // $3,200
+const COMPLIANCE    = 220000   // $2,200
+const REG_MIN       = 50000    // $500
+const REG_MAX       = 100000   // $1,000
+const DUTY_RATE     = 0.05
+
+export default function ConfiguratorClient({
+  initialListing, fitouts, electricals, poptop, poptopOnly, rearACProduct, openDeposit,
+}: Props) {
   const [step, setStep]             = useState(initialListing ? 1 : 0)
   const [listing, setListing]       = useState<Listing | null>(initialListing)
   const [fitout, setFitout]         = useState<Product | null>(null)
   const [electrical, setElectrical] = useState<Product | null>(null)
   const [withPoptop, setWithPoptop] = useState(false)
-  const [poptopJapan, setPoptopJapan] = useState(false)
+  const [withRearAC, setWithRearAC] = useState(false)
   const [leadSent, setLeadSent]     = useState(false)
 
   // Enforce electrical restrictions for Grid bed kit
@@ -34,40 +53,56 @@ export default function ConfiguratorClient({ initialListing, fitouts, electrical
     return electricals
   }, [fitout, electricals])
 
-  // Price calculation
+  // Van purchase price in AUD (for import cost calculation)
+  const vanFobCents = useMemo(() => {
+    if (!listing) return null
+    if (listing.start_price_jpy) return Math.round(listing.start_price_jpy * 0.0095) * 100
+    if (listing.au_price_aud)    return Math.round(listing.au_price_aud * 0.82)  // back-calc FOB
+    if (listing.aud_estimate)    return Math.round(listing.aud_estimate * 0.82)
+    return null
+  }, [listing])
+
+  const vanSize    = detectVanSize(listing)
+  const shipping   = vanSize === 'SLWB' ? SHIPPING_SLWB : SHIPPING_LWB
+  const duty       = vanFobCents ? Math.round(vanFobCents * DUTY_RATE) : null
+  const importMin  = (vanFobCents ?? 0) + (duty ?? 0) + shipping + COMPLIANCE + REG_MIN
+  const importMax  = (vanFobCents ?? 0) + (duty ?? 0) + shipping + COMPLIANCE + REG_MAX
+
+  // Full build price
   const { min, max } = useMemo(() => {
-    let min = listing ? (listing.au_price_aud ?? listing.aud_estimate ?? 0) : 0
-    let max = min
-    if (fitout)     { const p = effectivePrice(fitout);     min += p; max += p }
-    if (electrical) { const p = effectivePrice(electrical); min += p; max += p }
-    if (withPoptop && poptop) { const p = effectivePrice(poptop); min += p; max += p }
-    return { min, max }
-  }, [listing, fitout, electrical, withPoptop, poptop])
+    let base = listing ? (listing.au_price_aud ?? listing.aud_estimate ?? 0) : 0
+    if (fitout)                      { const p = effectivePrice(fitout);      base += p }
+    if (electrical)                  { const p = effectivePrice(electrical);  base += p }
+    if (withPoptop && poptop)        { const p = effectivePrice(poptop);      base += p }
+    if (withRearAC && rearACProduct) { const p = effectivePrice(rearACProduct); base += p }
+    return { min: base, max: base }
+  }, [listing, fitout, electrical, withPoptop, poptop, withRearAC, rearACProduct])
 
   async function handleLeadSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    const fd = new FormData(e.currentTarget)
-    const budget = fd.get('budget') as string
+    const fd      = new FormData(e.currentTarget)
+    const budget   = fd.get('budget') as string
     const location = fd.get('location') as string
-    const notes = fd.get('notes') as string
+    const notes    = fd.get('notes') as string
+    const addons   = [withRearAC && 'Rear A/C'].filter(Boolean).join(', ')
     const notesLine = [
-      budget && `Budget: ${budget}`,
+      budget   && `Budget: ${budget}`,
       location && `Location: ${location}`,
-      notes && `Notes: ${notes}`,
+      addons   && `Add-ons: ${addons}`,
+      notes    && `Notes: ${notes}`,
     ].filter(Boolean).join(' | ')
 
-    // Save build first, then lead
     const buildRes = await fetch('/api/builds', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        listing_id: listing?.id,
+        listing_id:        listing?.id,
         fitout_product_id: fitout?.id,
-        elec_product_id: electrical?.id,
+        elec_product_id:   electrical?.id,
         poptop_product_id: withPoptop ? poptop?.id : null,
-        poptop_japan: false,
-        total_aud_min: min,
-        total_aud_max: max,
+        poptop_japan:      false,
+        total_aud_min:     min,
+        total_aud_max:     max,
       }),
     })
     const buildData = await buildRes.json()
@@ -76,15 +111,15 @@ export default function ConfiguratorClient({ initialListing, fitouts, electrical
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        type: 'consultation',
-        name: fd.get('name'),
-        email: fd.get('email'),
-        phone: fd.get('phone'),
-        listing_id: listing?.id,
-        build_id: buildData.id ?? null,
+        type:            'consultation',
+        name:            fd.get('name'),
+        email:           fd.get('email'),
+        phone:           fd.get('phone'),
+        listing_id:      listing?.id,
+        build_id:        buildData.id ?? null,
         estimated_value: min,
-        source: 'configurator',
-        notes: notesLine || null,
+        source:          'configurator',
+        notes:           notesLine || null,
       }),
     })
 
@@ -103,7 +138,7 @@ export default function ConfiguratorClient({ initialListing, fitouts, electrical
       <div className="flex gap-2 mb-10 overflow-x-auto pb-1">
         {STEPS.map((s, i) => (
           <button key={s} onClick={() => i <= step && setStep(i)}
-            className={`shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
+            className={`shrink-0 px-3 py-2 rounded-full text-sm font-semibold transition-colors ${
               i === step ? 'bg-forest-600 text-white' : i < step ? 'bg-forest-100 text-forest-700' : 'bg-gray-100 text-gray-400'
             }`}>
             {i + 1}. {s}
@@ -116,12 +151,8 @@ export default function ConfiguratorClient({ initialListing, fitouts, electrical
         <StepPanel title="Choose Your Base Van" onNext={() => setStep(1)}>
           <p className="text-gray-500 mb-6">Browse and select a van, or skip for now and configure your build first.</p>
           <div className="flex flex-col sm:flex-row gap-4">
-            <Link href={`/browse`} className="btn-primary flex-1 text-center py-4">
-              Browse All Vans
-            </Link>
-            <button onClick={() => setStep(1)} className="btn-secondary flex-1 py-4">
-              Skip — Configure Build First
-            </button>
+            <Link href="/browse" className="btn-primary flex-1 text-center py-4">Browse All Vans</Link>
+            <button onClick={() => setStep(1)} className="btn-secondary flex-1 py-4">Skip — Configure Build First</button>
           </div>
         </StepPanel>
       )}
@@ -135,8 +166,6 @@ export default function ConfiguratorClient({ initialListing, fitouts, electrical
               <ProductCard key={p.id} product={p} selected={fitout?.id === p.id}
                 onSelect={() => {
                   setFitout(prev => prev?.id === p.id ? null : p)
-                  // Clear incompatible electrical if switching away from grid
-                  if (p.slug !== GRID_SLUG && electrical && electrical.slug !== CABINET_SLUG) {/* keep */}
                   if (p.slug === GRID_SLUG && electrical && electrical.slug !== CABINET_SLUG) setElectrical(null)
                 }} />
             ))}
@@ -160,9 +189,41 @@ export default function ConfiguratorClient({ initialListing, fitouts, electrical
         </StepPanel>
       )}
 
-      {/* ---- Step 2: Electrical ---- */}
+      {/* ---- Step 2: Electrical & Battery ---- */}
       {step === 2 && (
         <StepPanel title="Electrical & Battery System" onBack={() => setStep(1)} onNext={() => setStep(3)}>
+
+          {/* Rear A/C add-on — shown first, compatible with all fit-outs */}
+          {rearACProduct && (
+            <div className="mb-6">
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Add-On Options</p>
+              <div
+                onClick={() => setWithRearAC(v => !v)}
+                className={`border-2 rounded-2xl p-5 cursor-pointer transition-colors ${withRearAC ? 'border-forest-500 bg-forest-50' : 'border-gray-200 hover:border-gray-300'}`}>
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="font-semibold text-gray-900">{rearACProduct.name}</p>
+                      <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-medium">Add-On</span>
+                    </div>
+                    {rearACProduct.description && (
+                      <p className="text-sm text-gray-500 leading-relaxed">{rearACProduct.description}</p>
+                    )}
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="font-display text-forest-700 text-xl">
+                      {effectivePrice(rearACProduct) === 0 ? 'Contact' : centsToAud(effectivePrice(rearACProduct))}
+                    </p>
+                    <div className={`mt-2 w-6 h-6 rounded border-2 flex items-center justify-center ml-auto ${withRearAC ? 'bg-forest-600 border-forest-600 text-white' : 'border-gray-300'}`}>
+                      {withRearAC && '✓'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Electrical Systems</p>
           <div className="grid sm:grid-cols-2 gap-4">
             {allowedElectricals.map(p => (
               <ProductCard key={p.id} product={p} selected={electrical?.id === p.id}
@@ -219,8 +280,61 @@ export default function ConfiguratorClient({ initialListing, fitouts, electrical
         </StepPanel>
       )}
 
-      {/* ---- Step 4: Summary ---- */}
+      {/* ---- Step 4: Import Costs ---- */}
       {step === 4 && (
+        <StepPanel title="Estimated Import Costs" onBack={() => setStep(3)} onNext={() => setStep(5)}>
+          <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex gap-3 text-sm text-amber-800 mb-6">
+            <span className="shrink-0">⚠️</span>
+            <p><strong>Estimates only.</strong> Final import costs are confirmed at consultation. All costs are in AUD.</p>
+          </div>
+
+          {!listing && (
+            <p className="text-gray-500 text-sm mb-4">No van selected — showing typical estimates for a {vanSize} Hiace.</p>
+          )}
+
+          <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden mb-4">
+            {vanFobCents !== null && (
+              <ImportRow label="Japan purchase price" value={centsToAud(vanFobCents)} note="Based on listed price" />
+            )}
+            {duty !== null && (
+              <ImportRow label="Import duty (5%)" value={centsToAud(duty)} note="Applied to Japan purchase price" />
+            )}
+            <ImportRow
+              label="RORO shipping"
+              value={centsToAud(shipping)}
+              note={`${vanSize} Hiace — roll-on/roll-off from Japan`}
+            />
+            <ImportRow label="Compliance & ADR" value={`~${centsToAud(COMPLIANCE)}`} note="Includes inspection (covered by sourcing fee)" />
+            <ImportRow label="Registration" value={`${centsToAud(REG_MIN)} – ${centsToAud(REG_MAX)}`} note="Varies by state" />
+
+            <div className="bg-forest-950 text-white px-5 py-4 flex justify-between items-center">
+              <div>
+                <p className="font-display text-base">Estimated Total on Australian Roads</p>
+                <p className="text-white/50 text-xs mt-0.5">Excluding fit-out &amp; accessories</p>
+              </div>
+              <div className="text-right">
+                {vanFobCents !== null ? (
+                  <p className="font-display text-xl text-sand-400">
+                    {centsToAud(importMin)} – {centsToAud(importMax)}
+                  </p>
+                ) : (
+                  <p className="font-display text-xl text-sand-400">TBC at consultation</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <p className="text-xs text-gray-400">
+            Exchange rate fluctuations affect the JPY → AUD purchase price. Final price depends on the rate at time of payment.
+            <Link href="/import-costs" className="text-forest-600 hover:underline ml-1" target="_blank">
+              Full import cost guide →
+            </Link>
+          </p>
+        </StepPanel>
+      )}
+
+      {/* ---- Step 5: Summary ---- */}
+      {step === 5 && (
         <div>
           <h2 className="font-display text-2xl text-forest-900 mb-6">Your Build Summary</h2>
 
@@ -232,13 +346,23 @@ export default function ConfiguratorClient({ initialListing, fitouts, electrical
                   : 'TBC'
               } sub={listing.model_name} badge={sourceLabel(listing.source)} badgeColor={sourceBadgeColor(listing.source)} />
             )}
-            {!listing && (
-              <SummaryRow label="Base Van" value="TBC" sub="No van selected yet" />
-            )}
-            {fitout && <SummaryRow label="Fit-Out" value={centsToAud(effectivePrice(fitout))} sub={fitout.name}
+            {!listing && <SummaryRow label="Base Van" value="TBC" sub="No van selected yet" />}
+            {fitout    && <SummaryRow label="Fit-Out"    value={centsToAud(effectivePrice(fitout))}     sub={fitout.name}
               special={activeSpecial(fitout) ? fitout.special_label ?? undefined : undefined} />}
             {electrical && <SummaryRow label="Electrical" value={centsToAud(effectivePrice(electrical))} sub={electrical.name} />}
             {withPoptop && poptop && <SummaryRow label="Pop Top" value={centsToAud(effectivePrice(poptop))} sub="Installed in Brisbane" />}
+            {withRearAC && rearACProduct && (
+              <SummaryRow label="Rear Air Conditioning" value={effectivePrice(rearACProduct) === 0 ? 'Contact' : centsToAud(effectivePrice(rearACProduct))} sub="Auxiliary rear A/C unit" />
+            )}
+
+            {/* Import cost summary row */}
+            {vanFobCents !== null && (
+              <SummaryRow
+                label="Import Costs (est.)"
+                value={`${centsToAud(importMin)} – ${centsToAud(importMax)}`}
+                sub={`Shipping · Duty · Compliance · Rego`}
+              />
+            )}
 
             <div className="bg-forest-50 px-5 py-4 flex justify-between items-center">
               <span className="font-display text-lg text-forest-900">Estimated Total</span>
@@ -259,7 +383,7 @@ export default function ConfiguratorClient({ initialListing, fitouts, electrical
               <p className="text-gray-500 text-sm mb-5">Enter your details to save a shareable link and book a free consultation call.</p>
               <form onSubmit={handleLeadSubmit} className="space-y-3">
                 <div className="grid sm:grid-cols-2 gap-3">
-                  <input name="name" required placeholder="Your name" className="input-field" />
+                  <input name="name"  required placeholder="Your name"    className="input-field" />
                   <input name="phone" required placeholder="Phone number" className="input-field" />
                 </div>
                 <div className="grid sm:grid-cols-2 gap-3">
@@ -291,9 +415,7 @@ export default function ConfiguratorClient({ initialListing, fitouts, electrical
             </div>
           )}
 
-          <button onClick={() => setStep(0)} className="text-gray-400 text-sm hover:underline mt-6 block">
-            ← Start over
-          </button>
+          <button onClick={() => setStep(0)} className="text-gray-400 text-sm hover:underline mt-6 block">← Start over</button>
         </div>
       )}
     </div>
@@ -320,7 +442,6 @@ function StepPanel({ title, children, onBack, onNext }: {
 function ProductCard({ product, selected, onSelect }: { product: Product; selected: boolean; onSelect: () => void }) {
   const isSpecial = activeSpecial(product)
   const price = effectivePrice(product)
-
   return (
     <div onClick={onSelect}
       className={`border-2 rounded-2xl p-5 cursor-pointer transition-colors ${selected ? 'border-forest-500 bg-forest-50' : 'border-gray-200 hover:border-gray-300'}`}>
@@ -352,7 +473,9 @@ function VanSummaryCard({ listing, onClear }: { listing: Listing; onClear: () =>
   return (
     <div className="flex items-center gap-4 bg-gray-50 border border-gray-200 rounded-xl p-4">
       <div className="w-16 h-16 rounded-lg bg-gray-200 overflow-hidden shrink-0">
-        {photo ? <img src={photo} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-2xl">🚐</div>}
+        {photo
+          ? <img src={photo} alt="" className="w-full h-full object-cover" />
+          : <div className="w-full h-full flex items-center justify-center text-2xl">🚐</div>}
       </div>
       <div className="flex-1 min-w-0">
         <p className="font-semibold text-sm truncate">{listing.model_name}</p>
@@ -376,7 +499,22 @@ function SummaryRow({ label, value, sub, badge, badgeColor, special }: {
         </div>
         {sub && <p className="text-xs text-gray-500 mt-0.5">{sub}</p>}
       </div>
-      <span className="font-display text-gray-900 text-lg ml-4">{value}</span>
+      <span className="font-display text-gray-900 text-lg ml-4 shrink-0">{value}</span>
     </div>
   )
 }
+
+function ImportRow({ label, value, note }: { label: string; value: string; note: string }) {
+  return (
+    <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100 last:border-0">
+      <div>
+        <p className="text-sm font-medium text-gray-800">{label}</p>
+        <p className="text-xs text-gray-400 mt-0.5">{note}</p>
+      </div>
+      <span className="font-semibold text-gray-900 text-sm shrink-0 ml-4">{value}</span>
+    </div>
+  )
+}
+
+// Keep BuildState exported for compatibility
+export type { BuildState }
