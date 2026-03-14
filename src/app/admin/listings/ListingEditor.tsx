@@ -73,10 +73,12 @@ interface RowProps {
   listing: Listing
   isEditing: boolean
   isSaved: boolean
+  isSelected: boolean
   editState: EditState | null
   saving: boolean
   error: string | null
   newPhotoUrl: string
+  onToggleSelect: () => void
   onStartEdit: () => void
   onCancelEdit: () => void
   onSave: () => void
@@ -89,8 +91,8 @@ interface RowProps {
 }
 
 function ListingRow({
-  listing: l, isEditing, isSaved, editState, saving, error,
-  newPhotoUrl, onStartEdit, onCancelEdit, onSave, onDelete, onSet,
+  listing: l, isEditing, isSaved, isSelected, editState, saving, error,
+  newPhotoUrl, onToggleSelect, onStartEdit, onCancelEdit, onSave, onDelete, onSet,
   onSetNewPhotoUrl, onAddPhoto, onRemovePhoto, onMovePhoto,
 }: RowProps) {
   const price = l.source === 'au_stock' && l.au_price_aud
@@ -100,9 +102,15 @@ function ListingRow({
     : '—'
 
   return (
-    <div className={`bg-white border rounded-xl overflow-hidden ${isEditing ? 'border-forest-300 shadow-md' : 'border-gray-200'}`}>
+    <div className={`bg-white border rounded-xl overflow-hidden ${isEditing ? 'border-forest-300 shadow-md' : isSelected ? 'border-forest-300' : 'border-gray-200'}`}>
       {/* Row summary */}
       <div className="flex items-center gap-3 px-4 py-3 text-sm">
+        <input
+          type="checkbox"
+          checked={isSelected}
+          onChange={onToggleSelect}
+          className="w-4 h-4 accent-forest-600 shrink-0"
+        />
         {l.photos?.[0] && (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={l.photos[0]} alt="" className="w-16 h-11 object-cover rounded shrink-0" />
@@ -378,6 +386,40 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
   const [savedId, setSavedId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [newPhotoUrl, setNewPhotoUrl] = useState('')
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [bulkWorking, setBulkWorking] = useState(false)
+
+  const allSelected = listings.length > 0 && listings.every(l => selected.has(l.id))
+  const toggleAll = () =>
+    setSelected(allSelected ? new Set() : new Set(listings.map(l => l.id)))
+  const toggleOne = (id: string) =>
+    setSelected(s => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n })
+
+  const bulkGoLive = async () => {
+    if (!confirm(`Make ${selected.size} listing${selected.size !== 1 ? 's' : ''} live?`)) return
+    setBulkWorking(true)
+    await Promise.all(Array.from(selected).map(id =>
+      fetch(`/api/listings/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'available' }),
+      })
+    ))
+    setListings(ls => ls.map(l => selected.has(l.id) ? { ...l, status: 'available' } : l))
+    setSelected(new Set())
+    setBulkWorking(false)
+  }
+
+  const bulkDelete = async () => {
+    if (!confirm(`Delete ${selected.size} listing${selected.size !== 1 ? 's' : ''}? This cannot be undone.`)) return
+    setBulkWorking(true)
+    await Promise.all(Array.from(selected).map(id =>
+      fetch(`/api/listings/${id}`, { method: 'DELETE' })
+    ))
+    setListings(ls => ls.filter(l => !selected.has(l.id)))
+    setSelected(new Set())
+    setBulkWorking(false)
+  }
 
   const startEdit = (l: Listing) => {
     setEditingId(l.id)
@@ -469,7 +511,10 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this listing? This cannot be undone.')) return
     const res = await fetch(`/api/listings/${id}`, { method: 'DELETE' })
-    if (res.ok) setListings(ls => ls.filter(l => l.id !== id))
+    if (res.ok) {
+      setListings(ls => ls.filter(l => l.id !== id))
+      setSelected(s => { const n = new Set(s); n.delete(id); return n })
+    }
   }
 
   const auStock = listings.filter(l => l.source === 'au_stock')
@@ -488,10 +533,12 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
               listing={l}
               isEditing={editingId === l.id}
               isSaved={savedId === l.id}
+              isSelected={selected.has(l.id)}
               editState={editingId === l.id ? editState : null}
               saving={saving}
               error={editingId === l.id ? error : null}
               newPhotoUrl={newPhotoUrl}
+              onToggleSelect={() => toggleOne(l.id)}
               onStartEdit={() => startEdit(l)}
               onCancelEdit={cancelEdit}
               onSave={() => handleSave(l.id)}
@@ -510,6 +557,40 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
 
   return (
     <div>
+      {/* Bulk toolbar */}
+      <div className="flex items-center gap-3 bg-white border border-gray-200 rounded-xl px-4 py-3 mb-6">
+        <label className="flex items-center gap-2 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={allSelected}
+            onChange={toggleAll}
+            className="w-4 h-4 accent-forest-600"
+          />
+          <span className="text-sm text-gray-600">
+            {selected.size > 0 ? `${selected.size} selected` : 'Select all'}
+          </span>
+        </label>
+        {selected.size > 0 && (
+          <>
+            <div className="h-4 w-px bg-gray-200" />
+            <button
+              onClick={bulkGoLive}
+              disabled={bulkWorking}
+              className="text-sm font-semibold px-3 py-1.5 rounded-lg bg-forest-600 text-white hover:bg-forest-700 disabled:opacity-50"
+            >
+              {bulkWorking ? 'Working…' : `✓ Go Live (${selected.size})`}
+            </button>
+            <button
+              onClick={bulkDelete}
+              disabled={bulkWorking}
+              className="text-sm font-semibold px-3 py-1.5 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+            >
+              Delete ({selected.size})
+            </button>
+          </>
+        )}
+      </div>
+
       {renderGroup('AU Stock', auStock)}
       {renderGroup('Japan Auction', auction)}
       {renderGroup('Japan Dealers', dealer)}
