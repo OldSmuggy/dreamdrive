@@ -30,6 +30,22 @@ function toDraftState(l: Listing): DraftState {
 const inputClass =
   'w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-forest-600 bg-white'
 
+function upgradeImageUrl(url: string): string {
+  try {
+    const u = new URL(url)
+    if (u.searchParams.has('w') || u.searchParams.has('h')) {
+      u.searchParams.set('w', '800')
+      u.searchParams.delete('h')
+      return u.toString()
+    }
+    return url
+      .replace(/_\d+x\d+(\.(jpg|jpeg|png))/i, '$1')
+      .replace(/(\/resize\/w=)\d+/i, '$1800')
+  } catch {
+    return url
+  }
+}
+
 export default function DraftEditor({ initial }: { initial: Listing[] }) {
   const [listings, setListings] = useState<Listing[]>(initial)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -58,9 +74,9 @@ export default function DraftEditor({ initial }: { initial: Listing[] }) {
     setDraft(s => s ? { ...s, [field]: value } : s)
 
   const addPhoto = () => {
-    const url = newPhotoUrl.trim()
-    if (!url || !draft) return
-    set('photos', [...draft.photos, url])
+    const raw = newPhotoUrl.trim()
+    if (!raw || !draft) return
+    set('photos', [...draft.photos, upgradeImageUrl(raw)])
     setNewPhotoUrl('')
   }
   const removePhoto = (i: number) => {
@@ -341,9 +357,29 @@ export default function DraftEditor({ initial }: { initial: Listing[] }) {
 
                 {/* Photos */}
                 <div className="border-t border-gray-200 pt-4 mb-4">
-                  <label className="block text-xs font-semibold text-gray-600 mb-3">
-                    Photos <span className="text-gray-400 font-normal">({draft.photos.length} — first is cover)</span>
-                  </label>
+                  {draft.photos[0] && (
+                    <div className="mb-4">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={draft.photos[0]}
+                        alt="Cover"
+                        className="w-full max-h-64 object-cover rounded-xl border border-gray-200"
+                      />
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="text-xs font-semibold text-gray-600">
+                      Photos <span className="text-gray-400 font-normal">({draft.photos.length} — first is cover)</span>
+                    </label>
+                    {draft.photos.length > 0 && (
+                      <button
+                        onClick={() => set('photos', [])}
+                        className="text-xs text-red-500 hover:text-red-700 font-medium"
+                      >
+                        Clear all
+                      </button>
+                    )}
+                  </div>
                   <div className="flex flex-wrap gap-2 mb-3">
                     {draft.photos.map((url, i) => (
                       <div key={i} className="relative group">
@@ -364,7 +400,7 @@ export default function DraftEditor({ initial }: { initial: Listing[] }) {
                       value={newPhotoUrl}
                       onChange={e => setNewPhotoUrl(e.target.value)}
                       onKeyDown={e => e.key === 'Enter' && addPhoto()}
-                      placeholder="Paste image URL and press Enter or click Add"
+                      placeholder="Paste Goo-net or any image URL — auto-upgraded to full resolution"
                       className={`${inputClass} flex-1`}
                     />
                     <button onClick={addPhoto} className="px-4 py-2 bg-forest-600 text-white text-sm rounded-lg hover:bg-forest-700 shrink-0">

@@ -61,6 +61,25 @@ function toEditState(l: Listing): EditState {
 const inputClass =
   'w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-forest-600 bg-white'
 
+// Try to upgrade a Goo-net / Car Sensor thumbnail URL to the largest available version
+function upgradeImageUrl(url: string): string {
+  try {
+    const u = new URL(url)
+    // Replace w= / h= query params → request 800px wide
+    if (u.searchParams.has('w') || u.searchParams.has('h')) {
+      u.searchParams.set('w', '800')
+      u.searchParams.delete('h')
+      return u.toString()
+    }
+    // Path-based size suffixes: _150x112.jpg → .jpg, /resize/w=150 → /resize/w=800
+    return url
+      .replace(/_\d+x\d+(\.(jpg|jpeg|png))/i, '$1')
+      .replace(/(\/resize\/w=)\d+/i, '$1800')
+  } catch {
+    return url
+  }
+}
+
 const SOURCE_OPTIONS: { value: Source; label: string }[] = [
   { value: 'auction',          label: 'Japan Auction' },
   { value: 'dealer_goonet',    label: 'Japan Dealer (Goo-net)' },
@@ -74,6 +93,7 @@ interface RowProps {
   isEditing: boolean
   isSaved: boolean
   isSelected: boolean
+  isTranslating: boolean
   editState: EditState | null
   saving: boolean
   error: string | null
@@ -83,17 +103,19 @@ interface RowProps {
   onCancelEdit: () => void
   onSave: () => void
   onDelete: () => void
+  onRetranslate: () => void
   onSet: (field: keyof EditState, value: string | boolean | string[]) => void
   onSetNewPhotoUrl: (v: string) => void
   onAddPhoto: () => void
   onRemovePhoto: (i: number) => void
   onMovePhoto: (from: number, to: number) => void
+  onClearPhotos: () => void
 }
 
 function ListingRow({
-  listing: l, isEditing, isSaved, isSelected, editState, saving, error,
-  newPhotoUrl, onToggleSelect, onStartEdit, onCancelEdit, onSave, onDelete, onSet,
-  onSetNewPhotoUrl, onAddPhoto, onRemovePhoto, onMovePhoto,
+  listing: l, isEditing, isSaved, isSelected, isTranslating, editState, saving, error,
+  newPhotoUrl, onToggleSelect, onStartEdit, onCancelEdit, onSave, onDelete, onRetranslate, onSet,
+  onSetNewPhotoUrl, onAddPhoto, onRemovePhoto, onMovePhoto, onClearPhotos,
 }: RowProps) {
   const price = l.source === 'au_stock' && l.au_price_aud
     ? centsToAud(l.au_price_aud)
@@ -164,6 +186,20 @@ function ListingRow({
       {/* Edit form */}
       {isEditing && editState && (
         <div className="border-t border-forest-100 bg-gray-50 p-5">
+
+          {/* Lead image — large preview */}
+          {editState.photos[0] && (
+            <div className="mb-5">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={editState.photos[0]}
+                alt="Cover"
+                className="w-full max-h-72 object-cover rounded-xl border border-gray-200"
+              />
+              <p className="text-xs text-gray-400 mt-1.5">Cover image — drag to reorder below</p>
+            </div>
+          )}
+
           <div className="grid md:grid-cols-3 gap-4 mb-5">
 
             {/* Left — main fields */}
@@ -324,9 +360,19 @@ function ListingRow({
 
           {/* Photos */}
           <div className="border-t border-gray-200 pt-4 mb-4">
-            <label className="block text-xs font-semibold text-gray-600 mb-3">
-              Photos <span className="text-gray-400 font-normal">({editState.photos.length} — first image is the cover)</span>
-            </label>
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-xs font-semibold text-gray-600">
+                Photos <span className="text-gray-400 font-normal">({editState.photos.length} — first is cover)</span>
+              </label>
+              {editState.photos.length > 0 && (
+                <button
+                  onClick={onClearPhotos}
+                  className="text-xs text-red-500 hover:text-red-700 font-medium"
+                >
+                  Clear all
+                </button>
+              )}
+            </div>
             <div className="flex flex-wrap gap-2 mb-3">
               {editState.photos.map((url, i) => (
                 <div key={i} className="relative group">
@@ -352,7 +398,7 @@ function ListingRow({
                 value={newPhotoUrl}
                 onChange={e => onSetNewPhotoUrl(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && onAddPhoto()}
-                placeholder="Paste image URL and press Enter or click Add"
+                placeholder="Paste Goo-net or any image URL — URL is auto-upgraded to full resolution"
                 className={`${inputClass} flex-1`}
               />
               <button onClick={onAddPhoto} className="px-4 py-2 bg-forest-600 text-white text-sm rounded-lg hover:bg-forest-700 shrink-0">
@@ -365,11 +411,18 @@ function ListingRow({
             <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-4">{error}</p>
           )}
 
-          <div className="flex gap-3">
+          <div className="flex gap-3 flex-wrap">
             <button onClick={onSave} disabled={saving} className="btn-primary btn-sm disabled:opacity-50">
               {saving ? 'Saving…' : 'Save Changes'}
             </button>
             <button onClick={onCancelEdit} className="btn-secondary btn-sm">Cancel</button>
+            <button
+              onClick={onRetranslate}
+              disabled={isTranslating}
+              className="text-xs px-3 py-1.5 rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50 disabled:opacity-50 ml-auto"
+            >
+              {isTranslating ? 'Translating…' : '🌐 Re-translate with AI'}
+            </button>
           </div>
         </div>
       )}
@@ -388,6 +441,7 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
   const [newPhotoUrl, setNewPhotoUrl] = useState('')
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [bulkWorking, setBulkWorking] = useState(false)
+  const [translatingId, setTranslatingId] = useState<string | null>(null)
 
   const allSelected = listings.length > 0 && listings.every(l => selected.has(l.id))
   const toggleAll = () =>
@@ -438,8 +492,9 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
     setEditState(s => s ? { ...s, [field]: value } : s)
 
   const addPhoto = () => {
-    const url = newPhotoUrl.trim()
-    if (!url || !editState) return
+    const raw = newPhotoUrl.trim()
+    if (!raw || !editState) return
+    const url = upgradeImageUrl(raw)
     set('photos', [...editState.photos, url])
     setNewPhotoUrl('')
   }
@@ -455,6 +510,27 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
     const [item] = photos.splice(from, 1)
     photos.splice(to, 0, item)
     set('photos', photos)
+  }
+
+  const clearPhotos = () => {
+    if (!editState) return
+    if (!confirm('Remove all photos from this listing?')) return
+    set('photos', [])
+  }
+
+  const handleRetranslate = async (id: string) => {
+    setTranslatingId(id)
+    try {
+      const res = await fetch(`/api/listings/${id}/translate`, { method: 'POST' })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? 'Translation failed')
+      setListings(ls => ls.map(l => l.id === id ? { ...l, ...data.listing } : l))
+      if (editingId === id) setEditState(toEditState(data.listing))
+    } catch (e) {
+      alert(String(e))
+    } finally {
+      setTranslatingId(null)
+    }
   }
 
   const handleSave = async (id: string) => {
@@ -534,6 +610,7 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
               isEditing={editingId === l.id}
               isSaved={savedId === l.id}
               isSelected={selected.has(l.id)}
+              isTranslating={translatingId === l.id}
               editState={editingId === l.id ? editState : null}
               saving={saving}
               error={editingId === l.id ? error : null}
@@ -543,11 +620,13 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
               onCancelEdit={cancelEdit}
               onSave={() => handleSave(l.id)}
               onDelete={() => handleDelete(l.id)}
+              onRetranslate={() => handleRetranslate(l.id)}
               onSet={set}
               onSetNewPhotoUrl={setNewPhotoUrl}
               onAddPhoto={addPhoto}
               onRemovePhoto={removePhoto}
               onMovePhoto={movePhoto}
+              onClearPhotos={clearPhotos}
             />
           ))}
         </div>
