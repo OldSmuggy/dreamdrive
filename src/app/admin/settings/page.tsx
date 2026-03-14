@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase'
+import SettingsEditor from './SettingsEditor'
 
 export const metadata = { title: 'Settings' }
 
@@ -11,26 +12,10 @@ export default async function AdminSettingsPage() {
     <div>
       <h1 className="font-display text-3xl text-forest-900 mb-2">Settings</h1>
       <p className="text-gray-500 text-sm mb-6">
-        Edit these directly in{' '}
-        <a href={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/project/_/editor`} target="_blank" rel="noopener"
-          className="text-forest-600 font-semibold hover:underline">
-          Supabase Dashboard → settings table
-        </a>.
+        Click <strong className="text-gray-700">Edit</strong> on any setting to update its value. Changes take effect immediately.
       </p>
 
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-        {settings.map((s, i) => (
-          <div key={s.key} className={`flex gap-4 px-5 py-3.5 ${i % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}>
-            <div className="w-64 shrink-0">
-              <p className="font-mono text-xs text-gray-500">{s.key}</p>
-              {s.label && <p className="text-xs text-gray-400 mt-0.5">{s.label}</p>}
-            </div>
-            <div className="flex-1">
-              <p className="text-sm text-gray-800 font-medium truncate">{s.value || <span className="text-gray-300 italic">empty</span>}</p>
-            </div>
-          </div>
-        ))}
-      </div>
+      <SettingsEditor initial={settings} />
 
       <div className="mt-6 bg-sand-50 border border-sand-200 rounded-xl p-5 text-sm">
         <p className="font-semibold text-sand-800 mb-3">Setting reference</p>
