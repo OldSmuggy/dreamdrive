@@ -142,17 +142,17 @@ function ListingCard({ listing }: { listing: Listing }) {
   return (
     <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow group">
       {/* Photo */}
-      <div className="relative h-44 bg-[#f5f5f5]">
+      <div className="relative h-[220px] overflow-hidden">
         {photo ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={photo}
             alt={listing.model_name}
-            className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
-            style={{ objectPosition: listing.image_focal_point ?? '50% 50%' }}
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            style={{ objectPosition: listing.image_focal_point ?? 'center' }}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-300 text-5xl">🚐</div>
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-100 text-gray-300 text-5xl">🚐</div>
         )}
         <div className="absolute top-3 left-3 flex gap-1 flex-wrap">
           <span className={`${badgeColor} text-white text-xs font-bold px-2 py-0.5 rounded`}>
