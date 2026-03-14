@@ -65,10 +65,10 @@ export default async function HomePage() {
             with Australia's most complete van fit-out range.
           </p>
           <div className="flex flex-wrap gap-4">
-            <Link href="/browse" className="btn-primary text-base px-8 py-4">
+            <Link href="/browse" className="btn-ghost text-base px-8 py-4">
               Browse Vans
             </Link>
-            <Link href="/build" className="btn-secondary text-base px-8 py-4 border-white/30 text-white hover:bg-white/10 hover:border-white/50">
+            <Link href="/build" className="btn-primary text-base px-8 py-4">
               Build My Van
             </Link>
           </div>

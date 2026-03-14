@@ -1,5 +1,5 @@
 'use client'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
 import { centsToAud, effectivePrice, activeSpecial, sourceLabel, sourceBadgeColor } from '@/lib/utils'
 import type { Listing, Product, BuildState } from '@/types'
@@ -25,6 +25,8 @@ const STEPS = ['Base Van', 'Fit-Out', 'Electrical & Battery', 'Pop Top', 'Import
 
 const GRID_SLUG    = 'grid-bed-kit'
 const CABINET_SLUG = 'elec-cabinet'
+const PREMIUM_FITOUT_SLUGS = ['tama', 'mana', 'kumaq']
+type ComingSoonSlug = 'kitchen-only' | 'bed-only'
 
 // Detect LWB vs SLWB from listing fields
 function detectVanSize(listing: Listing | null): 'LWB' | 'SLWB' {
@@ -53,6 +55,17 @@ export default function ConfiguratorClient({
   const [withPoptop, setWithPoptop] = useState(false)
   const [withRearAC, setWithRearAC] = useState(false)
   const [leadSent, setLeadSent]     = useState(false)
+  const [comingSoon, setComingSoon] = useState<ComingSoonSlug | null>(null)
+
+  const hasPremiumFitout = fitout != null && PREMIUM_FITOUT_SLUGS.includes(fitout.slug)
+  const isGridKit = fitout?.slug === GRID_SLUG
+  const isMana = fitout?.slug === 'mana'
+
+  // Auto-reset electrical + poptop when fitout changes
+  useEffect(() => {
+    if (hasPremiumFitout) setElectrical(null)
+    if (isMana) setWithPoptop(false)
+  }, [fitout?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Enforce electrical restrictions for Grid bed kit
   const allowedElectricals = useMemo(() => {
@@ -173,6 +186,7 @@ export default function ConfiguratorClient({
               <ProductCard key={p.id} product={p} selected={fitout?.id === p.id}
                 jpyRate={jpyRate}
                 onSelect={() => {
+                  setComingSoon(null)
                   setFitout(prev => prev?.id === p.id ? null : p)
                   if (p.slug === GRID_SLUG && electrical && electrical.slug !== CABINET_SLUG) setElectrical(null)
                 }} />
@@ -180,11 +194,24 @@ export default function ConfiguratorClient({
             {poptopOnly && (
               <ProductCard product={poptopOnly} selected={fitout?.id === poptopOnly.id}
                 jpyRate={jpyRate}
-                onSelect={() => setFitout(prev => prev?.id === poptopOnly.id ? null : poptopOnly)} />
+                onSelect={() => { setComingSoon(null); setFitout(prev => prev?.id === poptopOnly.id ? null : poptopOnly) }} />
             )}
+            {/* Coming Soon options */}
+            <ComingSoonCard
+              name="Kitchen Only"
+              description="Galley kitchen fit-out only — sink, faucet, countertop, fridge, water tank. No bed or seating conversion. Coming soon — enquire for pricing."
+              selected={comingSoon === 'kitchen-only'}
+              onSelect={() => { setFitout(null); setComingSoon('kitchen-only'); setStep(5) }}
+            />
+            <ComingSoonCard
+              name="Bed Only"
+              description="Simple bed platform with storage drawers. No kitchen. Perfect if you already have a kitchen setup. Coming soon — enquire for pricing."
+              selected={comingSoon === 'bed-only'}
+              onSelect={() => { setFitout(null); setComingSoon('bed-only'); setStep(5) }}
+            />
             <div
-              className={`border-2 rounded-2xl p-5 cursor-pointer transition-colors ${!fitout ? 'border-forest-500 bg-forest-50' : 'border-gray-200 hover:border-gray-300'}`}
-              onClick={() => setFitout(null)}>
+              className={`border-2 rounded-2xl p-5 cursor-pointer transition-colors ${!fitout && !comingSoon ? 'border-forest-500 bg-forest-50' : 'border-gray-200 hover:border-gray-300'}`}
+              onClick={() => { setFitout(null); setComingSoon(null) }}>
               <p className="font-semibold text-gray-800">No Fit-Out</p>
               <p className="text-sm text-gray-500 mt-1">Base van only — arrange your own interior</p>
               <p className="font-display text-forest-600 text-lg mt-3">$0</p>
@@ -201,6 +228,32 @@ export default function ConfiguratorClient({
       {/* ---- Step 2: Electrical & Battery ---- */}
       {step === 2 && (
         <StepPanel title="Electrical & Battery System" onBack={() => setStep(1)} onNext={() => setStep(3)}>
+
+          {/* Electrical inclusion banner */}
+          {hasPremiumFitout && (
+            <div className="flex gap-3 bg-forest-50 border border-forest-300 rounded-xl px-4 py-3 text-sm text-forest-800 mb-5">
+              <span className="shrink-0 mt-0.5">✓</span>
+              <p>
+                <strong>Electrical system included</strong> — Your {fitout!.name} fit-out includes a 200AH lithium battery, 2000W inverter, DC charger, shore power, and LED lighting as standard.
+                You can upgrade below or keep the included system.
+              </p>
+            </div>
+          )}
+          {isGridKit && (
+            <div className="flex gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800 mb-5">
+              <span className="shrink-0 mt-0.5">⚠</span>
+              <p>
+                <strong>Electrical not included with Grid Bed Kit</strong> — The Grid Bed Kit is a furniture/bed system only and does not include electrical.
+                Please select an electrical package below or choose &ldquo;No Electrical&rdquo; if you are arranging your own.
+              </p>
+            </div>
+          )}
+          {!hasPremiumFitout && !isGridKit && !fitout && (
+            <div className="flex gap-3 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-600 mb-5">
+              <span className="shrink-0 mt-0.5">ℹ</span>
+              <p>No fit-out selected — you can still add an electrical system to your van independently.</p>
+            </div>
+          )}
 
           {/* Rear A/C add-on — shown first, compatible with all fit-outs */}
           {rearACProduct && (
@@ -241,9 +294,22 @@ export default function ConfiguratorClient({
             <div
               className={`border-2 rounded-2xl p-5 cursor-pointer transition-colors ${!electrical ? 'border-forest-500 bg-forest-50' : 'border-gray-200 hover:border-gray-300'}`}
               onClick={() => setElectrical(null)}>
-              <p className="font-semibold text-gray-800">No Electrical</p>
-              <p className="text-sm text-gray-500 mt-1">Base van electrics only</p>
-              <p className="font-display text-forest-600 text-lg mt-3">$0</p>
+              {hasPremiumFitout ? (
+                <>
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="font-semibold text-gray-800">Keep Included System</p>
+                    <span className="text-xs bg-forest-100 text-forest-700 px-2 py-0.5 rounded font-medium">Recommended</span>
+                  </div>
+                  <p className="text-sm text-gray-500">Already included in your fit-out price — no extra cost</p>
+                  <p className="font-display text-forest-600 text-lg mt-3">$0 <span className="text-xs text-gray-400 font-sans font-normal">(included)</span></p>
+                </>
+              ) : (
+                <>
+                  <p className="font-semibold text-gray-800">No Electrical</p>
+                  <p className="text-sm text-gray-500 mt-1">Base van electrics only</p>
+                  <p className="font-display text-forest-600 text-lg mt-3">$0</p>
+                </>
+              )}
             </div>
           </div>
         </StepPanel>
@@ -252,13 +318,24 @@ export default function ConfiguratorClient({
       {/* ---- Step 3: Pop Top ---- */}
       {step === 3 && (
         <StepPanel title="Fiberglass Pop Top Roof" onBack={() => setStep(2)} onNext={() => setStep(4)}>
+          {isMana && (
+            <div className="flex gap-3 bg-forest-50 border border-forest-300 rounded-xl px-4 py-3 text-sm text-forest-800 mb-5">
+              <span className="shrink-0 mt-0.5">✓</span>
+              <p>
+                <strong>The MANA already includes a pop top as standard</strong> — this is included in your fit-out price. You do not need to add it here.
+              </p>
+            </div>
+          )}
           {poptop && (
-            <div className={`border-2 rounded-2xl p-6 cursor-pointer transition-colors mb-4 ${withPoptop ? 'border-forest-500 bg-forest-50' : 'border-gray-200 hover:border-gray-300'}`}
-              onClick={() => setWithPoptop(v => !v)}>
+            <div className={`border-2 rounded-2xl p-6 transition-colors mb-4 ${isMana ? 'border-gray-200 opacity-50 cursor-not-allowed' : `cursor-pointer ${withPoptop ? 'border-forest-500 bg-forest-50' : 'border-gray-200 hover:border-gray-300'}`}`}
+              onClick={() => !isMana && setWithPoptop(v => !v)}>
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="font-semibold text-gray-900 text-lg">Add Pop Top Conversion</p>
-                  <p className="text-sm text-gray-500 mt-1">{poptop.description}</p>
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="font-semibold text-gray-900 text-lg">{isMana ? 'Pop Top Conversion' : 'Add Pop Top Conversion'}</p>
+                    {isMana && <span className="text-xs bg-forest-100 text-forest-700 px-2 py-0.5 rounded font-medium">Included with MANA</span>}
+                  </div>
+                  <p className="text-sm text-gray-500">{poptop.description}</p>
                   <ul className="text-sm text-gray-600 mt-3 space-y-1">
                     <li>• +600mm internal height when raised</li>
                     <li>• Fits nearly all car parks when lowered</li>
@@ -267,11 +344,17 @@ export default function ConfiguratorClient({
                   </ul>
                 </div>
                 <div className="ml-4 text-right shrink-0">
-                  <p className="font-display text-forest-700 text-2xl">{centsToAud(effectivePrice(poptop))}</p>
-                  {activeSpecial(poptop) && poptop.special_price_aud && (
-                    <p className="text-xs text-gray-400 line-through mt-0.5">{centsToAud(poptop.rrp_aud)}</p>
+                  {isMana ? (
+                    <p className="font-display text-forest-700 text-2xl">Included</p>
+                  ) : (
+                    <>
+                      <p className="font-display text-forest-700 text-2xl">{centsToAud(effectivePrice(poptop))}</p>
+                      {activeSpecial(poptop) && poptop.special_price_aud && (
+                        <p className="text-xs text-gray-400 line-through mt-0.5">{centsToAud(poptop.rrp_aud)}</p>
+                      )}
+                      <p className="text-xs text-gray-500 mt-1">Ex GST</p>
+                    </>
                   )}
-                  <p className="text-xs text-gray-500 mt-1">Ex GST</p>
                 </div>
               </div>
             </div>
@@ -346,6 +429,18 @@ export default function ConfiguratorClient({
       {step === 5 && (
         <div>
           <h2 className="font-display text-2xl text-forest-900 mb-6">Your Build Summary</h2>
+
+          {/* Coming Soon notice */}
+          {comingSoon && (
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 mb-6">
+              <p className="font-semibold text-gray-800 mb-1">
+                Thanks for your interest in {comingSoon === 'kitchen-only' ? 'Kitchen Only' : 'Bed Only'}!
+              </p>
+              <p className="text-gray-600 text-sm">
+                This option is coming soon. Submit your build below and we&apos;ll be in touch with pricing and availability.
+              </p>
+            </div>
+          )}
 
           <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden mb-6">
             {listing && (
@@ -531,6 +626,30 @@ function ImportRow({ label, value, note }: { label: string; value: string; note:
         <p className="text-xs text-gray-400 mt-0.5">{note}</p>
       </div>
       <span className="font-semibold text-gray-900 text-sm shrink-0 ml-4">{value}</span>
+    </div>
+  )
+}
+
+function ComingSoonCard({ name, description, selected, onSelect }: {
+  name: string; description: string; selected: boolean; onSelect: () => void
+}) {
+  return (
+    <div onClick={onSelect}
+      className={`border-2 rounded-2xl p-5 cursor-pointer transition-colors ${selected ? 'border-amber-400 bg-amber-50' : 'border-gray-200 hover:border-gray-300'}`}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 flex-wrap mb-1">
+            <p className="font-semibold text-gray-900">{name}</p>
+            <span className="bg-amber-400 text-amber-900 text-xs font-bold px-2 py-0.5 rounded">Coming Soon</span>
+          </div>
+          <p className="text-sm text-gray-500 leading-relaxed">{description}</p>
+        </div>
+      </div>
+      <div className="mt-3">
+        <span className="inline-block bg-forest-50 text-forest-700 border border-forest-200 text-sm font-medium px-4 py-1.5 rounded-lg">
+          Enquire for pricing →
+        </span>
+      </div>
     </div>
   )
 }

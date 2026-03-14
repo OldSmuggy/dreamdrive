@@ -141,7 +141,7 @@ export default function ImportCostsPage() {
             <Link href="/build" className="btn-primary px-8 py-4 text-base">
               Build My Van →
             </Link>
-            <Link href="/browse" className="btn-secondary px-8 py-4 text-base border-white/30 text-white hover:bg-white/10">
+            <Link href="/browse" className="btn-ghost px-8 py-4 text-base">
               Browse Available Vans
             </Link>
           </div>

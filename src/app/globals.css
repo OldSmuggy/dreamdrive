@@ -35,12 +35,19 @@
   .score-red   { @apply bg-red-100 text-red-800 border border-red-300; }
   .score-gray  { @apply bg-gray-100 text-gray-600 border border-gray-200; }
 
-  /* CTA button */
+  /* Buttons — primary: solid green / secondary: outline / ghost: white pill (use on dark bg) / danger: red */
   .btn-primary {
     @apply bg-forest-600 hover:bg-forest-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors duration-150;
   }
   .btn-secondary {
-    @apply bg-white hover:bg-gray-50 text-gray-800 font-semibold px-6 py-3 rounded-xl border border-gray-300 transition-colors duration-150;
+    @apply bg-transparent hover:bg-forest-50 text-forest-900 font-semibold px-6 py-3 rounded-xl border-2 border-forest-900 transition-colors duration-150;
+  }
+  /* Use btn-ghost for CTAs on dark/forest backgrounds — white pill with green text */
+  .btn-ghost {
+    @apply bg-white hover:bg-gray-50 text-forest-900 font-semibold px-6 py-3 rounded-xl border border-gray-200 transition-colors duration-150;
+  }
+  .btn-danger {
+    @apply bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors duration-150;
   }
   .btn-sm {
     @apply px-4 py-2 text-sm rounded-lg;
