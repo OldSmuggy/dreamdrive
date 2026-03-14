@@ -136,10 +136,12 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds 
 
 // ---- Listing Card ----
 function ListingCard({ listing, userId, initialSaved }: { listing: Listing; userId: string | null; initialSaved: boolean }) {
+  const router = useRouter()
   const photo = listing.photos[0] ?? null
   const urgency = listing.source === 'auction' ? auctionUrgency(listing.auction_date) : null
   const sColor = scoreColor(listing.inspection_score)
   const badgeColor = sourceBadgeColor(listing.source)
+  const auctionBlur = !userId && listing.source === 'auction'
 
   const displayPrice = listing.source === 'au_stock' && listing.au_price_aud
     ? centsToAud(listing.au_price_aud)
@@ -158,11 +160,23 @@ function ListingCard({ listing, userId, initialSaved }: { listing: Listing; user
           <img
             src={photo}
             alt={listing.model_name}
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            className={`absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 ${auctionBlur ? 'blur-md scale-110' : ''}`}
             style={{ objectPosition: listing.image_focal_point ?? 'center' }}
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-100 text-gray-300 text-5xl">🚐</div>
+        )}
+        {/* Auction blur CTA for logged-out users */}
+        {auctionBlur && (
+          <div
+            className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 cursor-pointer"
+            style={{ background: 'rgba(15, 40, 25, 0.72)', backdropFilter: 'blur(2px)' }}
+            onClick={e => { e.preventDefault(); e.stopPropagation(); router.push('/login?next=/browse') }}
+          >
+            <div className="text-2xl mb-2">🔒</div>
+            <p className="text-white font-semibold text-sm leading-tight mb-1">Register to see photos</p>
+            <p className="text-white/70 text-xs">Free account — takes 30 seconds</p>
+          </div>
         )}
         {/* Top-left: source + urgency + featured */}
         <div className="absolute top-3 left-3 flex gap-1 flex-wrap">

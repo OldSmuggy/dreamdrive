@@ -41,23 +41,37 @@ export default async function CustomersPage() {
   // Get import orders
   const { data: importRows } = await admin
     .from('import_orders')
-    .select('id, user_id, listing_id, current_stage, stage_dates, admin_notes, created_at, listing:listings(id, model_name, model_year, photos)')
+    .select('id, user_id, listing_id, current_stage, stage_dates, admin_notes, created_at, order_type, listing:listings(id, model_name, model_year, photos)')
 
   type NormalizedImport = {
     id: string; user_id: string; listing_id: string; current_stage: string
     stage_dates: Record<string, string>; admin_notes: string | null; created_at: string
+    order_type: string | null
     listing: { id: string; model_name: string; model_year: number | null; photos: string[] } | null
   }
   const importsByUser: Record<string, NormalizedImport[]> = {}
+  const allOrderIds: string[] = []
   for (const row of importRows ?? []) {
     const listingArr = row.listing as unknown as { id: string; model_name: string; model_year: number | null; photos: string[] }[]
     const normalized: NormalizedImport = {
       ...row,
+      order_type: (row as Record<string, unknown>).order_type as string | null ?? null,
       listing: listingArr?.[0] ?? null,
     }
+    allOrderIds.push(row.id)
     if (!importsByUser[row.user_id]) importsByUser[row.user_id] = []
     importsByUser[row.user_id]!.push(normalized)
   }
+
+  // Fetch invoices and payments
+  const [invoicesRes, paymentsRes] = await Promise.all([
+    allOrderIds.length
+      ? admin.from('invoices').select('*').in('import_order_id', allOrderIds).order('created_at')
+      : Promise.resolve({ data: [] }),
+    allOrderIds.length
+      ? admin.from('payments').select('*').in('import_order_id', allOrderIds).order('payment_date', { ascending: false })
+      : Promise.resolve({ data: [] }),
+  ])
 
   const customers = users
     .filter(u => {
@@ -75,5 +89,5 @@ export default async function CustomersPage() {
       imports: importsByUser[u.id] ?? [],
     }))
 
-  return <CustomersClient customers={customers} />
+  return <CustomersClient customers={customers} invoices={invoicesRes.data ?? []} payments={paymentsRes.data ?? []} />
 }

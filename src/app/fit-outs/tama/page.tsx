@@ -1,10 +1,14 @@
 import Link from 'next/link'
+import { getJpyRate } from '@/lib/settings'
 
 export const metadata = { title: 'TAMA Pop Top | Dream Drive Fit-Outs' }
 
 const HERO_IMAGE = 'https://images.squarespace-cdn.com/content/v1/6452ed7189507b42ec70bffd/e33c93ae-b139-4367-b43c-2cd96fa2c5ec/IMG_0908.jpg'
+const FITOUT_AUD = 47000
 
-export default function TamaPage() {
+export default async function TamaPage() {
+  const jpyRate = await getJpyRate()
+  const jpyApprox = Math.round(FITOUT_AUD / jpyRate / 1000) * 1000
   return (
     <div className="min-h-screen">
 
@@ -49,6 +53,23 @@ export default function TamaPage() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Pricing */}
+      <section className="max-w-6xl mx-auto px-4 py-12">
+        <div className="bg-forest-50 border border-forest-200 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-6">
+          <div className="flex-1">
+            <p className="text-xs font-bold text-forest-600 uppercase tracking-wider mb-1">Fit-Out Price (fit-out only)</p>
+            <p className="font-display text-3xl text-forest-900">${FITOUT_AUD.toLocaleString('en-AU')} AUD</p>
+            <p className="text-gray-500 text-sm mt-1">approx. ¥{jpyApprox.toLocaleString('en-AU')} JPY</p>
+            <p className="text-xs text-gray-400 mt-3">
+              Fit-out price is separate from the base van. Van price depends on the specific vehicle and exchange rate at time of purchase.
+            </p>
+          </div>
+          <Link href="/build" className="btn-primary shrink-0 text-center px-8 py-3.5">
+            Build With TAMA →
+          </Link>
         </div>
       </section>
 

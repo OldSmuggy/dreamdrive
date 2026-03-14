@@ -1,17 +1,31 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { usePathname } from 'next/navigation'
+import { createSupabaseBrowser } from '@/lib/supabase'
 
 interface Props {
   photos: string[]
   modelName: string
   focalPoint?: string | null
+  isAuction?: boolean
 }
 
-export default function PhotoGallery({ photos, modelName, focalPoint }: Props) {
+export default function PhotoGallery({ photos, modelName, focalPoint, isAuction }: Props) {
   const [activeIndex, setActiveIndex] = useState(0)
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
+  const [isBlurred, setIsBlurred] = useState(isAuction ?? false)
+  const pathname = usePathname()
+
+  // Lift blur once we confirm user is logged in
+  useEffect(() => {
+    if (!isAuction) return
+    const supabase = createSupabaseBrowser()
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) setIsBlurred(false)
+    })
+  }, [isAuction])
 
   const openLightbox = (index: number) => {
     setLightboxIndex(index)
@@ -52,34 +66,56 @@ export default function PhotoGallery({ photos, modelName, focalPoint }: Props) {
     )
   }
 
+  const loginUrl = `/login?next=${encodeURIComponent(pathname ?? '')}`
+
   return (
     <>
       {/* Main image — fixed height, cover, click to open lightbox */}
       <div
-        className="relative rounded-2xl overflow-hidden cursor-zoom-in mb-3"
-        style={{ height: 400 }}
-        onClick={() => openLightbox(activeIndex)}
+        className="relative rounded-2xl overflow-hidden mb-3"
+        style={{ height: 400, cursor: isBlurred ? 'default' : 'zoom-in' }}
+        onClick={() => !isBlurred && openLightbox(activeIndex)}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={photos[activeIndex]}
           alt={modelName}
-          className="w-full h-full object-cover"
+          className={`w-full h-full object-cover transition-all duration-300 ${isBlurred ? 'blur-xl scale-110' : ''}`}
           style={{ objectPosition: focalPoint ?? 'center' }}
         />
+        {/* Auction blur overlay */}
+        {isBlurred && (
+          <div
+            className="absolute inset-0 flex flex-col items-center justify-center text-center px-6"
+            style={{ background: 'rgba(15, 40, 25, 0.65)', backdropFilter: 'blur(4px)' }}
+          >
+            <div className="text-4xl mb-3">🔒</div>
+            <p className="text-white font-display text-xl mb-1">Create a free account to view all photos</p>
+            <p className="text-white/70 text-sm mb-5">Takes 30 seconds — no credit card needed</p>
+            <a
+              href={loginUrl}
+              className="bg-white text-forest-900 font-semibold px-6 py-2.5 rounded-full text-sm hover:bg-forest-50 transition-colors"
+              onClick={e => e.stopPropagation()}
+            >
+              Sign Up Free →
+            </a>
+          </div>
+        )}
         {/* Counter */}
-        {photos.length > 1 && (
+        {!isBlurred && photos.length > 1 && (
           <div className="absolute bottom-3 right-3 bg-black/60 text-white text-xs font-medium px-2.5 py-1 rounded-full select-none">
             {activeIndex + 1} / {photos.length}
           </div>
         )}
-        <div className="absolute bottom-3 left-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full select-none opacity-0 group-hover:opacity-100 transition-opacity">
-          Click to expand
-        </div>
+        {!isBlurred && (
+          <div className="absolute bottom-3 left-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full select-none opacity-0 group-hover:opacity-100 transition-opacity">
+            Click to expand
+          </div>
+        )}
       </div>
 
       {/* Thumbnail grid */}
-      {photos.length > 1 && (
+      {!isBlurred && photos.length > 1 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
           {photos.map((p, i) => (
             // eslint-disable-next-line @next/next/no-img-element
@@ -96,6 +132,20 @@ export default function PhotoGallery({ photos, modelName, focalPoint }: Props) {
                 outlineOffset: 2,
               }}
             />
+          ))}
+        </div>
+      )}
+      {/* Blurred thumbnail strip */}
+      {isBlurred && photos.length > 1 && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+          {photos.map((p, i) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <div key={i} className="relative rounded overflow-hidden" style={{ height: 100 }}>
+              <img src={p} alt="" className="w-full h-full object-cover blur-md scale-110" />
+              <div className="absolute inset-0 bg-forest-900/50 flex items-center justify-center">
+                <span className="text-white/80 text-lg">🔒</span>
+              </div>
+            </div>
           ))}
         </div>
       )}

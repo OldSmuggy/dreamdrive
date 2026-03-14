@@ -92,6 +92,7 @@ export default async function VanDetailPage({ params }: { params: { id: string }
                 photos={listing.photos}
                 modelName={listing.model_name}
                 focalPoint={listing.image_focal_point}
+                isAuction={listing.source === 'auction'}
               />
               <div className="absolute top-3 left-3 flex gap-2 flex-wrap pointer-events-none">
                 <span className={`${sourceBadgeColor(listing.source)} text-white text-xs font-bold px-2 py-0.5 rounded`}>

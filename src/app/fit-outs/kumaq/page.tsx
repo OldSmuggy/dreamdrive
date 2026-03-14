@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { getJpyRate } from '@/lib/settings'
 
 export const metadata = { title: 'KUMAQ | Dream Drive Fit-Outs' }
 
@@ -18,7 +19,11 @@ const UPGRADES = [
   { label: 'Solar Panels', price: '$2,000' },
 ]
 
-export default function KumaqPage() {
+const FITOUT_AUD = 55000
+
+export default async function KumaqPage() {
+  const jpyRate = await getJpyRate()
+  const jpyApprox = Math.round(FITOUT_AUD / jpyRate / 1000) * 1000
   return (
     <div className="min-h-screen">
 
@@ -63,6 +68,23 @@ export default function KumaqPage() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Pricing */}
+      <section className="max-w-6xl mx-auto px-4 py-12">
+        <div className="bg-forest-50 border border-forest-200 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-6">
+          <div className="flex-1">
+            <p className="text-xs font-bold text-forest-600 uppercase tracking-wider mb-1">Fit-Out Price (fit-out only)</p>
+            <p className="font-display text-3xl text-forest-900">${FITOUT_AUD.toLocaleString('en-AU')} AUD</p>
+            <p className="text-gray-500 text-sm mt-1">approx. ¥{jpyApprox.toLocaleString('en-AU')} JPY</p>
+            <p className="text-xs text-gray-400 mt-3">
+              Fit-out price is separate from the base van. Van price depends on the specific vehicle and exchange rate at time of purchase.
+            </p>
+          </div>
+          <Link href="/build" className="btn-primary shrink-0 text-center px-8 py-3.5">
+            Build With KUMAQ →
+          </Link>
         </div>
       </section>
 

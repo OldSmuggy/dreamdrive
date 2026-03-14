@@ -2,69 +2,138 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import type { Listing } from '@/types'
+import { centsToAud, scoreLabel, scoreColor, sourceBadgeColor, sourceLabel } from '@/lib/utils'
+import type { Listing, Product } from '@/types'
 
-const IMPORT_STAGES = [
-  { key: 'auction_won', label: 'Auction Won / Purchase Confirmed' },
-  { key: 'payment_received', label: 'Payment Received' },
-  { key: 'export_docs', label: 'Export Documentation' },
-  { key: 'shipped', label: 'Shipped from Japan' },
-  { key: 'arrived_au', label: 'Arrived in Australia' },
-  { key: 'compliance', label: 'Quarantine & Compliance' },
-  { key: 'ready', label: 'Ready for Collection' },
-]
+// ── Stage definitions ─────────────────────────────────────────────────────────
+
+interface StageInfo { label: string; desc: string; next?: string; isFinal?: boolean }
+
+const STAGE_META: Record<string, StageInfo> = {
+  order_confirmed:      { label: 'Order Confirmed',         desc: 'Your order has been received and your deposit is holding your build slot.',          next: 'Our team will contact you within 1 business day to confirm your build specifications.' },
+  scheduled_for_build:  { label: 'Scheduled for Build',     desc: 'Your build has been scheduled at our Tokyo facility.',                               next: 'Our team will be in touch with your estimated build start date.' },
+  vehicle_sourced:      { label: 'Vehicle Sourced',         desc: 'Your base Toyota HiAce has been sourced and is ready for conversion.',                next: 'Your van will shortly begin the conversion process.' },
+  fitout_in_progress:   { label: 'Fit-Out in Progress',     desc: 'Our craftsmen are building your custom fit-out in our Tokyo workshop.',              next: "We'll send progress updates as your build takes shape." },
+  quality_check:        { label: 'Quality Check & Photos',  desc: 'Your build is complete and undergoing final quality inspection.',                    next: 'Final photos will be shared with you shortly.' },
+  shipping:             { label: 'Shipping to Australia',   desc: 'Your van has left Japan and is on its way to Australia.',                            next: "Estimated arrival depends on vessel schedule — we'll keep you updated." },
+  arrived_processing:   { label: 'Arrived & Processing',    desc: 'Your van has arrived in Australia and is going through quarantine and compliance.',   next: 'Compliance typically takes 2–3 weeks. We\'ll notify you when complete.' },
+  pop_top_install:      { label: 'Pop Top Installation',    desc: 'Your van is at our Capalaba workshop for pop top installation.',                     next: 'Pop top installation typically takes 3–5 business days.' },
+  ready_for_handover:   { label: 'Ready for Handover! 🎉',  desc: 'Your van is ready and waiting for you. Time to start your adventure!',               isFinal: true },
+  // Legacy keys
+  auction_won:          { label: 'Purchase Confirmed',      desc: 'Your van purchase has been confirmed.' },
+  payment_received:     { label: 'Payment Received',        desc: 'Your payment has been received.' },
+  export_docs:          { label: 'Export Documentation',    desc: 'Export documentation is being prepared.' },
+  shipped:              { label: 'Shipped from Japan',      desc: 'Your van is on its way to Australia.' },
+  arrived_au:           { label: 'Arrived in Australia',    desc: 'Your van has arrived in Australia.' },
+  compliance:           { label: 'Quarantine & Compliance', desc: 'Your van is going through quarantine and compliance.' },
+  ready:                { label: 'Ready for Collection',    desc: 'Your van is ready for collection!', isFinal: true },
+}
+
+const FLOW_VAN_FITOUT = ['order_confirmed','scheduled_for_build','vehicle_sourced','fitout_in_progress','quality_check','shipping','arrived_processing','pop_top_install','ready_for_handover']
+const FLOW_VAN_ONLY   = ['order_confirmed','vehicle_sourced','shipping','arrived_processing','pop_top_install','ready_for_handover']
+const FLOW_LEGACY     = ['auction_won','payment_received','export_docs','shipped','arrived_au','compliance','ready']
+
+function getStageFlow(order: ImportOrderRow): string[] {
+  if (FLOW_LEGACY.includes(order.current_stage)) return FLOW_LEGACY
+  return order.order_type === 'van_only' ? FLOW_VAN_ONLY : FLOW_VAN_FITOUT
+}
+
+// ── Types ─────────────────────────────────────────────────────────────────────
 
 type Tab = 'saved' | 'builds' | 'deposits' | 'imports'
 
 interface SavedVanRow { id: string; listing_id: string; created_at: string; listing: Listing | null }
-interface SavedBuildRow { id: string; build_config: Record<string, unknown>; total_price_min: number | null; total_price_max: number | null; created_at: string }
-interface DepositHoldRow { id: string; listing_id: string; amount_aud: number; status: string; created_at: string; listing: { id: string; model_name: string; model_year: number | null; photos: string[]; source: string } | null }
-interface ImportOrderRow { id: string; listing_id: string; current_stage: string; stage_dates: Record<string, string>; admin_notes: string | null; created_at: string; listing: { id: string; model_name: string; model_year: number | null; photos: string[] } | null }
+
+interface BuildRow {
+  id: string; share_slug: string; listing_id: string | null
+  fitout_product_id: string | null; elec_product_id: string | null; poptop_product_id: string | null
+  total_aud_min: number | null; total_aud_max: number | null; created_at: string
+  listing: { id: string; model_name: string; model_year: number | null; mileage_km: number | null; drive: string | null; photos: string[]; source: string; inspection_score: string | null; aud_estimate: number | null; au_price_aud: number | null } | null
+}
+
+interface DepositHoldRow {
+  id: string; listing_id: string; amount_aud: number; status: string; created_at: string
+  listing: { id: string; model_name: string; model_year: number | null; photos: string[]; source: string } | null
+}
+
+interface ImportOrderRow {
+  id: string; listing_id: string; current_stage: string; order_type?: string
+  stage_dates: Record<string, string>; admin_notes: string | null
+  stage_notes?: Record<string, string>; progress_photos?: string[]
+  created_at: string
+  listing: { id: string; model_name: string; model_year: number | null; photos: string[] } | null
+}
+
+interface InvoiceRow {
+  id: string; import_order_id: string | null; invoice_number: string
+  description: string | null; amount_aud: number
+  issue_date: string | null; due_date: string | null
+  status: 'due' | 'paid' | 'overdue'; created_at: string
+}
+
+interface PaymentRow {
+  id: string; import_order_id: string | null; amount_aud: number
+  description: string | null; payment_method: string | null
+  payment_date: string | null; status: string; created_at: string
+}
 
 interface Props {
   user: { id: string; email: string }
   profile: { first_name: string | null; last_name: string | null } | null
   savedVans: SavedVanRow[]
-  builds: SavedBuildRow[]
+  builds: BuildRow[]
   depositHolds: DepositHoldRow[]
   importOrders: ImportOrderRow[]
+  products: Product[]
+  invoices: unknown[]
+  payments: unknown[]
+  jpyRate: number
 }
 
-const statusColors: Record<string, string> = {
+const depositStatusStyle: Record<string, string> = {
   pending: 'bg-yellow-100 text-yellow-700',
   active: 'bg-green-100 text-green-700',
   refunded: 'bg-gray-100 text-gray-500',
   converted: 'bg-forest-100 text-forest-700',
 }
 
-export default function AccountClient({ user, profile, savedVans: initialSaved, builds, depositHolds, importOrders }: Props) {
-  const [tab, setTab] = useState<Tab>('saved')
-  const [savedVans, setSavedVans] = useState(initialSaved)
-  const [removing, setRemoving] = useState<string | null>(null)
+const invoiceStatusStyle: Record<string, string> = {
+  paid: 'bg-green-100 text-green-700',
+  due: 'bg-amber-100 text-amber-700',
+  overdue: 'bg-red-100 text-red-700',
+}
 
+// ── Main component ─────────────────────────────────────────────────────────────
+
+export default function AccountClient({
+  user, profile, savedVans: initialSaved, builds, depositHolds,
+  importOrders, products, invoices: rawInvoices, payments: rawPayments, jpyRate,
+}: Props) {
+  const [tab, setTab]               = useState<Tab>('saved')
+  const [savedVans, setSavedVans]   = useState(initialSaved)
+  const [removing, setRemoving]     = useState<string | null>(null)
+
+  const invoices = rawInvoices as InvoiceRow[]
+  const payments = rawPayments as PaymentRow[]
   const name = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ') || user.email
+  const productById = (id: string | null) => id ? products.find(p => p.id === id) ?? null : null
 
   const removeVan = async (listingId: string) => {
     setRemoving(listingId)
     setSavedVans(vs => vs.filter(v => v.listing_id !== listingId))
-    await fetch('/api/saved-vans', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ listing_id: listingId }),
-    })
+    await fetch('/api/saved-vans', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ listing_id: listingId }) })
     setRemoving(null)
   }
 
   const tabs: { key: Tab; label: string; count?: number }[] = [
-    { key: 'saved', label: 'Saved Vans', count: savedVans.length },
-    { key: 'builds', label: 'My Builds', count: builds.length },
-    { key: 'deposits', label: 'Deposit Holds', count: depositHolds.length },
-    { key: 'imports', label: 'Import Tracker', count: importOrders.length },
+    { key: 'saved',    label: 'Saved Vans',     count: savedVans.length },
+    { key: 'builds',   label: 'My Builds',      count: builds.length },
+    { key: 'deposits', label: 'Deposit Holds',  count: depositHolds.length },
+    { key: 'imports',  label: 'Track My Order', count: importOrders.length },
   ]
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <div className="bg-forest-950 text-white">
         <div className="max-w-5xl mx-auto px-4 py-10">
           <p className="text-white/50 text-sm mb-1">My Account</p>
@@ -74,216 +143,392 @@ export default function AccountClient({ user, profile, savedVans: initialSaved, 
       </div>
 
       <div className="max-w-5xl mx-auto px-4 py-8">
-        {/* Tab bar */}
         <div className="flex gap-1 bg-white border border-gray-200 rounded-xl p-1.5 mb-8 overflow-x-auto">
           {tabs.map(t => (
-            <button
-              key={t.key}
-              onClick={() => setTab(t.key)}
-              className={`flex-1 min-w-fit px-4 py-2 text-sm font-semibold rounded-lg whitespace-nowrap transition-colors ${
-                tab === t.key ? 'bg-forest-600 text-white' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'
-              }`}
-            >
-              {t.label}{t.count !== undefined && t.count > 0 ? ` (${t.count})` : ''}
+            <button key={t.key} onClick={() => setTab(t.key)}
+              className={`flex-1 min-w-fit px-4 py-2 text-sm font-semibold rounded-lg whitespace-nowrap transition-colors ${tab === t.key ? 'bg-forest-600 text-white' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'}`}>
+              {t.label}{t.count ? ` (${t.count})` : ''}
             </button>
           ))}
         </div>
 
-        {/* Tab: Saved Vans */}
+        {/* ── SAVED VANS ── */}
         {tab === 'saved' && (
-          <div>
-            {savedVans.length === 0 ? (
-              <EmptyState icon="🚐" title="No saved vans yet" desc="Browse our listings and tap the heart to save vans to your watchlist.">
-                <Link href="/browse" className="btn-primary inline-block mt-4">Browse Vans</Link>
-              </EmptyState>
-            ) : (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {savedVans.map(sv => {
-                  const l = sv.listing
-                  if (!l) return null
-                  return (
-                    <div key={sv.id} className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-                      <div className="relative h-44">
-                        {l.photos?.[0] ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={l.photos[0]} alt={l.model_name} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-300 text-4xl">🚐</div>
-                        )}
-                      </div>
-                      <div className="p-4">
-                        <p className="font-semibold text-gray-900 text-sm">{l.model_name}</p>
-                        <p className="text-xs text-gray-500 mt-0.5">
-                          {[l.model_year, l.mileage_km ? `${l.mileage_km.toLocaleString()} km` : null].filter(Boolean).join(' · ')}
-                        </p>
-                        <div className="flex gap-2 mt-3">
-                          <Link href={`/van/${l.id}`} className="btn-primary btn-sm flex-1 text-center text-xs">View &amp; Build</Link>
-                          <button
-                            onClick={() => removeVan(sv.listing_id)}
-                            disabled={removing === sv.listing_id}
-                            className="btn-secondary btn-sm text-xs disabled:opacity-50"
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      </div>
+          savedVans.length === 0 ? (
+            <EmptyState icon="🚐" title="No saved vans yet" desc="Browse our listings and tap the heart icon to save vans to your watchlist.">
+              <Link href="/browse" className="btn-primary inline-block mt-4">Browse Vans</Link>
+            </EmptyState>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {savedVans.map(sv => {
+                const l = sv.listing
+                if (!l) return null
+                return (
+                  <div key={sv.id} className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+                    <div className="relative h-44">
+                      {l.photos?.[0]
+                        ? <img src={l.photos[0]} alt={l.model_name} className="w-full h-full object-cover" /> // eslint-disable-line @next/next/no-img-element
+                        : <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-300 text-4xl">🚐</div>}
                     </div>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Tab: My Builds */}
-        {tab === 'builds' && (
-          <div>
-            {builds.length === 0 ? (
-              <EmptyState icon="🔧" title="No builds saved yet" desc="Use the Build configurator to design your van setup, then save it to come back later.">
-                <Link href="/browse" className="btn-primary inline-block mt-4">Start Building</Link>
-              </EmptyState>
-            ) : (
-              <div className="space-y-4">
-                {builds.map(b => (
-                  <div key={b.id} className="bg-white border border-gray-200 rounded-2xl p-5">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-semibold text-gray-900 text-sm">Saved Build</p>
-                        <p className="text-xs text-gray-500 mt-0.5">
-                          {b.total_price_min && b.total_price_max
-                            ? `$${(b.total_price_min / 100).toLocaleString()} – $${(b.total_price_max / 100).toLocaleString()} AUD est.`
-                            : 'Price estimate unavailable'}
-                        </p>
-                        <p className="text-xs text-gray-400 mt-0.5">{new Date(b.created_at).toLocaleDateString('en-AU')}</p>
-                      </div>
-                      <Link href="/build" className="btn-secondary btn-sm text-xs">Continue Building</Link>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Tab: Deposit Holds */}
-        {tab === 'deposits' && (
-          <div>
-            {depositHolds.length === 0 ? (
-              <EmptyState icon="💰" title="No deposit holds placed yet" desc="Place a $500 refundable deposit to hold any van for up to 7 days.">
-                <Link href="/browse" className="btn-primary inline-block mt-4">Browse Vans</Link>
-              </EmptyState>
-            ) : (
-              <div className="space-y-4">
-                {depositHolds.map(d => (
-                  <div key={d.id} className="bg-white border border-gray-200 rounded-2xl p-5">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex items-center gap-3">
-                        {d.listing?.photos?.[0] && (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={d.listing.photos[0]} alt="" className="w-16 h-12 object-cover rounded-lg shrink-0" />
-                        )}
-                        <div>
-                          <p className="font-semibold text-gray-900 text-sm">
-                            {d.listing ? `${d.listing.model_year ?? ''} ${d.listing.model_name}` : d.listing_id}
-                          </p>
-                          <p className="text-xs text-gray-500 mt-0.5">${d.amount_aud} AUD · {new Date(d.created_at).toLocaleDateString('en-AU')}</p>
-                        </div>
-                      </div>
-                      <span className={`text-xs font-semibold px-2.5 py-1 rounded-full shrink-0 capitalize ${statusColors[d.status] ?? 'bg-gray-100 text-gray-600'}`}>
-                        {d.status}
-                      </span>
-                    </div>
-                    {d.status === 'active' || d.status === 'pending' ? (
-                      <p className="mt-3 text-xs text-gray-500">
-                        To request a refund, email{' '}
-                        <a href="mailto:jared@dreamdrive.life" className="text-forest-600 hover:underline">jared@dreamdrive.life</a>
+                    <div className="p-4">
+                      <p className="font-semibold text-gray-900 text-sm">{l.model_name}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {[l.model_year, l.mileage_km ? `${l.mileage_km.toLocaleString()} km` : null].filter(Boolean).join(' · ')}
                       </p>
-                    ) : null}
+                      <div className="flex gap-2 mt-3">
+                        <Link href={`/van/${l.id}`} className="btn-primary btn-sm flex-1 text-center text-xs">View &amp; Build</Link>
+                        <button onClick={() => removeVan(sv.listing_id)} disabled={removing === sv.listing_id} className="btn-secondary btn-sm text-xs disabled:opacity-50">Remove</button>
+                      </div>
+                    </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
+                )
+              })}
+            </div>
+          )
         )}
 
-        {/* Tab: Import Tracker */}
-        {tab === 'imports' && (
-          <div>
-            {importOrders.length === 0 ? (
-              <EmptyState icon="🚢" title="No active imports" desc="Contact us to get started with your van import.">
-                <a href="mailto:hello@dreamdrive.life" className="btn-primary inline-block mt-4">Contact Us</a>
-              </EmptyState>
-            ) : (
-              <div className="space-y-6">
-                {importOrders.map(order => {
-                  const currentIdx = IMPORT_STAGES.findIndex(s => s.key === order.current_stage)
-                  return (
-                    <div key={order.id} className="bg-white border border-gray-200 rounded-2xl p-6">
-                      <div className="flex items-center gap-3 mb-6">
-                        {order.listing?.photos?.[0] && (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={order.listing.photos[0]} alt="" className="w-16 h-12 object-cover rounded-lg shrink-0" />
+        {/* ── MY BUILDS ── */}
+        {tab === 'builds' && (
+          builds.length === 0 ? (
+            <EmptyState icon={<VanOutlineSvg />} title="No saved builds yet" desc='Start by browsing vans and clicking "Build This Van" to design your perfect setup.'>
+              <Link href="/browse" className="btn-primary inline-block mt-4">Browse Vans</Link>
+            </EmptyState>
+          ) : (
+            <div className="space-y-5">
+              {builds.map(b => {
+                const fitout = productById(b.fitout_product_id)
+                const elec   = productById(b.elec_product_id)
+                const poptop = productById(b.poptop_product_id)
+                const l      = b.listing
+                const vanAud = l ? (l.au_price_aud ?? l.aud_estimate ?? 0) : 0
+                const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/build/${b.share_slug}` : `/build/${b.share_slug}`
+                return (
+                  <div key={b.id} className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+                    <div className="p-6">
+                      <div className="flex items-start gap-4 mb-5">
+                        <div className="w-20 h-14 rounded-xl overflow-hidden bg-gray-100 shrink-0">
+                          {l?.photos?.[0]
+                            ? <img src={l.photos[0]} alt="" className="w-full h-full object-cover" /> // eslint-disable-line @next/next/no-img-element
+                            : <div className="w-full h-full flex items-center justify-center text-gray-300 text-2xl">🚐</div>}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          {l ? (
+                            <>
+                              <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                                <p className="font-semibold text-gray-900 text-sm">{l.model_name}</p>
+                                <span className={`${sourceBadgeColor(l.source)} text-white text-xs font-bold px-1.5 py-0.5 rounded`}>{sourceLabel(l.source)}</span>
+                              </div>
+                              <p className="text-xs text-gray-500">{[l.model_year, l.mileage_km ? `${l.mileage_km.toLocaleString()} km` : null, l.drive].filter(Boolean).join(' · ')}</p>
+                              {l.inspection_score && (
+                                <span className={`inline-block mt-1 score-${scoreColor(l.inspection_score as Parameters<typeof scoreColor>[0])} text-xs font-semibold px-1.5 py-0.5 rounded`}>
+                                  Grade {l.inspection_score} — {scoreLabel(l.inspection_score as Parameters<typeof scoreLabel>[0])}
+                                </span>
+                              )}
+                            </>
+                          ) : <p className="text-gray-400 text-sm italic">No van selected yet</p>}
+                        </div>
+                        <p className="text-xs text-gray-400 shrink-0">{new Date(b.created_at).toLocaleDateString('en-AU')}</p>
+                      </div>
+
+                      <div className="border border-gray-100 rounded-xl overflow-hidden mb-4">
+                        {l && vanAud > 0 && <BuildLine label="Base van" aud={vanAud} note="auction/dealer estimate" />}
+                        {fitout  && <BuildLine label={`Fit-out: ${fitout.name}`}  aud={fitout.rrp_aud}  jpyRate={jpyRate} />}
+                        {elec    && <BuildLine label={`Electrical: ${elec.name}`} aud={elec.rrp_aud} />}
+                        {poptop  && <BuildLine label="Pop Top Conversion" aud={poptop.rrp_aud} />}
+                        {!fitout && !elec && !poptop && <div className="px-4 py-3 text-sm text-gray-400 text-center italic">No fit-out or extras added</div>}
+                        {(b.total_aud_min || b.total_aud_max) && (
+                          <div className="bg-forest-50 px-4 py-3 flex justify-between items-center border-t border-forest-100">
+                            <span className="font-semibold text-forest-900 text-sm">Estimated total</span>
+                            <span className="font-display text-forest-700">
+                              {b.total_aud_min && b.total_aud_max && b.total_aud_min !== b.total_aud_max
+                                ? `${centsToAud(b.total_aud_min)} – ${centsToAud(b.total_aud_max)}`
+                                : centsToAud(b.total_aud_min ?? b.total_aud_max ?? 0)}
+                            </span>
+                          </div>
                         )}
-                        <div>
-                          <p className="font-semibold text-gray-900">
+                      </div>
+
+                      <p className="text-xs text-gray-400 mb-4">Van price is an estimate based on current auction prices. Fit-out price is fixed. Final total confirmed at consultation.</p>
+
+                      <div className="flex flex-wrap gap-2">
+                        <Link href={`/build${b.listing_id ? `?listing=${b.listing_id}` : ''}`} className="btn-primary btn-sm text-xs">Continue Building →</Link>
+                        <button onClick={() => { navigator.clipboard.writeText(shareUrl); alert('Shareable link copied!') }} className="btn-secondary btn-sm text-xs">Share Build</button>
+                      </div>
+                      <button onClick={async () => { if (!confirm('Delete this saved build?')) return; await fetch(`/api/builds/${b.id}`, { method: 'DELETE' }); window.location.reload() }}
+                        className="mt-3 text-xs text-gray-400 hover:text-red-500 underline block">Delete build</button>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )
+        )}
+
+        {/* ── DEPOSIT HOLDS ── */}
+        {tab === 'deposits' && (
+          depositHolds.length === 0 ? (
+            <EmptyState icon="💰" title="No deposit holds yet" desc="Place a $500 refundable deposit to hold any van for up to 7 days.">
+              <Link href="/browse" className="btn-primary inline-block mt-4">Browse Vans</Link>
+            </EmptyState>
+          ) : (
+            <div className="space-y-4">
+              {depositHolds.map(d => (
+                <div key={d.id} className="bg-white border border-gray-200 rounded-2xl p-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      {d.listing?.photos?.[0] && <img src={d.listing.photos[0]} alt="" className="w-16 h-12 object-cover rounded-lg shrink-0" />} {/* eslint-disable-line @next/next/no-img-element */}
+                      <div>
+                        <p className="font-semibold text-gray-900 text-sm">{d.listing ? `${d.listing.model_year ?? ''} ${d.listing.model_name}` : d.listing_id}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">${(d.amount_aud / 100).toLocaleString()} AUD · {new Date(d.created_at).toLocaleDateString('en-AU')}</p>
+                      </div>
+                    </div>
+                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full shrink-0 capitalize ${depositStatusStyle[d.status] ?? 'bg-gray-100 text-gray-600'}`}>{d.status}</span>
+                  </div>
+                  {(d.status === 'active' || d.status === 'pending') && (
+                    <p className="mt-3 text-xs text-gray-500">To request a refund, email <a href="mailto:jared@dreamdrive.life" className="text-forest-600 hover:underline">jared@dreamdrive.life</a></p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )
+        )}
+
+        {/* ── IMPORT TRACKER ── */}
+        {tab === 'imports' && (
+          importOrders.length === 0 ? (
+            <EmptyState icon="🚢" title="No active orders" desc="Contact us to begin your van import journey.">
+              <a href="mailto:hello@dreamdrive.life" className="btn-primary inline-block mt-4">Contact Us</a>
+            </EmptyState>
+          ) : (
+            <div className="space-y-8">
+              {importOrders.map(order => {
+                const stages     = getStageFlow(order)
+                const currentIdx = stages.indexOf(order.current_stage)
+                const resolvedIdx = currentIdx === -1 ? 0 : currentIdx
+                const pct        = Math.round(((resolvedIdx + 1) / stages.length) * 100)
+                const isFinal    = STAGE_META[order.current_stage]?.isFinal ?? false
+                const orderInvoices = invoices.filter(inv => inv.import_order_id === order.id)
+                const orderPayments = payments.filter(pay => pay.import_order_id === order.id)
+
+                return (
+                  <div key={order.id}>
+                    <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+                      {/* Header */}
+                      <div className="bg-forest-950 px-6 py-5 flex items-center gap-4">
+                        <div className="w-16 h-12 rounded-lg overflow-hidden bg-white/10 shrink-0">
+                          {order.listing?.photos?.[0]
+                            ? <img src={order.listing.photos[0]} alt="" className="w-full h-full object-cover" /> // eslint-disable-line @next/next/no-img-element
+                            : <div className="w-full h-full flex items-center justify-center text-white/30 text-xl">🚐</div>}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-display text-white text-lg leading-tight">
                             {order.listing ? `${order.listing.model_year ?? ''} ${order.listing.model_name}` : 'Your Van'}
                           </p>
-                          <p className="text-xs text-gray-500 mt-0.5">Import started {new Date(order.created_at).toLocaleDateString('en-AU')}</p>
+                          <p className="text-white/50 text-xs mt-0.5">Order started {new Date(order.created_at).toLocaleDateString('en-AU')}</p>
+                        </div>
+                        {isFinal && <span className="text-2xl shrink-0">🎉</span>}
+                      </div>
+
+                      {/* Progress bar */}
+                      <div className="px-6 pt-5 pb-2">
+                        <div className="flex justify-between text-xs text-gray-500 mb-1.5">
+                          <span>Progress</span>
+                          <span className="font-semibold text-forest-700">{resolvedIdx + 1} of {stages.length} stages complete</span>
+                        </div>
+                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                          <div className="h-full bg-forest-600 rounded-full transition-all duration-700" style={{ width: `${pct}%` }} />
                         </div>
                       </div>
-                      <div className="space-y-3">
-                        {IMPORT_STAGES.map((stage, idx) => {
-                          const done = idx < currentIdx
-                          const active = idx === currentIdx
-                          const date = order.stage_dates?.[stage.key]
+
+                      {/* Stage timeline */}
+                      <div className="px-6 py-5">
+                        {stages.map((stageKey, idx) => {
+                          const meta   = STAGE_META[stageKey] ?? { label: stageKey, desc: '' }
+                          const done   = idx < resolvedIdx
+                          const active = idx === resolvedIdx
+                          const isLast = idx === stages.length - 1
+                          const date   = order.stage_dates?.[stageKey]
+                          const note   = order.stage_notes?.[stageKey]
+
                           return (
-                            <div key={stage.key} className="flex items-center gap-3">
-                              <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                                done ? 'bg-forest-600 border-forest-600' : active ? 'border-forest-600 bg-forest-50' : 'border-gray-300 bg-white'
-                              }`}>
-                                {done ? (
-                                  <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                  </svg>
-                                ) : active ? (
-                                  <div className="w-2 h-2 rounded-full bg-forest-600" />
-                                ) : null}
+                            <div key={stageKey} className="flex gap-4">
+                              {/* Dot + connector */}
+                              <div className="flex flex-col items-center">
+                                <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                                  done   ? 'bg-forest-600 border-forest-600' :
+                                  active ? 'border-forest-600 bg-white ring-4 ring-forest-100' :
+                                           'border-gray-200 bg-white'
+                                }`}>
+                                  {done ? (
+                                    <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                  ) : active ? (
+                                    <div className="w-2.5 h-2.5 rounded-full bg-forest-600 animate-pulse" />
+                                  ) : null}
+                                </div>
+                                {!isLast && <div className={`w-0.5 flex-1 min-h-[28px] my-1 ${done ? 'bg-forest-300' : 'bg-gray-200'}`} />}
                               </div>
-                              <div className="flex-1">
-                                <p className={`text-sm ${active ? 'font-semibold text-forest-800' : done ? 'text-gray-500' : 'text-gray-400'}`}>
-                                  {stage.label}
-                                </p>
-                                {date && <p className="text-xs text-gray-400">{new Date(date).toLocaleDateString('en-AU')}</p>}
+
+                              {/* Text */}
+                              <div className={`flex-1 ${isLast ? 'pb-2' : 'pb-4'}`}>
+                                <div className="flex items-center gap-2 flex-wrap mb-0.5 pt-0.5">
+                                  <span className={`font-semibold text-sm ${active ? 'text-forest-800' : done ? 'text-gray-700' : 'text-gray-400'}`}>{meta.label}</span>
+                                  {active && <span className="bg-forest-100 text-forest-700 text-xs font-bold px-2 py-0.5 rounded-full">Current</span>}
+                                  {date && (
+                                    <span className={`text-xs ${active ? 'text-forest-600 font-medium' : 'text-gray-400'}`}>
+                                      {active ? 'Since ' : done ? '' : 'Est. '}
+                                      {new Date(date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                    </span>
+                                  )}
+                                </div>
+                                {(active || done) && <p className={`text-xs leading-relaxed ${active ? 'text-gray-600' : 'text-gray-400'}`}>{meta.desc}</p>}
+                                {active && meta.next && <p className="text-xs text-forest-600 mt-1 font-medium">{meta.next}</p>}
+                                {note && (active || done) && (
+                                  <div className="mt-2 bg-sand-50 border border-sand-200 rounded-lg px-3 py-2 text-xs text-gray-700">
+                                    <span className="font-semibold">Note from Dream Drive: </span>{note}
+                                  </div>
+                                )}
+                                {active && (order.progress_photos ?? []).length > 0 && (
+                                  <div className="mt-2 flex gap-2 flex-wrap">
+                                    {(order.progress_photos ?? []).map((ph, pi) => (
+                                      <img key={pi} src={ph} alt={`Progress ${pi + 1}`} className="w-20 h-14 object-cover rounded-lg border border-gray-200" /> // eslint-disable-line @next/next/no-img-element
+                                    ))}
+                                  </div>
+                                )}
                               </div>
-                              {active && <span className="text-xs bg-forest-100 text-forest-700 font-semibold px-2 py-0.5 rounded-full">Current</span>}
                             </div>
                           )
                         })}
                       </div>
-                      {order.admin_notes && (
-                        <div className="mt-4 bg-sand-50 rounded-xl p-3 text-sm text-gray-600">
-                          <span className="font-semibold text-gray-700">Note: </span>{order.admin_notes}
+
+                      {/* Legacy admin notes */}
+                      {order.admin_notes && !order.stage_notes && (
+                        <div className="mx-6 mb-5 bg-sand-50 border border-sand-200 rounded-xl px-4 py-3 text-sm text-gray-700">
+                          <span className="font-semibold text-gray-800">Message from Dream Drive: </span>{order.admin_notes}
+                        </div>
+                      )}
+
+                      {/* Handover celebration */}
+                      {isFinal && (
+                        <div className="mx-6 mb-6 bg-forest-600 rounded-xl px-5 py-5 text-center">
+                          <p className="font-display text-white text-2xl mb-1">Your adventure starts now! 🚐</p>
+                          <p className="text-white/70 text-sm mb-4">Contact us to arrange your handover date and location.</p>
+                          <a href="tel:0432182892" className="inline-block bg-sand-400 text-forest-950 font-semibold px-8 py-2.5 rounded-xl hover:bg-sand-300 transition-colors text-sm">
+                            Call Jared — 0432 182 892
+                          </a>
                         </div>
                       )}
                     </div>
-                  )
-                })}
-              </div>
-            )}
-          </div>
+
+                    {/* Invoices & Payments */}
+                    {(orderInvoices.length > 0 || orderPayments.length > 0) && (
+                      <div className="mt-4 bg-white border border-gray-200 rounded-2xl overflow-hidden">
+                        <div className="px-6 py-4 border-b border-gray-100">
+                          <h3 className="font-semibold text-gray-900 text-sm">Invoices &amp; Payments</h3>
+                        </div>
+
+                        {orderInvoices.length > 0 && (
+                          <div className="px-6 py-4 border-b border-gray-100">
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Invoices</p>
+                            <div className="space-y-3">
+                              {orderInvoices.map(inv => (
+                                <div key={inv.id} className="flex items-center justify-between gap-4 py-1">
+                                  <div className="min-w-0">
+                                    <p className="text-sm font-semibold text-gray-900">{inv.invoice_number}</p>
+                                    {inv.description && <p className="text-xs text-gray-500 truncate">{inv.description}</p>}
+                                    <p className="text-xs text-gray-400 mt-0.5">
+                                      {inv.issue_date && `Issued ${new Date(inv.issue_date).toLocaleDateString('en-AU')}`}
+                                      {inv.due_date && ` · Due ${new Date(inv.due_date).toLocaleDateString('en-AU')}`}
+                                    </p>
+                                  </div>
+                                  <div className="flex items-center gap-3 shrink-0">
+                                    <span className="font-semibold text-gray-900 text-sm">${(inv.amount_aud / 100).toLocaleString()} AUD</span>
+                                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full uppercase ${invoiceStatusStyle[inv.status] ?? 'bg-gray-100 text-gray-600'}`}>{inv.status}</span>
+                                    <button onClick={() => alert('For invoice copy, contact jared@dreamdrive.life')} className="text-xs text-forest-600 hover:underline">Download</button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {orderPayments.length > 0 && (
+                          <div className="px-6 py-4">
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Payment History</p>
+                            <div className="overflow-x-auto">
+                              <table className="w-full text-xs text-left">
+                                <thead>
+                                  <tr className="text-gray-400 border-b border-gray-100">
+                                    <th className="pb-2 font-semibold">Date</th>
+                                    <th className="pb-2 font-semibold">Description</th>
+                                    <th className="pb-2 font-semibold text-right">Amount</th>
+                                    <th className="pb-2 font-semibold">Method</th>
+                                    <th className="pb-2 font-semibold">Status</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {orderPayments.map(pay => (
+                                    <tr key={pay.id} className="border-b border-gray-50 last:border-0">
+                                      <td className="py-2 text-gray-600">{pay.payment_date ? new Date(pay.payment_date).toLocaleDateString('en-AU') : '—'}</td>
+                                      <td className="py-2 text-gray-600 max-w-[160px] truncate">{pay.description ?? '—'}</td>
+                                      <td className="py-2 text-gray-900 font-semibold text-right">${(pay.amount_aud / 100).toLocaleString()}</td>
+                                      <td className="py-2 text-gray-600">{pay.payment_method ?? '—'}</td>
+                                      <td className="py-2"><span className="bg-green-100 text-green-700 px-1.5 py-0.5 rounded text-xs font-semibold capitalize">{pay.status}</span></td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          )
         )}
       </div>
     </div>
   )
 }
 
-function EmptyState({ icon, title, desc, children }: { icon: string; title: string; desc: string; children?: React.ReactNode }) {
+function BuildLine({ label, aud, jpyRate, note }: { label: string; aud: number; jpyRate?: number; note?: string }) {
+  const jpy = jpyRate && aud > 0 ? Math.round(aud / 100 / jpyRate / 1000) * 1000 : null
+  return (
+    <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-50 last:border-0">
+      <div className="flex-1 min-w-0 pr-4">
+        <span className="text-sm text-gray-700">{label}</span>
+        {jpy && <span className="text-xs text-gray-400 ml-1.5">(approx. ¥{jpy.toLocaleString('en-AU')} JPY)</span>}
+        {note && <span className="text-xs text-gray-400 ml-1">— {note}</span>}
+      </div>
+      <span className="text-sm font-semibold text-gray-900 shrink-0">{aud > 0 ? centsToAud(aud) : '—'}</span>
+    </div>
+  )
+}
+
+function EmptyState({ icon, title, desc, children }: { icon: string | React.ReactNode; title: string; desc: string; children?: React.ReactNode }) {
   return (
     <div className="text-center py-16">
-      <div className="text-5xl mb-4">{icon}</div>
+      <div className="flex justify-center mb-4">
+        {typeof icon === 'string' ? <span className="text-5xl">{icon}</span> : icon}
+      </div>
       <h3 className="font-display text-xl text-gray-700 mb-2">{title}</h3>
       <p className="text-gray-500 text-sm max-w-xs mx-auto">{desc}</p>
       {children}
     </div>
+  )
+}
+
+function VanOutlineSvg() {
+  return (
+    <svg width="80" height="56" viewBox="0 0 80 56" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gray-300">
+      <rect x="4" y="12" width="58" height="32" rx="4" stroke="currentColor" strokeWidth="2.5" fill="none"/>
+      <rect x="62" y="20" width="14" height="20" rx="3" stroke="currentColor" strokeWidth="2.5" fill="none"/>
+      <circle cx="16" cy="46" r="6" stroke="currentColor" strokeWidth="2.5" fill="none"/>
+      <circle cx="50" cy="46" r="6" stroke="currentColor" strokeWidth="2.5" fill="none"/>
+      <rect x="10" y="16" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <rect x="34" y="16" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="2" fill="none"/>
+    </svg>
   )
 }

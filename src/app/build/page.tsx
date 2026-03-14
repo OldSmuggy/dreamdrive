@@ -1,4 +1,5 @@
 import { createSupabaseServer } from '@/lib/supabase-server'
+import { getJpyRate } from '@/lib/settings'
 import AuctionBanner from '@/components/ui/AuctionBanner'
 import ConfiguratorClient from '@/components/configurator/ConfiguratorClient'
 import type { Listing, Product } from '@/types'
@@ -19,12 +20,11 @@ export default async function BuildPage({ searchParams }: Props) {
     listing = data as Listing ?? null
   }
 
-  // Load all visible products
-  const { data: products } = await supabase
-    .from('products')
-    .select('*')
-    .eq('visible', true)
-    .order('sort_order')
+  // Load all visible products + JPY rate
+  const [{ data: products }, jpyRate] = await Promise.all([
+    supabase.from('products').select('*').eq('visible', true).order('sort_order'),
+    getJpyRate(),
+  ])
 
   const allProducts = (products ?? []) as Product[]
   const fitouts      = allProducts.filter(p => p.category === 'fitout'     && p.slug !== 'poptop-only')
@@ -44,6 +44,7 @@ export default async function BuildPage({ searchParams }: Props) {
         poptopOnly={poptopOnly}
         rearACProduct={rearACProduct}
         openDeposit={searchParams.deposit === '1'}
+        jpyRate={jpyRate}
       />
     </div>
   )

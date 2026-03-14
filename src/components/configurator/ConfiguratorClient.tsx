@@ -12,6 +12,13 @@ interface Props {
   poptopOnly: Product | null
   rearACProduct: Product | null
   openDeposit: boolean
+  jpyRate?: number
+}
+
+function fitoutAudJpy(cents: number, jpyRate: number): string {
+  const aud = cents / 100
+  const jpy = Math.round(aud / jpyRate / 1000) * 1000
+  return `$${aud.toLocaleString('en-AU')} AUD (approx. ¥${jpy.toLocaleString('en-AU')} JPY)`
 }
 
 const STEPS = ['Base Van', 'Fit-Out', 'Electrical & Battery', 'Pop Top', 'Import Costs', 'Summary']
@@ -37,7 +44,7 @@ const REG_MAX       = 100000   // $1,000
 const DUTY_RATE     = 0.05
 
 export default function ConfiguratorClient({
-  initialListing, fitouts, electricals, poptop, poptopOnly, rearACProduct, openDeposit,
+  initialListing, fitouts, electricals, poptop, poptopOnly, rearACProduct, openDeposit, jpyRate,
 }: Props) {
   const [step, setStep]             = useState(initialListing ? 1 : 0)
   const [listing, setListing]       = useState<Listing | null>(initialListing)
@@ -164,6 +171,7 @@ export default function ConfiguratorClient({
           <div className="grid sm:grid-cols-2 gap-4 mt-6">
             {fitouts.map(p => (
               <ProductCard key={p.id} product={p} selected={fitout?.id === p.id}
+                jpyRate={jpyRate}
                 onSelect={() => {
                   setFitout(prev => prev?.id === p.id ? null : p)
                   if (p.slug === GRID_SLUG && electrical && electrical.slug !== CABINET_SLUG) setElectrical(null)
@@ -171,6 +179,7 @@ export default function ConfiguratorClient({
             ))}
             {poptopOnly && (
               <ProductCard product={poptopOnly} selected={fitout?.id === poptopOnly.id}
+                jpyRate={jpyRate}
                 onSelect={() => setFitout(prev => prev?.id === poptopOnly.id ? null : poptopOnly)} />
             )}
             <div
@@ -347,7 +356,9 @@ export default function ConfiguratorClient({
               } sub={listing.model_name} badge={sourceLabel(listing.source)} badgeColor={sourceBadgeColor(listing.source)} />
             )}
             {!listing && <SummaryRow label="Base Van" value="TBC" sub="No van selected yet" />}
-            {fitout    && <SummaryRow label="Fit-Out"    value={centsToAud(effectivePrice(fitout))}     sub={fitout.name}
+            {fitout    && <SummaryRow label="Fit-Out"
+              value={jpyRate ? fitoutAudJpy(effectivePrice(fitout), jpyRate) : centsToAud(effectivePrice(fitout))}
+              sub={fitout.name}
               special={activeSpecial(fitout) ? fitout.special_label ?? undefined : undefined} />}
             {electrical && <SummaryRow label="Electrical" value={centsToAud(effectivePrice(electrical))} sub={electrical.name} />}
             {withPoptop && poptop && <SummaryRow label="Pop Top" value={centsToAud(effectivePrice(poptop))} sub="Installed in Brisbane" />}
@@ -373,7 +384,8 @@ export default function ConfiguratorClient({
           </div>
 
           <p className="text-xs text-gray-400 mb-6">
-            Final pricing confirmed at consultation. Import/shipping estimate based on current rates. All prices AUD.
+            Fit-out price is separate from the van purchase price. Van price is an estimate based on current exchange rates — final price depends on the rate at time of payment.
+            All prices AUD unless noted. Final pricing confirmed at consultation.
           </p>
 
           {/* Save & Share form */}
@@ -439,7 +451,7 @@ function StepPanel({ title, children, onBack, onNext }: {
   )
 }
 
-function ProductCard({ product, selected, onSelect }: { product: Product; selected: boolean; onSelect: () => void }) {
+function ProductCard({ product, selected, onSelect, jpyRate }: { product: Product; selected: boolean; onSelect: () => void; jpyRate?: number }) {
   const isSpecial = activeSpecial(product)
   const price = effectivePrice(product)
   return (
@@ -456,10 +468,17 @@ function ProductCard({ product, selected, onSelect }: { product: Product; select
           {product.description && <p className="text-sm text-gray-500 leading-relaxed">{product.description}</p>}
         </div>
       </div>
-      <div className="mt-3 flex items-baseline gap-2">
+      <div className="mt-3 flex flex-col gap-0.5">
         <span className="font-display text-forest-700 text-xl">
           {price === 0 ? 'Contact for price' : centsToAud(price)}
         </span>
+        {jpyRate && price > 0 && (
+          <span className="text-xs text-gray-400">
+            approx. ¥{Math.round(price / 100 / jpyRate / 1000) * 1000 > 0
+              ? (Math.round(price / 100 / jpyRate / 1000) * 1000).toLocaleString('en-AU')
+              : '—'} JPY
+          </span>
+        )}
         {isSpecial && product.rrp_aud > 0 && (
           <span className="text-sm text-gray-400 line-through">{centsToAud(product.rrp_aud)}</span>
         )}
