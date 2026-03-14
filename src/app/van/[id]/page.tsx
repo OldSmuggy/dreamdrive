@@ -4,6 +4,8 @@ import { createSupabaseServer } from '@/lib/supabase-server'
 import { centsToAud, scoreColor, scoreLabel, sourceLabel, sourceBadgeColor, auctionUrgency } from '@/lib/utils'
 import AuctionBanner from '@/components/ui/AuctionBanner'
 import PhotoGallery from '@/components/van/PhotoGallery'
+import SaveVanButton from '@/components/ui/SaveVanButton'
+import DepositHoldButton from '@/components/ui/DepositHoldButton'
 import type { Listing } from '@/types'
 
 export async function generateMetadata({ params }: { params: { id: string } }) {
@@ -14,12 +16,27 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
 
 export default async function VanDetailPage({ params }: { params: { id: string } }) {
   const supabase = createSupabaseServer()
-  const { data } = await supabase.from('listings').select('*').eq('id', params.id).single()
+  const [{ data }, { data: { user } }] = await Promise.all([
+    supabase.from('listings').select('*').eq('id', params.id).single(),
+    supabase.auth.getUser(),
+  ])
   if (!data) notFound()
 
   const listing = data as Listing
   const sColor  = scoreColor(listing.inspection_score)
   const urgency = listing.source === 'auction' ? auctionUrgency(listing.auction_date) : null
+
+  // Check if user has saved this van
+  let isSaved = false
+  if (user) {
+    const { data: saved } = await supabase
+      .from('saved_vans')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('listing_id', listing.id)
+      .maybeSingle()
+    isSaved = !!saved
+  }
 
   const isJapanListing = listing.source !== 'au_stock'
   const displayPrice = listing.source === 'au_stock' && listing.au_price_aud
@@ -103,6 +120,9 @@ export default async function VanDetailPage({ params }: { params: { id: string }
                   🏕 Campervan Build{listing.fitout_grade ? ` · ${listing.fitout_grade}` : ''}
                 </div>
               )}
+              <div className="ml-auto">
+                <SaveVanButton listingId={listing.id} userId={user?.id ?? null} initialSaved={isSaved} />
+              </div>
             </div>
             <h1 className="font-display text-3xl text-forest-900 mb-2">{listing.model_name}</h1>
 
@@ -158,10 +178,10 @@ export default async function VanDetailPage({ params }: { params: { id: string }
                 className="btn-primary w-full text-center text-base py-4 block">
                 Build This Van →
               </Link>
-              <Link href={`/build?listing=${listing.id}&deposit=1`}
-                className="btn-secondary w-full text-center text-base py-3 block">
-                {ctaLabel}
-              </Link>
+              <DepositHoldButton
+                listing={listing}
+                userId={user?.id ?? null}
+              />
               <Link href="/quiz"
                 className="text-forest-600 font-semibold hover:underline text-sm text-center block">
                 Not sure? Take the Van Match Quiz →

@@ -3,11 +3,14 @@ import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { centsToAud, scoreColor, scoreLabel, sourceLabel, sourceBadgeColor, auctionUrgency } from '@/lib/utils'
+import SaveVanButton from '@/components/ui/SaveVanButton'
 import type { Listing } from '@/types'
 
 interface Props {
   initialListings: Listing[]
   searchParams: Record<string, string | undefined>
+  userId: string | null
+  initialSavedIds: string[]
 }
 
 const SOURCES = [
@@ -20,7 +23,7 @@ const SOURCES = [
 const DRIVES        = ['2WD', '4WD']
 const TRANSMISSIONS = [{ v: 'IA', l: 'Auto (CVT)' }, { v: 'AT', l: 'Auto (AT)' }, { v: 'MT', l: 'Manual' }]
 
-export default function BrowseClient({ initialListings }: Props) {
+export default function BrowseClient({ initialListings, userId, initialSavedIds }: Props) {
   const router = useRouter()
   const sp     = useSearchParams()
 
@@ -115,7 +118,14 @@ export default function BrowseClient({ initialListings }: Props) {
             </div>
           ) : (
             <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
-              {filtered.map(listing => <ListingCard key={listing.id} listing={listing} />)}
+              {filtered.map(listing => (
+                <ListingCard
+                  key={listing.id}
+                  listing={listing}
+                  userId={userId}
+                  initialSaved={initialSavedIds.includes(listing.id)}
+                />
+              ))}
             </div>
           )}
         </div>
@@ -125,7 +135,7 @@ export default function BrowseClient({ initialListings }: Props) {
 }
 
 // ---- Listing Card ----
-function ListingCard({ listing }: { listing: Listing }) {
+function ListingCard({ listing, userId, initialSaved }: { listing: Listing; userId: string | null; initialSaved: boolean }) {
   const photo = listing.photos[0] ?? null
   const urgency = listing.source === 'auction' ? auctionUrgency(listing.auction_date) : null
   const sColor = scoreColor(listing.inspection_score)
@@ -169,8 +179,9 @@ function ListingCard({ listing }: { listing: Listing }) {
             <span className="bg-forest-500 text-white text-xs font-bold px-2 py-0.5 rounded">FEATURED</span>
           )}
         </div>
-        {/* Top-right: inspection score + campervan build + power */}
+        {/* Top-right: save button + inspection score + campervan build + power */}
         <div className="absolute top-3 right-3 flex flex-col items-end gap-1">
+          <SaveVanButton listingId={listing.id} userId={userId} initialSaved={initialSaved} />
           {listing.inspection_score && (
             <div className={`score-${sColor} text-xs font-bold px-2 py-0.5 rounded`}>
               Grade {listing.inspection_score}

@@ -45,10 +45,26 @@ export default async function BrowsePage({ searchParams }: Props) {
   const { data } = await query
   const listings = (data ?? []) as Listing[]
 
+  // Fetch current user + their saved van IDs
+  const { data: { user } } = await supabase.auth.getUser()
+  let savedIds: string[] = []
+  if (user) {
+    const { data: saved } = await supabase
+      .from('saved_vans')
+      .select('listing_id')
+      .eq('user_id', user.id)
+    savedIds = (saved ?? []).map((s: { listing_id: string }) => s.listing_id)
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <AuctionBanner />
-      <BrowseClient initialListings={listings} searchParams={searchParams} />
+      <BrowseClient
+        initialListings={listings}
+        searchParams={searchParams}
+        userId={user?.id ?? null}
+        initialSavedIds={savedIds}
+      />
     </div>
   )
 }

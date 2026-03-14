@@ -12,6 +12,7 @@ const NAV = [
   { href: '/admin/import',      label: '📥 Import Vehicle' },
   { href: '/admin/scrape',      label: '🤖 Full Auto-Scrape' },
   { href: '/admin/leads',       label: '📋 Leads' },
+  { href: '/admin/customers',   label: '👥 Customers' },
   { href: '/admin/settings',    label: '⚙️ Settings' },
 ]
 

@@ -169,6 +169,62 @@ export interface BrowseFilters {
   budgetMax?: number
 }
 
+export type ImportStage =
+  | 'deposit_received'
+  | 'sourcing'
+  | 'auction_won'
+  | 'shipping'
+  | 'customs'
+  | 'compliance'
+  | 'delivered'
+
+export interface Profile {
+  id: string
+  first_name: string | null
+  last_name: string | null
+  phone: string | null
+  is_admin: boolean
+  created_at: string
+}
+
+export interface SavedVan {
+  id: string
+  user_id: string
+  listing_id: string
+  created_at: string
+  listing?: Listing
+}
+
+export interface SavedBuild {
+  id: string
+  user_id: string
+  build_id: string
+  created_at: string
+  build?: Build
+}
+
+export interface DepositHold {
+  id: string
+  user_id: string
+  listing_id: string
+  amount_aud: number
+  status: DepositStatus
+  notes: string | null
+  created_at: string
+  listing?: Listing
+}
+
+export interface ImportOrder {
+  id: string
+  user_id: string
+  listing_id: string | null
+  stage: ImportStage
+  admin_notes: string | null
+  created_at: string
+  updated_at: string
+  listing?: Listing
+}
+
 // ---- Auction countdown helpers ----
 export interface CountdownParts {
   days: number
