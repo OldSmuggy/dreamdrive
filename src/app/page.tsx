@@ -114,10 +114,15 @@ export default async function HomePage() {
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {PRODUCTS.map(p => (
-            <div key={p.slug} className="border border-gray-200 rounded-2xl p-6 hover:shadow-md transition-shadow">
+            <div key={p.slug} className="border border-gray-200 rounded-2xl p-6 hover:shadow-md transition-shadow flex flex-col">
               <div className="text-3xl mb-3">{p.icon}</div>
               <h3 className="font-display text-xl mb-2">{p.name}</h3>
-              <p className="text-gray-500 text-sm leading-relaxed">{p.desc}</p>
+              <p className="text-gray-500 text-sm leading-relaxed flex-1">{p.desc}</p>
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <Link href={p.href} className="text-forest-600 font-semibold text-sm hover:underline">
+                  More details →
+                </Link>
+              </div>
             </div>
           ))}
         </div>
@@ -199,10 +204,10 @@ function VanCard({ listing }: { listing: Listing }) {
 
 // ---- Static data ----
 const PRODUCTS = [
-  { slug: 'tama',   icon: '🪑', name: 'TAMA',        desc: '6-seater family conversion. Rear seat folds to bed, galley kitchen, sink & fridge.' },
-  { slug: 'mana',   icon: '🏕️', name: 'MANA',        desc: 'Liveable 2-person campervan. Full standing room, toilet, 55L water, 200AH lithium.' },
-  { slug: 'poptop', icon: '🏠', name: 'Pop Top Roof', desc: 'Fiberglass pop top. Adds 600mm height, park anywhere when lowered. $11,900 ex GST.' },
-  { slug: 'elec',   icon: '⚡', name: 'Electrical',   desc: 'Starter to Off-Grid Pro. Lithium battery, solar, inverter, shore power. From cabinet to full system.' },
+  { slug: 'tama',   icon: '🪑', name: 'TAMA',        desc: '6-seater family conversion. Rear seat folds to bed, galley kitchen, sink & fridge.',       href: '/products/tama' },
+  { slug: 'mana',   icon: '🏕️', name: 'MANA',        desc: 'Liveable 2-person campervan. Full standing room, toilet, 55L water, 200AH lithium.',        href: '/products/mana' },
+  { slug: 'poptop', icon: '🏠', name: 'Pop Top Roof', desc: 'Fiberglass pop top. Adds 600mm height, park anywhere when lowered. $11,900 ex GST.',        href: '/products/poptop' },
+  { slug: 'elec',   icon: '⚡', name: 'Electrical',   desc: 'Starter to Off-Grid Pro. Lithium battery, solar, inverter, shore power. From cabinet to full system.', href: '/build' },
 ]
 
 const STEPS = [
