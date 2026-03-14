@@ -11,9 +11,9 @@ type NavItem =
   | { label: string; href?: string; dropdown: DropdownItem[] }
 
 const FIT_OUTS_ITEMS: DropdownItem[] = [
-  { label: 'TAMA', href: '/fit-outs/tama' },
-  { label: 'MANA', href: '/fit-outs/mana' },
-  { label: 'KUMA', href: '/fit-outs/kuma' },
+  { label: 'TAMA Pop Top', href: '/fit-outs/tama' },
+  { label: 'MANA Pop Top', href: '/fit-outs/mana' },
+  { label: 'KUMAQ', href: '/fit-outs/kumaq' },
   { label: 'Grid Bed Kit', href: '/fit-outs/grid' },
   { label: 'Pop Top Conversion', href: '/fit-outs/pop-top' },
   { label: 'View All Fit-Outs →', href: '/fit-outs' },
