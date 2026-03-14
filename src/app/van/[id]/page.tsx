@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { createSupabaseServer } from '@/lib/supabase-server'
 import { centsToAud, scoreColor, scoreLabel, sourceLabel, sourceBadgeColor, auctionUrgency } from '@/lib/utils'
 import AuctionBanner from '@/components/ui/AuctionBanner'
+import VanGallery from '@/components/listings/VanGallery'
 import type { Listing } from '@/types'
 
 export async function generateMetadata({ params }: { params: { id: string } }) {
@@ -68,19 +69,14 @@ export default async function VanDetailPage({ params }: { params: { id: string }
         <div className="grid lg:grid-cols-2 gap-10">
           {/* ---- Photos ---- */}
           <div>
-            <div className="relative rounded-2xl overflow-hidden bg-[#f5f5f5] aspect-video mb-3">
-              {listing.photos[0] ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={listing.photos[0]}
-                  alt={listing.model_name}
-                  className="w-full h-full object-contain"
-                  style={{ objectPosition: listing.image_focal_point ?? '50% 50%' }}
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-gray-300 text-7xl">🚐</div>
-              )}
-              <div className="absolute top-3 left-3 flex gap-2 flex-wrap">
+            {/* Badges overlay (server-rendered, sits above the gallery) */}
+            <div className="relative">
+              <VanGallery
+                photos={listing.photos}
+                modelName={listing.model_name}
+                focalPoint={listing.image_focal_point}
+              />
+              <div className="absolute top-3 left-3 flex gap-2 flex-wrap pointer-events-none">
                 <span className={`${sourceBadgeColor(listing.source)} text-white text-xs font-bold px-2 py-0.5 rounded`}>
                   {sourceLabel(listing.source)}
                 </span>
@@ -89,19 +85,11 @@ export default async function VanDetailPage({ params }: { params: { id: string }
                 {listing.has_fitout && <span className="bg-purple-600 text-white text-xs font-bold px-2 py-0.5 rounded">🏕 Campervan Build</span>}
               </div>
               {listing.power_system && listing.power_system !== 'None' && (
-                <div className="absolute top-3 right-3 bg-gray-900/80 text-white text-xs px-2 py-0.5 rounded">
+                <div className="absolute top-3 right-3 bg-gray-900/80 text-white text-xs px-2 py-0.5 rounded pointer-events-none">
                   🔌 {listing.power_system === '240V Australian' ? '240V AU Ready' : '100V JP'}
                 </div>
               )}
             </div>
-            {listing.photos.length > 1 && (
-              <div className="grid grid-cols-5 gap-2">
-                {listing.photos.slice(1, 6).map((p, i) => (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img key={i} src={p} alt="" className="rounded-lg aspect-square object-cover cursor-pointer hover:opacity-90" />
-                ))}
-              </div>
-            )}
           </div>
 
           {/* ---- Details ---- */}
