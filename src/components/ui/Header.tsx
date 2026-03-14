@@ -3,12 +3,13 @@
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { createSupabaseBrowser } from '@/lib/supabase'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 
 export default function Header() {
   const [user, setUser] = useState<any>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const router = useRouter()
+  const pathname = usePathname()
 
   // Only create the Supabase client inside useEffect so it never runs
   // during SSR. createBrowserClient + its ramda dependency can throw in
@@ -28,6 +29,9 @@ export default function Header() {
     router.push('/')
     router.refresh()
   }
+
+  // Don't render on admin pages — admin has its own nav
+  if (pathname.startsWith('/admin')) return null
 
   return (
     <header className="bg-forest-950 text-white sticky top-0 z-50">

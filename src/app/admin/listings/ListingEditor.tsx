@@ -72,7 +72,7 @@ function toEditState(l: Listing): EditState {
 }
 
 const inputClass =
-  'w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-forest-600 bg-white'
+  'w-full px-3 py-2 border border-gray-300 rounded-lg text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-forest-600 bg-white'
 
 // Try to upgrade a Goo-net / Car Sensor thumbnail URL to the largest available version
 function upgradeImageUrl(url: string): string {
@@ -146,61 +146,118 @@ function ListingRow({
   return (
     <div className={`bg-white border rounded-xl overflow-hidden ${isEditing ? 'border-forest-300 shadow-md' : isSelected ? 'border-forest-300' : 'border-gray-200'}`}>
       {/* Row summary */}
-      <div className="flex items-center gap-3 px-4 py-3 text-sm">
-        <input
-          type="checkbox"
-          checked={isSelected}
-          onChange={onToggleSelect}
-          className="w-4 h-4 accent-forest-600 shrink-0"
-        />
-        {l.photos?.[0] && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={l.photos[0]} alt="" className="w-16 h-11 object-cover rounded shrink-0" />
-        )}
-        <span className={`shrink-0 text-xs font-bold px-2 py-0.5 rounded text-white ${
-          l.source === 'au_stock' ? 'bg-forest-600' : l.source === 'auction' ? 'bg-amber-500' : 'bg-blue-600'
-        }`}>
-          {sourceLabel(l.source)}
-        </span>
-        <span className="flex-1 font-medium text-gray-800 truncate">
-          {l.model_name}{l.grade ? ` — ${l.grade}` : ''}
-        </span>
-        {(l.raw_data as Record<string, string> | null)?.url && (
-          <a
-            href={(l.raw_data as Record<string, string>).url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs text-blue-600 hover:underline shrink-0"
-            onClick={e => e.stopPropagation()}
-          >
-            Source ↗
-          </a>
-        )}
-        <span className="text-gray-400 shrink-0 text-xs">{l.model_year ?? '—'}</span>
-        <span className="text-gray-400 shrink-0 text-xs">{l.mileage_km?.toLocaleString() ?? '—'} km</span>
-        <span className="text-forest-700 font-semibold shrink-0 text-xs">{price}</span>
-        <span className={`text-xs px-2 py-0.5 rounded shrink-0 ${
-          l.status === 'available' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
-        }`}>{l.status}</span>
-        {isSaved && <span className="text-xs text-forest-700 font-semibold shrink-0">✓ Saved</span>}
-        <button
-          onClick={() => isEditing ? onCancelEdit() : onStartEdit()}
-          className={`text-xs font-semibold px-3 py-1.5 rounded-lg border shrink-0 ${
-            isEditing
-              ? 'border-gray-300 text-gray-600 hover:bg-gray-50'
-              : 'border-forest-600 text-forest-700 hover:bg-forest-50'
-          }`}
-        >
-          {isEditing ? 'Cancel' : 'Edit'}
-        </button>
-        {!isEditing && (
+      <div className="px-4 py-3">
+
+        {/* ── Desktop layout (md+) ── */}
+        <div className="hidden md:flex items-center gap-3 text-sm">
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={onToggleSelect}
+            className="w-4 h-4 accent-forest-600 shrink-0"
+          />
+          {l.photos?.[0] && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={l.photos[0]} alt="" className="w-16 h-11 object-cover rounded shrink-0" />
+          )}
+          <span className={`shrink-0 text-xs font-bold px-2 py-0.5 rounded text-white ${
+            l.source === 'au_stock' ? 'bg-forest-600' : l.source === 'auction' ? 'bg-amber-500' : 'bg-blue-600'
+          }`}>
+            {sourceLabel(l.source)}
+          </span>
+          <span className="flex-1 font-medium text-gray-800 truncate">
+            {l.model_name}{l.grade ? ` — ${l.grade}` : ''}
+          </span>
+          {(l.raw_data as Record<string, string> | null)?.url && (
+            <a href={(l.raw_data as Record<string, string>).url} target="_blank" rel="noopener noreferrer"
+              className="text-xs text-blue-600 hover:underline shrink-0" onClick={e => e.stopPropagation()}>
+              Source ↗
+            </a>
+          )}
+          <span className="text-gray-400 shrink-0 text-xs">{l.model_year ?? '—'}</span>
+          <span className="text-gray-400 shrink-0 text-xs">{l.mileage_km?.toLocaleString() ?? '—'} km</span>
+          <span className="text-forest-700 font-semibold shrink-0 text-xs">{price}</span>
+          <span className={`text-xs px-2 py-0.5 rounded shrink-0 ${
+            l.status === 'available' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+          }`}>{l.status}</span>
+          {isSaved && <span className="text-xs text-forest-700 font-semibold shrink-0">✓ Saved</span>}
           <button
-            onClick={onDelete}
-            className="text-xs px-2.5 py-1.5 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 shrink-0"
+            onClick={() => isEditing ? onCancelEdit() : onStartEdit()}
+            className={`text-xs font-semibold px-3 py-1.5 rounded-lg border shrink-0 ${
+              isEditing ? 'border-gray-300 text-gray-600 hover:bg-gray-50' : 'border-forest-600 text-forest-700 hover:bg-forest-50'
+            }`}
           >
-            ✕
+            {isEditing ? 'Cancel' : 'Edit'}
           </button>
-        )}
+          {!isEditing && (
+            <button onClick={onDelete} className="text-xs px-2.5 py-1.5 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 shrink-0">
+              ✕
+            </button>
+          )}
+        </div>
+
+        {/* ── Mobile layout (<md) ── */}
+        <div className="md:hidden">
+          {/* Top: checkbox + thumbnail + info */}
+          <div className="flex items-start gap-2.5">
+            <input
+              type="checkbox"
+              checked={isSelected}
+              onChange={onToggleSelect}
+              className="w-4 h-4 accent-forest-600 mt-1 shrink-0"
+            />
+            {l.photos?.[0] && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={l.photos[0]} alt="" className="w-[60px] h-[60px] object-cover rounded shrink-0" />
+            )}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
+                <span className={`text-xs font-bold px-1.5 py-0.5 rounded text-white ${
+                  l.source === 'au_stock' ? 'bg-forest-600' : l.source === 'auction' ? 'bg-amber-500' : 'bg-blue-600'
+                }`}>
+                  {sourceLabel(l.source)}
+                </span>
+                {(l.raw_data as Record<string, string> | null)?.url && (
+                  <a href={(l.raw_data as Record<string, string>).url} target="_blank" rel="noopener noreferrer"
+                    className="text-xs text-blue-600 hover:underline" onClick={e => e.stopPropagation()}>
+                    Source ↗
+                  </a>
+                )}
+              </div>
+              <p className="font-medium text-gray-800 text-sm leading-snug">
+                {l.model_name}{l.grade ? ` — ${l.grade}` : ''}
+              </p>
+              <p className="text-xs text-gray-400 mt-0.5">
+                {[l.model_year, l.mileage_km ? `${l.mileage_km.toLocaleString()} km` : null].filter(Boolean).join(' · ')}
+              </p>
+            </div>
+          </div>
+
+          {/* Bottom: price + status + buttons */}
+          <div className="flex items-center gap-2 mt-2.5 pt-2.5 border-t border-gray-100">
+            <span className="font-semibold text-forest-700 text-sm">{price}</span>
+            <span className={`text-xs px-2 py-0.5 rounded ${
+              l.status === 'available' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+            }`}>{l.status}</span>
+            {isSaved && <span className="text-xs text-forest-700 font-semibold">✓ Saved</span>}
+            <div className="ml-auto flex gap-2 shrink-0">
+              <button
+                onClick={() => isEditing ? onCancelEdit() : onStartEdit()}
+                className={`min-h-[44px] px-4 text-sm font-semibold rounded-lg border ${
+                  isEditing ? 'border-gray-300 text-gray-600' : 'border-forest-600 text-forest-700'
+                }`}
+              >
+                {isEditing ? 'Cancel' : 'Edit'}
+              </button>
+              {!isEditing && (
+                <button onClick={onDelete} className="min-h-[44px] px-3 rounded-lg border border-red-200 text-red-500 text-sm">
+                  ✕
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
       </div>
 
       {/* Edit form */}
@@ -530,15 +587,15 @@ function ListingRow({
             <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-4">{error}</p>
           )}
 
-          <div className="flex gap-3 flex-wrap">
-            <button onClick={onSave} disabled={saving} className="btn-primary btn-sm disabled:opacity-50">
+          <div className="flex flex-col md:flex-row gap-3">
+            <button onClick={onSave} disabled={saving} className="btn-primary btn-sm disabled:opacity-50 min-h-[44px] md:min-h-0 w-full md:w-auto">
               {saving ? 'Saving…' : 'Save Changes'}
             </button>
-            <button onClick={onCancelEdit} className="btn-secondary btn-sm">Cancel</button>
+            <button onClick={onCancelEdit} className="btn-secondary btn-sm min-h-[44px] md:min-h-0 w-full md:w-auto">Cancel</button>
             <button
               onClick={onRetranslate}
               disabled={isTranslating}
-              className="text-xs px-3 py-1.5 rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50 disabled:opacity-50 ml-auto"
+              className="text-sm px-3 py-2 rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50 disabled:opacity-50 min-h-[44px] md:min-h-0 w-full md:w-auto md:ml-auto"
             >
               {isTranslating ? 'Translating…' : '🌐 Re-translate with AI'}
             </button>
@@ -789,7 +846,7 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
   return (
     <div>
       {/* Bulk toolbar */}
-      <div className="flex items-center gap-3 bg-white border border-gray-200 rounded-xl px-4 py-3 mb-6">
+      <div className="flex flex-wrap items-center gap-3 bg-white border border-gray-200 rounded-xl px-4 py-3 mb-6">
         <label className="flex items-center gap-2 cursor-pointer select-none">
           <input
             type="checkbox"
@@ -803,18 +860,18 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
         </label>
         {selected.size > 0 && (
           <>
-            <div className="h-4 w-px bg-gray-200" />
+            <div className="hidden sm:block h-4 w-px bg-gray-200" />
             <button
               onClick={bulkGoLive}
               disabled={bulkWorking}
-              className="text-sm font-semibold px-3 py-1.5 rounded-lg bg-forest-600 text-white hover:bg-forest-700 disabled:opacity-50"
+              className="text-sm font-semibold px-4 py-2.5 min-h-[44px] rounded-lg bg-forest-600 text-white hover:bg-forest-700 disabled:opacity-50"
             >
               {bulkWorking ? 'Working…' : `✓ Go Live (${selected.size})`}
             </button>
             <button
               onClick={bulkDelete}
               disabled={bulkWorking}
-              className="text-sm font-semibold px-3 py-1.5 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+              className="text-sm font-semibold px-4 py-2.5 min-h-[44px] rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
             >
               Delete ({selected.size})
             </button>
