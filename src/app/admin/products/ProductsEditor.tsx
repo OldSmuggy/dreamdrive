@@ -7,6 +7,7 @@ import type { Product } from '@/types'
 type EditState = {
   name: string
   description: string
+  brand: string
   rrp_dollars: string
   special_dollars: string
   special_label: string
@@ -20,6 +21,7 @@ function toEditState(p: Product): EditState {
   return {
     name: p.name,
     description: p.description ?? '',
+    brand: p.brand ?? '',
     rrp_dollars: p.rrp_aud > 0 ? (p.rrp_aud / 100).toFixed(0) : '0',
     special_dollars: p.special_price_aud ? (p.special_price_aud / 100).toFixed(0) : '',
     special_label: p.special_label ?? '',
@@ -62,6 +64,7 @@ export default function ProductsEditor({ initial }: { initial: Product[] }) {
       id,
       name: editState.name.trim(),
       description: editState.description.trim() || null,
+      brand: editState.brand.trim() || null,
       rrp_aud: Math.round(parseFloat(editState.rrp_dollars || '0') * 100),
       special_price_aud: editState.special_dollars
         ? Math.round(parseFloat(editState.special_dollars) * 100)
@@ -186,6 +189,15 @@ export default function ProductsEditor({ initial }: { initial: Product[] }) {
                       rows={3}
                       className={`${inputClass} resize-none`}
                       placeholder="Short description shown in the configurator and on the product page"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Brand</label>
+                    <input
+                      value={editState.brand}
+                      onChange={e => set('brand', e.target.value)}
+                      className={inputClass}
+                      placeholder="e.g. DIY RV Solutions"
                     />
                   </div>
                   <div>

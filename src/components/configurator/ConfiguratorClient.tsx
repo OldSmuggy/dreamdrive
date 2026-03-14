@@ -44,9 +44,20 @@ export default function ConfiguratorClient({ initialListing, fitouts, electrical
     return { min, max }
   }, [listing, fitout, electrical, withPoptop, poptop])
 
-  function handleSaveBuild() {
-    // POST /api/builds
-    fetch('/api/builds', {
+  async function handleLeadSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const fd = new FormData(e.currentTarget)
+    const budget = fd.get('budget') as string
+    const location = fd.get('location') as string
+    const notes = fd.get('notes') as string
+    const notesLine = [
+      budget && `Budget: ${budget}`,
+      location && `Location: ${location}`,
+      notes && `Notes: ${notes}`,
+    ].filter(Boolean).join(' | ')
+
+    // Save build first, then lead
+    const buildRes = await fetch('/api/builds', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -54,18 +65,13 @@ export default function ConfiguratorClient({ initialListing, fitouts, electrical
         fitout_product_id: fitout?.id,
         elec_product_id: electrical?.id,
         poptop_product_id: withPoptop ? poptop?.id : null,
-        poptop_japan: poptopJapan,
+        poptop_japan: false,
         total_aud_min: min,
         total_aud_max: max,
       }),
     })
-      .then(r => r.json())
-      .then(d => { if (d.share_slug) window.location.href = `/build/${d.share_slug}` })
-  }
+    const buildData = await buildRes.json()
 
-  async function handleLeadSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    const fd = new FormData(e.currentTarget)
     await fetch('/api/leads', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -75,11 +81,17 @@ export default function ConfiguratorClient({ initialListing, fitouts, electrical
         email: fd.get('email'),
         phone: fd.get('phone'),
         listing_id: listing?.id,
+        build_id: buildData.id ?? null,
         estimated_value: min,
         source: 'configurator',
+        notes: notesLine || null,
       }),
     })
+
     setLeadSent(true)
+    if (buildData.share_slug) {
+      setTimeout(() => { window.location.href = `/build/${buildData.share_slug}` }, 1500)
+    }
   }
 
   return (
@@ -196,15 +208,7 @@ export default function ConfiguratorClient({ initialListing, fitouts, electrical
           )}
           {withPoptop && (
             <div className="bg-sand-50 rounded-xl p-4 text-sm">
-              <p className="font-semibold mb-2">Installation timing</p>
-              <label className="flex items-start gap-3 cursor-pointer mb-2">
-                <input type="radio" name="poptop_timing" checked={!poptopJapan} onChange={() => setPoptopJapan(false)} className="mt-0.5" />
-                <span><strong>Fit on arrival in Australia</strong> — recommended. Book your slot now, installed within 2 weeks of arrival.</span>
-              </label>
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input type="radio" name="poptop_timing" checked={poptopJapan} onChange={() => setPoptopJapan(true)} className="mt-0.5" />
-                <span><strong>Fit before shipping in Japan</strong> — adds 4–8 weeks to your timeline.</span>
-              </label>
+              <p className="font-semibold text-gray-700">Installed at our Brisbane factory on arrival — within 2 weeks of your van landing.</p>
             </div>
           )}
           {!withPoptop && (
@@ -234,7 +238,7 @@ export default function ConfiguratorClient({ initialListing, fitouts, electrical
             {fitout && <SummaryRow label="Fit-Out" value={centsToAud(effectivePrice(fitout))} sub={fitout.name}
               special={activeSpecial(fitout) ? fitout.special_label ?? undefined : undefined} />}
             {electrical && <SummaryRow label="Electrical" value={centsToAud(effectivePrice(electrical))} sub={electrical.name} />}
-            {withPoptop && poptop && <SummaryRow label="Pop Top" value={centsToAud(effectivePrice(poptop))} sub={`Installed in ${poptopJapan ? 'Japan' : 'Australia'}`} />}
+            {withPoptop && poptop && <SummaryRow label="Pop Top" value={centsToAud(effectivePrice(poptop))} sub="Installed in Brisbane" />}
 
             <div className="bg-forest-50 px-5 py-4 flex justify-between items-center">
               <span className="font-display text-lg text-forest-900">Estimated Total</span>
@@ -248,35 +252,41 @@ export default function ConfiguratorClient({ initialListing, fitouts, electrical
             Final pricing confirmed at consultation. Import/shipping estimate based on current rates. All prices AUD.
           </p>
 
-          {/* CTAs */}
-          <div className="grid sm:grid-cols-2 gap-4 mb-8">
-            <button onClick={handleSaveBuild}
-              className="btn-primary py-4 text-base">
-              Save & Share This Build
-            </button>
-            <Link href="/browse" className="btn-secondary py-4 text-base text-center">
-              {listing ? 'Change Van' : 'Find a Van'}
-            </Link>
-          </div>
-
-          {/* Lead form */}
+          {/* Save & Share form */}
           {!leadSent ? (
-            <div className="bg-sand-50 border border-sand-200 rounded-2xl p-6">
-              <h3 className="font-display text-xl mb-1">Book a Free Consultation Call</h3>
-              <p className="text-gray-500 text-sm mb-5">We'll walk through your build, confirm pricing, and answer any questions.</p>
+            <div className="bg-sand-50 border border-sand-200 rounded-2xl p-6 mb-6">
+              <h3 className="font-display text-xl mb-1">Save & Share This Build</h3>
+              <p className="text-gray-500 text-sm mb-5">Enter your details to save a shareable link and book a free consultation call.</p>
               <form onSubmit={handleLeadSubmit} className="space-y-3">
                 <div className="grid sm:grid-cols-2 gap-3">
                   <input name="name" required placeholder="Your name" className="input-field" />
-                  <input name="email" type="email" required placeholder="Email address" className="input-field" />
+                  <input name="phone" required placeholder="Phone number" className="input-field" />
                 </div>
-                <input name="phone" placeholder="Phone (optional)" className="input-field" />
-                <button type="submit" className="btn-primary w-full py-3">Book Free Consultation →</button>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <input name="email" type="email" required placeholder="Email address" className="input-field" />
+                  <select name="budget" className="input-field">
+                    <option value="">Budget (optional)</option>
+                    <option value="under_40k">Under $40,000</option>
+                    <option value="40_60k">$40,000 – $60,000</option>
+                    <option value="60_80k">$60,000 – $80,000</option>
+                    <option value="80_100k">$80,000 – $100,000</option>
+                    <option value="over_100k">Over $100,000</option>
+                  </select>
+                </div>
+                <input name="location" placeholder="Your location (e.g. Brisbane, QLD)" className="input-field" />
+                <textarea name="notes" placeholder="Any notes or questions..." rows={3} className="input-field resize-none" />
+                <div className="flex gap-3">
+                  <button type="submit" className="btn-primary flex-1 py-3">Save & Share My Build →</button>
+                  <Link href="/browse" className="btn-secondary py-3 px-5 text-center">
+                    {listing ? 'Change Van' : 'Find a Van'}
+                  </Link>
+                </div>
               </form>
             </div>
           ) : (
-            <div className="bg-forest-50 border border-forest-200 rounded-2xl p-6 text-center">
+            <div className="bg-forest-50 border border-forest-200 rounded-2xl p-6 text-center mb-6">
               <div className="text-3xl mb-2">✅</div>
-              <h3 className="font-display text-xl text-forest-800">We'll be in touch!</h3>
+              <h3 className="font-display text-xl text-forest-800">Build saved!</h3>
               <p className="text-forest-600 text-sm mt-1">Jared will reach out within 24 hours to confirm your build and next steps.</p>
             </div>
           )}

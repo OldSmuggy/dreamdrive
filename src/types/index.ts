@@ -4,7 +4,9 @@
 
 export type Source = 'auction' | 'dealer_carsensor' | 'dealer_goonet' | 'au_stock'
 export type ListingStatus = 'available' | 'auction_ended' | 'sold' | 'reserved'
-export type AuStockStatus = 'import_pending' | 'import_approved' | 'en_route' | 'at_dock' | 'in_transit_au' | 'available_now'
+export type AuStockStatus = 'import_pending' | 'import_approved' | 'en_route' | 'on_ship' | 'at_dock' | 'in_transit_au' | 'available_now'
+export type VanSize = 'MWB' | 'LWB' | 'SLWB'
+export type VanInternals = 'empty' | 'seats' | 'campervan'
 export type InspectionScore = 'S' | '6' | '5.5' | '5' | '4.5' | '4' | '3.5' | '3' | 'R' | 'RA' | 'X'
 export type Transmission = 'IA' | 'AT' | 'MT'
 export type Drive = '2WD' | '4WD'
@@ -46,6 +48,8 @@ export interface Listing {
   has_sunroof: boolean
   has_alloys: boolean
   photos: string[]
+  size: VanSize | null
+  internals: VanInternals | null
   inspection_sheet: string | null
   raw_data: Record<string, unknown> | null
   scraped_at: string | null
@@ -64,6 +68,7 @@ export interface Product {
   special_start: string | null
   special_end: string | null
   description: string | null
+  brand: string | null
   visible: boolean
   sort_order: number
   created_at: string

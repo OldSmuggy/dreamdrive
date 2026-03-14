@@ -14,11 +14,14 @@ type EditState = {
   transmission: string
   drive: string
   displacement_cc: string
+  size: string
+  internals: string
   aud_estimate: string
   au_price_aud: string
   start_price_jpy: string
   source: string
   status: string
+  au_status: string
   featured: boolean
   has_nav: boolean
   has_leather: boolean
@@ -38,11 +41,14 @@ function toEditState(l: Listing): EditState {
     transmission: l.transmission ?? '',
     drive: l.drive ?? '',
     displacement_cc: l.displacement_cc?.toString() ?? '',
+    size: l.size ?? '',
+    internals: l.internals ?? '',
     aud_estimate: l.aud_estimate ? (l.aud_estimate / 100).toFixed(0) : '',
     au_price_aud: l.au_price_aud ? (l.au_price_aud / 100).toFixed(0) : '',
     start_price_jpy: l.start_price_jpy?.toString() ?? '',
     source: l.source,
     status: l.status,
+    au_status: l.au_status ?? '',
     featured: l.featured,
     has_nav: l.has_nav,
     has_leather: l.has_leather,
@@ -74,6 +80,7 @@ interface RowProps {
   onStartEdit: () => void
   onCancelEdit: () => void
   onSave: () => void
+  onDelete: () => void
   onSet: (field: keyof EditState, value: string | boolean | string[]) => void
   onSetNewPhotoUrl: (v: string) => void
   onAddPhoto: () => void
@@ -83,7 +90,7 @@ interface RowProps {
 
 function ListingRow({
   listing: l, isEditing, isSaved, editState, saving, error,
-  newPhotoUrl, onStartEdit, onCancelEdit, onSave, onSet,
+  newPhotoUrl, onStartEdit, onCancelEdit, onSave, onDelete, onSet,
   onSetNewPhotoUrl, onAddPhoto, onRemovePhoto, onMovePhoto,
 }: RowProps) {
   const price = l.source === 'au_stock' && l.au_price_aud
@@ -136,6 +143,14 @@ function ListingRow({
         >
           {isEditing ? 'Cancel' : 'Edit'}
         </button>
+        {!isEditing && (
+          <button
+            onClick={onDelete}
+            className="text-xs px-2.5 py-1.5 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 shrink-0"
+          >
+            ✕
+          </button>
+        )}
       </div>
 
       {/* Edit form */}
@@ -190,6 +205,37 @@ function ListingRow({
                 <div>
                   <label className="block text-xs font-semibold text-gray-600 mb-1.5">Engine (cc)</label>
                   <input type="number" value={editState.displacement_cc} onChange={e => onSet('displacement_cc', e.target.value)} className={inputClass} placeholder="2700" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">Size</label>
+                  <select value={editState.size} onChange={e => onSet('size', e.target.value)} className={inputClass}>
+                    <option value="">—</option>
+                    <option value="MWB">MWB — Medium Wheel Base</option>
+                    <option value="LWB">LWB — Long Wheel Base</option>
+                    <option value="SLWB">SLWB — Super Long Wheel Base</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">Internals</label>
+                  <select value={editState.internals} onChange={e => onSet('internals', e.target.value)} className={inputClass}>
+                    <option value="">—</option>
+                    <option value="empty">Empty</option>
+                    <option value="seats">Seats</option>
+                    <option value="campervan">Campervan Fit Out</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">AU Status</label>
+                  <select value={editState.au_status} onChange={e => onSet('au_status', e.target.value)} className={inputClass}>
+                    <option value="">—</option>
+                    <option value="import_pending">Import Pending</option>
+                    <option value="import_approved">Import Approved</option>
+                    <option value="en_route">En Route to Port</option>
+                    <option value="on_ship">On Ship to Brisbane</option>
+                    <option value="at_dock">At Dock</option>
+                    <option value="in_transit_au">In Transit AU</option>
+                    <option value="available_now">Available Now</option>
+                  </select>
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-600 mb-1.5">Source</label>
@@ -384,11 +430,14 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
         transmission: editState.transmission || null,
         drive: editState.drive || null,
         displacement_cc: editState.displacement_cc ? parseInt(editState.displacement_cc) : null,
+        size: editState.size || null,
+        internals: editState.internals || null,
         aud_estimate: editState.aud_estimate ? Math.round(parseFloat(editState.aud_estimate) * 100) : null,
         au_price_aud: editState.au_price_aud ? Math.round(parseFloat(editState.au_price_aud) * 100) : null,
         start_price_jpy: editState.start_price_jpy ? parseInt(editState.start_price_jpy) : null,
         source: editState.source,
         status: editState.status,
+        au_status: editState.au_status || null,
         featured: editState.featured,
         has_nav: editState.has_nav,
         has_leather: editState.has_leather,
@@ -417,6 +466,12 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
     }
   }
 
+  const handleDelete = async (id: string) => {
+    if (!confirm('Delete this listing? This cannot be undone.')) return
+    const res = await fetch(`/api/listings/${id}`, { method: 'DELETE' })
+    if (res.ok) setListings(ls => ls.filter(l => l.id !== id))
+  }
+
   const auStock = listings.filter(l => l.source === 'au_stock')
   const auction = listings.filter(l => l.source === 'auction')
   const dealer  = listings.filter(l => l.source.startsWith('dealer'))
@@ -440,6 +495,7 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
               onStartEdit={() => startEdit(l)}
               onCancelEdit={cancelEdit}
               onSave={() => handleSave(l.id)}
+              onDelete={() => handleDelete(l.id)}
               onSet={set}
               onSetNewPhotoUrl={setNewPhotoUrl}
               onAddPhoto={addPhoto}

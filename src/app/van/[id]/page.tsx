@@ -20,18 +20,27 @@ export default async function VanDetailPage({ params }: { params: { id: string }
   const sColor  = scoreColor(listing.inspection_score)
   const urgency = listing.source === 'auction' ? auctionUrgency(listing.auction_date) : null
 
+  const isJapanListing = listing.source !== 'au_stock'
   const displayPrice = listing.source === 'au_stock' && listing.au_price_aud
     ? centsToAud(listing.au_price_aud)
     : listing.aud_estimate
-    ? `~${centsToAud(listing.aud_estimate)} AUD est.`
+    ? `~${centsToAud(listing.aud_estimate)} AUD`
     : listing.start_price_jpy
-    ? `¥${listing.start_price_jpy.toLocaleString()} start`
+    ? `¥${listing.start_price_jpy.toLocaleString()}`
     : 'POA'
+
+  const internalsLabel: Record<string, string> = {
+    empty: 'Empty',
+    seats: 'Seats',
+    campervan: 'Campervan Fit Out',
+  }
 
   const specs: [string, string][] = [
     ['Model',          listing.model_name],
     ['Grade',          listing.grade ?? '—'],
     ['Year',           listing.model_year?.toString() ?? '—'],
+    ...(listing.size ? [['Size', listing.size] as [string, string]] : []),
+    ...(listing.internals ? [['Internals', internalsLabel[listing.internals] ?? listing.internals] as [string, string]] : []),
     ['Chassis',        listing.chassis_code ?? '—'],
     ['Engine',         listing.displacement_cc ? `${(listing.displacement_cc / 1000).toFixed(1)}L ${listing.displacement_cc > 2500 ? 'Diesel' : 'Petrol'}` : '—'],
     ['Transmission',   listing.transmission === 'IA' ? 'Auto (CVT/IA)' : listing.transmission ?? '—'],
@@ -100,7 +109,20 @@ export default async function VanDetailPage({ params }: { params: { id: string }
               </p>
             )}
 
-            <div className="text-3xl font-display text-forest-700 mb-6">{displayPrice}</div>
+            <div className="mb-6">
+              <div className="text-3xl font-display text-forest-700">{displayPrice}</div>
+              {isJapanListing && listing.start_price_jpy && listing.aud_estimate && (
+                <p className="text-xs text-gray-400 mt-1">
+                  ¥{listing.start_price_jpy.toLocaleString()} JPY · AUD estimate based on today&apos;s rate.{' '}
+                  <span className="text-amber-600 font-medium">Final price depends on the exchange rate at time of payment.</span>
+                </p>
+              )}
+              {isJapanListing && listing.start_price_jpy && !listing.aud_estimate && (
+                <p className="text-xs text-gray-400 mt-1">
+                  AUD equivalent varies with exchange rate at time of payment.
+                </p>
+              )}
+            </div>
 
             {/* Spec table */}
             <div className="border border-gray-200 rounded-xl overflow-hidden mb-6">

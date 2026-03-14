@@ -132,6 +132,16 @@ export default function DraftEditor({ initial }: { initial: Listing[] }) {
                   {rawData?.raw_colour && (
                     <span className="text-xs text-gray-400 font-mono">JP colour: {rawData.raw_colour}</span>
                   )}
+                  {rawData?.url && (
+                    <a
+                      href={rawData.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-blue-600 hover:underline"
+                    >
+                      Source ↗
+                    </a>
+                  )}
                 </div>
                 <p className="font-semibold text-gray-900">{l.model_name}</p>
                 <p className="text-sm text-gray-500 mt-0.5">
