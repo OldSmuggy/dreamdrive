@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import LeadFormModal from '@/components/leads/LeadFormModal'
 
 export const metadata = {
   title: 'TAMA — 6-Seat Family Campervan | Dream Drive',
@@ -148,12 +149,11 @@ export default function TamaPage() {
             <Link href="/configurator?fitout=tama" className="btn-primary text-base px-8 py-4">
               Start My TAMA Build
             </Link>
-            <a
-              href="mailto:jared@dreamdrive.life"
+            <LeadFormModal
+              trigger="Book a Free Consultation"
+              source="product_page_tama"
               className="btn-ghost text-base px-8 py-4"
-            >
-              Book a Free Consultation
-            </a>
+            />
           </div>
           <p className="mt-10 text-gray-400 text-sm">
             <a href="mailto:jared@dreamdrive.life" className="text-sand-400 hover:text-sand-300">jared@dreamdrive.life</a>

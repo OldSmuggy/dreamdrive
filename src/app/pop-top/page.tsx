@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import LeadFormModal from '@/components/leads/LeadFormModal'
 
 export const metadata = {
   title: 'Pop Top Roof Conversion — From $11,900 | DIY RV Solutions',
@@ -122,9 +123,12 @@ export default function PopTopPage() {
             Get in touch to secure your spot. $4,000 deposit locks in your 10-business-day turnaround.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
-            <a href="mailto:poptops@diyrvsolutions.com.au" className="btn-primary text-base px-8 py-4">
-              Get in Touch
-            </a>
+            <LeadFormModal
+              trigger="Get in Touch"
+              source="product_page_poptop"
+              leadType="pop_top_booking"
+              className="btn-primary text-base px-8 py-4"
+            />
             <Link href="/build" className="btn-ghost text-base px-8 py-4">
               Add Pop Top to My Van Build
             </Link>

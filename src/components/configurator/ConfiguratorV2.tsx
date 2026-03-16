@@ -1,5 +1,5 @@
 'use client'
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { centsToAud, effectivePrice, activeSpecial, sourceLabel, sourceBadgeColor } from '@/lib/utils'
 import type { Listing, Product } from '@/types'
@@ -71,6 +71,10 @@ export default function ConfiguratorV2({
   const [selectedVan,    setSelectedVan]    = useState<Listing | null>(preSelectedVan)
   const [isBYO,          setIsBYO]          = useState(false)
   const [leadSent,       setLeadSent]       = useState(false)
+  const [savedBuild,     setSavedBuild]     = useState<{ id: string; slug: string } | null>(null)
+  const [saving,         setSaving]         = useState(false)
+  const [shareToast,     setShareToast]     = useState<string | null>(null)
+  const saveAttempted = useRef(false)
 
   // ── Derived ────────────────────────────────────────────────────────────────
   const buildLocation      = getBuildLocation(fitoutSlug, manaLocation)
@@ -187,35 +191,82 @@ export default function ConfiguratorV2({
     )
   }, [])
 
+  // Auto-save build when customer reaches the summary step
+  const finalStep = isVanFirst ? 1 : 5
+  useEffect(() => {
+    if (step === finalStep && !saveAttempted.current) {
+      saveAttempted.current = true
+      saveBuildToDb()
+    }
+  }, [step]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function saveBuildToDb(): Promise<{ id: string; slug: string } | null> {
+    if (savedBuild) return savedBuild
+    setSaving(true)
+    try {
+      const res = await fetch('/api/builds', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          listing_id:        selectedVan?.id ?? null,
+          fitout_product_id: fitoutProduct?.id ?? null,
+          elec_product_id:   electrical?.id ?? null,
+          poptop_product_id: (popTop && poptopProduct && !manaIncludesPopTop) ? poptopProduct.id : null,
+          poptop_japan:      false,
+          total_aud_min:     totalCents,
+          total_aud_max:     totalCents,
+          build_location:    buildLocation,
+          mana_location:     isMana ? manaLocation : null,
+          entry_mode:        mode,
+          is_byo:            isBYO,
+        }),
+      })
+      const data = await res.json()
+      if (data?.id) {
+        const result = { id: data.id, slug: data.share_slug }
+        setSavedBuild(result)
+        return result
+      }
+    } catch { /* swallow */ }
+    finally { setSaving(false) }
+    return null
+  }
+
+  async function handleShare() {
+    const build = savedBuild ?? await saveBuildToDb()
+    if (!build) return
+    const url = `${window.location.origin}/build/${build.slug}`
+    try {
+      await navigator.clipboard.writeText(url)
+      setShareToast('Link copied! Share it with anyone.')
+    } catch {
+      setShareToast(url)
+    }
+    setTimeout(() => setShareToast(null), 4000)
+  }
+
   async function handleLeadSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const fd = new FormData(e.currentTarget)
 
-    const buildRes = await fetch('/api/builds', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        listing_id:        selectedVan?.id ?? null,
-        fitout_product_id: fitoutProduct?.id ?? null,
-        elec_product_id:   electrical?.id ?? null,
-        poptop_product_id: (popTop && poptopProduct && !manaIncludesPopTop) ? poptopProduct.id : null,
-        poptop_japan:      false,
-        total_aud_min:     totalCents,
-        total_aud_max:     totalCents,
-      }),
-    })
-    const buildData = await buildRes.json()
+    // Use already-saved build or save now
+    const build = savedBuild ?? await saveBuildToDb()
+
+    const isDepositCTA = selectedVan?.source === 'auction' || selectedVan?.source === 'au_stock'
+    const leadType = isDepositCTA ? 'deposit_intent' : 'consultation'
 
     await fetch('/api/leads', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        type:            'consultation',
+        type:            isDepositCTA ? 'interest' : 'consultation',
+        lead_type:       leadType,
         name:            fd.get('name'),
         email:           fd.get('email'),
-        phone:           fd.get('phone'),
+        phone:           fd.get('phone') || null,
         listing_id:      selectedVan?.id ?? null,
-        build_id:        buildData?.id ?? null,
+        build_id:        build?.id ?? null,
+        build_slug:      build?.slug ?? null,
         estimated_value: totalCents,
         source:          'configurator_v2',
         notes:           [
@@ -333,9 +384,19 @@ export default function ConfiguratorV2({
           buildLocation={null}
           isVanFirst
           fitoutSlug={fitoutSlug}
+          manaLocation={manaLocation}
+          electrical={electrical}
+          popTop={popTop}
+          manaIncludesPopTop={manaIncludesPopTop}
+          selectedAddons={selectedAddons}
+          savedBuild={savedBuild}
+          saving={saving}
+          shareToast={shareToast}
+          onShare={handleShare}
           leadSent={leadSent}
           onLeadSubmit={handleLeadSubmit}
           onBack={() => setStep(0)}
+          onReset={() => { handleFitoutChange(null); setStep(0); saveAttempted.current = false; setSavedBuild(null) }}
         />
       )}
 
@@ -736,9 +797,19 @@ export default function ConfiguratorV2({
           buildLocation={buildLocation}
           isVanFirst={false}
           fitoutSlug={fitoutSlug}
+          manaLocation={manaLocation}
+          electrical={electrical}
+          popTop={popTop}
+          manaIncludesPopTop={manaIncludesPopTop}
+          selectedAddons={selectedAddons}
+          savedBuild={savedBuild}
+          saving={saving}
+          shareToast={shareToast}
+          onShare={handleShare}
           leadSent={leadSent}
           onLeadSubmit={handleLeadSubmit}
           onBack={() => setStep(4)}
+          onReset={() => { handleFitoutChange(null); setStep(0); saveAttempted.current = false; setSavedBuild(null) }}
         />
       )}
 
@@ -901,7 +972,9 @@ function VanSummaryCard({ listing, showPrice = false }: { listing: Listing; show
 
 function SummaryStep({
   priceLines, totalCents, selectedVan, isBYO, buildLocation, isVanFirst, fitoutSlug,
-  leadSent, onLeadSubmit, onBack,
+  manaLocation, electrical, popTop, manaIncludesPopTop, selectedAddons,
+  savedBuild, saving, shareToast, onShare,
+  leadSent, onLeadSubmit, onBack, onReset,
 }: {
   priceLines: PriceLine[]
   totalCents: number
@@ -910,15 +983,31 @@ function SummaryStep({
   buildLocation: BuildLocation | null
   isVanFirst: boolean
   fitoutSlug: FitoutSlug
+  manaLocation: ManaLocation
+  electrical: Product | null
+  popTop: boolean
+  manaIncludesPopTop: boolean
+  selectedAddons: string[]
+  savedBuild: { id: string; slug: string } | null
+  saving: boolean
+  shareToast: string | null
+  onShare: () => void
   leadSent: boolean
   onLeadSubmit: (e: React.FormEvent<HTMLFormElement>) => void
   onBack: () => void
+  onReset: () => void
 }) {
+  const isDepositCTA = selectedVan?.source === 'auction' || selectedVan?.source === 'au_stock'
+  const depositLeadType = isDepositCTA ? 'deposit_intent' : 'consultation'
   const ctaLabel = selectedVan?.source === 'auction'  ? 'Hold This Van — $500 Deposit'
     : selectedVan?.source === 'au_stock'              ? 'Reserve Now — $500 Deposit'
     : selectedVan                                     ? 'Express Interest — Book a Call'
     : isBYO                                           ? 'Book a Consultation'
     :                                                   'Save My Build & Find a Van'
+
+  const fitoutLabel = fitoutSlug === 'tama' ? 'TAMA' : fitoutSlug === 'mana' ? 'MANA' : fitoutSlug === 'grid' ? 'Grid Conversion' : 'No Fit-Out'
+  const electricalLabel = electrical?.name ?? null
+  const popTopLabel = popTop ? 'Pop Top' : null
 
   return (
     <div>
@@ -927,89 +1016,250 @@ function SummaryStep({
         <h2 className="font-display text-2xl text-forest-900">Your Build Summary</h2>
       </div>
 
-      {/* Build location note */}
-      {buildLocation && (
-        <div className={`flex gap-3 rounded-xl px-4 py-3 text-sm mb-6 ${
-          buildLocation === 'japan'
-            ? 'bg-forest-50 border border-forest-200 text-forest-800'
-            : 'bg-blue-50 border border-blue-200 text-blue-800'
-        }`}>
-          <span className="shrink-0">{buildLocation === 'japan' ? '🇯🇵' : '🇦🇺'}</span>
-          <p>
-            {buildLocation === 'japan'
-              ? 'Your van will be converted at our Tokyo facility and shipped to Australia. Pop top (if selected) fitted in Brisbane after arrival.'
-              : 'Your van will be converted at our Brisbane workshop.'}
-          </p>
-        </div>
-      )}
+      <div className="lg:grid lg:grid-cols-5 lg:gap-8 lg:items-start">
 
-      {/* Price breakdown */}
-      <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden mb-6">
-        {priceLines.map((line, i) => (
-          <div key={i} className="flex justify-between items-start px-5 py-4 border-b border-gray-100 last:border-0">
-            <div>
-              <p className="font-medium text-gray-700 text-sm">{line.label}</p>
-              {line.note && <p className="text-xs text-gray-400 mt-0.5">{line.note}</p>}
+        {/* ── LEFT COLUMN (3/5): Build details ── */}
+        <div className="lg:col-span-3 space-y-4 mb-6 lg:mb-0">
+
+          {/* Build location banner */}
+          {buildLocation && (
+            <div className={`flex gap-3 rounded-xl px-4 py-3 text-sm ${
+              buildLocation === 'japan'
+                ? 'bg-forest-50 border border-forest-200 text-forest-800'
+                : 'bg-blue-50 border border-blue-200 text-blue-800'
+            }`}>
+              <span className="shrink-0 text-base">{buildLocation === 'japan' ? '🇯🇵' : '🇦🇺'}</span>
+              <p>
+                {buildLocation === 'japan'
+                  ? 'Converted at our Tokyo facility and shipped to Australia. Pop top fitted in Brisbane after arrival.'
+                  : 'Converted at our Brisbane workshop.'}
+              </p>
             </div>
-            <span className="font-display text-gray-900 text-lg ml-4 shrink-0">
-              {line.price === null ? 'Included' : centsToAud(line.price)}
-            </span>
+          )}
+
+          {/* Van section */}
+          <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+            <div className="bg-gray-50 px-5 py-3 border-b border-gray-200">
+              <h3 className="font-semibold text-sm text-gray-500 uppercase tracking-wide">Van</h3>
+            </div>
+            <div className="px-5 py-4">
+              {isBYO ? (
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl">🚐</span>
+                  <div>
+                    <p className="font-semibold text-gray-900">Your Own Van (BYO)</p>
+                    <p className="text-sm text-gray-500 mt-0.5">Compatibility confirmed at consultation.</p>
+                  </div>
+                </div>
+              ) : selectedVan ? (
+                <div className="flex items-start gap-3">
+                  {selectedVan.photos?.[0] && (
+                    <img src={selectedVan.photos[0]} alt="" className="w-20 h-14 object-cover rounded-lg shrink-0" />
+                  )}
+                  <div className="min-w-0">
+                    <p className="font-semibold text-gray-900 leading-tight">{selectedVan.model_name}</p>
+                    <p className="text-sm text-gray-500 mt-0.5">
+                      {selectedVan.model_year && `${selectedVan.model_year} · `}
+                      {selectedVan.mileage_km ? `${selectedVan.mileage_km.toLocaleString()} km` : ''}
+                    </p>
+                    {selectedVan.source === 'auction' && (
+                      <span className="badge-auction text-xs mt-1 inline-block">Auction</span>
+                    )}
+                    {selectedVan.source === 'au_stock' && (
+                      <span className="badge-au-stock text-xs mt-1 inline-block">AU Stock</span>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-gray-400 italic">No van selected yet — to be sourced.</p>
+              )}
+            </div>
           </div>
-        ))}
 
-        {priceLines.length === 0 && (
-          <div className="px-5 py-4 text-gray-400 text-sm">No items selected yet.</div>
-        )}
+          {/* Fit-out section */}
+          {fitoutSlug && (
+            <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+              <div className="bg-gray-50 px-5 py-3 border-b border-gray-200">
+                <h3 className="font-semibold text-sm text-gray-500 uppercase tracking-wide">Conversion</h3>
+              </div>
+              <div className="px-5 py-4 space-y-3">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="font-semibold text-gray-900">{fitoutLabel}</p>
+                    {fitoutSlug === 'tama' && <p className="text-xs text-gray-500 mt-0.5">6-seat family campervan · Japan build</p>}
+                    {fitoutSlug === 'mana' && <p className="text-xs text-gray-500 mt-0.5">Premium adventure van · {manaLocation === 'japan' ? 'Japan build' : 'AU build'}</p>}
+                    {fitoutSlug === 'grid' && <p className="text-xs text-gray-500 mt-0.5">Off-grid specialist · Brisbane workshop</p>}
+                  </div>
+                </div>
+                {electricalLabel && (
+                  <div className="flex justify-between text-sm border-t border-gray-100 pt-3">
+                    <span className="text-gray-600">⚡ {electricalLabel}</span>
+                  </div>
+                )}
+                {(popTopLabel || manaIncludesPopTop) && (
+                  <div className="flex justify-between text-sm border-t border-gray-100 pt-3">
+                    <span className="text-gray-600">
+                      {manaIncludesPopTop ? '🔼 Pop Top — included with MANA' : `🔼 ${popTopLabel}`}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
-        <div className="bg-forest-50 px-5 py-4 flex justify-between items-center">
-          <span className="font-display text-lg text-forest-900">Estimated Total</span>
-          <span className="font-display text-2xl text-forest-700">
-            {totalCents > 0 ? centsToAud(totalCents) : '—'}
-          </span>
+          {/* Add-ons */}
+          {selectedAddons.length > 0 && (
+            <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+              <div className="bg-gray-50 px-5 py-3 border-b border-gray-200">
+                <h3 className="font-semibold text-sm text-gray-500 uppercase tracking-wide">Add-Ons</h3>
+              </div>
+              <div className="px-5 py-4">
+                <ul className="space-y-2">
+                  {selectedAddons.map(id => {
+                    const addon = ADDON_CATALOG.find(a => a.slug === id)
+                    return addon ? (
+                      <li key={id} className="flex justify-between text-sm">
+                        <span className="text-gray-700">{addon.name}</span>
+                        <span className="text-gray-500 font-medium">{centsToAud(addon.priceCents)}</span>
+                      </li>
+                    ) : null
+                  })}
+                </ul>
+              </div>
+            </div>
+          )}
+
+          {/* Timeline */}
+          <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+            <div className="bg-gray-50 px-5 py-3 border-b border-gray-200">
+              <h3 className="font-semibold text-sm text-gray-500 uppercase tracking-wide">Indicative Timeline</h3>
+            </div>
+            <div className="px-5 py-4">
+              <ol className="space-y-3 text-sm">
+                <li className="flex gap-3">
+                  <span className="w-6 h-6 rounded-full bg-forest-600 text-white text-xs font-bold flex items-center justify-center shrink-0">1</span>
+                  <div><p className="font-medium text-gray-800">Consultation &amp; deposit</p><p className="text-gray-500 text-xs">Confirm spec, sign off, lock in slot</p></div>
+                </li>
+                <li className="flex gap-3">
+                  <span className="w-6 h-6 rounded-full bg-forest-600 text-white text-xs font-bold flex items-center justify-center shrink-0">2</span>
+                  <div>
+                    <p className="font-medium text-gray-800">{buildLocation === 'japan' ? 'Van sourced &amp; converted in Japan' : 'Van sourced &amp; converted in Brisbane'}</p>
+                    <p className="text-gray-500 text-xs">{buildLocation === 'japan' ? '6–10 weeks build + 4–6 weeks shipping' : '4–8 weeks'}</p>
+                  </div>
+                </li>
+                {buildLocation === 'japan' && (popTopLabel || manaIncludesPopTop) && (
+                  <li className="flex gap-3">
+                    <span className="w-6 h-6 rounded-full bg-forest-600 text-white text-xs font-bold flex items-center justify-center shrink-0">3</span>
+                    <div><p className="font-medium text-gray-800">Pop top fitted in Brisbane</p><p className="text-gray-500 text-xs">After van arrives from Japan</p></div>
+                  </li>
+                )}
+                <li className="flex gap-3">
+                  <span className="w-6 h-6 rounded-full bg-sand-400 text-white text-xs font-bold flex items-center justify-center shrink-0">{buildLocation === 'japan' && (popTopLabel || manaIncludesPopTop) ? '4' : '3'}</span>
+                  <div><p className="font-medium text-gray-800">Handover &amp; on the road</p><p className="text-gray-500 text-xs">QLD rego, full walk-through</p></div>
+                </li>
+              </ol>
+            </div>
+          </div>
+        </div>
+
+        {/* ── RIGHT COLUMN (2/5): Price card + CTAs ── */}
+        <div className="lg:col-span-2 lg:sticky lg:top-24 space-y-4">
+
+          {/* Price breakdown card */}
+          <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+            <div className="bg-forest-950 text-white px-5 py-4">
+              <h3 className="font-display text-xl">Price Breakdown</h3>
+              <p className="text-white/60 text-xs mt-0.5">Estimates — confirmed at consultation</p>
+            </div>
+            <div className="divide-y divide-gray-100">
+              {priceLines.map((line, i) => (
+                <div key={i} className="flex justify-between items-start px-5 py-3">
+                  <div>
+                    <p className="font-medium text-gray-700 text-sm">{line.label}</p>
+                    {line.note && <p className="text-xs text-gray-400 mt-0.5">{line.note}</p>}
+                  </div>
+                  <span className="font-semibold text-gray-900 text-sm ml-4 shrink-0">
+                    {line.price === null ? 'Included' : centsToAud(line.price)}
+                  </span>
+                </div>
+              ))}
+              {priceLines.length === 0 && (
+                <div className="px-5 py-3 text-gray-400 text-sm">No items selected yet.</div>
+              )}
+            </div>
+            <div className="bg-forest-50 px-5 py-4 flex justify-between items-center">
+              <span className="font-display text-lg text-forest-900">Estimated Total</span>
+              <span className="font-display text-2xl text-forest-700">
+                {totalCents > 0 ? centsToAud(totalCents) : '—'}
+              </span>
+            </div>
+            <p className="px-5 pb-4 text-xs text-gray-400 leading-relaxed">
+              {fitoutSlug === 'tama' || fitoutSlug === 'mana'
+                ? 'Base price includes van + full conversion.'
+                : 'Van price estimated from current exchange rates.'}
+              {' '}All prices AUD incl. GST.
+            </p>
+          </div>
+
+          {/* Share button */}
+          <div className="space-y-2">
+            <button
+              onClick={onShare}
+              disabled={saving}
+              className="btn-secondary w-full py-3 text-sm disabled:opacity-60"
+            >
+              {saving ? 'Saving…' : savedBuild ? '🔗 Copy Share Link' : '🔗 Share My Build'}
+            </button>
+            {shareToast && (
+              <p className="text-center text-xs text-forest-700 font-medium">{shareToast}</p>
+            )}
+          </div>
+
+          {/* Lead capture */}
+          {!leadSent ? (
+            <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+              <div className="px-5 py-4 border-b border-gray-100">
+                <h3 className="font-display text-lg text-forest-900">{ctaLabel}</h3>
+                {isDepositCTA && (
+                  <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-2">
+                    No payment here — we&apos;ll contact you to arrange the $500 refundable deposit.
+                  </p>
+                )}
+              </div>
+              <form onSubmit={onLeadSubmit} className="px-5 py-4 space-y-3">
+                <input name="name"  required placeholder="Your name"     className="input-field" />
+                <input name="email" type="email" required placeholder="Email address"  className="input-field" />
+                <input name="phone" type="tel"   placeholder="Phone (optional)" className="input-field" />
+                <button type="submit" className="btn-primary w-full py-3">
+                  {ctaLabel} →
+                </button>
+                <p className="text-center text-xs text-gray-400">
+                  Or email{' '}
+                  <a href="mailto:jared@dreamdrive.life" className="text-forest-600 hover:underline">
+                    jared@dreamdrive.life
+                  </a>
+                </p>
+              </form>
+            </div>
+          ) : (
+            <div className="bg-forest-50 border border-forest-200 rounded-2xl p-6 text-center">
+              <div className="text-3xl mb-2">✅</div>
+              <h3 className="font-display text-lg text-forest-800">We&apos;ll be in touch!</h3>
+              <p className="text-forest-600 text-sm mt-1">
+                Jared will reach out within 24 hours to confirm your build and next steps.
+              </p>
+            </div>
+          )}
+
+          {/* Reset */}
+          <button
+            onClick={onReset}
+            className="w-full text-center text-xs text-gray-400 hover:text-gray-600 py-2"
+          >
+            Start over
+          </button>
         </div>
       </div>
-
-      <p className="text-xs text-gray-400 mb-6 leading-relaxed">
-        {fitoutSlug === 'tama' || fitoutSlug === 'mana'
-          ? 'TAMA/MANA base price includes van + full conversion. Add-ons are extra.'
-          : 'Van price is an estimate based on current exchange rates. Final price depends on the rate at time of payment.'
-        }
-        {' '}Final pricing confirmed at consultation. All prices AUD unless noted.
-      </p>
-
-      {/* Lead form */}
-      {!leadSent ? (
-        <div className="bg-sand-50 border border-sand-200 rounded-2xl p-6 mb-6">
-          <h3 className="font-display text-xl mb-1">Save &amp; Get in Touch</h3>
-          <p className="text-gray-500 text-sm mb-5">
-            Enter your details to save this build and book a free consultation.
-          </p>
-          <form onSubmit={onLeadSubmit} className="space-y-3">
-            <div className="grid sm:grid-cols-2 gap-3">
-              <input name="name"  required placeholder="Your name"    className="input-field" />
-              <input name="phone" required placeholder="Phone number" className="input-field" />
-            </div>
-            <input name="email" type="email" required placeholder="Email address" className="input-field" />
-            <textarea name="notes" placeholder="Any questions or notes..." rows={3} className="input-field resize-none" />
-            <div className="flex gap-3">
-              <button type="submit" className="btn-primary flex-1 py-3">{ctaLabel} →</button>
-            </div>
-            <p className="text-center text-sm">
-              <a href="mailto:jared@dreamdrive.life" className="text-forest-600 hover:underline">
-                Or email jared@dreamdrive.life directly
-              </a>
-            </p>
-          </form>
-        </div>
-      ) : (
-        <div className="bg-forest-50 border border-forest-200 rounded-2xl p-6 text-center mb-6">
-          <div className="text-3xl mb-2">✅</div>
-          <h3 className="font-display text-xl text-forest-800">Build saved!</h3>
-          <p className="text-forest-600 text-sm mt-1">
-            Jared will reach out within 24 hours to confirm your build and next steps.
-          </p>
-        </div>
-      )}
     </div>
   )
 }

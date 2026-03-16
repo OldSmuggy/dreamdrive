@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import LeadFormModal from '@/components/leads/LeadFormModal'
 
 export const metadata = {
   title: 'DIY Your Way — Pop Top, Grid Bed Kit & Base Vans | Dream Drive',
@@ -147,9 +148,11 @@ export default function DiyPage() {
             <Link href="/browse" className="btn-primary text-base px-8 py-4">
               Browse Base Vans
             </Link>
-            <a href="mailto:jared@dreamdrive.life" className="btn-ghost text-base px-8 py-4">
-              Book a Consultation
-            </a>
+            <LeadFormModal
+              trigger="Book a Consultation"
+              source="product_page_diy"
+              className="btn-ghost text-base px-8 py-4"
+            />
           </div>
           <p className="mt-10 text-gray-400 text-sm">
             <a href="mailto:jared@dreamdrive.life" className="text-sand-400 hover:text-sand-300">jared@dreamdrive.life</a>

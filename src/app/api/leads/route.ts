@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
 
+// Columns that require a DB migration — strip and retry if missing
+const OPTIONAL_LEAD_COLS = ['state', 'build_slug', 'lead_type']
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
@@ -8,17 +11,33 @@ export async function POST(req: NextRequest) {
 
     const supabase = createAdminClient()
 
-    const { error } = await supabase.from('leads').insert({
-      type: body.type ?? 'consultation',
-      name: body.name ?? null,
-      email: body.email ?? null,
-      phone: body.phone ?? null,
-      listing_id: body.listing_id ?? null,
-      build_id: body.build_id ?? null,
+    const fullPayload = {
+      type:            body.type ?? 'consultation',
+      name:            body.name ?? null,
+      email:           body.email ?? null,
+      phone:           body.phone ?? null,
+      listing_id:      body.listing_id ?? null,
+      build_id:        body.build_id ?? null,
       estimated_value: body.estimated_value ?? null,
-      source: body.source ?? null,
-      notes: body.notes ?? null,
-    })
+      source:          body.source ?? null,
+      notes:           body.notes ?? null,
+      // May not exist yet — strip and retry if column missing
+      state:           body.state ?? null,
+      build_slug:      body.build_slug ?? null,
+      lead_type:       body.lead_type ?? body.type ?? 'consultation',
+    }
+
+    let { error } = await supabase.from('leads').insert(fullPayload)
+
+    if (error) {
+      const missingCol = OPTIONAL_LEAD_COLS.find(c => error!.message.includes(c))
+      if (missingCol) {
+        console.warn(`[leads POST] Column "${missingCol}" missing — retrying without optional columns`)
+        const { state: _a, build_slug: _b, lead_type: _c, ...corePayload } = fullPayload
+        const retry = await supabase.from('leads').insert(corePayload)
+        error = retry.error
+      }
+    }
 
     if (error) {
       console.error('[leads] insert error:', error.message, '|', error.details, '|', error.hint)

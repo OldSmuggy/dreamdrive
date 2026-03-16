@@ -116,11 +116,14 @@ export interface Lead {
   id: string
   user_id: string | null
   type: LeadType
+  lead_type: string | null
   name: string | null
   email: string | null
   phone: string | null
+  state: string | null
   listing_id: string | null
   build_id: string | null
+  build_slug: string | null
   estimated_value: number | null
   source: string | null
   notes: string | null

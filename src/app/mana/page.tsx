@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import LeadFormModal from '@/components/leads/LeadFormModal'
 
 export const metadata = {
   title: 'MANA — Liveable Compact Campervan | Dream Drive',
@@ -125,9 +126,11 @@ export default function ManaPage() {
             <Link href="/configurator?fitout=mana" className="btn-primary text-base px-8 py-4">
               Start My MANA Build
             </Link>
-            <a href="mailto:jared@dreamdrive.life" className="btn-ghost text-base px-8 py-4">
-              Book a Free Consultation
-            </a>
+            <LeadFormModal
+              trigger="Book a Free Consultation"
+              source="product_page_mana"
+              className="btn-ghost text-base px-8 py-4"
+            />
           </div>
           <p className="mt-10 text-gray-400 text-sm">
             <a href="mailto:jared@dreamdrive.life" className="text-sand-400 hover:text-sand-300">jared@dreamdrive.life</a>
