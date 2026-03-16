@@ -4,7 +4,10 @@ import { createAdminClient } from '@/lib/supabase'
 // Columns that require a DB migration and may not exist yet.
 // If the update fails because of one of these, we strip them and retry
 // so all other fields still save successfully.
-const OPTIONAL_COLUMNS = ['internal_photos', 'show_interior_gallery']
+const OPTIONAL_COLUMNS = [
+  'internal_photos', 'show_interior_gallery',
+  'location_status', 'fit_out_level', 'vehicle_model', 'conversion_video_url',
+]
 
 export async function PATCH(
   req: NextRequest,
