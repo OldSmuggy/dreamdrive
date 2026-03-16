@@ -18,7 +18,12 @@ export default async function CustomersPage() {
   if (error) {
     return (
       <div>
-        <h1 className="font-display text-2xl text-forest-900 mb-4">Customers</h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="font-display text-2xl text-forest-900">Customers</h1>
+          <Link href="/admin/customers/add" className="btn-primary text-sm px-4 py-2">
+            + Add Customer
+          </Link>
+        </div>
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 text-sm text-amber-800">
           <p className="font-semibold mb-2">Database setup required.</p>
           <p className="mb-3">Run the SQL migration in Supabase to create the customer tables, then refresh.</p>
