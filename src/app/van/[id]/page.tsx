@@ -1,9 +1,10 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createSupabaseServer } from '@/lib/supabase-server'
-import { centsToAud, scoreColor, scoreLabel, sourceLabel, sourceBadgeColor, auctionUrgency } from '@/lib/utils'
+import { centsToAud, scoreColor, scoreLabel, sourceLabel, sourceBadgeColor, auctionUrgency, locationBadgeInfo, fitOutLevelInfo } from '@/lib/utils'
 import AuctionBanner from '@/components/ui/AuctionBanner'
 import PhotoGallery from '@/components/van/PhotoGallery'
+import ConversionDetails from '@/components/van/ConversionDetails'
 import SaveVanButton from '@/components/ui/SaveVanButton'
 import DepositHoldButton from '@/components/ui/DepositHoldButton'
 import type { Listing } from '@/types'
@@ -22,9 +23,11 @@ export default async function VanDetailPage({ params }: { params: { id: string }
   ])
   if (!data) notFound()
 
-  const listing = data as Listing
-  const sColor  = scoreColor(listing.inspection_score)
-  const urgency = listing.source === 'auction' ? auctionUrgency(listing.auction_date) : null
+  const listing  = data as Listing
+  const sColor   = scoreColor(listing.inspection_score)
+  const urgency  = listing.source === 'auction' ? auctionUrgency(listing.auction_date) : null
+  const locBadge = locationBadgeInfo(listing)
+  const foBadge  = fitOutLevelInfo(listing.fit_out_level)
 
   // Check if user has saved this van + is admin
   let isSaved = false
@@ -105,8 +108,8 @@ export default async function VanDetailPage({ params }: { params: { id: string }
                 isAuction={listing.source === 'auction'}
               />
               <div className="absolute top-3 left-3 flex gap-2 flex-wrap pointer-events-none">
-                <span className={`${sourceBadgeColor(listing.source)} text-white text-xs font-bold px-2 py-0.5 rounded`}>
-                  {sourceLabel(listing.source)}
+                <span className={`${locBadge.bg} text-white text-xs font-bold px-2 py-0.5 rounded`}>
+                  {locBadge.label}
                 </span>
                 {urgency === 'closing_soon' && <span className="bg-amber-400 text-amber-900 text-xs font-bold px-2 py-0.5 rounded">CLOSING SOON</span>}
                 {urgency === 'last_chance'  && <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded">LAST CHANCE</span>}
@@ -136,6 +139,18 @@ export default async function VanDetailPage({ params }: { params: { id: string }
               </div>
             </div>
             <h1 className="font-display text-3xl text-forest-900 mb-2">{listing.model_name}</h1>
+
+            {/* Location + fit-out level */}
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              {locBadge.sub && (
+                <p className="text-sm font-medium text-gray-600">{locBadge.sub}</p>
+              )}
+              {foBadge && (
+                <span className={`text-xs font-semibold px-2.5 py-1 rounded border ${foBadge.cls}`}>
+                  {foBadge.label} — {foBadge.desc}
+                </span>
+              )}
+            </div>
 
             {listing.source === 'auction' && listing.auction_date && (
               <p className="text-amber-700 font-medium text-sm mb-4">
@@ -205,6 +220,12 @@ export default async function VanDetailPage({ params }: { params: { id: string }
           <div className="mt-10 bg-sand-50 rounded-2xl p-6">
             <h2 className="font-display text-xl mb-2">About this van</h2>
             <p className="text-gray-600 leading-relaxed">{listing.description}</p>
+          </div>
+        )}
+
+        {listing.conversion_video_url && (
+          <div className="mt-10">
+            <ConversionDetails videoUrl={listing.conversion_video_url} />
           </div>
         )}
 

@@ -23,6 +23,10 @@ type EditState = {
   source: string
   status: string
   au_status: string
+  location_status: string
+  fit_out_level: string
+  vehicle_model: string
+  conversion_video_url: string
   featured: boolean
   has_nav: boolean
   has_leather: boolean
@@ -56,6 +60,10 @@ function toEditState(l: Listing): EditState {
     source: l.source,
     status: l.status,
     au_status: l.au_status ?? '',
+    location_status: l.location_status ?? '',
+    fit_out_level: l.fit_out_level ?? '',
+    vehicle_model: l.vehicle_model ?? '',
+    conversion_video_url: l.conversion_video_url ?? '',
     featured: l.featured,
     has_nav: l.has_nav,
     has_leather: l.has_leather,
@@ -410,6 +418,35 @@ function ListingRow({
                     <option value="auction_ended">auction_ended</option>
                   </select>
                 </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">Location Status</label>
+                  <select value={editState.location_status} onChange={e => onSet('location_status', e.target.value)} className={inputClass}>
+                    <option value="">— auto-detect —</option>
+                    <option value="in_japan">In Japan (Awaiting Purchase/Export)</option>
+                    <option value="on_ship">On Ship (Arriving Soon)</option>
+                    <option value="in_brisbane">In Brisbane (Available Now)</option>
+                    <option value="sold">Sold</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">Fit-Out Level</label>
+                  <select value={editState.fit_out_level} onChange={e => onSet('fit_out_level', e.target.value)} className={inputClass}>
+                    <option value="">— select —</option>
+                    <option value="empty">Empty Van</option>
+                    <option value="partial">Head Start (Partial Mods)</option>
+                    <option value="full">Full Campervan</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">Vehicle Model</label>
+                  <select value={editState.vehicle_model} onChange={e => onSet('vehicle_model', e.target.value)} className={inputClass}>
+                    <option value="">— select —</option>
+                    <option value="hiace_h200">Hiace H200 (2005–2019)</option>
+                    <option value="hiace_300">Hiace 300 Series (2019+)</option>
+                    <option value="coaster">Toyota Coaster</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-1.5">Description</label>
@@ -419,6 +456,15 @@ function ListingRow({
                   rows={3}
                   className={`${inputClass} resize-none`}
                   placeholder="Short listing description..."
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Conversion Video URL</label>
+                <input
+                  value={editState.conversion_video_url}
+                  onChange={e => onSet('conversion_video_url', e.target.value)}
+                  className={inputClass}
+                  placeholder="YouTube or Vimeo URL"
                 />
               </div>
             </div>
@@ -786,6 +832,10 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
         source: editState.source,
         status: editState.status,
         au_status: editState.au_status || null,
+        location_status: editState.location_status || null,
+        fit_out_level: editState.fit_out_level || null,
+        vehicle_model: editState.vehicle_model || null,
+        conversion_video_url: editState.conversion_video_url || null,
         featured: editState.featured,
         has_nav: editState.has_nav,
         has_leather: editState.has_leather,

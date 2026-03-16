@@ -38,6 +38,47 @@ function getStageFlow(order: ImportOrderRow): string[] {
   return order.order_type === 'van_only' ? FLOW_VAN_ONLY : FLOW_VAN_FITOUT
 }
 
+// ── 4-stage visual mapping ────────────────────────────────────────────────────
+const MAIN_STAGES = [
+  {
+    num: 1,
+    title: 'Exporting from Japan',
+    subStages: ['order_confirmed','scheduled_for_build','vehicle_sourced','fitout_in_progress','quality_check','auction_won','payment_received','export_docs'],
+    currentSubLabel: (key: string) =>
+      ({ order_confirmed: 'Purchase Confirmed', scheduled_for_build: 'Export Documentation',
+         vehicle_sourced: 'Loaded for Shipping', fitout_in_progress: 'Build in Progress',
+         quality_check: 'Quality Check', auction_won: 'Purchase Confirmed',
+         payment_received: 'Export Documentation', export_docs: 'Loaded for Shipping' }[key] ?? key),
+  },
+  {
+    num: 2,
+    title: 'On the Ship',
+    subStages: ['shipping','shipped'],
+    currentSubLabel: () => 'En Route to Australia',
+  },
+  {
+    num: 3,
+    title: 'Compliance & Fit-Out',
+    subStages: ['arrived_processing','pop_top_install','arrived_au','compliance'],
+    currentSubLabel: (key: string) =>
+      ({ arrived_processing: 'Quarantine Clearance', pop_top_install: 'Pop Top Install',
+         arrived_au: 'Compliance', compliance: 'Compliance' }[key] ?? key),
+  },
+  {
+    num: 4,
+    title: 'Delivery',
+    subStages: ['ready_for_handover','ready_for_collection','ready'],
+    currentSubLabel: () => 'Ready for Collection',
+  },
+]
+
+function getMainStageIdx(stageKey: string): number {
+  for (let i = 0; i < MAIN_STAGES.length; i++) {
+    if (MAIN_STAGES[i].subStages.includes(stageKey)) return i
+  }
+  return 0
+}
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 type Tab = 'saved' | 'builds' | 'deposits' | 'imports'
@@ -329,83 +370,84 @@ export default function AccountClient({
                         {isFinal && <span className="text-2xl shrink-0">🎉</span>}
                       </div>
 
-                      {/* Progress bar */}
-                      <div className="px-6 pt-5 pb-2">
-                        <div className="flex justify-between text-xs text-gray-500 mb-1.5">
-                          <span>Progress</span>
-                          <span className="font-semibold text-forest-700">{resolvedIdx + 1} of {stages.length} stages complete</span>
-                        </div>
-                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                          <div className="h-full bg-forest-600 rounded-full transition-all duration-700" style={{ width: `${pct}%` }} />
-                        </div>
-                      </div>
-
-                      {/* Stage timeline */}
-                      <div className="px-6 py-5">
-                        {stages.map((stageKey, idx) => {
-                          const meta   = STAGE_META[stageKey] ?? { label: stageKey, desc: '' }
-                          const done   = idx < resolvedIdx
-                          const active = idx === resolvedIdx
-                          const isLast = idx === stages.length - 1
-                          const date   = order.stage_dates?.[stageKey]
-                          const note   = order.stage_notes?.[stageKey]
-
-                          return (
-                            <div key={stageKey} className="flex gap-4">
-                              {/* Dot + connector */}
-                              <div className="flex flex-col items-center">
-                                <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
-                                  done   ? 'bg-forest-600 border-forest-600' :
-                                  active ? 'border-forest-600 bg-white ring-4 ring-forest-100' :
-                                           'border-gray-200 bg-white'
+                        {/* ── 4-stage visual ── */}
+                      <div className="px-6 py-6">
+                        <div className="relative flex justify-between items-start">
+                          {/* Connecting line behind circles */}
+                          <div className="absolute top-5 left-0 right-0 h-0.5 bg-gray-200 z-0" style={{ margin: '0 2.5rem' }} />
+                          <div
+                            className="absolute top-5 left-0 h-0.5 bg-forest-500 z-0 transition-all duration-700"
+                            style={{ margin: '0 2.5rem', width: `calc(${Math.max(0, getMainStageIdx(order.current_stage)) / (MAIN_STAGES.length - 1) * 100}% - 0px)` }}
+                          />
+                          {MAIN_STAGES.map((ms, mi) => {
+                            const activeMainIdx = getMainStageIdx(order.current_stage)
+                            const isDone   = mi < activeMainIdx
+                            const isActive = mi === activeMainIdx
+                            const subLabel = isActive ? ms.currentSubLabel(order.current_stage) : null
+                            return (
+                              <div key={ms.num} className="flex flex-col items-center z-10 flex-1 px-1">
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-display text-lg font-bold transition-all mb-2 ${
+                                  isDone   ? 'bg-forest-600 text-white' :
+                                  isActive ? 'bg-forest-600 text-white ring-4 ring-forest-100' :
+                                             'bg-white border-2 border-gray-200 text-gray-300'
                                 }`}>
-                                  {done ? (
-                                    <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                                  ) : active ? (
-                                    <div className="w-2.5 h-2.5 rounded-full bg-forest-600 animate-pulse" />
-                                  ) : null}
-                                </div>
-                                {!isLast && <div className={`w-0.5 flex-1 min-h-[28px] my-1 ${done ? 'bg-forest-300' : 'bg-gray-200'}`} />}
-                              </div>
-
-                              {/* Text */}
-                              <div className={`flex-1 ${isLast ? 'pb-2' : 'pb-4'}`}>
-                                <div className="flex items-center gap-2 flex-wrap mb-0.5 pt-0.5">
-                                  <span className={`font-semibold text-sm ${active ? 'text-forest-800' : done ? 'text-gray-700' : 'text-gray-400'}`}>{meta.label}</span>
-                                  {active && <span className="bg-forest-100 text-forest-700 text-xs font-bold px-2 py-0.5 rounded-full">Current</span>}
-                                  {date && (
-                                    <span className={`text-xs ${active ? 'text-forest-600 font-medium' : 'text-gray-400'}`}>
-                                      {active ? 'Since ' : done ? '' : 'Est. '}
-                                      {new Date(date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                  {isDone ? (
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
+                                  ) : isActive ? (
+                                    <span className="relative flex items-center justify-center">
+                                      {ms.num}
+                                      <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-sand-400 rounded-full animate-pulse" />
                                     </span>
-                                  )}
+                                  ) : ms.num}
                                 </div>
-                                {(active || done) && <p className={`text-xs leading-relaxed ${active ? 'text-gray-600' : 'text-gray-400'}`}>{meta.desc}</p>}
-                                {active && meta.next && <p className="text-xs text-forest-600 mt-1 font-medium">{meta.next}</p>}
-                                {note && (active || done) && (
-                                  <div className="mt-2 bg-sand-50 border border-sand-200 rounded-lg px-3 py-2 text-xs text-gray-700">
-                                    <span className="font-semibold">Note from Dream Drive: </span>{note}
-                                  </div>
-                                )}
-                                {active && (order.progress_photos ?? []).length > 0 && (
-                                  <div className="mt-2 flex gap-2 flex-wrap">
-                                    {(order.progress_photos ?? []).map((ph, pi) => (
-                                      <img key={pi} src={ph} alt={`Progress ${pi + 1}`} className="w-20 h-14 object-cover rounded-lg border border-gray-200" /> // eslint-disable-line @next/next/no-img-element
-                                    ))}
-                                  </div>
+                                <p className={`text-xs font-semibold text-center leading-tight ${isActive ? 'text-forest-800' : isDone ? 'text-gray-600' : 'text-gray-300'}`}>
+                                  {ms.title}
+                                </p>
+                                {subLabel && (
+                                  <span className="mt-1 bg-forest-100 text-forest-700 text-[10px] font-bold px-1.5 py-0.5 rounded-full text-center leading-tight">
+                                    {subLabel}
+                                  </span>
                                 )}
                               </div>
-                            </div>
-                          )
-                        })}
-                      </div>
-
-                      {/* Legacy admin notes */}
-                      {order.admin_notes && !order.stage_notes && (
-                        <div className="mx-6 mb-5 bg-sand-50 border border-sand-200 rounded-xl px-4 py-3 text-sm text-gray-700">
-                          <span className="font-semibold text-gray-800">Message from Dream Drive: </span>{order.admin_notes}
+                            )
+                          })}
                         </div>
-                      )}
+
+                        {/* Current stage detail */}
+                        {!isFinal && (() => {
+                          const meta = STAGE_META[order.current_stage]
+                          return meta ? (
+                            <div className="mt-6 bg-forest-50 border border-forest-200 rounded-xl px-4 py-3">
+                              <p className="text-sm font-semibold text-forest-800">{meta.label}</p>
+                              <p className="text-xs text-gray-600 mt-0.5">{meta.desc}</p>
+                              {meta.next && <p className="text-xs text-forest-600 mt-1 font-medium">{meta.next}</p>}
+                            </div>
+                          ) : null
+                        })()}
+
+                        {/* Stage notes from admin */}
+                        {order.stage_notes?.[order.current_stage] && (
+                          <div className="mt-3 bg-sand-50 border border-sand-200 rounded-xl px-4 py-3 text-xs text-gray-700">
+                            <span className="font-semibold">Note from Dream Drive: </span>
+                            {order.stage_notes[order.current_stage]}
+                          </div>
+                        )}
+                        {order.admin_notes && !order.stage_notes && (
+                          <div className="mt-3 bg-sand-50 border border-sand-200 rounded-xl px-4 py-3 text-sm text-gray-700">
+                            <span className="font-semibold text-gray-800">Message from Dream Drive: </span>{order.admin_notes}
+                          </div>
+                        )}
+
+                        {/* Progress photos */}
+                        {(order.progress_photos ?? []).length > 0 && (
+                          <div className="mt-4 flex gap-2 flex-wrap">
+                            {(order.progress_photos ?? []).map((ph, pi) => (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img key={pi} src={ph} alt={`Progress ${pi + 1}`} className="w-20 h-14 object-cover rounded-lg border border-gray-200" />
+                            ))}
+                          </div>
+                        )}
+                      </div>
 
                       {/* Handover celebration */}
                       {isFinal && (
@@ -417,6 +459,9 @@ export default function AccountClient({
                           </a>
                         </div>
                       )}
+
+                      {/* Ask a Question */}
+                      {!isFinal && <OrderQuestion orderId={order.id} />}
                     </div>
 
                     {/* Invoices & Payments */}
@@ -489,6 +534,64 @@ export default function AccountClient({
           )
         )}
       </div>
+    </div>
+  )
+}
+
+// ── Ask a Question component ─────────────────────────────────────────────────
+function OrderQuestion({ orderId }: { orderId: string }) {
+  const [text, setText] = useState('')
+  const [sending, setSending] = useState(false)
+  const [sent, setSent] = useState(false)
+  const [err, setErr] = useState('')
+
+  const handleSend = async () => {
+    if (!text.trim()) return
+    setSending(true); setErr('')
+    try {
+      const res = await fetch('/api/orders/question', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ import_order_id: orderId, message: text.trim() }),
+      })
+      if (!res.ok) throw new Error((await res.json()).error ?? 'Send failed')
+      setSent(true); setText('')
+    } catch (e) {
+      setErr(String(e))
+    } finally {
+      setSending(false)
+    }
+  }
+
+  return (
+    <div className="mx-6 mb-6 border-t border-gray-100 pt-5">
+      <p className="text-sm font-semibold text-gray-700 mb-2">Ask a Question</p>
+      {sent ? (
+        <p className="text-sm text-forest-700 font-medium bg-forest-50 border border-forest-200 rounded-xl px-4 py-3">
+          ✓ Question sent — we&apos;ll reply within 1 business day.
+        </p>
+      ) : (
+        <>
+          <textarea
+            value={text}
+            onChange={e => setText(e.target.value.slice(0, 500))}
+            rows={3}
+            placeholder="Ask a question about your build..."
+            className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-forest-600"
+          />
+          <div className="flex items-center justify-between mt-2">
+            <span className="text-xs text-gray-400">{text.length}/500</span>
+            <button
+              onClick={handleSend}
+              disabled={sending || !text.trim()}
+              className="btn-primary btn-sm text-xs disabled:opacity-50"
+            >
+              {sending ? 'Sending…' : 'Send Question'}
+            </button>
+          </div>
+          {err && <p className="text-xs text-red-600 mt-1">{err}</p>}
+        </>
+      )}
     </div>
   )
 }

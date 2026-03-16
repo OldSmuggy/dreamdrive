@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import ConversionDetails from '@/components/van/ConversionDetails'
 
 const FITOUTS: Record<string, { name: string; desc: string }> = {
   tama: { name: 'TAMA', desc: 'Our entry-level fit-out — functional, lightweight, and designed for weekend warriors.' },
@@ -24,10 +25,14 @@ export default function FitOutPage({ params }: { params: { slug: string } }) {
         <Link href="/fit-outs" className="text-forest-600 text-sm font-medium hover:underline mb-6 inline-block">← All Fit-Outs</Link>
         <h1 className="font-display text-4xl text-forest-900 mb-4">{fo.name}</h1>
         <p className="text-gray-600 text-lg mb-8">{fo.desc}</p>
-        <div className="bg-sand-50 rounded-2xl p-8 text-center">
-          <p className="text-gray-500 mb-4">Full product details coming soon.</p>
-          <Link href="/browse" className="btn-primary inline-block">Browse Vans →</Link>
-        </div>
+        {params.slug === 'pop-top' ? (
+          <ConversionDetails />
+        ) : (
+          <div className="bg-sand-50 rounded-2xl p-8 text-center">
+            <p className="text-gray-500 mb-4">Full product details coming soon.</p>
+            <Link href="/browse" className="btn-primary inline-block">Browse Vans →</Link>
+          </div>
+        )}
       </div>
     </div>
   )

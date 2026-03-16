@@ -90,3 +90,29 @@ export function sourceLabel(source: string): string {
 export function sourceBadgeColor(source: string): string {
   return { auction: 'bg-amber-500', dealer_carsensor: 'bg-blue-500', dealer_goonet: 'bg-blue-500', au_stock: 'bg-forest-600' }[source] ?? 'bg-gray-500'
 }
+
+// ---- Location-based status badges ----
+export function locationBadgeInfo(listing: { location_status?: string | null; source: string }): {
+  label: string; bg: string; sub: string
+} {
+  const ls = listing.location_status
+  if (ls === 'sold')        return { label: 'SOLD',         bg: 'bg-gray-500',   sub: '' }
+  if (ls === 'on_ship')     return { label: 'ON SHIP',      bg: 'bg-orange-600', sub: 'Arriving soon · Fees paid' }
+  if (ls === 'in_brisbane' || listing.source === 'au_stock')
+                            return { label: 'IN BRISBANE',  bg: 'bg-green-600',  sub: 'Ready for test drive · All fees paid' }
+  // default: in_japan (auction / dealer)
+  return                           { label: 'IN JAPAN',     bg: 'bg-red-600',    sub: 'Import fees apply · 16–20 week wait' }
+}
+
+// ---- Fit-out level badges ----
+export function fitOutLevelInfo(level: string | null | undefined): {
+  label: string; desc: string; cls: string
+} | null {
+  if (!level) return null
+  const map: Record<string, { label: string; desc: string; cls: string }> = {
+    empty:   { label: 'Empty Van',      desc: 'Standard cargo or passenger configuration',                                         cls: 'bg-gray-100 text-gray-600 border-gray-200' },
+    partial: { label: 'Head Start',     desc: 'Existing mods — bed platform, lining, or basic cabinetry. Ready for Dream Drive fit-out.', cls: 'bg-blue-50 text-blue-700 border-blue-200' },
+    full:    { label: 'Full Campervan', desc: 'Fully converted camper — ready to travel',                                         cls: 'bg-forest-50 text-forest-700 border-forest-200' },
+  }
+  return map[level] ?? null
+}

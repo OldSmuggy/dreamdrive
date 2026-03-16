@@ -5,6 +5,9 @@
 export type Source = 'auction' | 'dealer_carsensor' | 'dealer_goonet' | 'au_stock'
 export type ListingStatus = 'available' | 'auction_ended' | 'sold' | 'reserved'
 export type AuStockStatus = 'import_pending' | 'import_approved' | 'en_route' | 'on_ship' | 'at_dock' | 'in_transit_au' | 'available_now'
+export type LocationStatus = 'in_japan' | 'on_ship' | 'in_brisbane' | 'sold'
+export type FitOutLevel = 'empty' | 'partial' | 'full'
+export type VehicleModel = 'hiace_h200' | 'hiace_300' | 'coaster' | 'other'
 export type VanSize = 'MWB' | 'LWB' | 'SLWB'
 export type VanInternals = 'empty' | 'seats' | 'campervan'
 export type InspectionScore = 'S' | '6' | '5.5' | '5' | '4.5' | '4' | '3.5' | '3' | 'R' | 'RA' | 'X'
@@ -63,6 +66,10 @@ export interface Listing {
   scraped_at: string | null
   created_at: string
   updated_at: string
+  location_status: LocationStatus | null
+  fit_out_level: FitOutLevel | null
+  vehicle_model: VehicleModel | null
+  conversion_video_url: string | null
 }
 
 export interface Product {
