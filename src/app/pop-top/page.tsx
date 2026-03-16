@@ -36,8 +36,8 @@ export default function PopTopPage() {
         <p className="text-sand-500 text-xs font-semibold tracking-widest uppercase mb-10">The numbers</p>
         <div className="grid md:grid-cols-3 gap-8 text-center">
           <div className="border border-gray-200 rounded-2xl p-10 hover:shadow-md transition-shadow">
-            <p className="font-display text-5xl text-forest-700 mb-3">$11,900</p>
-            <p className="text-gray-500 text-sm font-medium">ex GST</p>
+            <p className="font-display text-5xl text-forest-700 mb-3">$13,090</p>
+            <p className="text-gray-500 text-sm font-medium">incl. GST</p>
           </div>
           <div className="border border-gray-200 rounded-2xl p-10 hover:shadow-md transition-shadow">
             <p className="font-display text-5xl text-forest-700 mb-3">$4,000</p>

@@ -2,7 +2,7 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { centsToAud, effectivePrice, activeSpecial, sourceLabel, sourceBadgeColor } from '@/lib/utils'
-import { listingDisplayPrice } from '@/lib/pricing'
+import { listingDisplayPrice, tamaConversionAud, manaJpConversionAud, manaAuConversionAud } from '@/lib/pricing'
 import type { Listing, Product } from '@/types'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -84,7 +84,6 @@ export default function ConfiguratorV2({
   const isTama             = fitoutSlug === 'tama'
   const isMana             = fitoutSlug === 'mana'
   const isGrid             = fitoutSlug === 'grid'
-  const isAllInPrice       = isTama || isMana   // van included in base price
   const manaIncludesPopTop = isMana
 
   // ── Products ───────────────────────────────────────────────────────────────
@@ -120,41 +119,60 @@ export default function ConfiguratorV2({
     const lines: PriceLine[] = []
     let total = 0
 
+    // ── Conversion fee (TAMA / MANA / Bare Camper / van-first) ──────────────
+    if (isTama) {
+      const fee = tamaConversionAud(jpyRate) * 100  // convert to cents
+      lines.push({ label: 'TAMA Conversion (¥4,800,000)', price: fee, note: 'Built at our Tokyo facility' })
+      total += fee
+    } else if (isMana && manaLocation === 'japan') {
+      const fee = manaJpConversionAud(jpyRate) * 100
+      lines.push({ label: 'MANA Conversion (¥4,500,000)', price: fee, note: 'Built at our Tokyo facility' })
+      total += fee
+    } else if (isMana && manaLocation === 'australia') {
+      const fee = manaAuConversionAud() * 100  // $45,000 in cents
+      lines.push({ label: 'MANA Conversion', price: fee, note: 'Built at our Brisbane workshop' })
+      total += fee
+    } else if (fitoutProduct && isGrid) {
+      const fp = effectivePrice(fitoutProduct)
+      lines.push({ label: 'Bare Camper', price: fp, note: 'Installed in Australia' })
+      total += fp
+    }
+
+    // ── Van price (always separate) ──────────────────────────────────────────
     if (isVanFirst) {
-      // Van-first: van price is the base
       const { priceCents: vp } = selectedVan ? listingDisplayPrice(selectedVan, jpyRate) : { priceCents: 0 }
-      lines.push({ label: selectedVan?.model_name ?? 'Your Van', price: vp ?? 0 })
+      lines.push({ label: selectedVan?.model_name ?? 'Your Van', price: vp ?? 0, note: isJapanBuild ? 'Incl. $10,000 import fee' : undefined })
       total += vp ?? 0
-    } else if (isAllInPrice) {
-      // TAMA / MANA: product price is all-in (van + conversion)
-      if (fitoutProduct) {
-        const fp = effectivePrice(fitoutProduct)
-        lines.push({ label: `${fitoutProduct.name} — van + full conversion`, price: fp })
-        total += fp
+    } else if (isTama || (isMana && manaLocation === 'japan')) {
+      // Japan build — show van as separate line if selected
+      if (selectedVan) {
+        const { priceCents: vp } = listingDisplayPrice(selectedVan, jpyRate)
+        lines.push({ label: selectedVan.model_name, price: vp ?? 0, note: 'Incl. $10,000 import fee' })
+        total += vp ?? 0
+      } else {
+        lines.push({ label: 'Van', price: null, note: 'To be selected — see price range above' })
       }
-    } else {
-      // Grid / no fitout: fitout price + van price (if not BYO)
-      if (fitoutProduct) {
-        const fp = effectivePrice(fitoutProduct)
-        lines.push({ label: fitoutProduct.name, price: fp })
-        total += fp
-      }
+    } else if (fitoutSlug !== null) {
+      // AU build with fitout (MANA AU, Bare Camper)
       if (!isBYO && selectedVan) {
         const { priceCents: vp } = listingDisplayPrice(selectedVan, jpyRate)
-        lines.push({ label: selectedVan.model_name, price: vp ?? 0 })
+        lines.push({ label: selectedVan.model_name, price: vp ?? 0, note: 'Incl. $10,000 import fee' })
         total += vp ?? 0
-      }
-      if (isBYO) {
+      } else if (isBYO) {
         lines.push({ label: 'Your own van', price: null, note: 'BYO — compatibility to be confirmed' })
+      } else {
+        lines.push({ label: 'Van', price: null, note: 'To be selected — see price range above' })
       }
     }
 
+    // ── Electrical ───────────────────────────────────────────────────────────
     if (electrical) {
       const ep = effectivePrice(electrical)
       lines.push({ label: electrical.name, price: ep })
       total += ep
     }
 
+    // ── Pop Top ──────────────────────────────────────────────────────────────
     if (manaIncludesPopTop) {
       lines.push({ label: 'Pop Top Roof', price: null, note: 'Included with MANA' })
     } else if (popTop && poptopProduct) {
@@ -163,6 +181,7 @@ export default function ConfiguratorV2({
       total += pp
     }
 
+    // ── Add-ons ──────────────────────────────────────────────────────────────
     selectedAddons.forEach(slug => {
       const addon = ADDON_CATALOG.find(a => a.slug === slug)
       if (addon) {
@@ -173,7 +192,8 @@ export default function ConfiguratorV2({
 
     return { totalCents: total, priceLines: lines }
   }, [
-    isVanFirst, isAllInPrice, isBYO, fitoutProduct, selectedVan, jpyRate,
+    isVanFirst, isTama, isMana, isGrid, manaLocation, isBYO, fitoutProduct, fitoutSlug,
+    selectedVan, jpyRate, isJapanBuild,
     electrical, manaIncludesPopTop, popTop, poptopProduct, selectedAddons,
   ])
 
@@ -367,7 +387,7 @@ export default function ConfiguratorV2({
           <div className="mt-8 bg-sand-50 border border-sand-200 rounded-2xl p-6">
             <p className="font-semibold text-forest-900 mb-1">Want a full campervan conversion?</p>
             <p className="text-gray-500 text-sm mb-4 leading-relaxed">
-              Explore TAMA (6-seat family) or MANA (2-person campervan) — all-in pricing includes your van and complete conversion.
+              Explore TAMA (6-seat family) or MANA (2-person campervan) — choose your conversion, then add your van.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link href="/configurator?fitout=tama" className="btn-primary text-sm px-5 py-2.5">Explore TAMA</Link>
@@ -416,7 +436,7 @@ export default function ConfiguratorV2({
               title="TAMA"
               subtitle="6-Seat Family Campervan"
               detail="Built at our Tokyo facility. Rear seat folds to bed. Galley kitchen, sink, fridge."
-              fromPrice="From $106,000"
+              fromPrice={`Conversion ~$${(tamaConversionAud(jpyRate)).toLocaleString('en-AU')}`}
               badge="Japan Build"
               badgeColor="bg-forest-600"
               selected={fitoutSlug === 'tama'}
@@ -429,7 +449,9 @@ export default function ConfiguratorV2({
                 title="MANA"
                 subtitle="Compact 2-Person Campervan"
                 detail="Full standing room, pop top included, 75L fridge, toilet, external shower."
-                fromPrice="From $105,000"
+                fromPrice={manaLocation === 'australia'
+                  ? `Conversion $${manaAuConversionAud().toLocaleString('en-AU')}`
+                  : `Conversion ~$${manaJpConversionAud(jpyRate).toLocaleString('en-AU')}`}
                 badge={fitoutSlug === 'mana'
                   ? (manaLocation === 'japan' ? 'Japan Build' : 'AU Build')
                   : 'Japan or AU'}
@@ -464,12 +486,12 @@ export default function ConfiguratorV2({
               )}
             </div>
 
-            {/* Grid Bed Kit */}
+            {/* Bare Camper */}
             {(() => {
               const gridProduct = products.find(p => p.slug === GRID_SLUG || p.slug.startsWith('grid'))
               return (
                 <BuildOption
-                  title="Grid Bed Kit"
+                  title="Bare Camper"
                   subtitle="Modular Bed System by Skybridge"
                   detail="Installed in Australia. Compatible with Toyota Hiace H200 LWB — or bring your own."
                   fromPrice={gridProduct ? `From ${centsToAud(effectivePrice(gridProduct))}` : 'Contact for price'}
@@ -507,7 +529,7 @@ export default function ConfiguratorV2({
                 {isTama && 'TAMA is built at our Tokyo facility. Van must be sourced from Japan auction or dealer.'}
                 {isMana && manaLocation === 'japan' && 'MANA Japan build: van sourced from Japan, arrives fully converted.'}
                 {isMana && manaLocation === 'australia' && 'MANA AU build: van arrives bare, converted at our Brisbane workshop. BYO van option available.'}
-                {isGrid && 'Grid Bed Kit is installed in Australia. All van sources and BYO available.'}
+                {isGrid && 'Bare Camper is installed in Australia. All van sources and BYO available.'}
               </p>
             </div>
           )}
@@ -530,7 +552,7 @@ export default function ConfiguratorV2({
             <div className="flex gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800 mb-5">
               <span className="shrink-0 mt-0.5">⚠</span>
               <p>
-                <strong>Grid Bed Kit does not include electrical</strong> — Compatible with Electrical Cabinet only.
+                <strong>Bare Camper does not include electrical</strong> — Compatible with Electrical Cabinet only.
                 For full systems, consider a TAMA or MANA build.
               </p>
             </div>
@@ -681,7 +703,7 @@ export default function ConfiguratorV2({
               <span className="shrink-0">🇯🇵</span>
               <p>
                 Your {isTama ? 'TAMA' : 'MANA'} is built in Japan — showing Japan auction and dealer vans.
-                The van cost is <strong>included in your all-in build price</strong>.
+                The van price is added separately to the conversion fee.
               </p>
             </div>
           ) : (
@@ -710,7 +732,7 @@ export default function ConfiguratorV2({
                       Already own a Hiace? We can convert your van. Contact us to confirm compatibility.
                     </p>
                     <p className="text-xs text-gray-400 mt-1.5">
-                      Compatible: Toyota Hiace H200 LWB (MANA/Grid). H200, 300 Series, VW T5, Mercedes Vito/Sprinter (pop top).
+                      Compatible: Toyota Hiace H200 LWB (MANA/Bare Camper). H200, 300 Series, VW T5, Mercedes Vito/Sprinter (pop top).
                     </p>
                   </div>
                   <div className={`mt-0.5 w-6 h-6 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
@@ -757,16 +779,19 @@ export default function ConfiguratorV2({
                         </span>
                       </div>
                       <div className="text-right shrink-0">
-                        <p className="font-display text-forest-700 text-base">
-                          {van.au_price_aud
-                            ? centsToAud(van.au_price_aud)
-                            : van.aud_estimate
-                            ? `~${centsToAud(van.aud_estimate)}`
-                            : 'POA'}
-                        </p>
-                        {isAllInPrice && (
-                          <p className="text-xs text-gray-400">incl. in build</p>
-                        )}
+                        {(() => {
+                          const { priceCents, isEstimate } = listingDisplayPrice(van, jpyRate)
+                          return (
+                            <>
+                              <p className="font-display text-forest-700 text-base">
+                                {priceCents ? `${isEstimate ? '~' : ''}${centsToAud(priceCents)}` : 'POA'}
+                              </p>
+                              {isEstimate && priceCents && (
+                                <p className="text-xs text-gray-400">est. incl. import</p>
+                              )}
+                            </>
+                          )
+                        })()}
                       </div>
                     </div>
                   ))}
@@ -827,7 +852,7 @@ export default function ConfiguratorV2({
                 {[
                   fitoutSlug === 'tama' && 'TAMA',
                   fitoutSlug === 'mana' && 'MANA',
-                  fitoutSlug === 'grid' && 'Grid Bed Kit',
+                  fitoutSlug === 'grid' && 'Bare Camper',
                   electrical?.name,
                   (popTop && !manaIncludesPopTop) && 'Pop Top',
                   manaIncludesPopTop && 'Pop Top (incl.)',
@@ -1007,7 +1032,7 @@ function SummaryStep({
     : isBYO                                           ? 'Book a Consultation'
     :                                                   'Save My Build & Find a Van'
 
-  const fitoutLabel = fitoutSlug === 'tama' ? 'TAMA' : fitoutSlug === 'mana' ? 'MANA' : fitoutSlug === 'grid' ? 'Grid Conversion' : 'No Fit-Out'
+  const fitoutLabel = fitoutSlug === 'tama' ? 'TAMA' : fitoutSlug === 'mana' ? 'MANA' : fitoutSlug === 'grid' ? 'Bare Camper' : 'No Fit-Out'
   const electricalLabel = electrical?.name ?? null
   const popTopLabel = popTop ? 'Pop Top' : null
 

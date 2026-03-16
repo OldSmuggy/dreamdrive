@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import LeadFormModal from '@/components/leads/LeadFormModal'
+import { getJpyRate } from '@/lib/settings'
+import { tamaConversionAud, conversionPriceRange, formatAud } from '@/lib/pricing'
 
 export const metadata = {
   title: 'TAMA — 6-Seat Family Campervan | Dream Drive',
@@ -7,7 +9,12 @@ export const metadata = {
     'The TAMA converts your Toyota Hiace into a 6-seat people mover with ISOFIX, galley kitchen, walnut countertops, and full electrical. From $106,000.',
 }
 
-export default function TamaPage() {
+export default async function TamaPage() {
+  const jpyRate = await getJpyRate()
+  const conversionAud = tamaConversionAud(jpyRate)
+  const { low, high } = conversionPriceRange(conversionAud)
+  const popTopRange   = conversionPriceRange(conversionAud, 13_090)
+
   return (
     <div className="min-h-screen bg-white">
 
@@ -28,34 +35,40 @@ export default function TamaPage() {
         </div>
       </section>
 
-      {/* ─── BASE VEHICLE ─────────────────────────────────────── */}
+      {/* ─── PRICING ──────────────────────────────────────────── */}
       <section className="max-w-6xl mx-auto px-6 py-20">
-        <p className="text-sand-500 text-xs font-semibold tracking-widest uppercase mb-3">Base Vehicle</p>
-        <h2 className="font-display text-4xl text-forest-900 mb-4">
-          Toyota Hiace H200 — Pop Top Standard Wheel Base
-        </h2>
+        <p className="text-sand-500 text-xs font-semibold tracking-widest uppercase mb-3">Pricing</p>
+        <h2 className="font-display text-4xl text-forest-900 mb-4">What Does a TAMA Cost?</h2>
         <p className="text-gray-500 max-w-2xl mb-10 leading-relaxed">
-          The H200 is the only model Hiace sold in Japan. The cab-over engine design maximises cabin space,
-          giving you more room for what matters — family and gear.
-        </p>
-        <p className="text-sm text-gray-400 mb-10">
-          4,695mm L × 1,695mm W × 1,980mm H — Automatic Transmission
+          The van and conversion are priced separately — because every Japan-sourced Hiace is unique.
+          You choose the van; we do the conversion.
         </p>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-3 gap-6 mb-10">
           <div className="border border-gray-200 rounded-2xl p-8 hover:shadow-md transition-shadow">
-            <p className="text-xs font-semibold tracking-widest text-sand-500 uppercase mb-2">2WD Option</p>
-            <h3 className="font-display text-2xl text-forest-900 mb-1">2WD · 2.0L Unleaded</h3>
-            <p className="text-gray-500 text-sm mb-6">3 front seats</p>
-            <p className="font-display text-4xl text-forest-700">$106,000</p>
+            <p className="text-xs font-semibold tracking-widest text-sand-500 uppercase mb-2">Conversion Fee</p>
+            <p className="font-display text-3xl text-forest-700 mb-1">{formatAud(conversionAud)}</p>
+            <p className="text-gray-400 text-sm">¥4,800,000 at today&apos;s rate</p>
+            <p className="text-xs text-gray-400 mt-1">Japan build · Toyota Tokyo facility</p>
           </div>
           <div className="border border-gray-200 rounded-2xl p-8 hover:shadow-md transition-shadow">
-            <p className="text-xs font-semibold tracking-widest text-sand-500 uppercase mb-2">4×4 Option</p>
-            <h3 className="font-display text-2xl text-forest-900 mb-1">4×4 · 2.8L Turbo Diesel</h3>
-            <p className="text-gray-500 text-sm mb-6">2 front seats</p>
-            <p className="font-display text-4xl text-forest-700">$111,000</p>
+            <p className="text-xs font-semibold tracking-widest text-sand-500 uppercase mb-2">Base Vehicle + Import</p>
+            <p className="font-display text-3xl text-forest-700 mb-1">$25,000 – $50,000</p>
+            <p className="text-gray-400 text-sm">Hiace from Japan auction or dealer</p>
+            <p className="text-xs text-gray-400 mt-1">Incl. shipping, compliance & GST</p>
+          </div>
+          <div className="border border-gray-200 rounded-2xl p-8 bg-forest-50 border-forest-200 hover:shadow-md transition-shadow">
+            <p className="text-xs font-semibold tracking-widest text-forest-600 uppercase mb-2">Total Estimate</p>
+            <p className="font-display text-3xl text-forest-700 mb-1">~{formatAud(low)} – {formatAud(high)}</p>
+            <p className="text-gray-500 text-sm">Depends on the van you choose</p>
+            <p className="text-xs text-gray-400 mt-1">+ $13,090 for pop top (optional)</p>
           </div>
         </div>
+
+        <p className="text-xs text-gray-400 leading-relaxed max-w-2xl">
+          Conversion fee based on today&apos;s JPY/AUD exchange rate ({jpyRate.toFixed(4)}). Total estimate assumes a Japan-sourced Hiace H200.
+          4,695mm L × 1,695mm W × 1,980mm H — Automatic Transmission. Final pricing confirmed at consultation.
+        </p>
       </section>
 
       {/* ─── INCLUDED STANDARD ────────────────────────────────── */}

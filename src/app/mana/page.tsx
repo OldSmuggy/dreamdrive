@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import LeadFormModal from '@/components/leads/LeadFormModal'
+import { getJpyRate } from '@/lib/settings'
+import { manaJpConversionAud, manaAuConversionAud, conversionPriceRange, formatAud } from '@/lib/pricing'
 
 export const metadata = {
   title: 'MANA — Liveable Compact Campervan | Dream Drive',
@@ -7,7 +9,13 @@ export const metadata = {
     'The MANA is built for two on the long road. Pop top, 75L fridge, toilet, external shower, 200AH lithium. From $105,000.',
 }
 
-export default function ManaPage() {
+export default async function ManaPage() {
+  const jpyRate = await getJpyRate()
+  const jpConversionAud = manaJpConversionAud(jpyRate)
+  const auConversionAud = manaAuConversionAud()
+  const jpRange = conversionPriceRange(jpConversionAud)
+  const auRange = conversionPriceRange(auConversionAud)
+
   return (
     <div className="min-h-screen bg-white">
 
@@ -41,25 +49,67 @@ export default function ManaPage() {
         <p className="text-sm text-gray-400">4,695mm L × 1,695mm W × 2,100mm H (approx)</p>
       </section>
 
-      {/* ─── BASE PRICING ─────────────────────────────────────── */}
+      {/* ─── PRICING ──────────────────────────────────────────── */}
       <section className="bg-sand-50 py-20">
         <div className="max-w-6xl mx-auto px-6">
           <p className="text-sand-500 text-xs font-semibold tracking-widest uppercase mb-3">Pricing</p>
-          <h2 className="font-display text-4xl text-forest-900 mb-10">Base Vehicle Pricing</h2>
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="border border-gray-200 rounded-2xl p-8 bg-white hover:shadow-md transition-shadow">
-              <p className="text-xs font-semibold tracking-widest text-sand-500 uppercase mb-2">2WD Option</p>
-              <h3 className="font-display text-2xl text-forest-900 mb-1">2WD Hiace Unleaded</h3>
-              <p className="text-gray-500 text-sm mb-6">2.7L petrol engine</p>
-              <p className="font-display text-4xl text-forest-700">$105,000</p>
+          <h2 className="font-display text-4xl text-forest-900 mb-4">What Does a MANA Cost?</h2>
+          <p className="text-gray-500 max-w-2xl mb-10 leading-relaxed">
+            Choose whether your MANA is built in Japan or Australia — each has a different conversion fee
+            and timeline. The van is priced separately.
+          </p>
+
+          <div className="grid md:grid-cols-2 gap-8 mb-6">
+            {/* Japan build */}
+            <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+              <div className="bg-forest-950 text-white px-6 py-4">
+                <p className="text-xs font-semibold tracking-wider text-sand-400 uppercase mb-1">🇯🇵 Japan Build</p>
+                <p className="font-display text-2xl">MANA — Tokyo Facility</p>
+              </div>
+              <div className="p-6 space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Conversion fee</span>
+                  <span className="font-semibold text-gray-900">~{formatAud(jpConversionAud)} <span className="text-xs text-gray-400">(¥4,500,000)</span></span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Van + import</span>
+                  <span className="font-semibold text-gray-900">$25,000 – $50,000</span>
+                </div>
+                <div className="flex justify-between text-sm border-t border-gray-100 pt-3">
+                  <span className="font-semibold text-gray-800">Total estimate</span>
+                  <span className="font-display text-forest-700 text-lg">~{formatAud(jpRange.low)} – {formatAud(jpRange.high)}</span>
+                </div>
+                <p className="text-xs text-gray-400">Pop top included. Van arrives fully converted.</p>
+              </div>
             </div>
-            <div className="border border-gray-200 rounded-2xl p-8 bg-white hover:shadow-md transition-shadow">
-              <p className="text-xs font-semibold tracking-widest text-sand-500 uppercase mb-2">AWD Option</p>
-              <h3 className="font-display text-2xl text-forest-900 mb-1">AWD Hiace Diesel</h3>
-              <p className="text-gray-500 text-sm mb-6">2.8L turbo diesel</p>
-              <p className="font-display text-4xl text-forest-700">$114,000</p>
+
+            {/* Australia build */}
+            <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+              <div className="bg-blue-800 text-white px-6 py-4">
+                <p className="text-xs font-semibold tracking-wider text-blue-200 uppercase mb-1">🇦🇺 Australia Build</p>
+                <p className="font-display text-2xl">MANA — Brisbane Workshop</p>
+              </div>
+              <div className="p-6 space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Conversion fee</span>
+                  <span className="font-semibold text-gray-900">{formatAud(auConversionAud)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Van + import</span>
+                  <span className="font-semibold text-gray-900">$25,000 – $50,000 <span className="text-xs text-gray-400">or BYO</span></span>
+                </div>
+                <div className="flex justify-between text-sm border-t border-gray-100 pt-3">
+                  <span className="font-semibold text-gray-800">Total estimate</span>
+                  <span className="font-display text-blue-700 text-lg">{formatAud(auRange.low)} – {formatAud(auRange.high)}</span>
+                </div>
+                <p className="text-xs text-gray-400">BYO Hiace: conversion only {formatAud(auConversionAud)}. Pop top included.</p>
+              </div>
             </div>
           </div>
+
+          <p className="text-xs text-gray-400 leading-relaxed max-w-2xl">
+            Japan conversion based on today&apos;s JPY/AUD rate ({jpyRate.toFixed(4)}). Final pricing confirmed at consultation.
+          </p>
         </div>
       </section>
 

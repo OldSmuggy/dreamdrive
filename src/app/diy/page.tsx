@@ -62,17 +62,17 @@ export default function DiyPage() {
         </div>
       </section>
 
-      {/* ─── SECTION 2: GRID BED KIT ──────────────────────────── */}
+      {/* ─── SECTION 2: BARE CAMPER ───────────────────────────── */}
       <section className="bg-sand-50 py-20">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid md:grid-cols-2 gap-12 items-center">
-            {/* TODO: Add Grid Bed Kit photo */}
+            {/* TODO: Add Bare Camper photo */}
             <div className="h-72 bg-gray-200 rounded-2xl flex items-center justify-center text-gray-400 text-sm md:order-first order-last">
-              Grid Bed Kit photo coming soon
+              Bare Camper photo coming soon
             </div>
             <div>
               <p className="text-sand-500 text-xs font-semibold tracking-widest uppercase mb-3">Step 2</p>
-              <h2 className="font-display text-4xl text-forest-900 mb-4">Grid Bed Kit by Skybridge</h2>
+              <h2 className="font-display text-4xl text-forest-900 mb-4">Bare Camper by Skybridge</h2>
               <p className="text-gray-500 leading-relaxed mb-6">
                 A modular bed system designed for the Toyota Hiace H200. Simple to install, easy to
                 reconfigure. The perfect foundation for a DIY interior — add your own mattress, panels,
@@ -80,7 +80,7 @@ export default function DiyPage() {
               </p>
               <p className="font-display text-3xl text-forest-700 mb-8">From $25,000</p>
               <Link href="/configurator?fitout=grid" className="btn-primary inline-block px-6 py-3 text-sm">
-                Build with Grid →
+                Configure Bare Camper →
               </Link>
             </div>
           </div>
