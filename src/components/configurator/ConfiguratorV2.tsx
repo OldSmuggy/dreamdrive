@@ -2,6 +2,7 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { centsToAud, effectivePrice, activeSpecial, sourceLabel, sourceBadgeColor } from '@/lib/utils'
+import { listingDisplayPrice } from '@/lib/pricing'
 import type { Listing, Product } from '@/types'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -15,6 +16,7 @@ interface Props {
   preSelectedFitout: FitoutSlug
   products: Product[]
   listings: Listing[]
+  jpyRate: number
 }
 
 interface PriceLine {
@@ -57,7 +59,7 @@ function getBuildLocation(fitout: FitoutSlug, manaLoc: ManaLocation): BuildLocat
 
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function ConfiguratorV2({
-  mode, preSelectedVan, preSelectedFitout, products, listings,
+  mode, preSelectedVan, preSelectedFitout, products, listings, jpyRate,
 }: Props) {
   const isVanFirst = mode === 'van-first'
 
@@ -120,9 +122,9 @@ export default function ConfiguratorV2({
 
     if (isVanFirst) {
       // Van-first: van price is the base
-      const vp = selectedVan?.au_price_aud ?? selectedVan?.aud_estimate ?? 0
-      lines.push({ label: selectedVan?.model_name ?? 'Your Van', price: vp })
-      total += vp
+      const { priceCents: vp } = selectedVan ? listingDisplayPrice(selectedVan, jpyRate) : { priceCents: 0 }
+      lines.push({ label: selectedVan?.model_name ?? 'Your Van', price: vp ?? 0 })
+      total += vp ?? 0
     } else if (isAllInPrice) {
       // TAMA / MANA: product price is all-in (van + conversion)
       if (fitoutProduct) {
@@ -138,9 +140,9 @@ export default function ConfiguratorV2({
         total += fp
       }
       if (!isBYO && selectedVan) {
-        const vp = selectedVan.au_price_aud ?? selectedVan.aud_estimate ?? 0
-        lines.push({ label: selectedVan.model_name, price: vp })
-        total += vp
+        const { priceCents: vp } = listingDisplayPrice(selectedVan, jpyRate)
+        lines.push({ label: selectedVan.model_name, price: vp ?? 0 })
+        total += vp ?? 0
       }
       if (isBYO) {
         lines.push({ label: 'Your own van', price: null, note: 'BYO — compatibility to be confirmed' })
@@ -171,7 +173,7 @@ export default function ConfiguratorV2({
 
     return { totalCents: total, priceLines: lines }
   }, [
-    isVanFirst, isAllInPrice, isBYO, fitoutProduct, selectedVan,
+    isVanFirst, isAllInPrice, isBYO, fitoutProduct, selectedVan, jpyRate,
     electrical, manaIncludesPopTop, popTop, poptopProduct, selectedAddons,
   ])
 

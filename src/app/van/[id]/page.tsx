@@ -1,6 +1,8 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createSupabaseServer } from '@/lib/supabase-server'
+import { getJpyRate } from '@/lib/settings'
+import { listingDisplayPrice } from '@/lib/pricing'
 import { centsToAud, scoreColor, scoreLabel, sourceLabel, sourceBadgeColor, auctionUrgency, locationBadgeInfo, fitOutLevelInfo } from '@/lib/utils'
 import AuctionBanner from '@/components/ui/AuctionBanner'
 import PhotoGallery from '@/components/van/PhotoGallery'
@@ -17,9 +19,10 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
 
 export default async function VanDetailPage({ params }: { params: { id: string } }) {
   const supabase = createSupabaseServer()
-  const [{ data }, { data: { user } }] = await Promise.all([
+  const [{ data }, { data: { user } }, jpyRate] = await Promise.all([
     supabase.from('listings').select('*').eq('id', params.id).single(),
     supabase.auth.getUser(),
+    getJpyRate(),
   ])
   if (!data) notFound()
 
@@ -42,13 +45,8 @@ export default async function VanDetailPage({ params }: { params: { id: string }
   }
 
   const isJapanListing = listing.source !== 'au_stock'
-  const displayPrice = listing.source === 'au_stock' && listing.au_price_aud
-    ? centsToAud(listing.au_price_aud)
-    : listing.aud_estimate
-    ? `~${centsToAud(listing.aud_estimate)} AUD`
-    : listing.start_price_jpy
-    ? `¥${listing.start_price_jpy.toLocaleString()}`
-    : 'POA'
+  const { priceCents, isEstimate } = listingDisplayPrice(listing, jpyRate)
+  const displayPrice = priceCents ? centsToAud(priceCents) : 'POA'
 
   const internalsLabel: Record<string, string> = {
     empty: 'Empty',
@@ -164,17 +162,23 @@ export default async function VanDetailPage({ params }: { params: { id: string }
             )}
 
             <div className="mb-6">
-              <div className="text-3xl font-display text-forest-700">{displayPrice}</div>
-              {isJapanListing && listing.start_price_jpy && listing.aud_estimate && (
-                <p className="text-xs text-gray-400 mt-1">
-                  ¥{listing.start_price_jpy.toLocaleString()} JPY · AUD estimate based on today&apos;s rate.{' '}
-                  <span className="text-amber-600 font-medium">Final price depends on the exchange rate at time of payment.</span>
+              <div className="flex items-baseline gap-2">
+                <div className="text-3xl font-display text-forest-700">{displayPrice}</div>
+                {isEstimate && priceCents && (
+                  <span className="text-sm text-gray-400">est.</span>
+                )}
+              </div>
+              {isJapanListing && listing.start_price_jpy && priceCents && (
+                <p className="text-xs text-gray-400 mt-1.5 leading-relaxed">
+                  ¥{listing.start_price_jpy.toLocaleString()} JPY × {jpyRate.toFixed(4)} + $10,000 import package
+                  <span className="block text-amber-600 font-medium mt-0.5">Final price confirmed at time of payment — depends on exchange rate.</span>
                 </p>
               )}
-              {isJapanListing && listing.start_price_jpy && !listing.aud_estimate && (
-                <p className="text-xs text-gray-400 mt-1">
-                  AUD equivalent varies with exchange rate at time of payment.
-                </p>
+              {isJapanListing && !listing.start_price_jpy && !priceCents && (
+                <p className="text-xs text-gray-400 mt-1">Contact us for pricing on this van.</p>
+              )}
+              {!isJapanListing && priceCents && (
+                <p className="text-xs text-gray-400 mt-1">All-in price — import, compliance & GST included.</p>
               )}
             </div>
 

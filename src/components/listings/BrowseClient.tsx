@@ -3,6 +3,7 @@ import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { centsToAud, scoreColor, scoreLabel, auctionUrgency, locationBadgeInfo, fitOutLevelInfo } from '@/lib/utils'
+import { listingDisplayPrice } from '@/lib/pricing'
 import SaveVanButton from '@/components/ui/SaveVanButton'
 import type { Listing } from '@/types'
 
@@ -11,6 +12,7 @@ interface Props {
   searchParams: Record<string, string | undefined>
   userId: string | null
   initialSavedIds: string[]
+  jpyRate: number
 }
 
 const LOCATION_FILTERS = [
@@ -41,7 +43,7 @@ function effectiveLocation(l: Listing): string {
   return l.source === 'au_stock' ? 'in_brisbane' : 'in_japan'
 }
 
-export default function BrowseClient({ initialListings, userId, initialSavedIds }: Props) {
+export default function BrowseClient({ initialListings, userId, initialSavedIds, jpyRate }: Props) {
   const router = useRouter()
 
   // Top filter rows
@@ -206,6 +208,7 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds 
               listing={listing}
               userId={userId}
               initialSaved={initialSavedIds.includes(listing.id)}
+              jpyRate={jpyRate}
             />
           ))}
         </div>
@@ -215,7 +218,7 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds 
 }
 
 // ── Listing Card ──────────────────────────────────────────────────────────────
-function ListingCard({ listing, userId, initialSaved }: { listing: Listing; userId: string | null; initialSaved: boolean }) {
+function ListingCard({ listing, userId, initialSaved, jpyRate }: { listing: Listing; userId: string | null; initialSaved: boolean; jpyRate: number }) {
   const router = useRouter()
   const photo    = listing.photos[0] ?? null
   const urgency  = listing.source === 'auction' ? auctionUrgency(listing.auction_date) : null
@@ -224,13 +227,8 @@ function ListingCard({ listing, userId, initialSaved }: { listing: Listing; user
   const foBadge  = fitOutLevelInfo(listing.fit_out_level)
   const auctionBlur = !userId && listing.source === 'auction'
 
-  const displayPrice = listing.source === 'au_stock' && listing.au_price_aud
-    ? centsToAud(listing.au_price_aud)
-    : listing.aud_estimate
-    ? `~${centsToAud(listing.aud_estimate)} AUD est.`
-    : listing.start_price_jpy
-    ? `¥${listing.start_price_jpy.toLocaleString()} start`
-    : 'POA'
+  const { priceCents, isEstimate } = listingDisplayPrice(listing, jpyRate)
+  const displayPrice = priceCents ? centsToAud(priceCents) : 'POA'
 
   return (
     <Link href={`/van/${listing.id}`} className="bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow group block">
@@ -329,7 +327,10 @@ function ListingCard({ listing, userId, initialSaved }: { listing: Listing; user
         )}
 
         <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-          <span className="font-display text-forest-700 text-base font-semibold">{displayPrice}</span>
+          <span className="font-display text-forest-700 text-base font-semibold">
+            {displayPrice}
+            {isEstimate && priceCents && <span className="text-xs text-gray-400 font-normal ml-1">est.</span>}
+          </span>
           <span className="btn-primary btn-sm text-xs">View & Build</span>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import { createSupabaseServer } from '@/lib/supabase-server'
+import { getJpyRate } from '@/lib/settings'
 import AuctionBanner from '@/components/ui/AuctionBanner'
 import ConfiguratorV2 from '@/components/configurator/ConfiguratorV2'
 import type { Listing, Product } from '@/types'
@@ -31,8 +32,8 @@ export default async function ConfiguratorPage({ searchParams }: Props) {
 
   const mode: 'van-first' | 'build-first' = preSelectedVan ? 'van-first' : 'build-first'
 
-  // Load products + available listings in parallel
-  const [{ data: products }, { data: listings }] = await Promise.all([
+  // Load products, available listings, and exchange rate in parallel
+  const [{ data: products }, { data: listings }, jpyRate] = await Promise.all([
     supabase.from('products').select('*').eq('visible', true).order('sort_order'),
     supabase
       .from('listings')
@@ -40,6 +41,7 @@ export default async function ConfiguratorPage({ searchParams }: Props) {
       .eq('status', 'available')
       .order('created_at', { ascending: false })
       .limit(20),
+    getJpyRate(),
   ])
 
   return (
@@ -51,6 +53,7 @@ export default async function ConfiguratorPage({ searchParams }: Props) {
         preSelectedFitout={preSelectedFitout}
         products={(products ?? []) as Product[]}
         listings={(listings ?? []) as Listing[]}
+        jpyRate={jpyRate}
       />
     </div>
   )

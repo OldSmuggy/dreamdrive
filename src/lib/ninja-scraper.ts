@@ -735,9 +735,9 @@ function parseDetailPage(html: string, ref: NinjaListingRef): ScrapedVan | null 
 // ============================================================
 
 function toListingRow(van: ScrapedVan) {
-  // AUD rough estimate: JPY × ~0.0095 exchange + ~$8,500 shipping/compliance overhead
+  // AUD rough estimate: JPY × ~0.0095 exchange + $10,000 flat fee (import, shipping, compliance, GST)
   const audEstimate = van.start_price_jpy
-    ? Math.round((van.start_price_jpy * 0.0095 + 8500) * 100)
+    ? Math.round((van.start_price_jpy * 0.0095 + 10000) * 100)
     : null
 
   return {

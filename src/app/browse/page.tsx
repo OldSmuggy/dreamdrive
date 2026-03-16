@@ -1,4 +1,5 @@
 import { createSupabaseServer } from '@/lib/supabase-server'
+import { getJpyRate } from '@/lib/settings'
 import AuctionBanner from '@/components/ui/AuctionBanner'
 import BrowseClient from '@/components/listings/BrowseClient'
 import type { Listing } from '@/types'
@@ -45,8 +46,10 @@ export default async function BrowsePage({ searchParams }: Props) {
   const { data } = await query
   const listings = (data ?? []) as Listing[]
 
-  // Fetch current user + their saved van IDs
-  const { data: { user } } = await supabase.auth.getUser()
+  const [jpyRate, { data: { user } }] = await Promise.all([
+    getJpyRate(),
+    supabase.auth.getUser(),
+  ])
   let savedIds: string[] = []
   if (user) {
     const { data: saved } = await supabase
@@ -64,6 +67,7 @@ export default async function BrowsePage({ searchParams }: Props) {
         searchParams={searchParams}
         userId={user?.id ?? null}
         initialSavedIds={savedIds}
+        jpyRate={jpyRate}
       />
     </div>
   )
