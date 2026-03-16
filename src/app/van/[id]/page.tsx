@@ -26,16 +26,16 @@ export default async function VanDetailPage({ params }: { params: { id: string }
   const sColor  = scoreColor(listing.inspection_score)
   const urgency = listing.source === 'auction' ? auctionUrgency(listing.auction_date) : null
 
-  // Check if user has saved this van
+  // Check if user has saved this van + is admin
   let isSaved = false
+  let isAdmin = false
   if (user) {
-    const { data: saved } = await supabase
-      .from('saved_vans')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('listing_id', listing.id)
-      .maybeSingle()
+    const [{ data: saved }, { data: profile }] = await Promise.all([
+      supabase.from('saved_vans').select('id').eq('user_id', user.id).eq('listing_id', listing.id).maybeSingle(),
+      supabase.from('profiles').select('is_admin').eq('id', user.id).single(),
+    ])
     isSaved = !!saved
+    isAdmin = !!profile?.is_admin || !!user.email?.endsWith('@dreamdrive.life')
   }
 
   const isJapanListing = listing.source !== 'au_stock'
@@ -79,9 +79,19 @@ export default async function VanDetailPage({ params }: { params: { id: string }
       <AuctionBanner />
 
       <div className="max-w-6xl mx-auto px-4 py-8">
-        <Link href="/browse" className="text-forest-600 text-sm font-medium hover:underline mb-6 inline-block">
-          ← Back to Browse
-        </Link>
+        <div className="flex items-center justify-between mb-6">
+          <Link href="/browse" className="text-forest-600 text-sm font-medium hover:underline">
+            ← Back to Browse
+          </Link>
+          {isAdmin && (
+            <Link
+              href={`/admin/listings`}
+              className="text-xs px-3 py-1.5 bg-forest-600 text-white rounded-lg hover:bg-forest-700 font-semibold"
+            >
+              ✏ Edit in Admin
+            </Link>
+          )}
+        </div>
 
         <div className="grid lg:grid-cols-2 gap-10">
           {/* ---- Photos ---- */}

@@ -832,6 +832,11 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
   const auStock = listings.filter(l => l.source === 'au_stock')
   const auction = listings.filter(l => l.source === 'auction')
   const dealer  = listings.filter(l => l.source.startsWith('dealer'))
+  const other   = listings.filter(l =>
+    l.source !== 'au_stock' &&
+    l.source !== 'auction' &&
+    !l.source.startsWith('dealer')
+  )
 
   const renderGroup = (title: string, items: Listing[]) => {
     if (items.length === 0) return null
@@ -915,6 +920,7 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
       {renderGroup('AU Stock', auStock)}
       {renderGroup('Japan Auction', auction)}
       {renderGroup('Japan Dealers', dealer)}
+      {renderGroup('Other / Legacy', other)}
       {listings.length === 0 && <p className="text-gray-400 text-sm">No listings found.</p>}
     </div>
   )
