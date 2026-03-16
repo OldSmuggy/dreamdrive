@@ -200,7 +200,7 @@ export default async function VanDetailPage({ params }: { params: { id: string }
 
             {/* CTAs */}
             <div className="space-y-3">
-              <Link href={`/build?listing=${listing.id}`}
+              <Link href={`/configurator?van=${listing.id}`}
                 className="btn-primary w-full text-center text-base py-4 block">
                 Build This Van →
               </Link>

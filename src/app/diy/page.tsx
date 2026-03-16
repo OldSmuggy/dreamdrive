@@ -78,12 +78,9 @@ export default function DiyPage() {
                 and storage around it.
               </p>
               <p className="font-display text-3xl text-forest-700 mb-8">From $25,000</p>
-              <a
-                href="mailto:jared@dreamdrive.life?subject=Grid%20Bed%20Kit%20Enquiry"
-                className="btn-primary inline-block px-6 py-3 text-sm"
-              >
-                Enquire About Grid →
-              </a>
+              <Link href="/configurator?fitout=grid" className="btn-primary inline-block px-6 py-3 text-sm">
+                Build with Grid →
+              </Link>
             </div>
           </div>
         </div>

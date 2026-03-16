@@ -145,7 +145,7 @@ export default function TamaPage() {
             Browse available vans, start your build, or talk to us about what&apos;s right for your family.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
-            <Link href="/build" className="btn-primary text-base px-8 py-4">
+            <Link href="/configurator?fitout=tama" className="btn-primary text-base px-8 py-4">
               Start My TAMA Build
             </Link>
             <a

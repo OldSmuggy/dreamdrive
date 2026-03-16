@@ -122,7 +122,7 @@ export default function ManaPage() {
             Browse available vans, start your build, or get in touch to discuss your needs.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
-            <Link href="/build" className="btn-primary text-base px-8 py-4">
+            <Link href="/configurator?fitout=mana" className="btn-primary text-base px-8 py-4">
               Start My MANA Build
             </Link>
             <a href="mailto:jared@dreamdrive.life" className="btn-ghost text-base px-8 py-4">
