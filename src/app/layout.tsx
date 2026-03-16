@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { DM_Serif_Display, DM_Sans } from 'next/font/google'
 import './globals.css'
 import Header from '@/components/ui/Header'
+import { getSiteSettings } from '@/lib/site-settings'
 
 const display = DM_Serif_Display({
   weight: ['400'],
@@ -26,11 +27,12 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const { logo_url } = await getSiteSettings()
   return (
     <html lang="en" className={`${display.variable} ${body.variable}`}>
       <body className="font-body bg-white text-gray-900 antialiased">
-        <Header />
+        <Header logoUrl={logo_url} />
         {children}
       </body>
     </html>

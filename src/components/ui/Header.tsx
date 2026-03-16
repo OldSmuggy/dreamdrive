@@ -34,7 +34,7 @@ const NAV: NavItem[] = [
   { label: 'About', href: '/about' },
 ]
 
-export default function Header() {
+export default function Header({ logoUrl }: { logoUrl?: string }) {
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -90,8 +90,18 @@ export default function Header() {
       <header className="bg-forest-950 text-white sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
           {/* Logo */}
-          <Link href="/" className="font-display text-xl text-sand-400 hover:text-sand-300 shrink-0">
-            Dream Drive
+          <Link href="/" className="shrink-0 flex items-center">
+            {logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={logoUrl}
+                alt="Dream Drive"
+                className="w-auto object-contain"
+                style={{ height: 40 }}
+              />
+            ) : (
+              <span className="font-display text-xl text-sand-400 hover:text-sand-300">Dream Drive</span>
+            )}
           </Link>
 
           {/* Desktop nav */}

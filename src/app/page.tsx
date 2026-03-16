@@ -1,12 +1,17 @@
 import Link from 'next/link'
 import { createSupabaseServer } from '@/lib/supabase-server'
 import { centsToAud } from '@/lib/utils'
+import { getSiteSettings } from '@/lib/site-settings'
 import AuctionBanner from '@/components/ui/AuctionBanner'
 import type { Listing } from '@/types'
 
 export default async function HomePage() {
   let availableVans: Listing[] = []
   let auctionVans: Listing[] = []
+
+  const [{ hero_video_url, hero_video_poster }] = await Promise.all([
+    getSiteSettings(),
+  ])
 
   try {
     const supabase = createSupabaseServer()
@@ -51,18 +56,41 @@ export default async function HomePage() {
 
       {/* ---- Hero ---- */}
       <section className="relative bg-forest-950 text-white overflow-hidden">
-        <div className="absolute inset-0 opacity-20"
-          style={{ backgroundImage: 'url(/hero-van.jpg)', backgroundSize: 'cover', backgroundPosition: 'center' }} />
-        <div className="absolute inset-0 bg-gradient-to-b from-forest-950/60 via-forest-950/40 to-forest-950" />
+        {/* Video background — shown when hero_video_url is set */}
+        {hero_video_url ? (
+          <>
+            <video
+              autoPlay muted loop playsInline
+              poster={hero_video_poster || undefined}
+              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 }}
+            >
+              <source src={hero_video_url} type="video/mp4" />
+            </video>
+            {/* Dark overlay for text readability */}
+            <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.45)', zIndex: 1 }} />
+          </>
+        ) : (
+          <>
+            <div className="absolute inset-0 opacity-20"
+              style={{ backgroundImage: 'url(/hero-van.jpg)', backgroundSize: 'cover', backgroundPosition: 'center' }} />
+            <div className="absolute inset-0 bg-gradient-to-b from-forest-950/60 via-forest-950/40 to-forest-950" />
+          </>
+        )}
 
-        <div className="relative max-w-6xl mx-auto px-4 py-28 md:py-40">
+        <div className="relative max-w-6xl mx-auto px-4 py-28 md:py-40" style={{ zIndex: 2 }}>
           <p className="text-sand-400 text-sm font-semibold tracking-widest uppercase mb-4">Dream Drive Van Builder</p>
-          <h1 className="font-display text-5xl md:text-7xl leading-tight mb-6">
+          <h1
+            className="font-display text-5xl md:text-7xl leading-tight mb-6 text-white"
+            style={hero_video_url ? { textShadow: '0 1px 3px rgba(0,0,0,0.5)' } : undefined}
+          >
             Find it.<br />Build it.<br />Drive it.
           </h1>
-          <p className="text-gray-300 text-lg md:text-xl max-w-xl mb-10 leading-relaxed">
+          <p
+            className={`text-lg md:text-xl max-w-xl mb-10 leading-relaxed ${hero_video_url ? '' : 'text-gray-300'}`}
+            style={hero_video_url ? { color: 'rgba(255,255,255,0.85)', textShadow: '0 1px 3px rgba(0,0,0,0.5)' } : undefined}
+          >
             Source a Toyota Hiace H200 direct from Japan, then build your dream conversion
-            with Australia's most complete van fit-out range.
+            with Australia&apos;s most complete van fit-out range.
           </p>
           <div className="flex flex-wrap gap-4">
             <Link href="/browse" className="btn-ghost text-base px-8 py-4">
