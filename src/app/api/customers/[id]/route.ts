@@ -8,12 +8,15 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   const { data, error } = await supabase
     .from('customers')
     .select(`
-      id, first_name, last_name, email, phone, state, notes, hubspot_id, created_at, updated_at,
+      id, first_name, last_name, email, phone, state, notes, hubspot_contact_id, status, created_at, updated_at,
       customer_vehicles(
-        id, current_stage, stage_dates, admin_notes, notes, make, model, year, listing_id, build_id, created_at,
-        listing:listings(id, model_name, model_year, chassis_code, photos, bid_no)
+        id, vehicle_status, vehicle_description, target_preferences, listing_id,
+        purchase_price_jpy, purchase_price_aud, notes, sort_order, created_at,
+        listing:listings(id, model_name, model_year, grade, chassis_code, photos, bid_no, mileage_km, start_price_jpy, buy_price_jpy),
+        order_stages(id, stage, status, notes, entered_at, completed_at),
+        customer_builds(id, build_type, build_location, conversion_fee_aud, pop_top, pop_top_fee_aud, addon_slugs, addons_total_aud, custom_description, custom_quote_aud, total_quoted_aud, build_status, notes)
       ),
-      customer_documents(id, filename, storage_path, file_type, description, uploaded_at, customer_vehicle_id)
+      customer_documents(id, name, file_url, file_type, file_size_bytes, document_type, notes, created_at, customer_vehicle_id)
     `)
     .eq('id', id)
     .single()
@@ -31,13 +34,14 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     const { data, error } = await supabase
       .from('customers')
       .update({
-        first_name: body.first_name,
-        last_name:  body.last_name  || null,
-        email:      body.email      || null,
-        phone:      body.phone      || null,
-        state:      body.state      || null,
-        notes:      body.notes      || null,
-        hubspot_id: body.hubspot_id || null,
+        first_name:         body.first_name,
+        last_name:          body.last_name          || null,
+        email:              body.email              || null,
+        phone:              body.phone              || null,
+        state:              body.state              || null,
+        notes:              body.notes              || null,
+        hubspot_contact_id: body.hubspot_contact_id || null,
+        ...(body.status ? { status: body.status } : {}),
         updated_at: new Date().toISOString(),
       })
       .eq('id', id)
@@ -57,7 +61,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
 
   const { error } = await supabase
     .from('customers')
-    .update({ archived_at: new Date().toISOString() })
+    .update({ status: 'archived', updated_at: new Date().toISOString() })
     .eq('id', id)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })

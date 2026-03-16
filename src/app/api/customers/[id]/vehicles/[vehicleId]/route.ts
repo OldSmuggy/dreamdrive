@@ -1,26 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
 
-export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string; vehicleId: string }> }) {
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string; vehicleId: string }> },
+) {
   const { vehicleId } = await params
   try {
     const body = await req.json()
     const supabase = createAdminClient()
 
-    const updatePayload: Record<string, unknown> = { updated_at: new Date().toISOString() }
-    if (body.current_stage !== undefined) updatePayload.current_stage = body.current_stage
-    if (body.stage_dates   !== undefined) updatePayload.stage_dates   = body.stage_dates
-    if (body.admin_notes   !== undefined) updatePayload.admin_notes   = body.admin_notes
-    if (body.notes         !== undefined) updatePayload.notes         = body.notes
-    if (body.make          !== undefined) updatePayload.make          = body.make
-    if (body.model         !== undefined) updatePayload.model         = body.model
-    if (body.year          !== undefined) updatePayload.year          = body.year ? Number(body.year) : null
-    if (body.listing_id    !== undefined) updatePayload.listing_id    = body.listing_id || null
-    if (body.build_id      !== undefined) updatePayload.build_id      = body.build_id || null
+    const payload: Record<string, unknown> = { updated_at: new Date().toISOString() }
+    if (body.vehicle_status      !== undefined) payload.vehicle_status      = body.vehicle_status
+    if (body.vehicle_description !== undefined) payload.vehicle_description = body.vehicle_description || null
+    if (body.target_preferences  !== undefined) payload.target_preferences  = body.target_preferences
+    if (body.listing_id          !== undefined) payload.listing_id          = body.listing_id || null
+    if (body.purchase_price_jpy  !== undefined) payload.purchase_price_jpy  = body.purchase_price_jpy || null
+    if (body.purchase_price_aud  !== undefined) payload.purchase_price_aud  = body.purchase_price_aud || null
+    if (body.notes               !== undefined) payload.notes               = body.notes || null
+    if (body.sort_order          !== undefined) payload.sort_order          = body.sort_order
 
     const { data, error } = await supabase
       .from('customer_vehicles')
-      .update(updatePayload)
+      .update(payload)
       .eq('id', vehicleId)
       .select()
       .single()
@@ -32,15 +34,14 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string; vehicleId: string }> }) {
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string; vehicleId: string }> },
+) {
   const { vehicleId } = await params
   const supabase = createAdminClient()
 
-  const { error } = await supabase
-    .from('customer_vehicles')
-    .delete()
-    .eq('id', vehicleId)
-
+  const { error } = await supabase.from('customer_vehicles').delete().eq('id', vehicleId)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ ok: true })
 }

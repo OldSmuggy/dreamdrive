@@ -9,38 +9,33 @@ const AU_STATES = ['ACT', 'NSW', 'NT', 'QLD', 'SA', 'TAS', 'VIC', 'WA']
 export default function AddCustomerPage() {
   const router = useRouter()
   const [saving, setSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError]   = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setSaving(true)
     setError(null)
 
-    const fd = new FormData(e.currentTarget)
+    const fd   = new FormData(e.currentTarget)
     const body = {
-      first_name: fd.get('first_name'),
-      last_name:  fd.get('last_name'),
-      email:      fd.get('email'),
-      phone:      fd.get('phone'),
-      state:      fd.get('state'),
-      notes:      fd.get('notes'),
-      hubspot_id: fd.get('hubspot_id'),
+      first_name:         fd.get('first_name'),
+      last_name:          fd.get('last_name'),
+      email:              fd.get('email'),
+      phone:              fd.get('phone'),
+      state:              fd.get('state'),
+      notes:              fd.get('notes'),
+      hubspot_contact_id: fd.get('hubspot_contact_id'),
     }
 
-    const res = await fetch('/api/customers', {
+    const res  = await fetch('/api/customers', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     })
-
     const data = await res.json()
     setSaving(false)
 
-    if (!res.ok) {
-      setError(data.error ?? 'Failed to create customer')
-      return
-    }
-
+    if (!res.ok) { setError(data.error ?? 'Failed to create customer'); return }
     router.push(`/admin/customers/${data.id}`)
   }
 
@@ -59,8 +54,8 @@ export default function AddCustomerPage() {
             <input name="first_name" required className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-500" />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Last Name</label>
-            <input name="last_name" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-500" />
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Last Name *</label>
+            <input name="last_name" required className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-500" />
           </div>
         </div>
 
@@ -77,7 +72,7 @@ export default function AddCustomerPage() {
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1.5">State</label>
             <select name="state" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-forest-500">
-              <option value="">— Select state —</option>
+              <option value="">— Select —</option>
               {AU_STATES.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
@@ -89,8 +84,11 @@ export default function AddCustomerPage() {
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1.5">HubSpot ID <span className="text-gray-400 font-normal">(optional)</span></label>
-          <input name="hubspot_id" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-500" placeholder="12345678" />
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            HubSpot Contact ID <span className="text-gray-400 font-normal">(optional)</span>
+          </label>
+          <input name="hubspot_contact_id" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-500" placeholder="12345678" />
+          <p className="text-xs text-gray-400 mt-1">Will be used for CRM integration in a future update.</p>
         </div>
 
         {error && (

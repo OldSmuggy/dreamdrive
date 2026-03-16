@@ -8,13 +8,13 @@ const AU_STATES = ['ACT', 'NSW', 'NT', 'QLD', 'SA', 'TAS', 'VIC', 'WA']
 
 interface FormState {
   first_name: string; last_name: string; email: string; phone: string
-  state: string; notes: string; hubspot_id: string
+  state: string; notes: string; hubspot_contact_id: string; status: string
 }
 
 export default function EditCustomerPage() {
-  const { id } = useParams<{ id: string }>()
-  const router = useRouter()
-  const [form, setForm]     = useState<FormState>({ first_name: '', last_name: '', email: '', phone: '', state: '', notes: '', hubspot_id: '' })
+  const { id }   = useParams<{ id: string }>()
+  const router   = useRouter()
+  const [form, setForm]       = useState<FormState>({ first_name: '', last_name: '', email: '', phone: '', state: '', notes: '', hubspot_contact_id: '', status: 'active' })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving]   = useState(false)
   const [error, setError]     = useState<string | null>(null)
@@ -24,32 +24,33 @@ export default function EditCustomerPage() {
       .then(r => r.json())
       .then(data => {
         setForm({
-          first_name: data.first_name ?? '',
-          last_name:  data.last_name  ?? '',
-          email:      data.email      ?? '',
-          phone:      data.phone      ?? '',
-          state:      data.state      ?? '',
-          notes:      data.notes      ?? '',
-          hubspot_id: data.hubspot_id ?? '',
+          first_name:         data.first_name         ?? '',
+          last_name:          data.last_name          ?? '',
+          email:              data.email              ?? '',
+          phone:              data.phone              ?? '',
+          state:              data.state              ?? '',
+          notes:              data.notes              ?? '',
+          hubspot_contact_id: data.hubspot_contact_id ?? '',
+          status:             data.status             ?? 'active',
         })
         setLoading(false)
       })
   }, [id])
 
-  const set = (key: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-    setForm(f => ({ ...f, [key]: e.target.value }))
+  const set = (key: keyof FormState) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+      setForm(f => ({ ...f, [key]: e.target.value }))
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
     setError(null)
 
-    const res = await fetch(`/api/customers/${id}`, {
+    const res  = await fetch(`/api/customers/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form),
     })
-
     const data = await res.json()
     setSaving(false)
 
@@ -74,8 +75,8 @@ export default function EditCustomerPage() {
             <input required value={form.first_name} onChange={set('first_name')} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-500" />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Last Name</label>
-            <input value={form.last_name} onChange={set('last_name')} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-500" />
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Last Name *</label>
+            <input required value={form.last_name} onChange={set('last_name')} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-500" />
           </div>
         </div>
 
@@ -99,13 +100,25 @@ export default function EditCustomerPage() {
         </div>
 
         <div>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">Status</label>
+          <select value={form.status} onChange={set('status')} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-forest-500">
+            <option value="active">Active</option>
+            <option value="completed">Completed</option>
+            <option value="archived">Archived</option>
+          </select>
+        </div>
+
+        <div>
           <label className="block text-xs font-semibold text-gray-600 mb-1.5">Notes</label>
           <textarea value={form.notes} onChange={set('notes')} rows={3} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-forest-500" />
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1.5">HubSpot ID</label>
-          <input value={form.hubspot_id} onChange={set('hubspot_id')} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-500" />
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+            HubSpot Contact ID <span className="text-gray-400 font-normal">(optional)</span>
+          </label>
+          <input value={form.hubspot_contact_id} onChange={set('hubspot_contact_id')} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-500" />
+          <p className="text-xs text-gray-400 mt-1">Will be used for CRM integration in a future update.</p>
         </div>
 
         {error && <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>}

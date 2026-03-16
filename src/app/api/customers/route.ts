@@ -7,10 +7,9 @@ export async function GET() {
   const { data, error } = await supabase
     .from('customers')
     .select(`
-      id, first_name, last_name, email, phone, state, notes, hubspot_id, created_at,
-      customer_vehicles(id, current_stage, created_at, listing_id)
+      id, first_name, last_name, email, phone, state, status, created_at,
+      customer_vehicles(id, vehicle_status, created_at)
     `)
-    .is('archived_at', null)
     .order('created_at', { ascending: false })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
@@ -25,13 +24,14 @@ export async function POST(req: NextRequest) {
     const { data, error } = await supabase
       .from('customers')
       .insert({
-        first_name: body.first_name,
-        last_name:  body.last_name  || null,
-        email:      body.email      || null,
-        phone:      body.phone      || null,
-        state:      body.state      || null,
-        notes:      body.notes      || null,
-        hubspot_id: body.hubspot_id || null,
+        first_name:         body.first_name,
+        last_name:          body.last_name          || null,
+        email:              body.email              || null,
+        phone:              body.phone              || null,
+        state:              body.state              || null,
+        notes:              body.notes              || null,
+        hubspot_contact_id: body.hubspot_contact_id || null,
+        status:             'active',
       })
       .select()
       .single()

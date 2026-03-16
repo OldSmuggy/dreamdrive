@@ -10,14 +10,12 @@ export default async function CustomersPage() {
   const { data: customers, error } = await supabase
     .from('customers')
     .select(`
-      id, first_name, last_name, email, phone, state, created_at,
-      customer_vehicles(id, current_stage, created_at)
+      id, first_name, last_name, email, phone, state, status, created_at,
+      customer_vehicles(id, vehicle_status, created_at)
     `)
-    .is('archived_at', null)
     .order('created_at', { ascending: false })
 
   if (error) {
-    // Table may not exist yet — show SQL prompt
     return (
       <div>
         <h1 className="font-display text-2xl text-forest-900 mb-4">Customers</h1>
@@ -34,7 +32,10 @@ export default async function CustomersPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-display text-2xl text-forest-900">
-          Customers <span className="text-gray-400 font-sans text-lg font-normal">({customers?.length ?? 0})</span>
+          Customers{' '}
+          <span className="text-gray-400 font-sans text-lg font-normal">
+            ({customers?.filter(c => c.status !== 'archived').length ?? 0})
+          </span>
         </h1>
         <Link href="/admin/customers/add" className="btn-primary text-sm px-4 py-2">
           + Add Customer
