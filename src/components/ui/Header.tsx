@@ -10,28 +10,13 @@ type NavItem =
   | { label: string; href: string; dropdown?: never }
   | { label: string; href?: string; dropdown: DropdownItem[] }
 
-const FIT_OUTS_ITEMS: DropdownItem[] = [
-  { label: 'TAMA Pop Top', href: '/fit-outs/tama' },
-  { label: 'MANA Pop Top', href: '/fit-outs/mana' },
-  { label: 'KUMAQ', href: '/fit-outs/kumaq' },
-  { label: 'Grid Bed Kit', href: '/fit-outs/grid' },
-  { label: 'Pop Top Conversion', href: '/fit-outs/pop-top' },
-  { label: 'View All Fit-Outs →', href: '/fit-outs' },
-]
-
-const IMPORTING_ITEMS: DropdownItem[] = [
-  { label: 'Import Costs', href: '/import-costs' },
-  { label: 'How It Works', href: '/how-it-works' },
-  { label: 'FAQs', href: '/faqs' },
-]
-
 const NAV: NavItem[] = [
   { label: 'Browse Vans', href: '/browse' },
-  { label: 'Fit-Outs', dropdown: FIT_OUTS_ITEMS },
-  { label: 'Importing', dropdown: IMPORTING_ITEMS },
-  { label: 'Japan Delivery', href: '/japan-delivery' },
+  { label: 'TAMA', href: '/tama' },
+  { label: 'MANA', href: '/mana' },
+  { label: 'Pop Top', href: '/pop-top' },
+  { label: 'DIY', href: '/diy' },
   { label: 'Finance', href: '/finance' },
-  { label: 'About', href: '/about' },
 ]
 
 export default function Header({ logoUrl }: { logoUrl?: string }) {
