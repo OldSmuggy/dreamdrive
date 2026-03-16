@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { createSupabaseBrowser } from '@/lib/supabase'
 
 const AUCTION_SITES = [
   { code: 'TK', name: 'Tokyo' },
@@ -37,14 +38,28 @@ const AU_STATUSES = [
   'Available Now',
 ]
 
+const SOURCES = [
+  { value: 'auction', label: 'Japan Auction' },
+  { value: 'dealer_carsensor', label: 'Japan Dealer (Car Sensor)' },
+  { value: 'dealer_goonet', label: 'Japan Dealer (Goo-Net)' },
+  { value: 'au_stock', label: 'AU Stock' },
+  { value: 'au_dealer', label: 'AU Dealer' },
+]
+
 export default function AddListingPage() {
   const router = useRouter()
   const [saving, setSaving] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
 
+  // Photo upload state
+  const [photoUrls, setPhotoUrls] = useState<string[]>([])
+  const [photoUploading, setPhotoUploading] = useState(false)
+  const [photoUploadError, setPhotoUploadError] = useState('')
+  const photoInputRef = useRef<HTMLInputElement>(null)
+
   const [form, setForm] = useState({
-    source: 'ninja',
+    source: 'auction',
     model_name: 'TOYOTA HIACE VAN',
     grade: 'LONG SUPER GL',
     chassis_code: '',
@@ -77,14 +92,51 @@ export default function AddListingPage() {
   const set = (field: string, value: string | boolean) =>
     setForm(prev => ({ ...prev, [field]: value }))
 
+  // Combine uploaded URLs + manually typed URLs into one list for submission
+  const getAllPhotos = () => {
+    const typed = form.photos.split(/[\n,]/).map(u => u.trim()).filter(Boolean)
+    return [...photoUrls, ...typed]
+  }
+
+  const handlePhotoUpload = async (files: FileList) => {
+    setPhotoUploadError('')
+    setPhotoUploading(true)
+    const supabase = createSupabaseBrowser()
+    const newUrls: string[] = []
+    try {
+      for (const file of Array.from(files)) {
+        if (!file.type.startsWith('image/')) continue
+        const ext = file.name.split('.').pop() ?? 'jpg'
+        const path = `listings/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+        const { error: uploadErr } = await supabase.storage
+          .from('site-assets')
+          .upload(path, file, { upsert: false, contentType: file.type })
+        if (uploadErr) throw new Error(uploadErr.message)
+        const { data: { publicUrl } } = supabase.storage.from('site-assets').getPublicUrl(path)
+        newUrls.push(publicUrl)
+      }
+      setPhotoUrls(prev => [...prev, ...newUrls])
+    } catch (e) {
+      setPhotoUploadError(String(e))
+    } finally {
+      setPhotoUploading(false)
+      if (photoInputRef.current) photoInputRef.current.value = ''
+    }
+  }
+
+  const removeUploadedPhoto = (url: string) => {
+    setPhotoUrls(prev => prev.filter(u => u !== url))
+  }
+
   const handleSubmit = async () => {
     setError('')
     setSaving(true)
     try {
+      const allPhotos = getAllPhotos()
       const res = await fetch('/api/add-listing', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, photos: allPhotos.join('\n') }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to save')
@@ -99,8 +151,9 @@ export default function AddListingPage() {
     }
   }
 
-  const isAuction = form.source === 'ninja'
+  const isAuction = form.source === 'auction'
   const isAUStock = form.source === 'au_stock'
+  const isJapanDealer = form.source === 'dealer_carsensor' || form.source === 'dealer_goonet'
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -124,13 +177,8 @@ export default function AddListingPage() {
 
         {/* SOURCE */}
         <Section title="Source">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {[
-              { value: 'ninja', label: 'NINJA Auction' },
-              { value: 'carsensor', label: 'Car Sensor' },
-              { value: 'goonet', label: 'Goo-Net' },
-              { value: 'au_stock', label: 'AU Stock' },
-            ].map(opt => (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {SOURCES.map(opt => (
               <button
                 key={opt.value}
                 type="button"
@@ -267,7 +315,7 @@ export default function AddListingPage() {
                 />
               </Field>
             )}
-            {!isAuction && !isAUStock && (
+            {(isJapanDealer) && (
               <Field label="Buy Price (JPY)">
                 <input
                   className={inputCls}
@@ -290,7 +338,7 @@ export default function AddListingPage() {
                 />
               </div>
             </Field>
-            {isAUStock && (
+            {(isAUStock || form.source === 'au_dealer') && (
               <Field label="AU Sale Price (AUD)">
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
@@ -307,7 +355,7 @@ export default function AddListingPage() {
           </div>
         </Section>
 
-        {/* AUCTION DETAILS — only for NINJA */}
+        {/* AUCTION DETAILS */}
         {isAuction && (
           <Section title="Auction Details">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -382,15 +430,68 @@ export default function AddListingPage() {
 
         {/* PHOTOS */}
         <Section title="Photos">
-          <Field label="Photo URLs (one per line or comma-separated)">
+          {/* Upload from desktop */}
+          <div className="mb-4">
+            <p className="text-sm font-medium text-gray-700 mb-2">Upload from desktop</p>
+            <input
+              ref={photoInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={e => { if (e.target.files?.length) handlePhotoUpload(e.target.files) }}
+            />
+            <button
+              type="button"
+              onClick={() => photoInputRef.current?.click()}
+              disabled={photoUploading}
+              className="px-4 py-2 text-sm border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 font-medium"
+            >
+              {photoUploading ? 'Uploading…' : 'Choose Images'}
+            </button>
+            {photoUploadError && <p className="text-red-600 text-xs mt-1">{photoUploadError}</p>}
+
+            {/* Uploaded photo thumbnails */}
+            {photoUrls.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {photoUrls.map((url, i) => (
+                  <div key={url} className="relative group">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={url}
+                      alt={`Photo ${i + 1}`}
+                      className="w-20 h-20 object-cover rounded-lg border border-gray-200"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeUploadedPhoto(url)}
+                      className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-600 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      ×
+                    </button>
+                    {i === 0 && (
+                      <span className="absolute bottom-0 left-0 right-0 text-center text-white text-[10px] bg-black/50 rounded-b-lg py-0.5">Main</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Or paste URLs */}
+          <Field label="Or paste photo URLs (one per line)">
             <textarea
-              className={inputCls + ' h-32 resize-none'}
+              className={inputCls + ' h-24 resize-none'}
               value={form.photos}
               onChange={e => set('photos', e.target.value)}
-              placeholder={`https://example.com/photo1.jpg\nhttps://example.com/photo2.jpg\nhttps://example.com/photo3.jpg`}
+              placeholder={`https://example.com/photo1.jpg\nhttps://example.com/photo2.jpg`}
             />
           </Field>
-          <p className="text-xs text-gray-400 mt-1">First URL will be used as the main listing photo.</p>
+          <p className="text-xs text-gray-400 mt-1">
+            {photoUrls.length > 0
+              ? `${photoUrls.length} uploaded photo${photoUrls.length > 1 ? 's' : ''} will be used first.`
+              : 'First photo will be the main listing image.'}
+          </p>
         </Section>
 
         {/* DESCRIPTION */}
