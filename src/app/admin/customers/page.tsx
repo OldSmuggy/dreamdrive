@@ -1,93 +1,46 @@
+import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase'
 import CustomersClient from './CustomersClient'
 
 export const metadata = { title: 'Customers | Admin' }
 
 export default async function CustomersPage() {
-  const admin = createAdminClient()
+  const supabase = createAdminClient()
 
-  // Get all auth users
-  const { data: { users } } = await admin.auth.admin.listUsers({ perPage: 500 })
+  const { data: customers, error } = await supabase
+    .from('customers')
+    .select(`
+      id, first_name, last_name, email, phone, state, created_at,
+      customer_vehicles(id, current_stage, created_at)
+    `)
+    .is('archived_at', null)
+    .order('created_at', { ascending: false })
 
-  // Get profiles
-  const { data: profiles } = await admin
-    .from('profiles')
-    .select('id, first_name, last_name, is_admin')
-
-  const profileMap = Object.fromEntries((profiles ?? []).map(p => [p.id, p]))
-
-  // Get saved van counts
-  const { data: savedCounts } = await admin
-    .from('saved_vans')
-    .select('user_id')
-
-  const savedCountMap: Record<string, number> = {}
-  for (const row of savedCounts ?? []) {
-    savedCountMap[row.user_id] = (savedCountMap[row.user_id] ?? 0) + 1
+  if (error) {
+    // Table may not exist yet — show SQL prompt
+    return (
+      <div>
+        <h1 className="font-display text-2xl text-forest-900 mb-4">Customers</h1>
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 text-sm text-amber-800">
+          <p className="font-semibold mb-2">Database setup required.</p>
+          <p className="mb-3">Run the SQL migration in Supabase to create the customer tables, then refresh.</p>
+          <p className="text-xs text-amber-600">Error: {error.message}</p>
+        </div>
+      </div>
+    )
   }
 
-  // Get deposit hold counts
-  const { data: depositRows } = await admin
-    .from('deposit_holds')
-    .select('user_id, status')
-
-  const depositMap: Record<string, number> = {}
-  for (const row of depositRows ?? []) {
-    if (row.status === 'pending' || row.status === 'active') {
-      depositMap[row.user_id] = (depositMap[row.user_id] ?? 0) + 1
-    }
-  }
-
-  // Get import orders
-  const { data: importRows } = await admin
-    .from('import_orders')
-    .select('id, user_id, listing_id, current_stage, stage_dates, admin_notes, created_at, order_type, listing:listings(id, model_name, model_year, photos)')
-
-  type NormalizedImport = {
-    id: string; user_id: string; listing_id: string; current_stage: string
-    stage_dates: Record<string, string>; admin_notes: string | null; created_at: string
-    order_type: string | null
-    listing: { id: string; model_name: string; model_year: number | null; photos: string[] } | null
-  }
-  const importsByUser: Record<string, NormalizedImport[]> = {}
-  const allOrderIds: string[] = []
-  for (const row of importRows ?? []) {
-    const listingArr = row.listing as unknown as { id: string; model_name: string; model_year: number | null; photos: string[] }[]
-    const normalized: NormalizedImport = {
-      ...row,
-      order_type: (row as Record<string, unknown>).order_type as string | null ?? null,
-      listing: listingArr?.[0] ?? null,
-    }
-    allOrderIds.push(row.id)
-    if (!importsByUser[row.user_id]) importsByUser[row.user_id] = []
-    importsByUser[row.user_id]!.push(normalized)
-  }
-
-  // Fetch invoices and payments
-  const [invoicesRes, paymentsRes] = await Promise.all([
-    allOrderIds.length
-      ? admin.from('invoices').select('*').in('import_order_id', allOrderIds).order('created_at')
-      : Promise.resolve({ data: [] }),
-    allOrderIds.length
-      ? admin.from('payments').select('*').in('import_order_id', allOrderIds).order('payment_date', { ascending: false })
-      : Promise.resolve({ data: [] }),
-  ])
-
-  const customers = users
-    .filter(u => {
-      const p = profileMap[u.id]
-      return !p?.is_admin && !u.email?.endsWith('@dreamdrive.life')
-    })
-    .map(u => ({
-      id: u.id,
-      email: u.email ?? '',
-      created_at: u.created_at,
-      first_name: profileMap[u.id]?.first_name ?? null,
-      last_name: profileMap[u.id]?.last_name ?? null,
-      saved_count: savedCountMap[u.id] ?? 0,
-      deposit_count: depositMap[u.id] ?? 0,
-      imports: importsByUser[u.id] ?? [],
-    }))
-
-  return <CustomersClient customers={customers} invoices={invoicesRes.data ?? []} payments={paymentsRes.data ?? []} />
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="font-display text-2xl text-forest-900">
+          Customers <span className="text-gray-400 font-sans text-lg font-normal">({customers?.length ?? 0})</span>
+        </h1>
+        <Link href="/admin/customers/add" className="btn-primary text-sm px-4 py-2">
+          + Add Customer
+        </Link>
+      </div>
+      <CustomersClient customers={customers ?? []} />
+    </div>
+  )
 }

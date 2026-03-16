@@ -11,8 +11,9 @@ const NAV = [
   { href: '/admin/add-listing', label: '➕ Add Listing' },
   { href: '/admin/import',      label: '📥 Import Vehicle' },
   { href: '/admin/scrape',      label: '🤖 Full Auto-Scrape' },
-  { href: '/admin/leads',       label: '📋 Leads' },
-  { href: '/admin/customers',   label: '👥 Customers' },
+  { href: '/admin/leads',           label: '📋 Leads' },
+  { href: '/admin/customers',       label: '👥 Customers' },
+  { href: '/admin/customers/add',   label: '➕ Add Customer' },
   { href: '/admin/settings',    label: '⚙️ Settings' },
 ]
 

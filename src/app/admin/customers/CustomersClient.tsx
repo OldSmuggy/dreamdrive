@@ -1,402 +1,121 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 
-const IMPORT_STAGES = [
-  { key: 'auction_won', label: 'Auction Won' },
-  { key: 'payment_received', label: 'Payment Received' },
-  { key: 'export_docs', label: 'Export Docs' },
-  { key: 'shipped', label: 'Shipped from Japan' },
-  { key: 'arrived_au', label: 'Arrived in AU' },
-  { key: 'compliance', label: 'Quarantine & Compliance' },
-  { key: 'fitout_in_progress', label: 'Fit-Out In Progress' },
-  { key: 'ready', label: 'Ready for Collection' },
-  { key: 'handed_over', label: 'Handed Over' },
+const ORDER_STAGES = [
+  { key: 'vehicle_selection', label: 'Vehicle Selection' },
+  { key: 'deposit_received',  label: 'Deposit Received' },
+  { key: 'sourcing',          label: 'Sourcing' },
+  { key: 'auction_won',       label: 'Auction Won' },
+  { key: 'payment_received',  label: 'Payment Received' },
+  { key: 'export_docs',       label: 'Export Docs' },
+  { key: 'shipped',           label: 'Shipped' },
+  { key: 'arrived_au',        label: 'Arrived AU' },
+  { key: 'compliance',        label: 'Compliance' },
+  { key: 'delivered',         label: 'Delivered' },
 ]
 
-interface ImportOrder {
-  id: string
-  user_id: string
-  listing_id: string
-  current_stage: string
-  stage_dates: Record<string, string>
-  admin_notes: string | null
-  created_at: string
-  order_type: string | null
-  listing: { id: string; model_name: string; model_year: number | null; photos: string[] } | null
+const STAGE_COLORS: Record<string, string> = {
+  vehicle_selection: 'bg-gray-100 text-gray-600',
+  deposit_received:  'bg-amber-100 text-amber-700',
+  sourcing:          'bg-blue-100 text-blue-700',
+  auction_won:       'bg-purple-100 text-purple-700',
+  payment_received:  'bg-indigo-100 text-indigo-700',
+  export_docs:       'bg-orange-100 text-orange-700',
+  shipped:           'bg-cyan-100 text-cyan-700',
+  arrived_au:        'bg-teal-100 text-teal-700',
+  compliance:        'bg-yellow-100 text-yellow-700',
+  delivered:         'bg-green-100 text-green-700',
 }
 
-interface Invoice {
-  id: string
-  import_order_id: string
-  invoice_number: string
-  description: string | null
-  amount_aud: number
-  issue_date: string | null
-  due_date: string | null
-  status: string
-}
-
-interface Payment {
-  id: string
-  import_order_id: string
-  amount_aud: number
-  description: string | null
-  payment_method: string | null
-  payment_date: string | null
-  status: string
-}
+interface Vehicle { id: string; current_stage: string; created_at: string }
 
 interface Customer {
   id: string
-  email: string
-  created_at: string
-  first_name: string | null
+  first_name: string
   last_name: string | null
-  saved_count: number
-  deposit_count: number
-  imports: ImportOrder[]
+  email: string | null
+  phone: string | null
+  state: string | null
+  created_at: string
+  customer_vehicles: Vehicle[]
 }
 
-interface Props {
-  customers: Customer[]
-  invoices: unknown[]
-  payments: unknown[]
-}
+export default function CustomersClient({ customers }: { customers: Customer[] }) {
+  const [q, setQ] = useState('')
 
-export default function CustomersClient({ customers, invoices: rawInvoices, payments: rawPayments }: Props) {
-  const [expanded, setExpanded] = useState<string | null>(null)
-  const [updatingStage, setUpdatingStage] = useState<string | null>(null)
-  const [notes, setNotes] = useState<Record<string, string>>({})
-  const [savingNotes, setSavingNotes] = useState<string | null>(null)
-  const [invoiceForm, setInvoiceForm] = useState<string | null>(null)
-  const [paymentForm, setPaymentForm] = useState<string | null>(null)
-  const [submitting, setSubmitting] = useState(false)
+  const filtered = q.trim()
+    ? customers.filter(c => {
+        const name = `${c.first_name} ${c.last_name ?? ''}`.toLowerCase()
+        const search = q.toLowerCase()
+        return name.includes(search) || c.email?.toLowerCase().includes(search) || c.phone?.includes(search)
+      })
+    : customers
 
-  const invoices = rawInvoices as Invoice[]
-  const payments = rawPayments as Payment[]
-
-  const updateStage = async (orderId: string, stage: string) => {
-    setUpdatingStage(orderId)
-    await fetch(`/api/import-orders/${orderId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ current_stage: stage }),
-    })
-    setUpdatingStage(null)
-    window.location.reload()
+  const latestStage = (c: Customer) => {
+    if (!c.customer_vehicles.length) return null
+    const sorted = [...c.customer_vehicles].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    return sorted[0]?.current_stage ?? null
   }
 
-  const saveNotes = async (orderId: string) => {
-    setSavingNotes(orderId)
-    await fetch(`/api/import-orders/${orderId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ admin_notes: notes[orderId] ?? '' }),
-    })
-    setSavingNotes(null)
-  }
-
-  const createInvoice = async (e: React.FormEvent<HTMLFormElement>, orderId: string, userId: string) => {
-    e.preventDefault()
-    setSubmitting(true)
-    const fd = new FormData(e.currentTarget)
-    await fetch('/api/invoices', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        import_order_id: orderId,
-        user_id: userId,
-        invoice_number: fd.get('invoice_number'),
-        description: fd.get('description') || null,
-        amount_aud: Math.round(parseFloat(fd.get('amount_aud') as string) * 100),
-        issue_date: fd.get('issue_date') || null,
-        due_date: fd.get('due_date') || null,
-        status: fd.get('status') ?? 'due',
-      }),
-    })
-    setSubmitting(false)
-    setInvoiceForm(null)
-    window.location.reload()
-  }
-
-  const markPayment = async (e: React.FormEvent<HTMLFormElement>, orderId: string, userId: string) => {
-    e.preventDefault()
-    setSubmitting(true)
-    const fd = new FormData(e.currentTarget)
-    await fetch('/api/payments', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        import_order_id: orderId,
-        user_id: userId,
-        amount_aud: Math.round(parseFloat(fd.get('amount_aud') as string) * 100),
-        description: fd.get('description') || null,
-        payment_method: fd.get('payment_method') || null,
-        payment_date: fd.get('payment_date') || null,
-        status: 'confirmed',
-      }),
-    })
-    setSubmitting(false)
-    setPaymentForm(null)
-    window.location.reload()
-  }
-
-  const statusBadge = (status: string) => {
-    const map: Record<string, string> = {
-      paid: 'bg-green-100 text-green-700',
-      due: 'bg-amber-100 text-amber-700',
-      overdue: 'bg-red-100 text-red-700',
-    }
-    return map[status] ?? 'bg-gray-100 text-gray-600'
-  }
+  const stageLabel = (key: string) => ORDER_STAGES.find(s => s.key === key)?.label ?? key
 
   return (
     <div>
-      <h1 className="font-display text-2xl text-forest-900 mb-6">Customers ({customers.length})</h1>
+      <div className="mb-4">
+        <input
+          type="search"
+          placeholder="Search by name, email or phone…"
+          value={q}
+          onChange={e => setQ(e.target.value)}
+          className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest-500"
+        />
+      </div>
 
-      {customers.length === 0 && (
-        <p className="text-gray-400 text-sm">No customers yet.</p>
+      {filtered.length === 0 && (
+        <div className="text-center py-16 text-gray-400">
+          <p className="text-4xl mb-3">👥</p>
+          <p className="text-sm">{q ? 'No customers match your search.' : 'No customers yet — add the first one.'}</p>
+        </div>
       )}
 
-      <div className="space-y-3">
-        {customers.map(c => {
-          const name = [c.first_name, c.last_name].filter(Boolean).join(' ') || c.email
-          const isOpen = expanded === c.id
+      <div className="space-y-2">
+        {filtered.map(c => {
+          const name = [c.first_name, c.last_name].filter(Boolean).join(' ')
+          const stage = latestStage(c)
+          const vehicleCount = c.customer_vehicles.length
           return (
-            <div key={c.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-              <div
-                className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-50"
-                onClick={() => setExpanded(isOpen ? null : c.id)}
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-8 h-8 rounded-full bg-forest-100 text-forest-700 flex items-center justify-center text-sm font-semibold shrink-0">
-                    {(c.first_name?.[0] ?? c.email[0] ?? '?').toUpperCase()}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-medium text-gray-900 text-sm truncate">{name}</p>
-                    <p className="text-xs text-gray-400">{c.email}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 shrink-0 ml-3">
-                  <span className="text-xs text-gray-400">{new Date(c.created_at).toLocaleDateString('en-AU')}</span>
-                  {c.saved_count > 0 && <span className="text-xs bg-gray-100 px-2 py-0.5 rounded">♥ {c.saved_count}</span>}
-                  {c.deposit_count > 0 && <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded">$ {c.deposit_count} hold{c.deposit_count !== 1 ? 's' : ''}</span>}
-                  {c.imports.length > 0 && <span className="text-xs bg-forest-100 text-forest-700 px-2 py-0.5 rounded">🚢 {c.imports.length} import{c.imports.length !== 1 ? 's' : ''}</span>}
-                  <svg className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
+            <Link
+              key={c.id}
+              href={`/admin/customers/${c.id}`}
+              className="flex items-center gap-4 bg-white border border-gray-200 rounded-xl px-4 py-3 hover:shadow-sm hover:border-gray-300 transition-all"
+            >
+              <div className="w-10 h-10 rounded-full bg-forest-100 text-forest-700 flex items-center justify-center text-sm font-semibold shrink-0">
+                {(c.first_name[0] ?? '?').toUpperCase()}
               </div>
-
-              {isOpen && (
-                <div className="border-t border-gray-100 px-4 py-4 bg-gray-50">
-                  {c.imports.length === 0 ? (
-                    <p className="text-sm text-gray-400">No import orders.</p>
-                  ) : (
-                    <div className="space-y-5">
-                      {c.imports.map(order => {
-                        const orderInvoices = invoices.filter(i => i.import_order_id === order.id)
-                        const orderPayments = payments.filter(p => p.import_order_id === order.id)
-                        return (
-                          <div key={order.id} className="bg-white rounded-xl border border-gray-200 p-4">
-                            <div className="flex items-center gap-3 mb-4">
-                              {order.listing?.photos?.[0] && (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img src={order.listing.photos[0]} alt="" className="w-14 h-10 object-cover rounded shrink-0" />
-                              )}
-                              <div>
-                                <p className="font-semibold text-gray-900 text-sm">
-                                  {order.listing ? `${order.listing.model_year ?? ''} ${order.listing.model_name}` : order.listing_id}
-                                </p>
-                                <p className="text-xs text-gray-400">Started {new Date(order.created_at).toLocaleDateString('en-AU')}</p>
-                              </div>
-                            </div>
-
-                            {/* Stage selector */}
-                            <div className="mb-4">
-                              <label className="block text-xs font-semibold text-gray-600 mb-1.5">Current Stage</label>
-                              <select
-                                value={order.current_stage}
-                                disabled={updatingStage === order.id}
-                                onChange={e => updateStage(order.id, e.target.value)}
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white disabled:opacity-50"
-                              >
-                                {IMPORT_STAGES.map(s => (
-                                  <option key={s.key} value={s.key}>{s.label}</option>
-                                ))}
-                              </select>
-                            </div>
-
-                            {/* Stage date inputs */}
-                            <div className="mb-4">
-                              <p className="text-xs font-semibold text-gray-600 mb-2">Stage Dates</p>
-                              <div className="grid grid-cols-2 gap-2">
-                                {IMPORT_STAGES.map(s => (
-                                  <div key={s.key} className="flex items-center gap-2">
-                                    <label className="text-xs text-gray-500 w-28 shrink-0">{s.label}</label>
-                                    <input
-                                      type="date"
-                                      defaultValue={order.stage_dates?.[s.key] ?? ''}
-                                      onBlur={async e => {
-                                        const val = e.target.value
-                                        if (val) {
-                                          await fetch(`/api/import-orders/${order.id}`, {
-                                            method: 'PATCH',
-                                            headers: { 'Content-Type': 'application/json' },
-                                            body: JSON.stringify({ stage_dates: { ...order.stage_dates, [s.key]: val } }),
-                                          })
-                                        }
-                                      }}
-                                      className="border border-gray-200 rounded px-2 py-1 text-xs flex-1 min-w-0"
-                                    />
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-
-                            {/* Admin notes */}
-                            <div className="mb-4">
-                              <label className="block text-xs font-semibold text-gray-600 mb-1.5">Admin Notes</label>
-                              <textarea
-                                rows={2}
-                                value={notes[order.id] ?? order.admin_notes ?? ''}
-                                onChange={e => setNotes(n => ({ ...n, [order.id]: e.target.value }))}
-                                placeholder="Add notes visible to customer..."
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none"
-                              />
-                              <button
-                                onClick={() => saveNotes(order.id)}
-                                disabled={savingNotes === order.id}
-                                className="mt-1.5 text-xs px-3 py-1.5 bg-forest-600 text-white rounded-lg hover:bg-forest-700 disabled:opacity-50"
-                              >
-                                {savingNotes === order.id ? 'Saving…' : 'Save Notes'}
-                              </button>
-                            </div>
-
-                            {/* Invoices */}
-                            <div className="mb-4">
-                              <div className="flex items-center justify-between mb-2">
-                                <p className="text-xs font-semibold text-gray-600">Invoices ({orderInvoices.length})</p>
-                                <button
-                                  onClick={() => setInvoiceForm(invoiceForm === order.id ? null : order.id)}
-                                  className="text-xs text-forest-600 hover:underline font-medium"
-                                >
-                                  + Add Invoice
-                                </button>
-                              </div>
-                              {orderInvoices.length > 0 && (
-                                <div className="space-y-1.5 mb-2">
-                                  {orderInvoices.map(inv => (
-                                    <div key={inv.id} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2 text-xs">
-                                      <div>
-                                        <span className="font-medium text-gray-800">{inv.invoice_number}</span>
-                                        {inv.description && <span className="text-gray-500 ml-2">{inv.description}</span>}
-                                      </div>
-                                      <div className="flex items-center gap-2 shrink-0 ml-3">
-                                        <span className="font-medium">${(inv.amount_aud / 100).toLocaleString('en-AU')}</span>
-                                        <span className={`px-1.5 py-0.5 rounded text-xs font-bold uppercase ${statusBadge(inv.status)}`}>
-                                          {inv.status}
-                                        </span>
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                              {invoiceForm === order.id && (
-                                <form onSubmit={e => createInvoice(e, order.id, order.user_id)} className="bg-gray-50 rounded-xl p-3 space-y-2 border border-gray-200">
-                                  <div className="grid grid-cols-2 gap-2">
-                                    <input name="invoice_number" required placeholder="Invoice #" className="border border-gray-300 rounded px-2 py-1.5 text-xs" />
-                                    <input name="amount_aud" required type="number" step="0.01" placeholder="Amount AUD" className="border border-gray-300 rounded px-2 py-1.5 text-xs" />
-                                  </div>
-                                  <input name="description" placeholder="Description (optional)" className="w-full border border-gray-300 rounded px-2 py-1.5 text-xs" />
-                                  <div className="grid grid-cols-2 gap-2">
-                                    <div>
-                                      <label className="text-xs text-gray-500">Issue Date</label>
-                                      <input name="issue_date" type="date" className="w-full border border-gray-300 rounded px-2 py-1.5 text-xs mt-0.5" />
-                                    </div>
-                                    <div>
-                                      <label className="text-xs text-gray-500">Due Date</label>
-                                      <input name="due_date" type="date" className="w-full border border-gray-300 rounded px-2 py-1.5 text-xs mt-0.5" />
-                                    </div>
-                                  </div>
-                                  <select name="status" className="w-full border border-gray-300 rounded px-2 py-1.5 text-xs bg-white">
-                                    <option value="due">Due</option>
-                                    <option value="paid">Paid</option>
-                                    <option value="overdue">Overdue</option>
-                                  </select>
-                                  <div className="flex gap-2">
-                                    <button type="submit" disabled={submitting} className="text-xs px-3 py-1.5 bg-forest-600 text-white rounded-lg hover:bg-forest-700 disabled:opacity-50">
-                                      {submitting ? 'Creating…' : 'Create Invoice'}
-                                    </button>
-                                    <button type="button" onClick={() => setInvoiceForm(null)} className="text-xs px-3 py-1.5 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100">
-                                      Cancel
-                                    </button>
-                                  </div>
-                                </form>
-                              )}
-                            </div>
-
-                            {/* Payments */}
-                            <div>
-                              <div className="flex items-center justify-between mb-2">
-                                <p className="text-xs font-semibold text-gray-600">Payments ({orderPayments.length})</p>
-                                <button
-                                  onClick={() => setPaymentForm(paymentForm === order.id ? null : order.id)}
-                                  className="text-xs text-forest-600 hover:underline font-medium"
-                                >
-                                  + Mark Payment
-                                </button>
-                              </div>
-                              {orderPayments.length > 0 && (
-                                <div className="space-y-1.5 mb-2">
-                                  {orderPayments.map(pay => (
-                                    <div key={pay.id} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2 text-xs">
-                                      <div>
-                                        <span className="font-medium text-gray-800">${(pay.amount_aud / 100).toLocaleString('en-AU')}</span>
-                                        {pay.description && <span className="text-gray-500 ml-2">{pay.description}</span>}
-                                        {pay.payment_method && <span className="text-gray-400 ml-2">via {pay.payment_method}</span>}
-                                      </div>
-                                      <div className="shrink-0 ml-3 text-gray-400">
-                                        {pay.payment_date ? new Date(pay.payment_date).toLocaleDateString('en-AU') : '—'}
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                              {paymentForm === order.id && (
-                                <form onSubmit={e => markPayment(e, order.id, order.user_id)} className="bg-gray-50 rounded-xl p-3 space-y-2 border border-gray-200">
-                                  <div className="grid grid-cols-2 gap-2">
-                                    <input name="amount_aud" required type="number" step="0.01" placeholder="Amount AUD" className="border border-gray-300 rounded px-2 py-1.5 text-xs" />
-                                    <input name="payment_date" type="date" placeholder="Payment Date" className="border border-gray-300 rounded px-2 py-1.5 text-xs" />
-                                  </div>
-                                  <input name="description" placeholder="Description (optional)" className="w-full border border-gray-300 rounded px-2 py-1.5 text-xs" />
-                                  <select name="payment_method" className="w-full border border-gray-300 rounded px-2 py-1.5 text-xs bg-white">
-                                    <option value="">Payment method (optional)</option>
-                                    <option value="bank_transfer">Bank Transfer</option>
-                                    <option value="credit_card">Credit Card</option>
-                                    <option value="cash">Cash</option>
-                                    <option value="other">Other</option>
-                                  </select>
-                                  <div className="flex gap-2">
-                                    <button type="submit" disabled={submitting} className="text-xs px-3 py-1.5 bg-forest-600 text-white rounded-lg hover:bg-forest-700 disabled:opacity-50">
-                                      {submitting ? 'Saving…' : 'Record Payment'}
-                                    </button>
-                                    <button type="button" onClick={() => setPaymentForm(null)} className="text-xs px-3 py-1.5 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100">
-                                      Cancel
-                                    </button>
-                                  </div>
-                                </form>
-                              )}
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-gray-900 text-sm">{name}</p>
+                <p className="text-xs text-gray-400 truncate">
+                  {[c.email, c.phone, c.state].filter(Boolean).join(' · ')}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                {vehicleCount > 0 && (
+                  <span className="text-xs text-gray-500">
+                    {vehicleCount} van{vehicleCount !== 1 ? 's' : ''}
+                  </span>
+                )}
+                {stage && (
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STAGE_COLORS[stage] ?? 'bg-gray-100 text-gray-600'}`}>
+                    {stageLabel(stage)}
+                  </span>
+                )}
+                <svg className="w-4 h-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </Link>
           )
         })}
       </div>
