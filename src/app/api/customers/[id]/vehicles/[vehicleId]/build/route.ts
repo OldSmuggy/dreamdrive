@@ -2,11 +2,15 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
+import { requireAuth } from '@/lib/api-auth'
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string; vehicleId: string }> },
 ) {
+  const { error: authErr } = await requireAuth()
+  if (authErr) return authErr
+
   const { id: customer_id, vehicleId } = await params
   const supabase = createAdminClient()
 
@@ -25,6 +29,9 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string; vehicleId: string }> },
 ) {
+  const { error: authErr } = await requireAuth()
+  if (authErr) return authErr
+
   const { id: customer_id, vehicleId } = await params
   try {
     const body = await req.json()

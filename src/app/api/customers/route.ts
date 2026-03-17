@@ -2,11 +2,16 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
+import { createSupabaseServer } from '@/lib/supabase-server'
 
 export async function GET() {
-  const supabase = createAdminClient()
+  const supabase = createSupabaseServer()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
-  const { data, error } = await supabase
+  const admin = createAdminClient()
+
+  const { data, error } = await admin
     .from('customers')
     .select(`
       id, first_name, last_name, email, phone, state, status, created_at,
@@ -19,11 +24,15 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const supabase = createSupabaseServer()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
   try {
     const body = await req.json()
-    const supabase = createAdminClient()
+    const admin = createAdminClient()
 
-    const { data, error } = await supabase
+    const { data, error } = await admin
       .from('customers')
       .insert({
         first_name:         body.first_name,

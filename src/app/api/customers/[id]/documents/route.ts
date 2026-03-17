@@ -2,11 +2,15 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
+import { requireAuth } from '@/lib/api-auth'
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const { error: authErr } = await requireAuth()
+  if (authErr) return authErr
+
   const { id: customer_id } = await params
   const supabase = createAdminClient()
 
@@ -24,6 +28,9 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const { error: authErr } = await requireAuth()
+  if (authErr) return authErr
+
   const { id: customer_id } = await params
   try {
     const formData = await req.formData()
@@ -83,6 +90,9 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const { error: authErr } = await requireAuth()
+  if (authErr) return authErr
+
   const { id: customer_id } = await params
   try {
     const body = await req.json()
@@ -114,6 +124,9 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const { error: authErr } = await requireAuth()
+  if (authErr) return authErr
+
   const { id: customer_id } = await params
   const docId = req.nextUrl.searchParams.get('docId')
   if (!docId) return NextResponse.json({ error: 'docId required' }, { status: 400 })

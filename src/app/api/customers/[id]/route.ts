@@ -2,8 +2,18 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
+import { createSupabaseServer } from '@/lib/supabase-server'
+
+async function requireAuth() {
+  const supabase = createSupabaseServer()
+  const { data: { user } } = await supabase.auth.getUser()
+  return user
+}
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const user = await requireAuth()
+  if (!user) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
   const { id } = await params
   const supabase = createAdminClient()
 
@@ -23,11 +33,14 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     .eq('id', id)
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error || !data) return NextResponse.json({ error: 'Not found' }, { status: 404 })
   return NextResponse.json(data)
 }
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const user = await requireAuth()
+  if (!user) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
   const { id } = await params
   try {
     const body = await req.json()
@@ -58,6 +71,9 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const user = await requireAuth()
+  if (!user) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
   const { id } = await params
   const hard = req.nextUrl.searchParams.get('hard') === 'true'
   const supabase = createAdminClient()

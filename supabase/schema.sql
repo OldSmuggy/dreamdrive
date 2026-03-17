@@ -359,6 +359,28 @@ create policy "owners read own stages" on order_stages for select
     )
   );
 
+-- Customer builds: readable via vehicle ownership
+alter table customer_builds enable row level security;
+create policy "owners read own builds" on customer_builds for select
+  using (
+    customer_id in (select id from customers where user_id = auth.uid())
+  );
+
+-- Customer documents: only customer_visible docs for owners
+alter table customer_documents enable row level security;
+create policy "owners read own visible docs" on customer_documents for select
+  using (
+    customer_visible = true
+    and customer_id in (select id from customers where user_id = auth.uid())
+  );
+
+-- ============================================================
+-- RLS for tables created outside schema.sql (run separately)
+-- ============================================================
+-- These tables (invoices, payments, import_orders, deposit_holds)
+-- may exist in Supabase but not in this schema file.
+-- See migration SQL in commit message for the ALTER statements.
+
 -- ============================================================
 -- SEED — Dream Drive products
 -- ============================================================

@@ -2,8 +2,13 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
+import { createSupabaseServer } from '@/lib/supabase-server'
 
 export async function POST(req: NextRequest) {
+  const supabase = createSupabaseServer()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
   try {
     const body = await req.json()
     const admin = createAdminClient()

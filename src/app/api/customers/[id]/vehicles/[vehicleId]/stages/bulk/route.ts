@@ -2,12 +2,16 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
+import { requireAuth } from '@/lib/api-auth'
 
 // POST: bulk update stage dates/notes for all stages at once
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string; vehicleId: string }> },
 ) {
+  const { error: authErr } = await requireAuth()
+  if (authErr) return authErr
+
   const { vehicleId } = await params
   try {
     const body = await req.json()

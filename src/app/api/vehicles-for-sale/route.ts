@@ -2,8 +2,12 @@ export const dynamic = 'force-dynamic'
 
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
+import { requireAuth } from '@/lib/api-auth'
 
 export async function GET() {
+  const { error: authErr } = await requireAuth()
+  if (authErr) return authErr
+
   const supabase = createAdminClient()
 
   const { data, error } = await supabase

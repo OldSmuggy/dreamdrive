@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
+import { requireAuth } from '@/lib/api-auth'
 
 const STAGE_ORDER = [
   'vehicle_selection',
@@ -18,6 +19,9 @@ const STAGE_ORDER = [
 ]
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { error: authErr } = await requireAuth()
+  if (authErr) return authErr
+
   const { id: customer_id } = await params
   try {
     const body = await req.json()
