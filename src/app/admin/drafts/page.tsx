@@ -3,7 +3,7 @@ import type { Listing } from '@/types'
 import DraftEditor from './DraftEditor'
 
 export const metadata = { title: 'Draft Listings' }
-export const revalidate = 0
+export const dynamic = 'force-dynamic'
 
 export default async function AdminDraftsPage() {
   const supabase = createAdminClient()

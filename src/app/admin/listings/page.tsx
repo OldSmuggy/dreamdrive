@@ -3,7 +3,7 @@ import type { Listing } from '@/types'
 import ListingEditor from './ListingEditor'
 
 export const metadata = { title: 'Listings' }
-export const revalidate = 0
+export const dynamic = 'force-dynamic'
 
 export default async function AdminListingsPage() {
   const supabase = createAdminClient()

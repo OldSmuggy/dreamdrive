@@ -1,7 +1,7 @@
+export const dynamic = 'force-dynamic'
+
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
-
-export const revalidate = 3600 // cache 1hr
 
 export async function GET() {
   const supabase = createAdminClient()
