@@ -7,12 +7,39 @@ import { listingDisplayPrice } from '@/lib/pricing'
 import SaveVanButton from '@/components/ui/SaveVanButton'
 import type { Listing } from '@/types'
 
+interface ForSaleVehicle {
+  id: string
+  vehicle_status: string
+  vehicle_description: string | null
+  sale_price_aud: number | null
+  sale_notes: string | null
+  sale_label: string | null
+  listing: { id: string; model_name: string; model_year: number | null; grade: string | null; photos: string[] } | null
+  build: { build_type: string } | null
+  current_stage: string | null
+}
+
+const STAGE_LABELS: Record<string, string> = {
+  vehicle_selection:  'Vehicle Selection',
+  bidding:            'Bidding',
+  purchase:           'Purchase',
+  storage:            'Storage in Japan',
+  design_approval:    'Design Approval',
+  van_building:       'Van Building',
+  shipping:           'Shipping',
+  compliance:         'Compliance',
+  pop_top_install:    'Pop Top Install',
+  ready_for_delivery: 'Ready for Delivery',
+  delivered:          'Delivered',
+}
+
 interface Props {
   initialListings: Listing[]
   searchParams: Record<string, string | undefined>
   userId: string | null
   initialSavedIds: string[]
   jpyRate: number
+  forSaleVehicles?: ForSaleVehicle[]
 }
 
 const LOCATION_FILTERS = [
@@ -43,7 +70,7 @@ function effectiveLocation(l: Listing): string {
   return l.source === 'au_stock' ? 'in_brisbane' : 'in_japan'
 }
 
-export default function BrowseClient({ initialListings, userId, initialSavedIds, jpyRate }: Props) {
+export default function BrowseClient({ initialListings, userId, initialSavedIds, jpyRate, forSaleVehicles = [] }: Props) {
   const router = useRouter()
 
   // Top filter rows
@@ -193,8 +220,20 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
         )}
       </div>
 
+      {/* ── For Sale Vehicles ── */}
+      {forSaleVehicles.length > 0 && !hasActiveFilters && (
+        <div className="mb-8">
+          <h2 className="font-display text-xl text-forest-900 mb-4">Contract for Sale</h2>
+          <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
+            {forSaleVehicles.map(v => (
+              <ForSaleCard key={v.id} vehicle={v} />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* ── Grid ── */}
-      {filtered.length === 0 ? (
+      {filtered.length === 0 && forSaleVehicles.length === 0 ? (
         <div className="text-center py-20 text-gray-400">
           <div className="text-5xl mb-4">🔍</div>
           <p className="text-lg font-semibold">No listings match your filters.</p>
@@ -211,6 +250,111 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
               jpyRate={jpyRate}
             />
           ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── For Sale Card ─────────────────────────────────────────────────────────────
+function ForSaleCard({ vehicle }: { vehicle: ForSaleVehicle }) {
+  const [showInterest, setShowInterest] = useState(false)
+  const [form, setForm] = useState({ name: '', email: '', phone: '', message: '' })
+  const [sending, setSending] = useState(false)
+  const [sent, setSent] = useState(false)
+
+  const photo = vehicle.listing?.photos?.[0] ?? null
+  const label = vehicle.listing
+    ? `${vehicle.listing.model_year ?? ''} ${vehicle.listing.model_name}`.trim()
+    : vehicle.vehicle_description || 'Toyota HiAce'
+  const stageLabel = vehicle.current_stage ? STAGE_LABELS[vehicle.current_stage] ?? vehicle.current_stage : null
+
+  const submit = async () => {
+    if (!form.email && !form.phone) return
+    setSending(true)
+    await fetch('/api/express-interest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...form,
+        customer_vehicle_id: vehicle.id,
+        sale_price: vehicle.sale_price_aud,
+      }),
+    })
+    setSending(false)
+    setSent(true)
+  }
+
+  return (
+    <div className="bg-white border-2 border-amber-200 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow group">
+      {/* Photo */}
+      <div className="relative h-[220px] overflow-hidden">
+        {photo ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={photo} alt={label} className="absolute inset-0 w-full h-full object-cover" />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center bg-amber-50 text-amber-300 text-5xl">🚐</div>
+        )}
+        <div className="absolute top-3 left-3 flex gap-1 flex-wrap">
+          <span className="bg-amber-500 text-white text-xs font-bold px-2 py-0.5 rounded">{vehicle.sale_label ?? 'CONTRACT FOR SALE'}</span>
+        </div>
+      </div>
+
+      {/* Info */}
+      <div className="p-4">
+        <p className="font-semibold text-sm text-gray-900 truncate">{label}</p>
+        {vehicle.build?.build_type && vehicle.build.build_type !== 'none' && (
+          <p className="text-xs text-amber-700 font-medium mt-0.5">{vehicle.build.build_type.toUpperCase()} Build</p>
+        )}
+        {stageLabel && (
+          <p className="text-xs text-gray-500 mt-1">Currently: {stageLabel}</p>
+        )}
+        {vehicle.sale_notes && (
+          <p className="text-xs text-gray-500 mt-1 line-clamp-2">{vehicle.sale_notes}</p>
+        )}
+
+        <div className="flex items-center justify-between mt-3 pt-3 border-t border-amber-100">
+          <span className="font-display text-amber-700 text-base font-semibold">
+            {vehicle.sale_price_aud ? centsToAud(vehicle.sale_price_aud) : 'POA'}
+          </span>
+          <button
+            onClick={() => setShowInterest(true)}
+            className="bg-amber-500 text-white text-xs font-semibold px-3 py-1.5 rounded-full hover:bg-amber-600 transition-colors"
+          >
+            Express Interest
+          </button>
+        </div>
+      </div>
+
+      {/* Express Interest Modal */}
+      {showInterest && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4" onClick={() => setShowInterest(false)}>
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full space-y-4" onClick={e => e.stopPropagation()}>
+            {sent ? (
+              <div className="text-center py-4">
+                <p className="font-display text-xl text-forest-900 mb-2">Thanks for your interest!</p>
+                <p className="text-sm text-gray-500">We&apos;ll be in touch shortly.</p>
+                <button onClick={() => setShowInterest(false)} className="mt-4 text-sm text-forest-600 hover:underline">Close</button>
+              </div>
+            ) : (
+              <>
+                <div>
+                  <h3 className="font-display text-xl text-forest-900">Express Interest</h3>
+                  <p className="text-sm text-gray-500 mt-1">{label} — {vehicle.sale_price_aud ? centsToAud(vehicle.sale_price_aud) : 'POA'}</p>
+                </div>
+                <div className="space-y-3">
+                  <input type="text" placeholder="Your name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-500" />
+                  <input type="email" placeholder="Email *" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-500" />
+                  <input type="tel" placeholder="Phone" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-500" />
+                  <textarea placeholder="Message (optional)" value={form.message} onChange={e => setForm(f => ({ ...f, message: e.target.value }))} rows={2} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-forest-500" />
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={submit} disabled={sending || (!form.email && !form.phone)} className="flex-1 bg-forest-600 text-white text-sm font-medium py-2 rounded-lg hover:bg-forest-700 disabled:opacity-50">{sending ? 'Sending...' : 'Send'}</button>
+                  <button onClick={() => setShowInterest(false)} className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50">Cancel</button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       )}
     </div>

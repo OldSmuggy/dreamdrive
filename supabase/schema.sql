@@ -209,7 +209,8 @@ create table if not exists customers (
   state               text null,       -- QLD, NSW, VIC, etc.
   notes               text null,
   hubspot_contact_id  text null,       -- future HubSpot integration
-  status              text default 'active'  -- 'active' | 'completed' | 'archived'
+  status              text default 'active',  -- 'active' | 'completed' | 'archived'
+  user_id             uuid null references auth.users(id)
 );
 
 -- ============================================================
@@ -232,6 +233,8 @@ create table if not exists customer_vehicles (
   for_sale            boolean default false,
   sale_price_aud      int  null,       -- cents
   sale_notes          text null,
+  sale_label          text default 'CONTRACT FOR SALE',
+  readiness_checklist jsonb default '{}',
   notes               text null,
   sort_order          int default 0
 );
@@ -279,7 +282,8 @@ create table if not exists order_stages (
   notes               text null,
   entered_at          timestamptz null,
   completed_at        timestamptz null,
-  planned_date        date null
+  planned_date        date null,
+  forecast_date       timestamptz null
 );
 
 create index if not exists idx_order_stages_vehicle on order_stages(customer_vehicle_id);
@@ -330,6 +334,30 @@ alter table products  enable row level security;
 alter table settings  enable row level security;
 alter table leads     enable row level security;
 create policy "anyone insert leads" on leads for insert with check (true);
+
+-- Customer vehicles: owners can read their own, for_sale visible to all
+alter table customer_vehicles enable row level security;
+create policy "owners read own vehicles" on customer_vehicles for select
+  using (
+    for_sale = true
+    or customer_id in (select id from customers where user_id = auth.uid())
+  );
+
+-- Customers: users can read their own record
+alter table customers enable row level security;
+create policy "users read own customer" on customers for select
+  using (user_id = auth.uid());
+
+-- Order stages: readable via vehicle ownership
+alter table order_stages enable row level security;
+create policy "owners read own stages" on order_stages for select
+  using (
+    customer_vehicle_id in (
+      select cv.id from customer_vehicles cv
+      join customers c on c.id = cv.customer_id
+      where c.user_id = auth.uid() or cv.for_sale = true
+    )
+  );
 
 -- ============================================================
 -- SEED — Dream Drive products

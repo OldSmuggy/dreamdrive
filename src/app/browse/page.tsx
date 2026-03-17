@@ -1,4 +1,5 @@
 import { createSupabaseServer } from '@/lib/supabase-server'
+import { createAdminClient } from '@/lib/supabase'
 import { getJpyRate } from '@/lib/settings'
 import AuctionBanner from '@/components/ui/AuctionBanner'
 import BrowseClient from '@/components/listings/BrowseClient'
@@ -16,6 +17,18 @@ interface Props {
     drive?: string
     transmission?: string
   }
+}
+
+export interface ForSaleVehicle {
+  id: string
+  vehicle_status: string
+  vehicle_description: string | null
+  sale_price_aud: number | null
+  sale_notes: string | null
+  sale_label: string | null
+  listing: { id: string; model_name: string; model_year: number | null; grade: string | null; photos: string[] } | null
+  build: { build_type: string } | null
+  current_stage: string | null
 }
 
 export default async function BrowsePage({ searchParams }: Props) {
@@ -46,6 +59,36 @@ export default async function BrowsePage({ searchParams }: Props) {
   const { data } = await query
   const listings = (data ?? []) as Listing[]
 
+  // Fetch for-sale customer vehicles
+  const admin = createAdminClient()
+  const { data: forSaleRaw } = await admin
+    .from('customer_vehicles')
+    .select(`
+      id, vehicle_status, vehicle_description, sale_price_aud, sale_notes, sale_label,
+      listing:listings(id, model_name, model_year, grade, photos),
+      customer_builds(build_type),
+      order_stages(stage, status)
+    `)
+    .eq('for_sale', true)
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const forSaleVehicles: ForSaleVehicle[] = (forSaleRaw ?? []).map((v: any) => {
+    const listing = Array.isArray(v.listing) ? v.listing[0] : v.listing
+    const build = Array.isArray(v.customer_builds) ? v.customer_builds[0] ?? null : v.customer_builds
+    const currentStage = (v.order_stages ?? []).find((s: { status: string }) => s.status === 'current')
+    return {
+      id: v.id,
+      vehicle_status: v.vehicle_status,
+      vehicle_description: v.vehicle_description,
+      sale_price_aud: v.sale_price_aud,
+      sale_notes: v.sale_notes,
+      sale_label: v.sale_label ?? 'CONTRACT FOR SALE',
+      listing: listing ?? null,
+      build: build ?? null,
+      current_stage: currentStage?.stage ?? null,
+    }
+  })
+
   const [jpyRate, { data: { user } }] = await Promise.all([
     getJpyRate(),
     supabase.auth.getUser(),
@@ -68,6 +111,7 @@ export default async function BrowsePage({ searchParams }: Props) {
         userId={user?.id ?? null}
         initialSavedIds={savedIds}
         jpyRate={jpyRate}
+        forSaleVehicles={forSaleVehicles}
       />
     </div>
   )

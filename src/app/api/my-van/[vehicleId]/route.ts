@@ -14,11 +14,11 @@ export async function GET(
   const { data: vehicle, error } = await supabase
     .from('customer_vehicles')
     .select(`
-      id, vehicle_status, vehicle_description, build_date, for_sale, sale_price_aud, sale_notes,
+      id, vehicle_status, vehicle_description, build_date, for_sale, sale_price_aud, sale_notes, sale_label,
       purchase_price_jpy, purchase_price_aud,
       customer:customers!customer_vehicles_customer_id_fkey(id, first_name, last_name),
       listing:listings(id, model_name, model_year, grade, chassis_code, photos, mileage_km, drive),
-      order_stages(id, stage, status, notes, entered_at, completed_at, planned_date),
+      order_stages(id, stage, status, notes, entered_at, completed_at, planned_date, forecast_date),
       customer_builds(id, build_type, build_location, pop_top, pop_top_fee_aud, addon_slugs, addons_total_aud, custom_description, total_quoted_aud, build_status, notes),
       customer_documents(id, name, file_url, file_type, file_size_bytes, document_type, notes, created_at, customer_visible)
     `)

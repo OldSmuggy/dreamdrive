@@ -172,10 +172,11 @@ export async function PUT(
     const supabase = createAdminClient()
     const updatePayload: Record<string, unknown> = {}
 
-    if (body.notes        !== undefined) updatePayload.notes        = body.notes ?? null
-    if (body.planned_date !== undefined) updatePayload.planned_date = body.planned_date || null
-    if (body.entered_at   !== undefined) updatePayload.entered_at   = body.entered_at || null
-    if (body.completed_at !== undefined) updatePayload.completed_at = body.completed_at || null
+    if (body.notes         !== undefined) updatePayload.notes         = body.notes ?? null
+    if (body.planned_date  !== undefined) updatePayload.planned_date  = body.planned_date || null
+    if (body.entered_at    !== undefined) updatePayload.entered_at    = body.entered_at || null
+    if (body.completed_at  !== undefined) updatePayload.completed_at  = body.completed_at || null
+    if (body.forecast_date !== undefined) updatePayload.forecast_date = body.forecast_date || null
 
     const { data, error } = await supabase
       .from('order_stages')

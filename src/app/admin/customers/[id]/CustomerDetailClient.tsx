@@ -82,6 +82,7 @@ interface OrderStage {
   entered_at: string | null
   completed_at: string | null
   planned_date: string | null
+  forecast_date: string | null
 }
 
 interface Build {
@@ -136,6 +137,8 @@ interface Vehicle {
   for_sale: boolean
   sale_price_aud: number | null
   sale_notes: string | null
+  sale_label: string | null
+  readiness_checklist: Record<string, boolean>
   notes: string | null
   sort_order: number
   created_at: string
@@ -302,7 +305,7 @@ function StageTracker({
     }
   }
 
-  const saveStageDate = async (stageId: string, field: 'planned_date' | 'entered_at' | 'completed_at', value: string) => {
+  const saveStageDate = async (stageId: string, field: 'planned_date' | 'entered_at' | 'completed_at' | 'forecast_date', value: string) => {
     const res = await fetch(`/api/customers/${customerId}/vehicles/${vehicleId}/stages`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -314,8 +317,93 @@ function StageTracker({
     }
   }
 
+  const [showTimeline, setShowTimeline] = useState(false)
+  const [timelineDates, setTimelineDates] = useState<Record<string, { entered_at: string; completed_at: string; forecast_date: string; notes: string }>>({})
+  const [savingTimeline, setSavingTimeline] = useState(false)
+
+  const openTimeline = () => {
+    const dates: Record<string, { entered_at: string; completed_at: string; forecast_date: string; notes: string }> = {}
+    for (const s of stages) {
+      dates[s.id] = {
+        entered_at: toInputDate(s.entered_at),
+        completed_at: toInputDate(s.completed_at),
+        forecast_date: toInputDate(s.forecast_date ?? s.planned_date),
+        notes: s.notes ?? '',
+      }
+    }
+    setTimelineDates(dates)
+    setShowTimeline(true)
+  }
+
+  const saveTimeline = async () => {
+    setSavingTimeline(true)
+    const payload = Object.entries(timelineDates).map(([stage_id, d]) => ({
+      stage_id,
+      entered_at: d.entered_at ? new Date(d.entered_at).toISOString() : null,
+      completed_at: d.completed_at ? new Date(d.completed_at).toISOString() : null,
+      forecast_date: d.forecast_date ? new Date(d.forecast_date).toISOString() : null,
+      notes: d.notes || null,
+    }))
+    const res = await fetch(`/api/customers/${customerId}/vehicles/${vehicleId}/stages/bulk`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ stages: payload }),
+    })
+    if (res.ok) {
+      const updated = await res.json()
+      onStagesUpdate(vehicleId, updated)
+    }
+    setSavingTimeline(false)
+    setShowTimeline(false)
+  }
+
   return (
     <div className="space-y-3">
+      {/* Set Full Timeline button */}
+      <div className="flex justify-end">
+        <button onClick={openTimeline} className="text-xs px-3 py-1.5 border border-forest-600 text-forest-600 rounded-lg hover:bg-forest-50">
+          Set Full Timeline
+        </button>
+      </div>
+
+      {/* Timeline Modal */}
+      {showTimeline && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4" onClick={() => setShowTimeline(false)}>
+          <div className="bg-white rounded-2xl p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <h3 className="font-display text-lg text-forest-900 mb-4">Set Full Timeline</h3>
+            <div className="space-y-3">
+              {sortedStages.map(stage => {
+                const d = timelineDates[stage.id]
+                if (!d) return null
+                return (
+                  <div key={stage.id} className="bg-gray-50 rounded-lg p-3">
+                    <p className="text-xs font-semibold text-gray-700 mb-2">{STAGE_LABELS[stage.stage]}</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div>
+                        <label className="block text-[10px] text-gray-500 mb-0.5">Entered</label>
+                        <input type="date" value={d.entered_at} onChange={e => setTimelineDates(prev => ({ ...prev, [stage.id]: { ...prev[stage.id], entered_at: e.target.value } }))} className="w-full border border-gray-300 rounded px-2 py-1 text-xs" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-gray-500 mb-0.5">Completed</label>
+                        <input type="date" value={d.completed_at} onChange={e => setTimelineDates(prev => ({ ...prev, [stage.id]: { ...prev[stage.id], completed_at: e.target.value } }))} className="w-full border border-gray-300 rounded px-2 py-1 text-xs" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-gray-500 mb-0.5">Forecast</label>
+                        <input type="date" value={d.forecast_date} onChange={e => setTimelineDates(prev => ({ ...prev, [stage.id]: { ...prev[stage.id], forecast_date: e.target.value } }))} className="w-full border border-gray-300 rounded px-2 py-1 text-xs" />
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+            <div className="flex gap-2 mt-4">
+              <button onClick={saveTimeline} disabled={savingTimeline} className="flex-1 bg-forest-600 text-white text-sm font-medium py-2 rounded-lg hover:bg-forest-700 disabled:opacity-50">{savingTimeline ? 'Saving...' : 'Save All'}</button>
+              <button onClick={() => setShowTimeline(false)} className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50">Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Dots */}
       <div className="overflow-x-auto pb-1">
         <div className="flex items-start min-w-max gap-0">
@@ -325,6 +413,7 @@ function StageTracker({
             const upcoming = stage.status === 'upcoming'
             const isExpanded = expandedStage === stage.stage
 
+            const forecast = stage.forecast_date ?? stage.planned_date
             // Determine which date to show and its color
             let dateDisplay = ''
             let dateColor   = 'text-gray-300'
@@ -334,8 +423,8 @@ function StageTracker({
             } else if (active && stage.entered_at) {
               dateDisplay = fmtDate(stage.entered_at)
               dateColor   = 'text-forest-400'
-            } else if (upcoming && stage.planned_date) {
-              dateDisplay = fmtDate(stage.planned_date)
+            } else if (upcoming && forecast) {
+              dateDisplay = fmtDate(forecast)
               dateColor   = 'text-gray-400 italic'
             }
 
@@ -425,17 +514,15 @@ function StageTracker({
                   />
                 </div>
               )}
-              {upcoming && (
-                <div>
-                  <label className="block text-[10px] text-gray-500 mb-0.5">Planned Date</label>
-                  <input
-                    type="date"
-                    value={toInputDate(s.planned_date)}
-                    onChange={e => saveStageDate(s.id, 'planned_date', e.target.value || '')}
-                    className="w-full border border-gray-300 rounded px-2 py-1 text-xs text-gray-400"
-                  />
-                </div>
-              )}
+              <div>
+                <label className="block text-[10px] text-gray-500 mb-0.5">Forecast Date</label>
+                <input
+                  type="date"
+                  value={toInputDate(s.forecast_date ?? s.planned_date)}
+                  onChange={e => saveStageDate(s.id, 'forecast_date', e.target.value ? new Date(e.target.value).toISOString() : '')}
+                  className="w-full border border-gray-300 rounded px-2 py-1 text-xs text-gray-400"
+                />
+              </div>
             </div>
 
             {s.notes && <p className="text-gray-600 italic">{s.notes}</p>}
@@ -929,6 +1016,11 @@ function VehicleCard({
   // Design approval toggle — optional stage
   const [designApproval, setDesignApproval] = useState(true)
 
+  // Readiness checklist
+  const [showReadiness, setShowReadiness] = useState(false)
+  const [readinessCheck, setReadinessCheck] = useState<Record<string, boolean>>(vehicle.readiness_checklist ?? {})
+  const readinessAllDone = READINESS_ITEMS.every(item => readinessCheck[item.key])
+
   const searchListings = async (q: string) => {
     setListingQuery(q)
     if (q.length < 2) { setListingResults([]); return }
@@ -1265,12 +1357,12 @@ function VehicleCard({
             <div className="mt-2 space-y-3">
               <label className="flex items-center gap-3 cursor-pointer">
                 <input type="checkbox" checked={saleEnabled} onChange={e => setSaleEnabled(e.target.checked)} className="w-4 h-4 text-forest-600 rounded border-gray-300" />
-                <span className="text-sm text-gray-700">List this vehicle for sale</span>
+                <span className="text-sm text-gray-700">List this vehicle for sale on browse page</span>
               </label>
               {saleEnabled && (
                 <>
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1">Sale Price (AUD)</label>
+                    <label className="block text-xs text-gray-500 mb-1">Sale Price (AUD) *</label>
                     <div className="relative">
                       <span className="absolute left-3 top-2 text-sm text-gray-400">$</span>
                       <input type="number" value={salePrice} onChange={e => setSalePrice(e.target.value)} className="w-full border border-gray-300 rounded-lg pl-7 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-500" placeholder="0" />
@@ -1289,7 +1381,102 @@ function VehicleCard({
           )}
         </div>
 
+        {/* ── Customer Readiness ── */}
+        <div>
+          <button onClick={() => setShowReadiness(v => !v)} className="flex items-center gap-2 text-xs font-semibold text-gray-600 uppercase tracking-wide hover:text-gray-800 w-full text-left">
+            <span>Customer Readiness</span>
+            {readinessAllDone && <span className="text-xs px-1.5 py-0.5 rounded bg-green-100 text-green-700 normal-case font-medium">Ready</span>}
+            <span className="text-gray-400 font-normal ml-auto">{showReadiness ? '▲' : '▼'}</span>
+          </button>
+          {showReadiness && (
+            <div className="mt-2">
+              <ReadinessChecklist
+                vehicleId={vehicle.id}
+                customerId={customer.id}
+                checklist={readinessCheck}
+                onUpdate={(updated) => {
+                  setReadinessCheck(updated)
+                  onVehicleUpdate({ ...vehicle, readiness_checklist: updated })
+                }}
+              />
+            </div>
+          )}
+        </div>
+
       </div>
+    </div>
+  )
+}
+
+// ── Readiness Checklist ───────────────────────────────────────────────────────
+
+const READINESS_ITEMS = [
+  { key: 'vehicle_assigned',   label: 'Vehicle assigned and verified' },
+  { key: 'stage_dates_set',    label: 'Stage tracker dates set' },
+  { key: 'build_confirmed',    label: 'Build details confirmed (fit-out, pop top, accessories)' },
+  { key: 'invoice_created',    label: 'First invoice created' },
+  { key: 'welcome_sent',       label: 'Welcome message sent' },
+  { key: 'link_sent',          label: '/my-van link sent to customer' },
+]
+
+function ReadinessChecklist({
+  vehicleId,
+  customerId,
+  checklist,
+  onUpdate,
+}: {
+  vehicleId: string
+  customerId: string
+  checklist: Record<string, boolean>
+  onUpdate: (checklist: Record<string, boolean>) => void
+}) {
+  const [saving, setSaving] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  const allDone = READINESS_ITEMS.every(item => checklist[item.key])
+  const link = typeof window !== 'undefined' ? `${window.location.origin}/my-van/${vehicleId}` : `/my-van/${vehicleId}`
+
+  const toggle = async (key: string) => {
+    const updated = { ...checklist, [key]: !checklist[key] }
+    setSaving(true)
+    await fetch(`/api/customers/${customerId}/vehicles/${vehicleId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ readiness_checklist: updated }),
+    })
+    setSaving(false)
+    onUpdate(updated)
+  }
+
+  return (
+    <div className="space-y-3">
+      {READINESS_ITEMS.map(item => (
+        <label key={item.key} className="flex items-center gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={!!checklist[item.key]}
+            onChange={() => toggle(item.key)}
+            disabled={saving}
+            className="w-4 h-4 text-forest-600 rounded border-gray-300 focus:ring-forest-500"
+          />
+          <span className={`text-sm ${checklist[item.key] ? 'text-gray-700 line-through' : 'text-gray-700'}`}>{item.label}</span>
+        </label>
+      ))}
+
+      {allDone && (
+        <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 mt-2">
+          <p className="text-sm font-semibold text-green-800 mb-2">Ready to share — send this link to your customer:</p>
+          <div className="flex items-center gap-2">
+            <code className="text-xs bg-white border border-green-200 rounded-lg px-3 py-1.5 flex-1 truncate text-green-700">{link}</code>
+            <button
+              onClick={() => { navigator.clipboard.writeText(link); setCopied(true); setTimeout(() => setCopied(false), 2000) }}
+              className="text-xs px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 shrink-0"
+            >
+              {copied ? 'Copied!' : 'Copy Link'}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

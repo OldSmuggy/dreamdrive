@@ -25,6 +25,8 @@ export async function PUT(
     if (body.for_sale            !== undefined) payload.for_sale            = body.for_sale
     if (body.sale_price_aud      !== undefined) payload.sale_price_aud      = body.sale_price_aud || null
     if (body.sale_notes          !== undefined) payload.sale_notes          = body.sale_notes || null
+    if (body.sale_label          !== undefined) payload.sale_label          = body.sale_label || null
+    if (body.readiness_checklist !== undefined) payload.readiness_checklist = body.readiness_checklist
 
     const { data, error } = await supabase
       .from('customer_vehicles')
