@@ -1,6 +1,7 @@
 import { createAdminClient } from '@/lib/supabase'
 import VehiclesForSaleClient from './VehiclesForSaleClient'
 
+export const dynamic  = 'force-dynamic'
 export const metadata = { title: 'Vehicles For Sale | Admin' }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

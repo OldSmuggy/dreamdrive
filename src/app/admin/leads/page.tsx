@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase'
 import { centsToAud } from '@/lib/utils'

@@ -108,7 +108,7 @@ export default function CustomersClient({ customers: initial }: { customers: Cus
     await Promise.all(
       ids.map(id =>
         action === 'delete'
-          ? fetch(`/api/customers/${id}`, { method: 'DELETE' })
+          ? fetch(`/api/customers/${id}?hard=true`, { method: 'DELETE' })
           : fetch(`/api/customers/${id}`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
@@ -124,6 +124,14 @@ export default function CustomersClient({ customers: initial }: { customers: Cus
       setCustomers(cs => cs.map(c => ids.includes(c.id) ? { ...c, status: action } : c))
     }
     setSelected(new Set())
+  }
+
+  const deleteSingle = async (c: Customer) => {
+    const name = [c.first_name, c.last_name].filter(Boolean).join(' ')
+    if (!confirm(`Delete ${name}? This will also delete their vehicles, builds, and documents.`)) return
+    await fetch(`/api/customers/${c.id}?hard=true`, { method: 'DELETE' })
+    setCustomers(cs => cs.filter(x => x.id !== c.id))
+    setSelected(prev => { const n = new Set(prev); n.delete(c.id); return n })
   }
 
   const hasSelection = selected.size > 0
@@ -267,6 +275,15 @@ export default function CustomersClient({ customers: initial }: { customers: Cus
                   </svg>
                 </div>
               </Link>
+              <button
+                onClick={e => { e.stopPropagation(); deleteSingle(c) }}
+                className="text-gray-300 hover:text-red-500 shrink-0 p-1"
+                title={`Delete ${name}`}
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
             </div>
           )
         })}

@@ -55,14 +55,14 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
+  const hard = req.nextUrl.searchParams.get('hard') === 'true'
   const supabase = createAdminClient()
 
-  const { error } = await supabase
-    .from('customers')
-    .update({ status: 'archived', updated_at: new Date().toISOString() })
-    .eq('id', id)
+  const { error } = hard
+    ? await supabase.from('customers').delete().eq('id', id)
+    : await supabase.from('customers').update({ status: 'archived', updated_at: new Date().toISOString() }).eq('id', id)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ ok: true })

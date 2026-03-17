@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { createAdminClient } from '@/lib/supabase'
 import CustomerDetailClient from './CustomerDetailClient'
 
+export const dynamic  = 'force-dynamic'
 export const metadata = { title: 'Customer | Admin' }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

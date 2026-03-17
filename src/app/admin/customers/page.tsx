@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase'
 import CustomersClient from './CustomersClient'
 
+export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Customers | Admin' }
 
 export default async function CustomersPage() {

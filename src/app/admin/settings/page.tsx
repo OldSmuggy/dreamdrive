@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { createAdminClient } from '@/lib/supabase'
 import { getSiteSettings } from '@/lib/site-settings'
 import SettingsEditor from './SettingsEditor'
