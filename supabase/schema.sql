@@ -196,6 +196,116 @@ create table if not exists scrape_logs (
 );
 
 -- ============================================================
+-- CUSTOMERS (admin CRM)
+-- ============================================================
+create table if not exists customers (
+  id                  uuid primary key default gen_random_uuid(),
+  created_at          timestamptz default now(),
+  updated_at          timestamptz default now(),
+  first_name          text not null,
+  last_name           text not null,
+  email               text null,
+  phone               text null,
+  state               text null,       -- QLD, NSW, VIC, etc.
+  notes               text null,
+  hubspot_contact_id  text null,       -- future HubSpot integration
+  status              text default 'active'  -- 'active' | 'completed' | 'archived'
+);
+
+-- ============================================================
+-- CUSTOMER VEHICLES (a customer can have multiple)
+-- ============================================================
+create table if not exists customer_vehicles (
+  id                  uuid primary key default gen_random_uuid(),
+  created_at          timestamptz default now(),
+  updated_at          timestamptz default now(),
+  customer_id         uuid not null references customers(id) on delete cascade,
+  listing_id          uuid null references listings(id) on delete set null,
+  target_preferences  jsonb default '{}',
+  vehicle_status      text default 'searching',
+  -- Values: 'searching','targeted','bidding','purchased','in_storage','building',
+  --         'shipping','compliance','pop_top_install','ready_for_delivery','delivered'
+  vehicle_description text null,
+  purchase_price_jpy  int  null,
+  purchase_price_aud  int  null,       -- cents
+  build_date          date null,
+  for_sale            boolean default false,
+  sale_price_aud      int  null,       -- cents
+  sale_notes          text null,
+  notes               text null,
+  sort_order          int default 0
+);
+
+create index if not exists idx_customer_vehicles_customer on customer_vehicles(customer_id);
+
+-- ============================================================
+-- CUSTOMER BUILDS (one build per vehicle)
+-- ============================================================
+create table if not exists customer_builds (
+  id                  uuid primary key default gen_random_uuid(),
+  created_at          timestamptz default now(),
+  updated_at          timestamptz default now(),
+  customer_id         uuid not null references customers(id) on delete cascade,
+  customer_vehicle_id uuid null references customer_vehicles(id) on delete set null,
+  build_type          text not null,
+  -- Values: 'tama','mana_japan','mana_australia','bare_camper','pop_top_only','custom','none'
+  build_location      text null,       -- 'japan' | 'australia'
+  conversion_fee_aud  int  null,       -- cents
+  pop_top             boolean default false,
+  pop_top_fee_aud     int  null,       -- cents
+  addon_slugs         text[] default '{}',
+  addons_total_aud    int  default 0,  -- cents
+  custom_description  text null,
+  custom_quote_aud    int  null,       -- cents
+  total_quoted_aud    int  null,       -- cents
+  build_status        text default 'quoted',  -- 'quoted' | 'confirmed' | 'in_progress' | 'completed'
+  notes               text null
+);
+
+create index if not exists idx_customer_builds_customer on customer_builds(customer_id);
+create index if not exists idx_customer_builds_vehicle  on customer_builds(customer_vehicle_id);
+
+-- ============================================================
+-- ORDER STAGES (tracks the journey of each customer vehicle)
+-- ============================================================
+create table if not exists order_stages (
+  id                  uuid primary key default gen_random_uuid(),
+  created_at          timestamptz default now(),
+  customer_vehicle_id uuid not null references customer_vehicles(id) on delete cascade,
+  stage               text not null,
+  -- Values: 'vehicle_selection','bidding','purchase','storage','design_approval',
+  --         'van_building','shipping','compliance','pop_top_install','ready_for_delivery','delivered'
+  status              text default 'current',  -- 'completed' | 'current' | 'upcoming'
+  notes               text null,
+  entered_at          timestamptz null,
+  completed_at        timestamptz null,
+  planned_date        date null
+);
+
+create index if not exists idx_order_stages_vehicle on order_stages(customer_vehicle_id);
+
+-- ============================================================
+-- CUSTOMER DOCUMENTS (PDFs, quotes, invoices, photos)
+-- ============================================================
+create table if not exists customer_documents (
+  id                  uuid primary key default gen_random_uuid(),
+  created_at          timestamptz default now(),
+  customer_id         uuid not null references customers(id) on delete cascade,
+  customer_vehicle_id uuid null references customer_vehicles(id) on delete set null,
+  name                text not null,
+  file_url            text not null,
+  file_type           text null,       -- 'pdf' | 'image' | 'other'
+  file_size_bytes     int  null,
+  document_type       text default 'other',
+  -- Values: 'quote','invoice','inspection_sheet','shipping_doc','compliance_cert','photo','contract','other'
+  notes               text null,
+  customer_visible    boolean default false  -- only visible on /my-van page when true
+);
+
+create index if not exists idx_customer_documents_customer on customer_documents(customer_id);
+create index if not exists idx_customer_documents_vehicle  on customer_documents(customer_vehicle_id);
+
+-- ============================================================
 -- ROW LEVEL SECURITY
 -- ============================================================
 alter table user_profiles  enable row level security;
