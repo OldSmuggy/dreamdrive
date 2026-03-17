@@ -133,6 +133,9 @@ interface Vehicle {
   purchase_price_jpy: number | null
   purchase_price_aud: number | null
   build_date: string | null
+  for_sale: boolean
+  sale_price_aud: number | null
+  sale_notes: string | null
   notes: string | null
   sort_order: number
   created_at: string
@@ -151,6 +154,7 @@ interface Document {
   notes: string | null
   created_at: string
   customer_vehicle_id: string | null
+  customer_visible: boolean
 }
 
 interface Product {
@@ -717,12 +721,14 @@ function DocSection({
   vehicleId,
   onAdded,
   onDeleted,
+  onUpdated,
 }: {
   docs: Document[]
   customerId: string
   vehicleId: string | null
   onAdded: (doc: Document) => void
   onDeleted: (docId: string) => void
+  onUpdated: (doc: Document) => void
 }) {
   const [showUpload, setShowUpload]     = useState(false)
   const [uploading, setUploading]       = useState(false)
@@ -767,6 +773,18 @@ function DocSection({
     setConfirmDel(null)
   }
 
+  const toggleVisibility = async (doc: Document) => {
+    const res = await fetch(`/api/customers/${customerId}/documents`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ doc_id: doc.id, customer_visible: !doc.customer_visible }),
+    })
+    if (res.ok) {
+      const updated = await res.json()
+      onUpdated(updated)
+    }
+  }
+
   return (
     <div className="space-y-2">
       {docs.length === 0 && !showUpload && <p className="text-xs text-gray-400">No documents yet.</p>}
@@ -787,6 +805,13 @@ function DocSection({
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0 ml-2">
+            <button
+              onClick={() => toggleVisibility(doc)}
+              title={doc.customer_visible ? 'Visible to customer — click to hide' : 'Hidden from customer — click to show'}
+              className={`text-xs px-1.5 py-0.5 rounded font-medium ${doc.customer_visible ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'}`}
+            >
+              {doc.customer_visible ? '👁' : '🚫'}
+            </button>
             {confirmDel === doc.id ? (
               <>
                 <button onClick={() => del(doc.id)} className="text-xs px-2 py-1 bg-red-600 text-white rounded">Delete</button>
@@ -850,6 +875,7 @@ function VehicleCard({
   onBuildSave,
   onDocAdded,
   onDocDeleted,
+  onDocUpdated,
   onVehicleUpdate,
   onVehicleDelete,
 }: {
@@ -864,6 +890,7 @@ function VehicleCard({
   onBuildSave: (vid: string, build: Build) => void
   onDocAdded: (doc: Document) => void
   onDocDeleted: (docId: string) => void
+  onDocUpdated: (doc: Document) => void
   onVehicleUpdate: (vehicle: Vehicle) => void
   onVehicleDelete: (vid: string) => void
 }) {
@@ -890,6 +917,14 @@ function VehicleCard({
   const [savingBuildDate, setSavingBuildDate] = useState(false)
 
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [copied, setCopied]               = useState<string | null>(null)
+
+  // Sale settings state
+  const [showSale, setShowSale]           = useState(vehicle.for_sale)
+  const [saleEnabled, setSaleEnabled]     = useState(vehicle.for_sale)
+  const [salePrice, setSalePrice]         = useState(vehicle.sale_price_aud ? String(vehicle.sale_price_aud / 100) : '')
+  const [saleNotes, setSaleNotes]         = useState(vehicle.sale_notes ?? '')
+  const [savingSale, setSavingSale]       = useState(false)
 
   // Design approval toggle — optional stage
   const [designApproval, setDesignApproval] = useState(true)
@@ -972,6 +1007,26 @@ function VehicleCard({
     onVehicleUpdate({ ...vehicle, build_date: buildDate || null })
   }
 
+  const saveSaleSettings = async () => {
+    setSavingSale(true)
+    await fetch(`/api/customers/${customer.id}/vehicles/${vehicle.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        for_sale:       saleEnabled,
+        sale_price_aud: salePrice ? Math.round(parseFloat(salePrice) * 100) : null,
+        sale_notes:     saleNotes || null,
+      }),
+    })
+    setSavingSale(false)
+    onVehicleUpdate({
+      ...vehicle,
+      for_sale:       saleEnabled,
+      sale_price_aud: salePrice ? Math.round(parseFloat(salePrice) * 100) : null,
+      sale_notes:     saleNotes || null,
+    })
+  }
+
   const label = vehicle.listing
     ? `${vehicle.listing.model_year ?? ''} ${vehicle.listing.model_name}`.trim()
     : vehicle.vehicle_description || 'New Vehicle'
@@ -1023,6 +1078,15 @@ function VehicleCard({
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
+          {vehicle.for_sale && <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">FOR SALE</span>}
+          <Link href={`/my-van/${vehicle.id}`} target="_blank" className="text-xs px-2 py-1 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50" title="Preview customer view">👁</Link>
+          <button
+            onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/my-van/${vehicle.id}`); setCopied(vehicle.id); setTimeout(() => setCopied(null), 2000) }}
+            className="text-xs px-2 py-1 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50"
+            title="Copy customer link"
+          >
+            {copied === vehicle.id ? '✓' : '📋'}
+          </button>
           {confirmDelete ? (
             <>
               <span className="text-xs text-red-600">Remove?</span>
@@ -1181,7 +1245,7 @@ function VehicleCard({
           <button onClick={() => setShowDocs(v => !v)} className="flex items-center gap-2 text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2 hover:text-gray-800">
             Documents ({docsForVehicle.length}) <span className="text-gray-400 font-normal">{showDocs ? '▲' : '▼'}</span>
           </button>
-          {showDocs && <DocSection docs={docsForVehicle} customerId={customer.id} vehicleId={vehicle.id} onAdded={onDocAdded} onDeleted={onDocDeleted} />}
+          {showDocs && <DocSection docs={docsForVehicle} customerId={customer.id} vehicleId={vehicle.id} onAdded={onDocAdded} onDeleted={onDocDeleted} onUpdated={updated => onDocUpdated(updated)} />}
         </div>
 
         {/* ── Vehicle Notes ── */}
@@ -1189,6 +1253,40 @@ function VehicleCard({
           <label className="block text-xs font-semibold text-gray-600 mb-1.5">Vehicle Notes</label>
           <textarea rows={2} value={vehicleNotes} onChange={e => setVehicleNotes(e.target.value)} placeholder="Notes about this vehicle…" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-forest-500" />
           <button onClick={saveNotes} disabled={savingNotes} className="mt-1.5 text-xs px-3 py-1.5 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 disabled:opacity-50">{savingNotes ? 'Saving…' : 'Save Notes'}</button>
+        </div>
+
+        {/* ── Sale Settings ── */}
+        <div>
+          <button onClick={() => setShowSale(v => !v)} className="flex items-center gap-2 text-xs font-semibold text-gray-600 uppercase tracking-wide hover:text-gray-800">
+            Sale Settings {saleEnabled && <span className="text-xs px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 normal-case font-medium">Active</span>}
+            <span className="text-gray-400 font-normal ml-auto">{showSale ? '▲' : '▼'}</span>
+          </button>
+          {showSale && (
+            <div className="mt-2 space-y-3">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" checked={saleEnabled} onChange={e => setSaleEnabled(e.target.checked)} className="w-4 h-4 text-forest-600 rounded border-gray-300" />
+                <span className="text-sm text-gray-700">List this vehicle for sale</span>
+              </label>
+              {saleEnabled && (
+                <>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Sale Price (AUD)</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-2 text-sm text-gray-400">$</span>
+                      <input type="number" value={salePrice} onChange={e => setSalePrice(e.target.value)} className="w-full border border-gray-300 rounded-lg pl-7 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-500" placeholder="0" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Sale Notes (visible to buyers)</label>
+                    <textarea value={saleNotes} onChange={e => setSaleNotes(e.target.value)} rows={2} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-forest-500" placeholder="e.g. TAMA build at Van Building stage, expected delivery April 2026" />
+                  </div>
+                </>
+              )}
+              <button onClick={saveSaleSettings} disabled={savingSale} className="text-xs px-3 py-1.5 bg-forest-600 text-white rounded-lg hover:bg-forest-700 disabled:opacity-50">
+                {savingSale ? 'Saving…' : 'Save Sale Settings'}
+              </button>
+            </div>
+          )}
         </div>
 
       </div>
@@ -1340,6 +1438,7 @@ export default function CustomerDetailClient({
               onBuildSave={(vid, build) => setBuildsMap(m => ({ ...m, [vid]: build }))}
               onDocAdded={doc => setDocs(d => [doc, ...d])}
               onDocDeleted={docId => setDocs(d => d.filter(doc => doc.id !== docId))}
+              onDocUpdated={updated => setDocs(d => d.map(doc => doc.id === updated.id ? updated : doc))}
               onVehicleUpdate={updated => setVehicles(vs => vs.map(v => v.id === updated.id ? { ...v, ...updated } : v))}
               onVehicleDelete={deleteVehicle}
             />
@@ -1350,7 +1449,7 @@ export default function CustomerDetailClient({
       {/* General documents */}
       <div className="bg-white border border-gray-200 rounded-xl px-4 py-4">
         <h2 className="font-semibold text-gray-900 text-sm mb-3">General Documents ({globalDocs.length})</h2>
-        <DocSection docs={globalDocs} customerId={customer.id} vehicleId={null} onAdded={doc => setDocs(d => [doc, ...d])} onDeleted={docId => setDocs(d => d.filter(doc => doc.id !== docId))} />
+        <DocSection docs={globalDocs} customerId={customer.id} vehicleId={null} onAdded={doc => setDocs(d => [doc, ...d])} onDeleted={docId => setDocs(d => d.filter(doc => doc.id !== docId))} onUpdated={updated => setDocs(d => d.map(doc => doc.id === updated.id ? updated : doc))} />
       </div>
 
     </div>

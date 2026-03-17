@@ -14,6 +14,7 @@ const NAV = [
   { href: '/admin/leads',           label: '📋 Leads' },
   { href: '/admin/customers',       label: '👥 Customers' },
   { href: '/admin/customers/add',   label: '➕ Add Customer' },
+  { href: '/admin/vehicles-for-sale', label: '🏷️ For Sale' },
   { href: '/admin/settings',    label: '⚙️ Settings' },
 ]
 

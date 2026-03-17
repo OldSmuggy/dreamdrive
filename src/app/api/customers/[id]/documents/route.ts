@@ -65,7 +65,39 @@ export async function POST(
         file_size_bytes:     file.size,
         document_type:       document_type || 'other',
         notes:               notes || null,
+        customer_visible:    formData.get('customer_visible') === 'true',
       })
+      .select()
+      .single()
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json(data)
+  } catch (err) {
+    return NextResponse.json({ error: String(err) }, { status: 500 })
+  }
+}
+
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id: customer_id } = await params
+  try {
+    const body = await req.json()
+    if (!body.doc_id) return NextResponse.json({ error: 'doc_id required' }, { status: 400 })
+
+    const supabase = createAdminClient()
+    const payload: Record<string, unknown> = {}
+    if (body.customer_visible !== undefined) payload.customer_visible = body.customer_visible
+    if (body.name             !== undefined) payload.name             = body.name
+    if (body.document_type    !== undefined) payload.document_type    = body.document_type
+    if (body.notes            !== undefined) payload.notes            = body.notes
+
+    const { data, error } = await supabase
+      .from('customer_documents')
+      .update(payload)
+      .eq('id', body.doc_id)
+      .eq('customer_id', customer_id)
       .select()
       .single()
 

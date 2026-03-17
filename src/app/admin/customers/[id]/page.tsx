@@ -22,12 +22,12 @@ export default async function CustomerDetailPage({
         id, first_name, last_name, email, phone, state, notes, hubspot_contact_id, status, created_at, updated_at,
         customer_vehicles(
           id, vehicle_status, vehicle_description, target_preferences, listing_id,
-          purchase_price_jpy, purchase_price_aud, build_date, notes, sort_order, created_at,
+          purchase_price_jpy, purchase_price_aud, build_date, for_sale, sale_price_aud, sale_notes, notes, sort_order, created_at,
           listing:listings(id, model_name, model_year, grade, chassis_code, photos, bid_no, mileage_km, start_price_jpy, buy_price_jpy),
           order_stages(id, stage, status, notes, entered_at, completed_at, planned_date),
           customer_builds(id, build_type, build_location, conversion_fee_aud, pop_top, pop_top_fee_aud, addon_slugs, addons_total_aud, custom_description, custom_quote_aud, total_quoted_aud, build_status, notes)
         ),
-        customer_documents(id, name, file_url, file_type, file_size_bytes, document_type, notes, created_at, customer_vehicle_id)
+        customer_documents(id, name, file_url, file_type, file_size_bytes, document_type, notes, created_at, customer_vehicle_id, customer_visible)
       `)
       .eq('id', id)
       .single(),
