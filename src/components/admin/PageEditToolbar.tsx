@@ -84,8 +84,8 @@ export default function PageEditToolbar({ pageSlug, pageName, content, onContent
 
   return (
     <>
-      {/* Floating toolbar */}
-      <div className="fixed top-0 left-0 right-0 z-[100] bg-[#1a3a2a] text-white px-4 py-2.5 flex items-center gap-3 text-sm shadow-lg">
+      {/* Floating toolbar — bottom of screen */}
+      <div className="fixed bottom-0 left-0 right-0 z-[100] bg-[#1a3a2a] text-white px-4 py-2.5 flex items-center gap-3 text-sm shadow-[0_-4px_12px_rgba(0,0,0,0.15)]">
         <span className="font-semibold shrink-0">Admin</span>
         <span className="text-white/50">—</span>
         <span className="text-white/70 truncate">Editing: {pageName}</span>
@@ -105,8 +105,8 @@ export default function PageEditToolbar({ pageSlug, pageName, content, onContent
         <button onClick={() => setPanel(null)} className="px-3 py-1 rounded text-xs font-medium bg-white/10 hover:bg-white/20">Done</button>
       </div>
 
-      {/* Spacer so page content isn't hidden under toolbar */}
-      <div className="h-10" />
+      {/* Spacer so page content isn't hidden under bottom toolbar */}
+      <div className="h-12" />
 
       {/* ── Hero Editor Panel ── */}
       {panel === 'hero' && (
@@ -283,7 +283,7 @@ export default function PageEditToolbar({ pageSlug, pageName, content, onContent
 
 function EditPanel({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
   return (
-    <div className="fixed top-10 right-0 bottom-0 w-80 bg-white border-l border-gray-200 shadow-2xl z-[99] overflow-y-auto">
+    <div className="fixed top-0 right-0 bottom-10 w-80 bg-white border-l border-gray-200 shadow-2xl z-[99] overflow-y-auto">
       <div className="sticky top-0 bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between">
         <h3 className="font-semibold text-gray-900 text-sm">{title}</h3>
         <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-lg leading-none">×</button>
