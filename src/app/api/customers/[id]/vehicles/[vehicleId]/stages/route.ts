@@ -6,6 +6,7 @@ const STAGE_ORDER = [
   'bidding',
   'purchase',
   'storage',
+  'design_approval',
   'van_building',
   'shipping',
   'compliance',
@@ -14,7 +15,10 @@ const STAGE_ORDER = [
   'delivered',
 ]
 
-// POST: advance to next stage, or jump to a specific stage
+// Optional stages that can be skipped
+const OPTIONAL_STAGES = new Set(['pop_top_install', 'design_approval'])
+
+// POST: advance to next stage, go back, or jump to a specific stage
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string; vehicleId: string }> },
@@ -33,19 +37,23 @@ export async function POST(
 
     const now = new Date().toISOString()
 
+    // Build set of stages to skip
+    const skipStages = new Set<string>()
+    if (body.skip_poptop)          skipStages.add('pop_top_install')
+    if (body.skip_design_approval) skipStages.add('design_approval')
+
     if (body.action === 'advance') {
       const current = stages?.find(s => s.status === 'current')
       if (!current) return NextResponse.json({ error: 'No current stage' }, { status: 400 })
 
       const currentIdx = STAGE_ORDER.indexOf(current.stage)
-      const skipPoptop = body.skip_poptop === true
 
-      // Find next applicable stage index
+      // Find next applicable stage index (skipping optional stages if flagged)
       let nextIdx = currentIdx + 1
       while (nextIdx < STAGE_ORDER.length) {
-        if (STAGE_ORDER[nextIdx] === 'pop_top_install' && skipPoptop) {
-          // Mark pop_top_install completed/skipped
-          const skipStage = stages?.find(s => s.stage === 'pop_top_install')
+        const nextKey = STAGE_ORDER[nextIdx]
+        if (skipStages.has(nextKey)) {
+          const skipStage = stages?.find(s => s.stage === nextKey)
           if (skipStage) {
             await supabase
               .from('order_stages')
@@ -66,19 +74,16 @@ export async function POST(
       const nextStage = stages?.find(s => s.stage === nextStageKey)
       if (!nextStage) return NextResponse.json({ error: 'Next stage not found in DB' }, { status: 400 })
 
-      // Complete current
       await supabase
         .from('order_stages')
         .update({ status: 'completed', completed_at: now })
         .eq('id', current.id)
 
-      // Activate next
       await supabase
         .from('order_stages')
         .update({ status: 'current', entered_at: now })
         .eq('id', nextStage.id)
 
-      // Update vehicle status
       await supabase
         .from('customer_vehicles')
         .update({ vehicle_status: nextStageKey, updated_at: now })
@@ -95,13 +100,11 @@ export async function POST(
       const prevStage = stages?.find(s => s.stage === prevStageKey)
       if (!prevStage) return NextResponse.json({ error: 'Prev stage not found' }, { status: 400 })
 
-      // Reset current → upcoming
       await supabase
         .from('order_stages')
         .update({ status: 'upcoming', entered_at: null })
         .eq('id', current.id)
 
-      // Reopen previous → current (remove completed_at)
       await supabase
         .from('order_stages')
         .update({ status: 'current', completed_at: null })
@@ -143,7 +146,6 @@ export async function POST(
         .eq('id', vehicleId)
     }
 
-    // Return updated stages
     const { data: updated } = await supabase
       .from('order_stages')
       .select('*')
@@ -155,7 +157,7 @@ export async function POST(
   }
 }
 
-// PUT: update notes on a specific stage
+// PUT: update notes, planned_date, or actual dates on a specific stage
 export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string; vehicleId: string }> },
@@ -166,9 +168,16 @@ export async function PUT(
     if (!body.stage_id) return NextResponse.json({ error: 'stage_id required' }, { status: 400 })
 
     const supabase = createAdminClient()
+    const updatePayload: Record<string, unknown> = {}
+
+    if (body.notes        !== undefined) updatePayload.notes        = body.notes ?? null
+    if (body.planned_date !== undefined) updatePayload.planned_date = body.planned_date || null
+    if (body.entered_at   !== undefined) updatePayload.entered_at   = body.entered_at || null
+    if (body.completed_at !== undefined) updatePayload.completed_at = body.completed_at || null
+
     const { data, error } = await supabase
       .from('order_stages')
-      .update({ notes: body.notes ?? null })
+      .update(updatePayload)
       .eq('id', body.stage_id)
       .eq('customer_vehicle_id', vehicleId)
       .select()

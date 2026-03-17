@@ -6,6 +6,7 @@ const STAGE_ORDER = [
   'bidding',
   'purchase',
   'storage',
+  'design_approval',
   'van_building',
   'shipping',
   'compliance',
@@ -28,6 +29,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         target_preferences:  body.target_preferences  || {},
         vehicle_status:      'searching',
         vehicle_description: body.vehicle_description || null,
+        build_date:          body.build_date          || null,
         notes:               body.notes               || null,
         sort_order:          body.sort_order          ?? 0,
       })

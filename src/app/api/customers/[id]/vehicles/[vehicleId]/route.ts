@@ -17,6 +17,7 @@ export async function PUT(
     if (body.listing_id          !== undefined) payload.listing_id          = body.listing_id || null
     if (body.purchase_price_jpy  !== undefined) payload.purchase_price_jpy  = body.purchase_price_jpy || null
     if (body.purchase_price_aud  !== undefined) payload.purchase_price_aud  = body.purchase_price_aud || null
+    if (body.build_date          !== undefined) payload.build_date          = body.build_date || null
     if (body.notes               !== undefined) payload.notes               = body.notes || null
     if (body.sort_order          !== undefined) payload.sort_order          = body.sort_order
 
