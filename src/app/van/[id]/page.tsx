@@ -104,6 +104,7 @@ export default async function VanDetailPage({ params }: { params: { id: string }
                 modelName={listing.model_name}
                 focalPoint={listing.image_focal_point}
                 isAuction={listing.source === 'auction'}
+                contactPhone={listing.contact_phone}
               />
               <div className="absolute top-3 left-3 flex gap-2 flex-wrap pointer-events-none">
                 <span className={`${locBadge.bg} text-white text-xs font-bold px-2 py-0.5 rounded`}>

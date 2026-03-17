@@ -9,9 +9,10 @@ interface Props {
   modelName: string
   focalPoint?: string | null
   isAuction?: boolean
+  contactPhone?: string | null
 }
 
-export default function PhotoGallery({ photos, modelName, focalPoint, isAuction }: Props) {
+export default function PhotoGallery({ photos, modelName, focalPoint, isAuction, contactPhone }: Props) {
   const [activeIndex, setActiveIndex] = useState(0)
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
@@ -91,13 +92,30 @@ export default function PhotoGallery({ photos, modelName, focalPoint, isAuction 
           >
             <div className="text-4xl mb-3">🔒</div>
             <p className="text-white font-display text-xl mb-1">Create a free account to view all photos</p>
-            <p className="text-white/70 text-sm mb-5">Takes 30 seconds — no credit card needed</p>
+            <p className="text-white/70 text-sm mb-4">Takes 30 seconds — no credit card needed</p>
+            {contactPhone && (
+              <a
+                href={`tel:${contactPhone.replace(/\s/g, '')}`}
+                className="text-sand-400 font-medium mb-4 hover:text-sand-300 transition-colors block"
+                style={{ fontSize: '1.5rem' }}
+                onClick={e => e.stopPropagation()}
+              >
+                📞 {contactPhone}
+              </a>
+            )}
             <a
               href={loginUrl}
-              className="bg-white text-forest-900 font-semibold px-6 py-2.5 rounded-full text-sm hover:bg-forest-50 transition-colors"
+              className="bg-forest-600 text-white font-semibold px-6 py-2.5 rounded-full text-sm hover:bg-forest-700 transition-colors"
               onClick={e => e.stopPropagation()}
             >
               Sign Up Free →
+            </a>
+            <a
+              href={loginUrl}
+              className="text-white/60 text-xs mt-3 hover:text-white/80 block"
+              onClick={e => e.stopPropagation()}
+            >
+              Already have an account? Sign in
             </a>
           </div>
         )}
@@ -137,16 +155,23 @@ export default function PhotoGallery({ photos, modelName, focalPoint, isAuction 
       )}
       {/* Blurred thumbnail strip */}
       {isBlurred && photos.length > 1 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
-          {photos.map((p, i) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <div key={i} className="relative rounded overflow-hidden" style={{ height: 100 }}>
-              <img src={p} alt="" className="w-full h-full object-cover blur-md scale-110" />
-              <div className="absolute inset-0 bg-forest-900/50 flex items-center justify-center">
-                <span className="text-white/80 text-lg">🔒</span>
+        <div className="relative">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+            {photos.slice(0, 4).map((p, i) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <div key={i} className="relative rounded overflow-hidden" style={{ height: 100 }}>
+                <img src={p} alt="" className="w-full h-full object-cover blur-md scale-110" />
+                <div className="absolute inset-0 bg-forest-900/50 flex items-center justify-center">
+                  <span className="text-white/80 text-lg">🔒</span>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+          <div className="mt-2 text-center">
+            <a href={loginUrl} className="text-sm text-forest-600 hover:underline font-medium">
+              {photos.length} photos — sign up to view
+            </a>
+          </div>
         </div>
       )}
 

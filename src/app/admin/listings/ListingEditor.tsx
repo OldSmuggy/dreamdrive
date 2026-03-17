@@ -39,6 +39,8 @@ type EditState = {
   photos: string[]
   internal_photos: string[]
   show_interior_gallery: boolean
+  contact_phone: string
+  condition_notes: string
 }
 
 function toEditState(l: Listing): EditState {
@@ -76,6 +78,8 @@ function toEditState(l: Listing): EditState {
     photos: [...(l.photos ?? [])],
     internal_photos: [...(l.internal_photos ?? [])],
     show_interior_gallery: l.show_interior_gallery ?? false,
+    contact_phone: l.contact_phone ?? '',
+    condition_notes: l.condition_notes ?? '',
   }
 }
 
@@ -457,6 +461,27 @@ function ListingRow({
                   className={`${inputClass} resize-none`}
                   placeholder="Short listing description..."
                 />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">Contact Phone</label>
+                  <input
+                    value={editState.contact_phone}
+                    onChange={e => onSet('contact_phone', e.target.value)}
+                    className={inputClass}
+                    placeholder="0432 182 892"
+                  />
+                  <p className="text-[10px] text-gray-400 mt-0.5">Shown to logged-out users instead of images</p>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">Condition Notes</label>
+                  <input
+                    value={editState.condition_notes}
+                    onChange={e => onSet('condition_notes', e.target.value)}
+                    className={inputClass}
+                    placeholder="From auction sheet..."
+                  />
+                </div>
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-1.5">Conversion Video URL</label>
@@ -848,6 +873,8 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
         photos: editState.photos,
         internal_photos: editState.internal_photos,
         show_interior_gallery: editState.show_interior_gallery,
+        contact_phone: editState.contact_phone || null,
+        condition_notes: editState.condition_notes || null,
       }
 
       const res = await fetch(`/api/listings/${id}`, {

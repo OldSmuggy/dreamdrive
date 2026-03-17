@@ -252,9 +252,18 @@ function ListingCard({ listing, userId, initialSaved, jpyRate }: { listing: List
             style={{ background: 'rgba(15, 40, 25, 0.72)', backdropFilter: 'blur(2px)' }}
             onClick={e => { e.preventDefault(); e.stopPropagation(); router.push('/login?next=/browse') }}
           >
-            <div className="text-2xl mb-2">🔒</div>
-            <p className="text-white font-semibold text-sm leading-tight mb-1">Register to see photos</p>
-            <p className="text-white/70 text-xs">Free account — takes 30 seconds</p>
+            <svg className="w-7 h-7 text-white/80 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+            <p className="text-white font-semibold text-sm leading-tight mb-1">Create a free account to see photos</p>
+            {listing.contact_phone ? (
+              <a href={`tel:${listing.contact_phone.replace(/\s/g, '')}`} onClick={e => e.stopPropagation()} className="text-sand-400 font-semibold text-sm mt-1 hover:text-sand-300">
+                📞 {listing.contact_phone}
+              </a>
+            ) : (
+              <p className="text-white/70 text-xs">Free account — takes 30 seconds</p>
+            )}
+            <span className="mt-2 bg-white text-forest-900 text-xs font-semibold px-3 py-1 rounded-full">Sign Up Free</span>
           </div>
         )}
         {/* Top-left: location badge */}

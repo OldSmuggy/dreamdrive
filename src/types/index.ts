@@ -70,6 +70,9 @@ export interface Listing {
   fit_out_level: FitOutLevel | null
   vehicle_model: VehicleModel | null
   conversion_video_url: string | null
+  contact_phone: string | null
+  condition_notes: string | null
+  interior_dimensions: string | null
 }
 
 export interface Product {
