@@ -33,10 +33,14 @@ Extract every field you can find and return ONLY a JSON object with these exact 
   "auction_session": "1048268",
   "condition_notes": "any condition notes in English translation",
   "interior_dimensions": "length x width x height in cm if shown",
-  "start_price_jpy": null
+  "start_price_jpy": null,
+  "auction_date_time": "YYYY-MM-DDTHH:MM format if auction date and time visible on sheet"
 }
 
 If a field is not visible or not applicable, use null.
+For auction_date_time: look for the auction date on the sheet and format as YYYY-MM-DDTHH:MM (e.g. 2026-03-20T10:30). Use JST timezone.
+Set auction result to 'pending' for new sheets.
+Leave sold price and top bid blank for new sheets.
 Translate any Japanese text to English.
 Return ONLY the JSON object, no explanation.`
 
@@ -138,6 +142,8 @@ export async function POST(req: NextRequest) {
           return null
         })(),
         kaijo_code:        extracted.auction_site as string ?? null,
+        auction_time:      extracted.auction_date_time ? new Date((extracted.auction_date_time as string) + ':00+09:00').toISOString() : null,
+        auction_result:    'pending',
         condition_notes:   extracted.condition_notes as string ?? null,
         interior_dimensions: extracted.interior_dimensions as string ?? null,
         contact_phone:     null,

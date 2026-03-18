@@ -628,6 +628,44 @@ function ListingCard({ listing, userId, initialSaved, jpyRate }: { listing: List
   const { priceCents, isEstimate } = listingDisplayPrice(listing, jpyRate)
   const displayPrice = priceCents ? centsToAud(priceCents) : 'POA'
 
+  // Auction countdown
+  const [now, setNow] = useState(() => Date.now())
+  const auctionTime = (listing as any).auction_time as string | null
+  const auctionResult = (listing as any).auction_result as string | null
+  const isAuctionPending = listing.source === 'auction' && (!auctionResult || auctionResult === 'pending')
+
+  useEffect(() => {
+    if (!isAuctionPending || !auctionTime) return
+    const diff = new Date(auctionTime).getTime() - Date.now()
+    // Only tick every second if within 24 hours
+    if (diff > 0 && diff < 24 * 3600 * 1000) {
+      const id = setInterval(() => setNow(Date.now()), 1000)
+      return () => clearInterval(id)
+    }
+  }, [isAuctionPending, auctionTime])
+
+  const countdownBadge = useMemo(() => {
+    if (!isAuctionPending || !auctionTime) return null
+    const diff = new Date(auctionTime).getTime() - now
+    if (diff <= 0) return { text: 'Auction ended \u2014 result pending', cls: 'bg-gray-500 text-white', pulse: false }
+    const d = Math.floor(diff / 86400000)
+    const h = Math.floor((diff % 86400000) / 3600000)
+    const m = Math.floor((diff % 3600000) / 60000)
+    const s = Math.floor((diff % 60000) / 1000)
+    if (diff < 3600000) return { text: `CLOSING IN ${m}m ${s}s`, cls: 'bg-red-600 text-white', pulse: true }
+    if (diff < 24 * 3600000) return { text: `LAST CHANCE \u2014 ${h}h ${m}m ${s}s`, cls: 'bg-red-600 text-white', pulse: false }
+    if (diff < 48 * 3600000) return { text: `CLOSING SOON \u2014 ${d > 0 ? d + 'd ' : ''}${h}h ${m}m`, cls: 'bg-amber-500 text-white', pulse: false }
+    return { text: `Auction in ${d}d ${h}h`, cls: 'text-forest-600', pulse: false }
+  }, [isAuctionPending, auctionTime, now])
+
+  // Sold / unsold badges
+  const resultBadge = useMemo(() => {
+    if (auctionResult === 'sold') return { text: 'SOLD', cls: 'bg-gray-500 text-white' }
+    if (auctionResult === 'unsold') return { text: 'PASSED IN', cls: 'bg-amber-500 text-white' }
+    if (auctionResult === 'no_sale') return { text: 'CANCELLED', cls: 'bg-gray-400 text-white' }
+    return null
+  }, [auctionResult])
+
   return (
     <Link href={`/van/${listing.id}`} className="bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow group block">
       {/* Photo */}
@@ -669,11 +707,15 @@ function ListingCard({ listing, userId, initialSaved, jpyRate }: { listing: List
           <span className={`${locBadge.bg} text-white text-xs font-bold px-2 py-0.5 rounded`}>
             {locBadge.label}
           </span>
-          {urgency === 'closing_soon' && (
-            <span className="bg-amber-400 text-amber-900 text-xs font-bold px-2 py-0.5 rounded">CLOSING SOON</span>
+          {countdownBadge && (
+            <span className={`text-xs font-bold px-2 py-0.5 rounded ${countdownBadge.cls} ${countdownBadge.pulse ? 'animate-pulse' : ''}`}>
+              {countdownBadge.text}
+            </span>
           )}
-          {urgency === 'last_chance' && (
-            <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded">LAST CHANCE</span>
+          {resultBadge && (
+            <span className={`text-xs font-bold px-2 py-0.5 rounded ${resultBadge.cls}`}>
+              {resultBadge.text}
+            </span>
           )}
           {listing.featured && listing.source === 'au_stock' && (
             <span className="bg-forest-500 text-white text-xs font-bold px-2 py-0.5 rounded">FEATURED</span>

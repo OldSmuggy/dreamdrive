@@ -68,6 +68,12 @@ create table if not exists listings (
   has_power_steering  boolean default false,
   has_power_windows   boolean default false,
   has_rear_ac         boolean default false,
+  -- Auction timing & result
+  auction_time        timestamptz null,
+  auction_result      text null,          -- 'pending' | 'sold' | 'unsold' | 'no_sale'
+  sold_price_jpy      int null,
+  top_bid_jpy         int null,
+  auction_time_zone   text default 'Asia/Tokyo',
   -- Photos (array of CDN URLs)
   photos              text[] default '{}',
   inspection_sheet    text null,       -- CDN URL

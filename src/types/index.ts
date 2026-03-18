@@ -72,6 +72,15 @@ export interface Listing {
   conversion_video_url: string | null
   contact_phone: string | null
   condition_notes: string | null
+  auction_time: string | null
+  auction_result: 'pending' | 'sold' | 'unsold' | 'no_sale' | null
+  sold_price_jpy: number | null
+  top_bid_jpy: number | null
+  auction_time_zone: string | null
+  engine: string | null
+  has_power_steering: boolean
+  has_power_windows: boolean
+  has_rear_ac: boolean
   interior_dimensions: string | null
 }
 

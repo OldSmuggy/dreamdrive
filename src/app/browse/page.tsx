@@ -109,9 +109,21 @@ export default async function BrowsePage({ searchParams }: Props) {
     if (c) colourCounts[c] = (colourCounts[c] ?? 0) + 1
   }
 
+  // Find next upcoming auction from real data
+  const pendingAuctions = listings.filter(l =>
+    l.source === 'auction' && l.auction_time && (!l.auction_result || l.auction_result === 'pending') && new Date(l.auction_time).getTime() > Date.now()
+  )
+  const nextAuctionTime = pendingAuctions.length > 0
+    ? pendingAuctions.reduce((min, l) => l.auction_time! < min ? l.auction_time! : min, pendingAuctions[0].auction_time!)
+    : null
+  // Count auctions on the same day as the next one
+  const auctionCount = nextAuctionTime
+    ? pendingAuctions.filter(l => l.auction_time!.slice(0, 10) === nextAuctionTime.slice(0, 10)).length
+    : 0
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <AuctionBanner />
+      <AuctionBanner nextAuctionTime={nextAuctionTime} auctionCount={auctionCount} />
       <BrowseClient
         initialListings={listings}
         searchParams={searchParams}

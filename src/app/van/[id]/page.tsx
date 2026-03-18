@@ -5,6 +5,7 @@ import { getJpyRate } from '@/lib/settings'
 import { listingDisplayPrice } from '@/lib/pricing'
 import { centsToAud, scoreColor, scoreLabel, sourceLabel, sourceBadgeColor, auctionUrgency, locationBadgeInfo, fitOutLevelInfo } from '@/lib/utils'
 import AuctionBanner from '@/components/ui/AuctionBanner'
+import AuctionCountdownBanner from '@/components/van/AuctionCountdownBanner'
 import PhotoGallery from '@/components/van/PhotoGallery'
 import ConversionDetails from '@/components/van/ConversionDetails'
 import SaveVanButton from '@/components/ui/SaveVanButton'
@@ -124,6 +125,18 @@ export default async function VanDetailPage({ params }: { params: { id: string }
 
           {/* ---- Details ---- */}
           <div>
+            {/* Auction countdown / result banner */}
+            {listing.source === 'auction' && (
+              <AuctionCountdownBanner
+                auctionTime={listing.auction_time}
+                auctionResult={listing.auction_result}
+                soldPriceJpy={listing.sold_price_jpy}
+                topBidJpy={listing.top_bid_jpy}
+                jpyRate={jpyRate}
+                listingId={listing.id}
+              />
+            )}
+
             <div className="flex flex-wrap items-center gap-2 mb-3">
               <div className={`inline-flex items-center score-${sColor} text-xs font-bold px-2.5 py-1 rounded`}>
                 {listing.inspection_score ? `Grade ${listing.inspection_score} — ${scoreLabel(listing.inspection_score)}` : 'No grade'}
@@ -151,9 +164,9 @@ export default async function VanDetailPage({ params }: { params: { id: string }
               )}
             </div>
 
-            {listing.source === 'auction' && listing.auction_date && (
+            {listing.source === 'auction' && (listing.auction_time || listing.auction_date) && !listing.auction_result && (
               <p className="text-amber-700 font-medium text-sm mb-4">
-                Auction: {new Date(listing.auction_date).toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                Auction: {new Date(listing.auction_time ?? listing.auction_date!).toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
               </p>
             )}
             {listing.source === 'au_stock' && listing.eta_date && (

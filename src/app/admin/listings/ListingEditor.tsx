@@ -51,6 +51,10 @@ type EditState = {
   has_power_steering: boolean
   has_power_windows: boolean
   has_rear_ac: boolean
+  auction_time: string
+  auction_result: string
+  sold_price_jpy: string
+  top_bid_jpy: string
 }
 
 function toEditState(l: Listing): EditState {
@@ -100,6 +104,10 @@ function toEditState(l: Listing): EditState {
     has_power_steering: (l as any).has_power_steering ?? false,
     has_power_windows: (l as any).has_power_windows ?? false,
     has_rear_ac: (l as any).has_rear_ac ?? false,
+    auction_time: (l as any).auction_time ? new Date((l as any).auction_time).toISOString().slice(0, 16) : '',
+    auction_result: (l as any).auction_result ?? 'pending',
+    sold_price_jpy: (l as any).sold_price_jpy?.toString() ?? '',
+    top_bid_jpy: (l as any).top_bid_jpy?.toString() ?? '',
   }
 }
 
@@ -534,7 +542,7 @@ function ListingRow({
                   />
                 </div>
               </div>
-              {editState.source === 'auction' && (
+              {editState.source === 'auction' && (<>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-semibold text-gray-600 mb-1.5">Auction Site</label>
@@ -553,7 +561,39 @@ function ListingRow({
                     <input value={editState.auction_count} onChange={e => onSet('auction_count', e.target.value)} className={inputClass} />
                   </div>
                 </div>
-              )}
+                <div className="col-span-2">
+                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">Auction Date & Time (JST)</label>
+                  <input type="datetime-local" value={editState.auction_time} onChange={e => onSet('auction_time', e.target.value)} className={inputClass} />
+                  <p className="text-[10px] text-gray-400 mt-0.5">Japan Standard Time (JST)</p>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">Auction Result</label>
+                  <select value={editState.auction_result} onChange={e => onSet('auction_result', e.target.value)} className={inputClass}>
+                    <option value="pending">Pending — not yet auctioned</option>
+                    <option value="sold">Sold — van was purchased</option>
+                    <option value="unsold">Unsold — did not reach reserve</option>
+                    <option value="no_sale">No sale — auction cancelled</option>
+                  </select>
+                </div>
+                {editState.auction_result === 'sold' && (
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Sold Price JPY</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-2 text-sm text-gray-400">¥</span>
+                      <input type="number" value={editState.sold_price_jpy} onChange={e => onSet('sold_price_jpy', e.target.value)} className={`${inputClass} pl-6`} placeholder="2,900,000" />
+                    </div>
+                  </div>
+                )}
+                {editState.auction_result === 'unsold' && (
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Highest Bid JPY</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-2 text-sm text-gray-400">¥</span>
+                      <input type="number" value={editState.top_bid_jpy} onChange={e => onSet('top_bid_jpy', e.target.value)} className={`${inputClass} pl-6`} placeholder="2,500,000" />
+                    </div>
+                  </div>
+                )}
+              </>)}
               <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-1.5">Conversion Video URL</label>
                 <input
@@ -964,6 +1004,10 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
         has_power_steering: editState.has_power_steering,
         has_power_windows: editState.has_power_windows,
         has_rear_ac: editState.has_rear_ac,
+        auction_time: editState.auction_time ? new Date(editState.auction_time + ':00+09:00').toISOString() : null,
+        auction_result: editState.auction_result || null,
+        sold_price_jpy: editState.sold_price_jpy ? parseInt(editState.sold_price_jpy) : null,
+        top_bid_jpy: editState.top_bid_jpy ? parseInt(editState.top_bid_jpy) : null,
       }
 
       const res = await fetch(`/api/listings/${id}`, {
