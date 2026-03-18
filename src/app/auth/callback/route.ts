@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { createAdminClient } from '@/lib/supabase'
+import { sendEmail, emailTemplates } from '@/lib/email'
 import { cookies } from 'next/headers'
 import type { ResponseCookie } from 'next/dist/compiled/@edge-runtime/cookies'
 
@@ -37,14 +38,23 @@ export async function GET(req: NextRequest) {
       const lastName = rest.join(' ') || null
 
       const admin = createAdminClient()
-      await admin.from('profiles').upsert(
+      const { data: upserted } = await admin.from('profiles').upsert(
         {
           id: data.user.id,
           first_name: firstName || null,
           last_name: lastName,
         },
         { onConflict: 'id', ignoreDuplicates: true }
-      )
+      ).select('created_at').single()
+
+      // Send welcome email for new users (created just now)
+      const isNew = upserted?.created_at && (Date.now() - new Date(upserted.created_at).getTime()) < 60000
+      if (isNew && data.user.email) {
+        sendEmail({
+          to: data.user.email,
+          ...emailTemplates.welcomeEmail(firstName || ''),
+        }).catch(() => {})
+      }
 
       return NextResponse.redirect(`${origin}${next}`)
     }

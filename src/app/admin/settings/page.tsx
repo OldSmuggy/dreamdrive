@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase'
 import { getSiteSettings } from '@/lib/site-settings'
 import SettingsEditor from './SettingsEditor'
 import SiteSettingsClient from './SiteSettingsClient'
+import TestEmailButton from './TestEmailButton'
 
 export const metadata = { title: 'Settings | Admin' }
 
@@ -23,6 +24,12 @@ export default async function AdminSettingsPage() {
       <p className="text-gray-500 text-sm mb-8">
         Manage site appearance and configuration.
       </p>
+
+      {/* ---- Email ---- */}
+      <div className="mb-10">
+        <h2 className="font-display text-xl text-forest-900 mb-4">Email (Resend)</h2>
+        <TestEmailButton />
+      </div>
 
       {/* ---- Site Assets (logo, video, name) ---- */}
       <div className="mb-10">

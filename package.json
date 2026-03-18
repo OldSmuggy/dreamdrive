@@ -21,6 +21,7 @@
     "playwright-core": "^1.58.2",
     "react": "^18",
     "react-dom": "^18",
+    "resend": "^6.9.4",
     "stripe": "^15.7.0",
     "zod": "^3.23.8"
   },

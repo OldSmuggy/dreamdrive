@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
+import { sendEmail, emailTemplates } from '@/lib/email'
 
 // Columns that require a DB migration — strip and retry if missing
 const OPTIONAL_LEAD_COLS = ['state', 'build_slug', 'lead_type']
@@ -44,6 +45,33 @@ export async function POST(req: NextRequest) {
     if (error) {
       console.error('[leads] insert error:', error.message, '|', error.details, '|', error.hint)
       return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    // Send notification email to admin (fire-and-forget)
+    const leadType = body.type ?? 'consultation'
+    if (leadType === 'finance_enquiry') {
+      sendEmail({
+        to: 'jared@dreamdrive.life',
+        ...emailTemplates.financeEnquiryEmail(
+          body.name ?? '',
+          body.email ?? '',
+          body.phone ?? '',
+          body.budget ?? '',
+          body.finance_type ?? '',
+          body.notes ?? '',
+        ),
+      }).catch(() => {})
+    } else {
+      sendEmail({
+        to: 'jared@dreamdrive.life',
+        ...emailTemplates.leadNotificationEmail(
+          leadType,
+          body.name ?? '',
+          body.email ?? '',
+          body.phone ?? '',
+          body.notes ?? '',
+        ),
+      }).catch(() => {})
     }
 
     return NextResponse.json({ ok: true })

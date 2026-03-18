@@ -66,6 +66,12 @@ function LoginForm() {
     }
     // If we got a session immediately (email confirmation disabled), redirect now
     if (data.session) {
+      // Send welcome email (fire-and-forget)
+      fetch('/api/auth/welcome-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ firstName }),
+      }).catch(() => {})
       setSuccessMsg('Account created! Welcome to Dream Drive.')
       setSuccess(true)
       setTimeout(() => { window.location.href = next }, 800)

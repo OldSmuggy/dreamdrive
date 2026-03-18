@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { createSupabaseServer } from '@/lib/supabase-server'
 import { createAdminClient } from '@/lib/supabase'
+import { sendEmail, emailTemplates } from '@/lib/email'
 
 export async function POST(req: NextRequest) {
   try {
@@ -43,32 +44,29 @@ export async function POST(req: NextRequest) {
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-    // Send email via Resend if API key is configured
-    if (process.env.RESEND_API_KEY) {
-      const name = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ') || user.email
-      const vanName = listing ? `${listing.model_year ?? ''} ${listing.model_name}` : listing_id
-      await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          from: 'Dream Drive <noreply@dreamdrive.life>',
-          to: 'jared@dreamdrive.life',
-          subject: `New Deposit Hold Request — ${vanName}`,
-          html: `
-            <h2>New Deposit Hold Request</h2>
-            <p><strong>Customer:</strong> ${name}</p>
-            <p><strong>Email:</strong> ${user.email}</p>
-            <p><strong>Phone:</strong> ${profile?.phone ?? 'Not provided'}</p>
-            <p><strong>Van:</strong> ${vanName} (ID: ${listing_id})</p>
-            <p><strong>Hold ID:</strong> ${hold.id}</p>
-            <p><strong>Amount:</strong> $500 AUD</p>
-          `,
-        }),
-      }).catch(err => console.warn('Email send failed:', err))
+    // Send emails
+    const customerName = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ') || user.email || 'Customer'
+    const vanName = listing ? `${listing.model_year ?? ''} ${listing.model_name}`.trim() : listing_id
+
+    // Confirmation to customer
+    if (user.email) {
+      sendEmail({
+        to: user.email,
+        ...emailTemplates.depositHoldEmail(customerName, vanName, 500),
+      }).catch(() => {})
     }
+
+    // Notification to admin
+    sendEmail({
+      to: 'jared@dreamdrive.life',
+      ...emailTemplates.depositHoldAdminEmail(
+        customerName,
+        user.email || '',
+        profile?.phone ?? '',
+        vanName,
+        hold.id,
+      ),
+    }).catch(() => {})
 
     return NextResponse.json({ success: true, id: hold.id })
   } catch (e) {
