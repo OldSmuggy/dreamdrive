@@ -5,8 +5,15 @@ import { requireAuth } from '@/lib/api-auth'
 import { sendEmail } from '@/lib/email'
 
 export async function POST() {
-  const { error: authErr } = await requireAuth()
-  if (authErr) return authErr
+  console.log('[test-email] Route hit')
+  console.log('[test-email] RESEND_API_KEY present:', !!process.env.RESEND_API_KEY)
+
+  const { user, error: authErr } = await requireAuth()
+  if (authErr) {
+    console.log('[test-email] Auth failed — no user session')
+    return authErr
+  }
+  console.log('[test-email] Authenticated as:', user?.email)
 
   const result = await sendEmail({
     to: 'jared@dreamdrive.life',
@@ -26,6 +33,8 @@ export async function POST() {
       </div>
     `,
   })
+
+  console.log('[test-email] Result:', JSON.stringify(result))
 
   if (result.success) {
     return NextResponse.json({ success: true })
