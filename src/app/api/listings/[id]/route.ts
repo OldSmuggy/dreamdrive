@@ -9,6 +9,7 @@ import { createAdminClient } from '@/lib/supabase'
 const OPTIONAL_COLUMNS = [
   'internal_photos', 'show_interior_gallery',
   'location_status', 'fit_out_level', 'vehicle_model', 'conversion_video_url',
+  'engine', 'has_power_steering', 'has_power_windows', 'has_rear_ac',
 ]
 
 export async function PATCH(

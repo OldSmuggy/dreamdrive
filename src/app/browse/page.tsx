@@ -102,6 +102,13 @@ export default async function BrowsePage({ searchParams }: Props) {
     savedIds = (saved ?? []).map((s: { listing_id: string }) => s.listing_id)
   }
 
+  // Compute distinct colour counts from available listings
+  const colourCounts: Record<string, number> = {}
+  for (const l of listings) {
+    const c = l.body_colour
+    if (c) colourCounts[c] = (colourCounts[c] ?? 0) + 1
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <AuctionBanner />
@@ -112,6 +119,7 @@ export default async function BrowsePage({ searchParams }: Props) {
         initialSavedIds={savedIds}
         jpyRate={jpyRate}
         forSaleVehicles={forSaleVehicles}
+        colourCounts={colourCounts}
       />
     </div>
   )

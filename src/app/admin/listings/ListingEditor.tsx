@@ -41,6 +41,16 @@ type EditState = {
   show_interior_gallery: boolean
   contact_phone: string
   condition_notes: string
+  engine: string
+  chassis_code: string
+  inspection_score: string
+  kaijo_code: string
+  auction_date: string
+  bid_no: string
+  auction_count: string
+  has_power_steering: boolean
+  has_power_windows: boolean
+  has_rear_ac: boolean
 }
 
 function toEditState(l: Listing): EditState {
@@ -80,6 +90,16 @@ function toEditState(l: Listing): EditState {
     show_interior_gallery: l.show_interior_gallery ?? false,
     contact_phone: l.contact_phone ?? '',
     condition_notes: l.condition_notes ?? '',
+    engine: (l as any).engine ?? '',
+    chassis_code: l.chassis_code ?? '',
+    inspection_score: l.inspection_score ?? '',
+    kaijo_code: (l as any).kaijo_code ?? '',
+    auction_date: l.auction_date ?? '',
+    bid_no: (l as any).bid_no ?? '',
+    auction_count: (l as any).auction_count ?? '',
+    has_power_steering: (l as any).has_power_steering ?? false,
+    has_power_windows: (l as any).has_power_windows ?? false,
+    has_rear_ac: (l as any).has_rear_ac ?? false,
   }
 }
 
@@ -341,8 +361,20 @@ function ListingRow({
                   <input value={editState.grade} onChange={e => onSet('grade', e.target.value)} className={inputClass} placeholder="e.g. Super GL" />
                 </div>
                 <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">Chassis Code</label>
+                  <input value={editState.chassis_code} onChange={e => onSet('chassis_code', e.target.value)} className={inputClass} placeholder="e.g. GDH211K" />
+                </div>
+                <div className="col-span-2">
                   <label className="block text-xs font-semibold text-gray-600 mb-1.5">Body Colour</label>
-                  <input value={editState.body_colour} onChange={e => onSet('body_colour', e.target.value)} className={inputClass} placeholder="e.g. Pearl White" />
+                  <input value={editState.body_colour} onChange={e => onSet('body_colour', e.target.value)} className={`${inputClass} mb-1.5`} placeholder="e.g. Pearl White" />
+                  <div className="flex flex-wrap gap-1">
+                    {['White', 'Silver', 'Black', 'Pearl', 'Khaki', 'Grey', 'Blue'].map(c => (
+                      <button key={c} type="button" onClick={() => onSet('body_colour', c)}
+                        className={`text-xs px-2 py-1 rounded-full border transition-colors ${editState.body_colour === c ? 'bg-forest-600 text-white border-forest-600' : 'bg-white text-gray-600 border-gray-300 hover:border-forest-400'}`}>
+                        {c}
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-600 mb-1.5">Year</label>
@@ -355,10 +387,10 @@ function ListingRow({
                 <div>
                   <label className="block text-xs font-semibold text-gray-600 mb-1.5">Transmission</label>
                   <select value={editState.transmission} onChange={e => onSet('transmission', e.target.value)} className={inputClass}>
-                    <option value="">—</option>
-                    <option value="AT">AT</option>
-                    <option value="IA">IA / CVT</option>
-                    <option value="MT">MT</option>
+                    <option value="">Unknown</option>
+                    <option value="IA">Automatic (IA)</option>
+                    <option value="AT">Automatic (AT)</option>
+                    <option value="MT">Manual</option>
                   </select>
                 </div>
                 <div>
@@ -367,11 +399,30 @@ function ListingRow({
                     <option value="">—</option>
                     <option value="2WD">2WD</option>
                     <option value="4WD">4WD</option>
+                    <option value="AWD">AWD</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">Engine (cc)</label>
-                  <input type="number" value={editState.displacement_cc} onChange={e => onSet('displacement_cc', e.target.value)} className={inputClass} placeholder="2700" />
+                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">Inspection Score</label>
+                  <select value={editState.inspection_score} onChange={e => onSet('inspection_score', e.target.value)} className={inputClass}>
+                    <option value="">—</option>
+                    {['S','6','5.5','5','4.5','4','3.5','3','R','RA','X'].map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">Engine Type</label>
+                  <select value={editState.engine} onChange={e => onSet('engine', e.target.value)} className={inputClass}>
+                    <option value="">Unknown</option>
+                    <option value="diesel">Diesel 2.8L</option>
+                    <option value="petrol">Petrol 2.7L</option>
+                    <option value="petrol_20">Petrol 2.0L</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">Displacement (cc)</label>
+                  <input type="number" value={editState.displacement_cc} onChange={e => onSet('displacement_cc', e.target.value)} className={inputClass} placeholder="2800" />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-600 mb-1.5">Size</label>
@@ -483,6 +534,26 @@ function ListingRow({
                   />
                 </div>
               </div>
+              {editState.source === 'auction' && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Auction Site</label>
+                    <input value={editState.kaijo_code} onChange={e => onSet('kaijo_code', e.target.value)} className={inputClass} placeholder="e.g. Tokyo" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Auction Date</label>
+                    <input type="date" value={editState.auction_date} onChange={e => onSet('auction_date', e.target.value)} className={inputClass} />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Bid Number</label>
+                    <input value={editState.bid_no} onChange={e => onSet('bid_no', e.target.value)} className={inputClass} placeholder="e.g. 402" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Auction Session</label>
+                    <input value={editState.auction_count} onChange={e => onSet('auction_count', e.target.value)} className={inputClass} />
+                  </div>
+                </div>
+              )}
               <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-1.5">Conversion Video URL</label>
                 <input
@@ -516,6 +587,11 @@ function ListingRow({
                   <span className="absolute left-3 top-2 text-sm text-gray-400">¥</span>
                   <input type="number" value={editState.start_price_jpy} onChange={e => onSet('start_price_jpy', e.target.value)} className={`${inputClass} pl-6`} />
                 </div>
+                {editState.start_price_jpy && (
+                  <p className="text-xs text-gray-400 mt-1">
+                    ¥{parseInt(editState.start_price_jpy).toLocaleString()} × 0.0095 = ~${Math.round(parseInt(editState.start_price_jpy) * 0.0095).toLocaleString()} AUD
+                  </p>
+                )}
               </div>
               <div className="pt-1 space-y-2">
                 <label className="block text-xs font-semibold text-gray-600 mb-1">Features & Flags</label>
@@ -526,6 +602,9 @@ function ListingRow({
                   ['has_sunroof', '☀️ Sunroof'],
                   ['has_alloys',  '🔘 Alloy wheels'],
                   ['has_fitout',  '🏕 Has Campervan Fit-Out'],
+                  ['has_power_steering', 'Power steering'],
+                  ['has_power_windows', 'Power windows'],
+                  ['has_rear_ac', 'Rear A/C'],
                 ] as [keyof EditState, string][]).map(([field, label]) => (
                   <label key={field} className="flex items-center gap-2 cursor-pointer select-none">
                     <input
@@ -875,6 +954,16 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
         show_interior_gallery: editState.show_interior_gallery,
         contact_phone: editState.contact_phone || null,
         condition_notes: editState.condition_notes || null,
+        engine: editState.engine || null,
+        chassis_code: editState.chassis_code || null,
+        inspection_score: editState.inspection_score || null,
+        kaijo_code: editState.kaijo_code || null,
+        auction_date: editState.auction_date || null,
+        bid_no: editState.bid_no || null,
+        auction_count: editState.auction_count || null,
+        has_power_steering: editState.has_power_steering,
+        has_power_windows: editState.has_power_windows,
+        has_rear_ac: editState.has_rear_ac,
       }
 
       const res = await fetch(`/api/listings/${id}`, {

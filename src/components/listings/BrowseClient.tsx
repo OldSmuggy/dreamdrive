@@ -1,7 +1,7 @@
 'use client'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { centsToAud, scoreColor, scoreLabel, auctionUrgency, locationBadgeInfo, fitOutLevelInfo } from '@/lib/utils'
 import { listingDisplayPrice } from '@/lib/pricing'
 import SaveVanButton from '@/components/ui/SaveVanButton'
@@ -40,6 +40,7 @@ interface Props {
   initialSavedIds: string[]
   jpyRate: number
   forSaleVehicles?: ForSaleVehicle[]
+  colourCounts?: Record<string, number>
 }
 
 const LOCATION_FILTERS = [
@@ -58,11 +59,29 @@ const TYPE_FILTERS = [
 
 const MODEL_OPTIONS = [
   { value: '',            label: 'All Models' },
-  { value: 'hiace_h200',  label: 'Hiace H200 (2005–2019)' },
+  { value: 'hiace_h200',  label: 'Hiace H200 (2005-2019)' },
   { value: 'hiace_300',   label: 'Hiace 300 Series (2019+)' },
   { value: 'coaster',     label: 'Toyota Coaster' },
   { value: 'other',       label: 'Other' },
 ]
+
+const ENGINE_FILTERS = [
+  { value: '',       label: 'All' },
+  { value: 'diesel', label: 'Diesel 2.8L' },
+  { value: 'petrol', label: 'Petrol 2.7L' },
+]
+
+const COLOUR_DOT_MAP: Record<string, string> = {
+  White:  '#ffffff',
+  Silver: '#c0c0c0',
+  Black:  '#000000',
+  Pearl:  '#faf0e6',
+  Khaki:  '#bdb76b',
+}
+
+function colourDot(colour: string): string {
+  return COLOUR_DOT_MAP[colour] ?? '#9ca3af'
+}
 
 // Derive effective location from listing (respecting location_status field if set)
 function effectiveLocation(l: Listing): string {
@@ -70,21 +89,70 @@ function effectiveLocation(l: Listing): string {
   return l.source === 'au_stock' ? 'in_brisbane' : 'in_japan'
 }
 
-export default function BrowseClient({ initialListings, userId, initialSavedIds, jpyRate, forSaleVehicles = [] }: Props) {
+export default function BrowseClient({ initialListings, userId, initialSavedIds, jpyRate, forSaleVehicles = [], colourCounts = {} }: Props) {
   const router = useRouter()
+  const searchParams = useSearchParams()
 
-  // Top filter rows
-  const [locationFilter, setLocationFilter] = useState('')
-  const [typeFilter,     setTypeFilter]     = useState('')
-  const [modelFilter,    setModelFilter]    = useState('')
+  // ── Read initial filter state from URL params ──
+  const [locationFilter, setLocationFilter] = useState(() => searchParams.get('location') ?? '')
+  const [typeFilter, setTypeFilter] = useState(() => searchParams.get('type') ?? '')
+  const [modelFilter, setModelFilter] = useState(() => searchParams.get('model') ?? '')
+  const [driveFilter, setDriveFilter] = useState<string[]>(() => {
+    const d = searchParams.get('drive')
+    return d ? d.split(',').filter(Boolean) : []
+  })
+  const [yearMin, setYearMin] = useState(() => searchParams.get('yearMin') ?? '')
+  const [mileageMax, setMileageMax] = useState(() => searchParams.get('mileageMax') ?? '')
+  const [sortBy, setSortBy] = useState(() => searchParams.get('sort') ?? 'default')
+  const [engineFilter, setEngineFilter] = useState(() => searchParams.get('engine') ?? '')
+  const [colourFilter, setColourFilter] = useState<string[]>(() => {
+    const c = searchParams.get('colour')
+    return c ? c.split(',').filter(Boolean) : []
+  })
+  const [minPrice, setMinPrice] = useState(() => searchParams.get('minPrice') ?? '')
+  const [maxPrice, setMaxPrice] = useState(() => searchParams.get('maxPrice') ?? '')
 
-  // More filters (collapsible)
-  const [showMore,    setShowMore]    = useState(false)
-  const [driveFilter, setDriveFilter] = useState<string[]>([])
-  const [yearMin,     setYearMin]     = useState('')
-  const [mileageMax,  setMileageMax]  = useState('')
-  const [sortBy,      setSortBy]      = useState('default')
+  // More filters (collapsible — desktop)
+  const [showMore, setShowMore] = useState(() => {
+    // Auto-open if any "more" filter is active from URL
+    const d = searchParams.get('drive')
+    return !!(d || searchParams.get('yearMin') || searchParams.get('mileageMax') || searchParams.get('engine') || searchParams.get('colour') || searchParams.get('minPrice') || searchParams.get('maxPrice'))
+  })
 
+  // Mobile drawer
+  const [drawerOpen, setDrawerOpen] = useState(false)
+
+  // ── Sync filter state to URL ──
+  const syncUrl = useCallback((overrides?: Record<string, string | string[] | undefined>) => {
+    const state: Record<string, string | string[] | undefined> = {
+      location: locationFilter || undefined,
+      type: typeFilter || undefined,
+      model: modelFilter || undefined,
+      drive: driveFilter.length ? driveFilter.join(',') : undefined,
+      yearMin: yearMin || undefined,
+      mileageMax: mileageMax || undefined,
+      sort: sortBy !== 'default' ? sortBy : undefined,
+      engine: engineFilter || undefined,
+      colour: colourFilter.length ? colourFilter.join(',') : undefined,
+      minPrice: minPrice || undefined,
+      maxPrice: maxPrice || undefined,
+      ...overrides,
+    }
+    const params = new URLSearchParams()
+    for (const [k, v] of Object.entries(state)) {
+      if (v && typeof v === 'string') params.set(k, v)
+    }
+    const qs = params.toString()
+    router.replace(qs ? `/browse?${qs}` : '/browse', { scroll: false })
+  }, [locationFilter, typeFilter, modelFilter, driveFilter, yearMin, mileageMax, sortBy, engineFilter, colourFilter, minPrice, maxPrice, router])
+
+  // Sync URL whenever any filter changes
+  useEffect(() => {
+    syncUrl()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locationFilter, typeFilter, modelFilter, driveFilter, yearMin, mileageMax, sortBy, engineFilter, colourFilter, minPrice, maxPrice])
+
+  // ── Filtering ──
   const filtered = useMemo(() => {
     let list = [...initialListings]
     if (locationFilter) list = list.filter(l => effectiveLocation(l) === locationFilter)
@@ -93,95 +161,153 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
     if (driveFilter.length) list = list.filter(l => l.drive && driveFilter.includes(l.drive))
     if (yearMin)        list = list.filter(l => (l.model_year ?? 0) >= parseInt(yearMin))
     if (mileageMax)     list = list.filter(l => (l.mileage_km ?? 999999) <= parseInt(mileageMax))
+
+    // Engine filter
+    if (engineFilter === 'diesel') {
+      list = list.filter(l => l.displacement_cc === 2800)
+    } else if (engineFilter === 'petrol') {
+      list = list.filter(l => l.displacement_cc === 2700 || l.displacement_cc === 2000)
+    }
+
+    // Colour filter
+    if (colourFilter.length) {
+      list = list.filter(l => l.body_colour ? colourFilter.includes(l.body_colour) : false)
+    }
+
+    // Price filter (user enters dollars, aud_estimate is in cents)
+    if (minPrice) {
+      const minCents = parseInt(minPrice) * 100
+      list = list.filter(l => (l.aud_estimate ?? 0) >= minCents)
+    }
+    if (maxPrice) {
+      const maxCents = parseInt(maxPrice) * 100
+      list = list.filter(l => (l.aud_estimate ?? Infinity) <= maxCents)
+    }
+
+    // Sort
     if (sortBy === 'price_asc')   list.sort((a,b) => (a.aud_estimate ?? 9e9) - (b.aud_estimate ?? 9e9))
     if (sortBy === 'price_desc')  list.sort((a,b) => (b.aud_estimate ?? 0)   - (a.aud_estimate ?? 0))
     if (sortBy === 'year_desc')   list.sort((a,b) => (b.model_year ?? 0)     - (a.model_year ?? 0))
     if (sortBy === 'mileage_asc') list.sort((a,b) => (a.mileage_km ?? 9e9)  - (b.mileage_km ?? 9e9))
     return list
-  }, [initialListings, locationFilter, typeFilter, modelFilter, driveFilter, yearMin, mileageMax, sortBy])
+  }, [initialListings, locationFilter, typeFilter, modelFilter, driveFilter, yearMin, mileageMax, sortBy, engineFilter, colourFilter, minPrice, maxPrice])
 
-  const hasActiveFilters = locationFilter || typeFilter || modelFilter || driveFilter.length || yearMin || mileageMax
+  // ── Active filter count ──
+  const activeFilterCount = [
+    locationFilter,
+    typeFilter,
+    modelFilter,
+    driveFilter.length > 0 ? 'yes' : '',
+    yearMin,
+    mileageMax,
+    engineFilter,
+    colourFilter.length > 0 ? 'yes' : '',
+    minPrice,
+    maxPrice,
+  ].filter(Boolean).length
+
+  const hasActiveFilters = activeFilterCount > 0
 
   function clearAll() {
     setLocationFilter(''); setTypeFilter(''); setModelFilter('')
     setDriveFilter([]); setYearMin(''); setMileageMax('')
+    setEngineFilter(''); setColourFilter([]); setMinPrice(''); setMaxPrice('')
+    setSortBy('default')
   }
 
   function toggleDrive(d: string) {
     setDriveFilter(v => v.includes(d) ? v.filter(x => x !== d) : [...v, d])
   }
 
-  return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="flex items-baseline justify-between mb-6">
-        <h1 className="font-display text-3xl text-forest-900">Browse Vans</h1>
-        <span className="text-gray-500 text-sm">{filtered.length} listing{filtered.length !== 1 ? 's' : ''}</span>
+  function toggleColour(c: string) {
+    setColourFilter(v => v.includes(c) ? v.filter(x => x !== c) : [...v, c])
+  }
+
+  // ── Shared filter panel content ──
+  const colourEntries = Object.entries(colourCounts).sort((a, b) => b[1] - a[1])
+
+  const filterPanelContent = (
+    <>
+      {/* Row 1 — Location */}
+      <div className="flex flex-wrap gap-2 items-center">
+        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider w-20 shrink-0">Location</span>
+        <div className="flex flex-wrap gap-1.5">
+          {LOCATION_FILTERS.map(f => (
+            <button key={f.value} onClick={() => setLocationFilter(f.value)}
+              className={`px-4 py-1.5 text-sm font-medium rounded-full border transition-colors ${
+                locationFilter === f.value
+                  ? 'bg-forest-900 text-white border-forest-900'
+                  : 'bg-white text-forest-900 border-forest-900 hover:bg-forest-50'
+              }`}>
+              {f.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* ── Filter rows ── */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-4 mb-6 space-y-3">
-
-        {/* Row 1 — Location */}
-        <div className="flex flex-wrap gap-2 items-center">
-          <span className="text-xs font-bold text-gray-400 uppercase tracking-wider w-20 shrink-0">Location</span>
-          <div className="flex flex-wrap gap-1.5">
-            {LOCATION_FILTERS.map(f => (
-              <button key={f.value} onClick={() => setLocationFilter(f.value)}
-                className={`px-4 py-1.5 text-sm font-medium rounded-full border transition-colors ${
-                  locationFilter === f.value
-                    ? 'bg-forest-900 text-white border-forest-900'
-                    : 'bg-white text-forest-900 border-forest-900 hover:bg-forest-50'
-                }`}>
-                {f.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Row 2 — Type */}
-        <div className="flex flex-wrap gap-2 items-center">
-          <span className="text-xs font-bold text-gray-400 uppercase tracking-wider w-20 shrink-0">Type</span>
-          <div className="flex flex-wrap gap-1.5">
-            {TYPE_FILTERS.map(f => (
-              <button key={f.value} onClick={() => setTypeFilter(f.value)}
-                className={`px-4 py-1.5 text-sm font-medium rounded-full border transition-colors ${
-                  typeFilter === f.value
-                    ? 'bg-forest-900 text-white border-forest-900'
-                    : 'bg-white text-forest-900 border-forest-900 hover:bg-forest-50'
-                }`}>
-                {f.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Row 3 — Model + sort + more filters toggle */}
-        <div className="flex flex-wrap gap-2 items-center">
-          <span className="text-xs font-bold text-gray-400 uppercase tracking-wider w-20 shrink-0">Model</span>
-          <select value={modelFilter} onChange={e => setModelFilter(e.target.value)}
-            className="border border-forest-900 text-forest-900 rounded-full px-4 py-1.5 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-forest-600">
-            {MODEL_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-          </select>
-
-          <div className="ml-auto flex items-center gap-2">
-            <button onClick={() => setShowMore(v => !v)}
-              className="text-xs text-gray-500 hover:text-gray-800 font-medium underline-offset-2 hover:underline">
-              {showMore ? 'Hide filters' : 'More filters'}
+      {/* Row 2 — Type */}
+      <div className="flex flex-wrap gap-2 items-center">
+        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider w-20 shrink-0">Type</span>
+        <div className="flex flex-wrap gap-1.5">
+          {TYPE_FILTERS.map(f => (
+            <button key={f.value} onClick={() => setTypeFilter(f.value)}
+              className={`px-4 py-1.5 text-sm font-medium rounded-full border transition-colors ${
+                typeFilter === f.value
+                  ? 'bg-forest-900 text-white border-forest-900'
+                  : 'bg-white text-forest-900 border-forest-900 hover:bg-forest-50'
+              }`}>
+              {f.label}
             </button>
-            <select value={sortBy} onChange={e => setSortBy(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm bg-white text-gray-700">
-              <option value="default">Sort: Default</option>
-              <option value="price_asc">Price: Low → High</option>
-              <option value="price_desc">Price: High → Low</option>
-              <option value="year_desc">Year: Newest</option>
-              <option value="mileage_asc">Mileage: Lowest</option>
-            </select>
-          </div>
+          ))}
         </div>
+      </div>
 
-        {/* More filters (collapsible) */}
-        {showMore && (
-          <div className="border-t border-gray-100 pt-3 mt-1 flex flex-wrap gap-6">
+      {/* Row 3 — Model + sort + more filters toggle */}
+      <div className="flex flex-wrap gap-2 items-center">
+        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider w-20 shrink-0">Model</span>
+        <select value={modelFilter} onChange={e => setModelFilter(e.target.value)}
+          className="border border-forest-900 text-forest-900 rounded-full px-4 py-1.5 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-forest-600">
+          {MODEL_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </select>
+
+        <div className="ml-auto flex items-center gap-2">
+          <button onClick={() => setShowMore(v => !v)}
+            className="text-xs text-gray-500 hover:text-gray-800 font-medium underline-offset-2 hover:underline">
+            {showMore ? 'Hide filters' : 'More filters'}
+          </button>
+          <select value={sortBy} onChange={e => setSortBy(e.target.value)}
+            className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm bg-white text-gray-700">
+            <option value="default">Sort: Default</option>
+            <option value="price_asc">Price: Low → High</option>
+            <option value="price_desc">Price: High → Low</option>
+            <option value="year_desc">Year: Newest</option>
+            <option value="mileage_asc">Mileage: Lowest</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Row 4 — Engine Type */}
+      <div className="flex flex-wrap gap-2 items-center">
+        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider w-20 shrink-0">Engine</span>
+        <div className="flex flex-wrap gap-1.5">
+          {ENGINE_FILTERS.map(f => (
+            <button key={f.value} onClick={() => setEngineFilter(f.value)}
+              className={`px-4 py-1.5 text-sm font-medium rounded-full border transition-colors ${
+                engineFilter === f.value
+                  ? 'bg-forest-900 text-white border-forest-900'
+                  : 'bg-white text-forest-900 border-forest-900 hover:bg-forest-50'
+              }`}>
+              {f.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* More filters (collapsible) */}
+      {showMore && (
+        <div className="border-t border-gray-100 pt-3 mt-1 space-y-4">
+          <div className="flex flex-wrap gap-6">
+            {/* Drive */}
             <div>
               <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Drive</p>
               <div className="flex gap-2">
@@ -195,12 +321,14 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
                 ))}
               </div>
             </div>
+            {/* Year */}
             <div>
               <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Year from</p>
               <input type="number" placeholder="e.g. 2020" value={yearMin}
                 onChange={e => setYearMin(e.target.value)}
                 className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm w-28" />
             </div>
+            {/* Mileage */}
             <div>
               <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Max mileage (km)</p>
               <input type="number" placeholder="e.g. 80000" value={mileageMax}
@@ -208,17 +336,143 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
                 className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm w-32" />
             </div>
           </div>
-        )}
 
-        {/* Clear all */}
-        {hasActiveFilters && (
-          <div className="pt-1">
-            <button onClick={clearAll} className="text-red-500 text-xs font-semibold hover:underline">
-              Clear all filters
-            </button>
+          {/* Price Range */}
+          <div>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Price Range (AUD)</p>
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                <input type="number" placeholder="Min" value={minPrice}
+                  onChange={e => setMinPrice(e.target.value)}
+                  className="border border-gray-300 rounded-lg pl-7 pr-3 py-1.5 text-sm w-28" />
+              </div>
+              <span className="text-gray-400 text-sm">to</span>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                <input type="number" placeholder="Max" value={maxPrice}
+                  onChange={e => setMaxPrice(e.target.value)}
+                  className="border border-gray-300 rounded-lg pl-7 pr-3 py-1.5 text-sm w-28" />
+              </div>
+            </div>
+            <p className="text-xs text-gray-400 mt-1">Based on current exchange rate estimate</p>
           </div>
-        )}
+
+          {/* Colour */}
+          {colourEntries.length > 0 && (
+            <div>
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Colour</p>
+              <div className="flex flex-wrap gap-2">
+                {colourEntries.map(([colour, count]) => (
+                  <label key={colour} className="flex items-center gap-1.5 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={colourFilter.includes(colour)}
+                      onChange={() => toggleColour(colour)}
+                      className="sr-only"
+                    />
+                    <span
+                      className={`inline-flex items-center gap-1.5 px-3 py-1 text-sm rounded-full border transition-colors ${
+                        colourFilter.includes(colour)
+                          ? 'bg-forest-900 text-white border-forest-900'
+                          : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
+                      }`}
+                    >
+                      <span
+                        className="inline-block w-3 h-3 rounded-full shrink-0"
+                        style={{
+                          backgroundColor: colourDot(colour),
+                          border: colour === 'White' || colourDot(colour) === '#ffffff' ? '1px solid #d1d5db' : 'none',
+                        }}
+                      />
+                      {colour}
+                      <span className={`text-xs ${colourFilter.includes(colour) ? 'text-white/70' : 'text-gray-400'}`}>({count})</span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Clear all */}
+      {hasActiveFilters && (
+        <div className="pt-1">
+          <button onClick={clearAll} className="text-red-500 text-xs font-semibold hover:underline">
+            Clear all filters
+          </button>
+        </div>
+      )}
+    </>
+  )
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="flex items-baseline justify-between mb-6">
+        <h1 className="font-display text-3xl text-forest-900">Browse Vans</h1>
+        <span className="text-gray-500 text-sm">Showing {filtered.length} van{filtered.length !== 1 ? 's' : ''}</span>
       </div>
+
+      {/* ── Desktop Filter Panel ── */}
+      <div className="hidden md:block bg-white border border-gray-200 rounded-2xl p-4 mb-6 space-y-3">
+        {filterPanelContent}
+      </div>
+
+      {/* ── Mobile Filter Button ── */}
+      <div className="md:hidden mb-6">
+        <button
+          onClick={() => setDrawerOpen(true)}
+          className="w-full flex items-center justify-center gap-2 bg-white border border-gray-200 rounded-2xl px-4 py-3 text-sm font-medium text-forest-900 hover:bg-forest-50 transition-colors"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+          </svg>
+          Filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
+        </button>
+      </div>
+
+      {/* ── Mobile Filter Drawer ── */}
+      {drawerOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50 transition-opacity"
+            onClick={() => setDrawerOpen(false)}
+          />
+          {/* Drawer */}
+          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl max-h-[85vh] flex flex-col animate-slide-up">
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 shrink-0">
+              <h2 className="font-display text-lg text-forest-900">Filters</h2>
+              <button onClick={() => setDrawerOpen(false)} className="text-gray-400 hover:text-gray-600">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            {/* Scrollable content */}
+            <div className="overflow-y-auto flex-1 p-4 space-y-3">
+              {filterPanelContent}
+            </div>
+            {/* Footer */}
+            <div className="flex gap-3 px-4 py-3 border-t border-gray-200 shrink-0">
+              <button
+                onClick={() => { clearAll(); setDrawerOpen(false) }}
+                className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                Clear all
+              </button>
+              <button
+                onClick={() => setDrawerOpen(false)}
+                className="flex-1 px-4 py-2.5 bg-forest-600 text-white rounded-lg text-sm font-medium hover:bg-forest-700"
+              >
+                Apply ({filtered.length})
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── For Sale Vehicles ── */}
       {forSaleVehicles.length > 0 && !hasActiveFilters && (

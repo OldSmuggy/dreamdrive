@@ -27,6 +27,7 @@ Extract every field you can find and return ONLY a JSON object with these exact 
   "has_aluminum_wheels": false,
   "has_sunroof": false,
   "has_leather_seat": false,
+  "has_rear_ac": false,
   "auction_site": "Akita",
   "bid_no": "402",
   "auction_session": "1048268",
@@ -127,6 +128,16 @@ export async function POST(req: NextRequest) {
         has_leather:       extracted.has_leather_seat as boolean ?? false,
         has_sunroof:       extracted.has_sunroof as boolean ?? false,
         has_alloys:        extracted.has_aluminum_wheels as boolean ?? false,
+        has_power_steering: extracted.has_power_steering as boolean ?? false,
+        has_power_windows: extracted.has_power_windows as boolean ?? false,
+        has_rear_ac:       extracted.has_rear_ac as boolean ?? false,
+        engine:            (() => {
+          const cc = extracted.displacement as number | null
+          if (cc === 2800) return 'diesel'
+          if (cc === 2700 || cc === 2000) return 'petrol'
+          return null
+        })(),
+        kaijo_code:        extracted.auction_site as string ?? null,
         condition_notes:   extracted.condition_notes as string ?? null,
         interior_dimensions: extracted.interior_dimensions as string ?? null,
         contact_phone:     null,

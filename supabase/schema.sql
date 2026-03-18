@@ -58,11 +58,16 @@ create table if not exists listings (
   eta_date            date null,
   featured            boolean default false,
   description         text null,
+  -- Engine type (derived from displacement)
+  engine              text null,          -- 'diesel' | 'petrol' | 'petrol_20'
   -- Equipment flags
   has_nav             boolean default false,
   has_leather         boolean default false,
   has_sunroof         boolean default false,
   has_alloys          boolean default false,
+  has_power_steering  boolean default false,
+  has_power_windows   boolean default false,
+  has_rear_ac         boolean default false,
   -- Photos (array of CDN URLs)
   photos              text[] default '{}',
   inspection_sheet    text null,       -- CDN URL
