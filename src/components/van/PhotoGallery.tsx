@@ -61,7 +61,7 @@ export default function PhotoGallery({ photos, modelName, focalPoint, isAuction,
 
   if (photos.length === 0) {
     return (
-      <div className="rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center text-gray-300 text-7xl mb-3" style={{ height: 400 }}>
+      <div className="rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center text-gray-300 text-7xl mb-3 h-[300px] md:h-[500px]">
         🚐
       </div>
     )
@@ -71,10 +71,10 @@ export default function PhotoGallery({ photos, modelName, focalPoint, isAuction,
 
   return (
     <>
-      {/* Main image — fixed height, cover, click to open lightbox */}
+      {/* Main image — responsive height, cover, click to open lightbox */}
       <div
-        className="relative rounded-2xl overflow-hidden mb-3"
-        style={{ height: 400, cursor: isBlurred ? 'default' : 'zoom-in' }}
+        className="relative rounded-2xl overflow-hidden mb-3 h-[400px] md:h-[500px] w-full"
+        style={{ cursor: isBlurred ? 'default' : 'zoom-in' }}
         onClick={() => !isBlurred && openLightbox(activeIndex)}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -100,7 +100,7 @@ export default function PhotoGallery({ photos, modelName, focalPoint, isAuction,
                 style={{ fontSize: '1.5rem' }}
                 onClick={e => e.stopPropagation()}
               >
-                📞 {contactPhone}
+                {contactPhone}
               </a>
             )}
             <a
@@ -108,7 +108,7 @@ export default function PhotoGallery({ photos, modelName, focalPoint, isAuction,
               className="bg-forest-600 text-white font-semibold px-6 py-2.5 rounded-full text-sm hover:bg-forest-700 transition-colors"
               onClick={e => e.stopPropagation()}
             >
-              Sign Up Free →
+              Sign Up Free
             </a>
             <a
               href={loginUrl}
@@ -119,22 +119,30 @@ export default function PhotoGallery({ photos, modelName, focalPoint, isAuction,
             </a>
           </div>
         )}
-        {/* Counter */}
-        {!isBlurred && photos.length > 1 && (
-          <div className="absolute bottom-3 right-3 bg-black/60 text-white text-xs font-medium px-2.5 py-1 rounded-full select-none">
-            {activeIndex + 1} / {photos.length}
-          </div>
-        )}
+        {/* Counter + view full size */}
         {!isBlurred && (
-          <div className="absolute bottom-3 left-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full select-none opacity-0 group-hover:opacity-100 transition-opacity">
-            Click to expand
+          <div className="absolute bottom-3 right-3 flex items-center gap-2">
+            <a
+              href={photos[activeIndex]}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={e => e.stopPropagation()}
+              className="bg-black/60 text-white text-xs font-medium px-2.5 py-1 rounded-full select-none hover:bg-black/80 transition-colors"
+            >
+              View full size
+            </a>
+            {photos.length > 1 && (
+              <span className="bg-black/60 text-white text-xs font-medium px-2.5 py-1 rounded-full select-none">
+                {activeIndex + 1} / {photos.length}
+              </span>
+            )}
           </div>
         )}
       </div>
 
       {/* Thumbnail grid */}
       {!isBlurred && photos.length > 1 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+        <div className="grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-6 gap-2">
           {photos.map((p, i) => (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -142,10 +150,10 @@ export default function PhotoGallery({ photos, modelName, focalPoint, isAuction,
               src={p}
               alt=""
               onClick={() => setActiveIndex(i)}
-              className="w-full rounded object-cover cursor-pointer transition-opacity"
+              className="w-full rounded-lg object-cover cursor-pointer transition-opacity"
               style={{
-                height: 100,
-                opacity: i === activeIndex ? 1 : 0.72,
+                height: 80,
+                opacity: i === activeIndex ? 1 : 0.65,
                 outline: i === activeIndex ? '2px solid #1a3a2a' : '2px solid transparent',
                 outlineOffset: 2,
               }}
@@ -156,10 +164,10 @@ export default function PhotoGallery({ photos, modelName, focalPoint, isAuction,
       {/* Blurred thumbnail strip */}
       {isBlurred && photos.length > 1 && (
         <div className="relative">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+          <div className="grid grid-cols-4 gap-2">
             {photos.slice(0, 4).map((p, i) => (
               // eslint-disable-next-line @next/next/no-img-element
-              <div key={i} className="relative rounded overflow-hidden" style={{ height: 100 }}>
+              <div key={i} className="relative rounded-lg overflow-hidden" style={{ height: 80 }}>
                 <img src={p} alt="" className="w-full h-full object-cover blur-md scale-110" />
                 <div className="absolute inset-0 bg-forest-900/50 flex items-center justify-center">
                   <span className="text-white/80 text-lg">🔒</span>
@@ -179,7 +187,7 @@ export default function PhotoGallery({ photos, modelName, focalPoint, isAuction,
       {lightboxOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center"
-          style={{ background: 'rgba(0,0,0,0.92)' }}
+          style={{ background: 'rgba(0,0,0,0.95)' }}
           onClick={closeLightbox}
         >
           <button
@@ -187,7 +195,7 @@ export default function PhotoGallery({ photos, modelName, focalPoint, isAuction,
             className="absolute top-4 right-4 text-white/80 hover:text-white text-3xl leading-none z-10 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors"
             aria-label="Close"
           >
-            ×
+            &times;
           </button>
 
           {photos.length > 1 && (
@@ -196,7 +204,7 @@ export default function PhotoGallery({ photos, modelName, focalPoint, isAuction,
               className="absolute left-4 top-1/2 -translate-y-1/2 text-white/80 hover:text-white z-10 w-11 h-11 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors text-2xl"
               aria-label="Previous"
             >
-              ‹
+              &lsaquo;
             </button>
           )}
 
@@ -206,7 +214,7 @@ export default function PhotoGallery({ photos, modelName, focalPoint, isAuction,
               className="absolute right-4 top-1/2 -translate-y-1/2 text-white/80 hover:text-white z-10 w-11 h-11 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors text-2xl"
               aria-label="Next"
             >
-              ›
+              &rsaquo;
             </button>
           )}
 
@@ -219,11 +227,22 @@ export default function PhotoGallery({ photos, modelName, focalPoint, isAuction,
             style={{ maxWidth: '90vw', maxHeight: '85vh', objectFit: 'contain' }}
           />
 
-          {photos.length > 1 && (
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-black/60 text-white text-sm font-medium px-3 py-1.5 rounded-full select-none">
-              {lightboxIndex + 1} / {photos.length}
-            </div>
-          )}
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3">
+            {photos.length > 1 && (
+              <span className="bg-black/60 text-white text-sm font-medium px-3 py-1.5 rounded-full select-none">
+                {lightboxIndex + 1} / {photos.length}
+              </span>
+            )}
+            <a
+              href={photos[lightboxIndex]}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={e => e.stopPropagation()}
+              className="bg-white/15 text-white text-sm font-medium px-3 py-1.5 rounded-full select-none hover:bg-white/25 transition-colors"
+            >
+              Open full size
+            </a>
+          </div>
         </div>
       )}
     </>

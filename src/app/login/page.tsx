@@ -64,9 +64,29 @@ function LoginForm() {
         last_name: lastName || null,
       })
     }
-    setSuccessMsg(data.session ? 'Account created!' : 'Check your email to confirm your account.')
+    // If we got a session immediately (email confirmation disabled), redirect now
+    if (data.session) {
+      setSuccessMsg('Account created! Welcome to Dream Drive.')
+      setSuccess(true)
+      setTimeout(() => { window.location.href = next }, 800)
+      setLoading(false)
+      return
+    }
+    // Fallback: if email confirmation is still enabled, try signing in directly
+    const { data: signInData } = await supabase.auth.signInWithPassword({
+      email: signupEmail,
+      password: signupPassword,
+    })
+    if (signInData.session) {
+      setSuccessMsg('Account created! Welcome to Dream Drive.')
+      setSuccess(true)
+      setTimeout(() => { window.location.href = next }, 800)
+      setLoading(false)
+      return
+    }
+    // If neither worked, show check-email message
+    setSuccessMsg('Check your email to confirm your account.')
     setSuccess(true)
-    if (data.session) setTimeout(() => { window.location.href = next }, 1000)
     setLoading(false)
   }
 
@@ -83,7 +103,8 @@ function LoginForm() {
         <div className="w-full max-w-sm text-center">
           <div className="text-4xl mb-4">✓</div>
           <h2 className="text-xl font-bold text-gray-900 mb-2">{successMsg}</h2>
-          <Link href="/" className="text-forest-600 text-sm hover:underline">Back to home</Link>
+          <p className="text-gray-500 text-sm mb-4">Redirecting you now...</p>
+          <Link href={next} className="text-forest-600 text-sm hover:underline">Go to your account</Link>
         </div>
       </div>
     )
