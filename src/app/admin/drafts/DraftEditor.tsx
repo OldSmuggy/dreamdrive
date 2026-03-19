@@ -12,6 +12,14 @@ type DraftState = {
   model_year: string
   mileage_km: string
   aud_estimate: string
+  transmission: string
+  drive: string
+  displacement_cc: string
+  chassis_code: string
+  inspection_score: string
+  start_price_jpy: string
+  bid_no: string
+  kaijo_code: string
   photos: string[]
 }
 
@@ -24,6 +32,14 @@ function toDraftState(l: Listing): DraftState {
     model_year: l.model_year?.toString() ?? '',
     mileage_km: l.mileage_km?.toString() ?? '',
     aud_estimate: l.aud_estimate ? (l.aud_estimate / 100).toFixed(0) : '',
+    transmission: l.transmission ?? '',
+    drive: l.drive ?? '',
+    displacement_cc: l.displacement_cc?.toString() ?? '',
+    chassis_code: l.chassis_code ?? '',
+    inspection_score: l.inspection_score ?? '',
+    start_price_jpy: l.start_price_jpy?.toString() ?? '',
+    bid_no: (l as unknown as Record<string, unknown>).bid_no as string ?? '',
+    kaijo_code: (l as unknown as Record<string, unknown>).kaijo_code as string ?? '',
     photos: [...(l.photos ?? [])],
   }
 }
@@ -98,6 +114,14 @@ export default function DraftEditor({ initial }: { initial: Listing[] }) {
         model_year: draft.model_year ? parseInt(draft.model_year) : null,
         mileage_km: draft.mileage_km ? parseInt(draft.mileage_km) : null,
         aud_estimate: draft.aud_estimate ? Math.round(parseFloat(draft.aud_estimate) * 100) : null,
+        transmission: draft.transmission || null,
+        drive: draft.drive || null,
+        displacement_cc: draft.displacement_cc ? parseInt(draft.displacement_cc) : null,
+        chassis_code: draft.chassis_code || null,
+        inspection_score: draft.inspection_score || null,
+        start_price_jpy: draft.start_price_jpy ? parseInt(draft.start_price_jpy) : null,
+        bid_no: draft.bid_no || null,
+        kaijo_code: draft.kaijo_code || null,
         photos: draft.photos,
       }
       if (approve) payload.status = 'available'
@@ -209,7 +233,7 @@ export default function DraftEditor({ initial }: { initial: Listing[] }) {
               disabled={bulkWorking}
               className="text-sm font-semibold px-3 py-1.5 rounded-lg bg-forest-600 text-white hover:bg-forest-700 disabled:opacity-50"
             >
-              {bulkWorking ? 'Working…' : `✓ Approve & Publish (${selected.size})`}
+              {bulkWorking ? 'Working\u2026' : `\u2713 Approve & Publish (${selected.size})`}
             </button>
             <button
               onClick={bulkDelete}
@@ -226,9 +250,10 @@ export default function DraftEditor({ initial }: { initial: Listing[] }) {
         const isEditing = editingId === l.id
         const isSelected = selected.has(l.id)
         const rawData = l.raw_data as Record<string, string> | null
-        const sourceLabel = l.source === 'dealer_goonet' ? 'Goo-net' : 'Car Sensor'
+        const sourceLabel = l.source === 'auction' ? 'Auction' : l.source === 'dealer_goonet' ? 'Goo-net' : 'Car Sensor'
         const hasDescription = !!(l as unknown as { description?: string }).description
         const isTranslating = translatingId === l.id
+        const pdfUrl = l.inspection_sheet
 
         return (
           <div
@@ -237,7 +262,6 @@ export default function DraftEditor({ initial }: { initial: Listing[] }) {
           >
             {/* Header */}
             <div className="p-5 flex gap-3 items-start">
-              {/* Checkbox */}
               <input
                 type="checkbox"
                 checked={isSelected}
@@ -253,6 +277,12 @@ export default function DraftEditor({ initial }: { initial: Listing[] }) {
                 <div className="flex items-center gap-2 flex-wrap mb-1">
                   <span className="text-xs font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded">{sourceLabel}</span>
                   <span className="text-xs bg-amber-100 text-amber-700 font-semibold px-2 py-0.5 rounded">DRAFT</span>
+                  {pdfUrl && (
+                    <a href={pdfUrl} target="_blank" rel="noopener noreferrer"
+                      className="text-xs text-forest-600 hover:underline font-medium">
+                      View PDF
+                    </a>
+                  )}
                   {rawData?.raw_grade && (
                     <span className="text-xs text-gray-400 font-mono">JP grade: {rawData.raw_grade}</span>
                   )}
@@ -262,15 +292,15 @@ export default function DraftEditor({ initial }: { initial: Listing[] }) {
                   {rawData?.url && (
                     <a href={rawData.url} target="_blank" rel="noopener noreferrer"
                       className="text-xs text-blue-600 hover:underline">
-                      Source ↗
+                      Source
                     </a>
                   )}
                 </div>
                 <p className="font-semibold text-gray-900">{l.model_name}</p>
                 <p className="text-sm text-gray-500 mt-0.5">
-                  {l.model_year} · {l.mileage_km?.toLocaleString()} km · {l.transmission} · {l.drive}
-                  {l.grade && ` · ${l.grade}`}
-                  {l.body_colour && ` · ${l.body_colour}`}
+                  {l.model_year} \u00B7 {l.mileage_km?.toLocaleString()} km \u00B7 {l.transmission} \u00B7 {l.drive}
+                  {l.grade && ` \u00B7 ${l.grade}`}
+                  {l.body_colour && ` \u00B7 ${l.body_colour}`}
                 </p>
                 {hasDescription && (
                   <p className="text-sm text-gray-600 mt-1 italic">
@@ -302,137 +332,211 @@ export default function DraftEditor({ initial }: { initial: Listing[] }) {
                   disabled={isTranslating}
                   className="text-xs px-3 py-1 rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50 disabled:opacity-50"
                 >
-                  {isTranslating ? 'Translating…' : '🌐 Re-translate'}
+                  {isTranslating ? 'Translating\u2026' : 'Re-translate'}
                 </button>
               </div>
             </div>
 
-            {/* Edit form */}
+            {/* Edit form with side-by-side PDF viewer */}
             {isEditing && draft && (
               <div className="border-t border-forest-100 bg-gray-50 p-5">
-                <div className="grid md:grid-cols-2 gap-4 mb-4">
-                  <div className="md:col-span-2">
-                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Model Name</label>
-                    <input value={draft.model_name} onChange={e => set('model_name', e.target.value)} className={inputClass} />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Grade</label>
-                    <input value={draft.grade} onChange={e => set('grade', e.target.value)} className={inputClass} placeholder="e.g. Super GL" />
-                    {rawData?.raw_grade && (
-                      <p className="text-xs text-gray-400 mt-1">Original Japanese: <span className="font-mono">{rawData.raw_grade}</span></p>
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Body Colour</label>
-                    <input value={draft.body_colour} onChange={e => set('body_colour', e.target.value)} className={inputClass} placeholder="e.g. Pearl White" />
-                    {rawData?.raw_colour && (
-                      <p className="text-xs text-gray-400 mt-1">Original Japanese: <span className="font-mono">{rawData.raw_colour}</span></p>
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Year</label>
-                    <input type="number" value={draft.model_year} onChange={e => set('model_year', e.target.value)} className={inputClass} />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Mileage (km)</label>
-                    <input type="number" value={draft.mileage_km} onChange={e => set('mileage_km', e.target.value)} className={inputClass} />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">AUD Estimate ($)</label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-2 text-sm text-gray-400">$</span>
-                      <input type="number" value={draft.aud_estimate} onChange={e => set('aud_estimate', e.target.value)} className={`${inputClass} pl-6`} placeholder="0" />
-                    </div>
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Description</label>
-                    <textarea
-                      value={draft.description}
-                      onChange={e => set('description', e.target.value)}
-                      rows={3}
-                      className={`${inputClass} resize-none`}
-                      placeholder="Write a short English description for this van..."
-                    />
-                  </div>
-                </div>
+                <div className="grid lg:grid-cols-2 gap-6">
 
-                {/* Photos */}
-                <div className="border-t border-gray-200 pt-4 mb-4">
-                  {draft.photos[0] && (
-                    <div className="mb-4">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={draft.photos[0]}
-                        alt="Cover"
-                        className="w-full max-h-64 object-cover rounded-xl border border-gray-200"
-                      />
-                    </div>
-                  )}
-                  <div className="flex items-center justify-between mb-3">
-                    <label className="text-xs font-semibold text-gray-600">
-                      Photos <span className="text-gray-400 font-normal">({draft.photos.length} — first is cover)</span>
-                    </label>
-                    {draft.photos.length > 0 && (
-                      <button
-                        onClick={() => set('photos', [])}
-                        className="text-xs text-red-500 hover:text-red-700 font-medium"
-                      >
-                        Clear all
-                      </button>
+                  {/* Left: PDF Viewer */}
+                  <div className="min-h-0">
+                    {pdfUrl ? (
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-xs font-semibold text-gray-600">Auction Sheet</p>
+                          <a href={pdfUrl} target="_blank" rel="noopener noreferrer"
+                            className="text-xs text-forest-600 hover:underline">
+                            Open in new tab
+                          </a>
+                        </div>
+                        <iframe
+                          src={pdfUrl}
+                          className="w-full rounded-xl border border-gray-200 bg-white"
+                          style={{ height: 700 }}
+                          title="Auction sheet PDF"
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center h-full bg-gray-100 rounded-xl border border-gray-200 text-gray-400 text-sm p-10 text-center">
+                        <div>
+                          <p className="text-3xl mb-2">📄</p>
+                          <p className="font-medium">No auction sheet PDF</p>
+                          <p className="text-xs mt-1">Upload a PDF via the auction sheet upload page to view it here.</p>
+                        </div>
+                      </div>
                     )}
                   </div>
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {draft.photos.map((url, i) => (
-                      <div key={i} className="relative group">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={url} alt="" className="w-24 h-16 object-cover rounded-lg border border-gray-200" />
-                        <button
-                          onClick={() => removePhoto(i)}
-                          className="absolute top-0.5 right-0.5 w-5 h-5 bg-red-600 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                        >✕</button>
-                        {i === 0 && (
-                          <span className="absolute bottom-0.5 left-0.5 bg-forest-600 text-white text-[9px] font-bold px-1 rounded">COVER</span>
+
+                  {/* Right: Edit Form */}
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1.5">Model Name</label>
+                      <input value={draft.model_name} onChange={e => set('model_name', e.target.value)} className={inputClass} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1.5">Grade</label>
+                        <input value={draft.grade} onChange={e => set('grade', e.target.value)} className={inputClass} placeholder="e.g. Super GL" />
+                        {rawData?.raw_grade && (
+                          <p className="text-xs text-gray-400 mt-1">JP: <span className="font-mono">{rawData.raw_grade}</span></p>
                         )}
                       </div>
-                    ))}
-                  </div>
-                  <div className="flex gap-2">
-                    <input
-                      value={newPhotoUrl}
-                      onChange={e => setNewPhotoUrl(e.target.value)}
-                      onKeyDown={e => e.key === 'Enter' && addPhoto()}
-                      placeholder="Paste image URL (auto-upgraded to full res)"
-                      className={`${inputClass} flex-1`}
-                    />
-                    <button onClick={addPhoto} className="px-4 py-2 bg-forest-600 text-white text-sm rounded-lg hover:bg-forest-700 shrink-0">
-                      Add URL
-                    </button>
-                    <PhotoUploadButton onUploaded={url => setDraft(s => s ? { ...s, photos: [...s.photos, url] } : s)} />
-                  </div>
-                </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1.5">Body Colour</label>
+                        <input value={draft.body_colour} onChange={e => set('body_colour', e.target.value)} className={inputClass} placeholder="e.g. Pearl White" />
+                        {rawData?.raw_colour && (
+                          <p className="text-xs text-gray-400 mt-1">JP: <span className="font-mono">{rawData.raw_colour}</span></p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1.5">Chassis Code</label>
+                        <input value={draft.chassis_code} onChange={e => set('chassis_code', e.target.value)} className={inputClass} placeholder="e.g. GDH211K" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1.5">Inspection Score</label>
+                        <select value={draft.inspection_score} onChange={e => set('inspection_score', e.target.value)} className={inputClass}>
+                          <option value="">--</option>
+                          {['S','6','5.5','5','4.5','4','3.5','3','R','RA','X'].map(s => (
+                            <option key={s} value={s}>{s}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1.5">Year</label>
+                        <input type="number" value={draft.model_year} onChange={e => set('model_year', e.target.value)} className={inputClass} />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1.5">Mileage (km)</label>
+                        <input type="number" value={draft.mileage_km} onChange={e => set('mileage_km', e.target.value)} className={inputClass} />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1.5">Transmission</label>
+                        <select value={draft.transmission} onChange={e => set('transmission', e.target.value)} className={inputClass}>
+                          <option value="">--</option>
+                          <option value="IA">Automatic (IA)</option>
+                          <option value="AT">Automatic (AT)</option>
+                          <option value="MT">Manual</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1.5">Drive</label>
+                        <select value={draft.drive} onChange={e => set('drive', e.target.value)} className={inputClass}>
+                          <option value="">--</option>
+                          <option value="2WD">2WD</option>
+                          <option value="4WD">4WD</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1.5">Engine (cc)</label>
+                        <input type="number" value={draft.displacement_cc} onChange={e => set('displacement_cc', e.target.value)} className={inputClass} placeholder="2800" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1.5">Start Price (JPY)</label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-2 text-sm text-gray-400">\u00A5</span>
+                          <input type="number" value={draft.start_price_jpy} onChange={e => set('start_price_jpy', e.target.value)} className={`${inputClass} pl-6`} />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1.5">AUD Estimate ($)</label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-2 text-sm text-gray-400">$</span>
+                          <input type="number" value={draft.aud_estimate} onChange={e => set('aud_estimate', e.target.value)} className={`${inputClass} pl-6`} />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1.5">Auction Site</label>
+                        <input value={draft.kaijo_code} onChange={e => set('kaijo_code', e.target.value)} className={inputClass} placeholder="e.g. Tokyo" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1.5">Bid Number</label>
+                        <input value={draft.bid_no} onChange={e => set('bid_no', e.target.value)} className={inputClass} placeholder="e.g. 402" />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1.5">Description</label>
+                      <textarea
+                        value={draft.description}
+                        onChange={e => set('description', e.target.value)}
+                        rows={3}
+                        className={`${inputClass} resize-none`}
+                        placeholder="Write a short English description for this van..."
+                      />
+                    </div>
 
-                {error && (
-                  <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-4">{error}</p>
-                )}
+                    {/* Photos */}
+                    <div className="border-t border-gray-200 pt-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <label className="text-xs font-semibold text-gray-600">
+                          Photos <span className="text-gray-400 font-normal">({draft.photos.length})</span>
+                        </label>
+                        {draft.photos.length > 0 && (
+                          <button
+                            onClick={() => set('photos', [])}
+                            className="text-xs text-red-500 hover:text-red-700 font-medium"
+                          >
+                            Clear all
+                          </button>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {draft.photos.map((url, i) => (
+                          <div key={i} className="relative group">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={url} alt="" className="w-20 h-14 object-cover rounded-lg border border-gray-200" />
+                            <button
+                              onClick={() => removePhoto(i)}
+                              className="absolute top-0.5 right-0.5 w-5 h-5 bg-red-600 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                            >\u2715</button>
+                            {i === 0 && (
+                              <span className="absolute bottom-0.5 left-0.5 bg-forest-600 text-white text-[9px] font-bold px-1 rounded">COVER</span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex gap-2">
+                        <input
+                          value={newPhotoUrl}
+                          onChange={e => setNewPhotoUrl(e.target.value)}
+                          onKeyDown={e => e.key === 'Enter' && addPhoto()}
+                          placeholder="Paste image URL"
+                          className={`${inputClass} flex-1`}
+                        />
+                        <button onClick={addPhoto} className="px-3 py-2 bg-forest-600 text-white text-sm rounded-lg hover:bg-forest-700 shrink-0">
+                          Add
+                        </button>
+                        <PhotoUploadButton onUploaded={url => setDraft(s => s ? { ...s, photos: [...s.photos, url] } : s)} />
+                      </div>
+                    </div>
 
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => handleSave(l.id, true)}
-                    disabled={saving}
-                    className="btn-primary btn-sm disabled:opacity-50"
-                  >
-                    {saving ? 'Publishing…' : '✓ Approve & Publish'}
-                  </button>
-                  <button
-                    onClick={() => handleSave(l.id, false)}
-                    disabled={saving}
-                    className="btn-secondary btn-sm disabled:opacity-50"
-                  >
-                    {saving ? 'Saving…' : 'Save Draft'}
-                  </button>
-                  <button onClick={cancelEdit} className="text-sm text-gray-500 hover:text-gray-700 px-2">
-                    Cancel
-                  </button>
+                    {error && (
+                      <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>
+                    )}
+
+                    <div className="flex gap-3 pt-2">
+                      <button
+                        onClick={() => handleSave(l.id, true)}
+                        disabled={saving}
+                        className="btn-primary btn-sm disabled:opacity-50"
+                      >
+                        {saving ? 'Publishing\u2026' : '\u2713 Approve & Publish'}
+                      </button>
+                      <button
+                        onClick={() => handleSave(l.id, false)}
+                        disabled={saving}
+                        className="btn-secondary btn-sm disabled:opacity-50"
+                      >
+                        {saving ? 'Saving\u2026' : 'Save Draft'}
+                      </button>
+                      <button onClick={cancelEdit} className="text-sm text-gray-500 hover:text-gray-700 px-2">
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
