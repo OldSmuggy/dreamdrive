@@ -18,7 +18,7 @@ export default async function AdminDraftsPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="font-display text-3xl text-forest-900">Draft Listings</h1>
+        <h1 className="text-3xl text-charcoal">Draft Listings</h1>
         <p className="text-gray-500 text-sm mt-1">
           {drafts.length > 0
             ? `${drafts.length} listing${drafts.length > 1 ? 's' : ''} waiting for review. Edit the content, then click Approve & Publish to make it live.`

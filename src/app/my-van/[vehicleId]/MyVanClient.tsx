@@ -36,7 +36,7 @@ const STAGE_MESSAGES: Record<string, string> = {
   compliance:         'Your van is going through Australian import compliance.',
   pop_top_install:    'Your pop top is being fitted at our Brisbane workshop.',
   ready_for_delivery: 'Your van is ready! Time to start your adventure.',
-  delivered:          "You're on the road! Welcome to the Dream Drive family.",
+  delivered:          "You're on the road! Welcome to the Bare Camper family.",
 }
 
 const BUILD_INFO: Record<string, { name: string; tagline: string; description: string; inclusions: string[] }> = {
@@ -219,13 +219,13 @@ export default function MyVanClient({ customer, vehicle, listing, stages, build,
           <div className="relative h-[340px] md:h-[420px]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={heroPhoto} alt={vanLabel} className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-forest-950/90 via-forest-950/40 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-charcoal/90 via-charcoal/40 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 px-6 pb-8 md:px-12">
               <Link href="/" className="inline-flex items-center gap-2 text-white/70 text-sm mb-4 hover:text-white">
                 Dream Drive
               </Link>
-              <h1 className="font-display text-3xl md:text-4xl text-white leading-tight">
-                Your Dream Drive
+              <h1 className="text-3xl md:text-4xl text-white leading-tight">
+                Your Bare Camper
               </h1>
               <p className="text-white/80 mt-2 text-sm md:text-base">{vanLabel}</p>
               <div className="flex items-center gap-2 mt-3 flex-wrap">
@@ -235,12 +235,12 @@ export default function MyVanClient({ customer, vehicle, listing, stages, build,
             </div>
           </div>
         ) : (
-          <div className="bg-forest-950 px-6 md:px-12 py-12 md:py-16">
+          <div className="bg-charcoal px-6 md:px-12 py-12 md:py-16">
             <Link href="/" className="inline-flex items-center gap-2 text-white/70 text-sm mb-6 hover:text-white">
               Dream Drive
             </Link>
-            <h1 className="font-display text-3xl md:text-4xl text-white leading-tight">
-              Your Dream Drive
+            <h1 className="text-3xl md:text-4xl text-white leading-tight">
+              Your Bare Camper
             </h1>
             <p className="text-white/80 mt-2 text-sm md:text-base">{vanLabel}</p>
             <div className="flex items-center gap-2 mt-3 flex-wrap">
@@ -255,7 +255,7 @@ export default function MyVanClient({ customer, vehicle, listing, stages, build,
 
         {/* ── 1. Stage Tracker ── */}
         <section>
-          <h2 className="font-display text-2xl text-forest-900 mb-1">Your Journey</h2>
+          <h2 className="text-2xl text-charcoal mb-1">Your Journey</h2>
           {currentStage && (
             <p className="text-sm text-gray-500 mb-5">
               Stage {currentIdx + 1} of {sortedStages.length} — {STAGE_LABELS[currentStage.stage]}
@@ -264,7 +264,7 @@ export default function MyVanClient({ customer, vehicle, listing, stages, build,
 
           {/* Progress bar */}
           <div className="h-2 bg-gray-100 rounded-full overflow-hidden mb-8">
-            <div className="h-full bg-forest-600 rounded-full transition-all duration-700" style={{ width: `${pctComplete}%` }} />
+            <div className="h-full bg-ocean rounded-full transition-all duration-700" style={{ width: `${pctComplete}%` }} />
           </div>
 
           {/* Vertical timeline */}
@@ -281,8 +281,8 @@ export default function MyVanClient({ customer, vehicle, listing, stages, build,
                   {/* Vertical line + dot */}
                   <div className="flex flex-col items-center shrink-0">
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 shrink-0 transition-all ${
-                      done   ? 'bg-forest-600 border-forest-600 text-white' :
-                      active ? 'bg-white border-forest-600 text-forest-700 ring-4 ring-forest-100' :
+                      done   ? 'bg-ocean border-ocean text-white' :
+                      active ? 'bg-white border-ocean text-ocean ring-4 ring-cream' :
                                'bg-gray-50 border-gray-200 text-gray-300'
                     }`}>
                       {done ? (
@@ -292,28 +292,28 @@ export default function MyVanClient({ customer, vehicle, listing, stages, build,
                       ) : active ? (
                         <span className="relative">
                           <span className="text-sm font-bold">{i + 1}</span>
-                          <span className="absolute -top-0.5 -right-1 w-2 h-2 bg-sand-400 rounded-full animate-pulse" />
+                          <span className="absolute -top-0.5 -right-1 w-2 h-2 bg-sand rounded-full animate-pulse" />
                         </span>
                       ) : (
                         <span className="text-sm font-bold">{i + 1}</span>
                       )}
                     </div>
                     {!isLast && (
-                      <div className={`w-0.5 flex-1 min-h-[20px] ${done ? 'bg-forest-600' : 'bg-gray-200'}`} />
+                      <div className={`w-0.5 flex-1 min-h-[20px] ${done ? 'bg-ocean' : 'bg-gray-200'}`} />
                     )}
                   </div>
 
                   {/* Content */}
                   <div className={`pb-6 ${isLast ? 'pb-0' : ''}`}>
-                    <p className={`font-semibold leading-tight ${active ? 'text-forest-900 text-base' : done ? 'text-gray-800 text-sm' : 'text-gray-400 text-sm'}`}>
+                    <p className={`font-semibold leading-tight ${active ? 'text-charcoal text-base' : done ? 'text-gray-800 text-sm' : 'text-gray-400 text-sm'}`}>
                       {STAGE_LABELS[stage.stage]}
                     </p>
 
                     {done && stage.completed_at && (
-                      <p className="text-xs text-forest-600 mt-0.5">Completed {fmtDate(stage.completed_at)}</p>
+                      <p className="text-xs text-ocean mt-0.5">Completed {fmtDate(stage.completed_at)}</p>
                     )}
                     {active && stage.entered_at && (
-                      <p className="text-xs text-forest-600 mt-0.5">
+                      <p className="text-xs text-ocean mt-0.5">
                         Since {fmtDate(stage.entered_at)}
                         {forecast && <span className="text-gray-400 ml-2">{fmtEstDate(forecast)}</span>}
                       </p>
@@ -327,14 +327,14 @@ export default function MyVanClient({ customer, vehicle, listing, stages, build,
 
                     {/* Current stage message */}
                     {active && STAGE_MESSAGES[stage.stage] && (
-                      <div className="mt-2 bg-forest-50 border border-forest-100 rounded-xl px-4 py-3">
-                        <p className="text-sm text-forest-800">{STAGE_MESSAGES[stage.stage]}</p>
+                      <div className="mt-2 bg-cream border border-cream rounded-xl px-4 py-3">
+                        <p className="text-sm text-charcoal">{STAGE_MESSAGES[stage.stage]}</p>
                       </div>
                     )}
 
                     {/* Stage notes (admin-written) */}
                     {(done || active) && stage.notes && (
-                      <div className="mt-2 bg-sand-50 border border-sand-200 rounded-xl px-4 py-2.5">
+                      <div className="mt-2 bg-cream border border-sand rounded-xl px-4 py-2.5">
                         <p className="text-xs text-gray-600">{stage.notes}</p>
                       </div>
                     )}
@@ -348,19 +348,19 @@ export default function MyVanClient({ customer, vehicle, listing, stages, build,
         {/* ── 2. Your Build ── */}
         {build && build.build_type !== 'none' && (
           <section>
-            <h2 className="font-display text-2xl text-forest-900 mb-5">Your Build</h2>
+            <h2 className="text-2xl text-charcoal mb-5">Your Build</h2>
             <div className="bg-gray-50 border border-gray-100 rounded-2xl overflow-hidden">
               <div className="p-6">
                 {buildInfo ? (
                   <>
                     <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-forest-100 text-forest-700 flex items-center justify-center text-2xl shrink-0">
+                      <div className="w-12 h-12 rounded-xl bg-cream text-ocean flex items-center justify-center text-2xl shrink-0">
                         <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M11.42 15.17l-5.59-5.59a2 2 0 010-2.83l.83-.83a2 2 0 012.83 0L15.17 11.42M20 20l-4.24-4.24" />
                         </svg>
                       </div>
                       <div>
-                        <h3 className="font-display text-xl text-forest-900">{buildInfo.name}</h3>
+                        <h3 className="text-xl text-charcoal">{buildInfo.name}</h3>
                         <p className="text-sm text-gray-500 italic">{buildInfo.tagline}</p>
                         <p className="text-sm text-gray-700 mt-2">{buildInfo.description}</p>
                       </div>
@@ -371,7 +371,7 @@ export default function MyVanClient({ customer, vehicle, listing, stages, build,
                       <ul className="space-y-1.5">
                         {(showAllInclusions ? buildInfo.inclusions : buildInfo.inclusions.slice(0, 5)).map(item => (
                           <li key={item} className="flex items-start gap-2 text-sm text-gray-700">
-                            <svg className="w-4 h-4 text-forest-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <svg className="w-4 h-4 text-ocean shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                             </svg>
                             {item}
@@ -379,7 +379,7 @@ export default function MyVanClient({ customer, vehicle, listing, stages, build,
                         ))}
                       </ul>
                       {buildInfo.inclusions.length > 5 && (
-                        <button onClick={() => setShowAllInclusions(v => !v)} className="mt-2 text-xs text-forest-600 hover:underline font-medium">
+                        <button onClick={() => setShowAllInclusions(v => !v)} className="mt-2 text-xs text-ocean hover:underline font-medium">
                           {showAllInclusions ? 'Show less' : `See all ${buildInfo.inclusions.length} inclusions`}
                         </button>
                       )}
@@ -387,11 +387,11 @@ export default function MyVanClient({ customer, vehicle, listing, stages, build,
                   </>
                 ) : build.build_type === 'custom' && build.custom_description ? (
                   <div>
-                    <h3 className="font-display text-xl text-forest-900 mb-1">Custom Build</h3>
+                    <h3 className="text-xl text-charcoal mb-1">Custom Build</h3>
                     <p className="text-sm text-gray-700 whitespace-pre-wrap">{build.custom_description}</p>
                   </div>
                 ) : (
-                  <h3 className="font-display text-xl text-forest-900">{build.build_type}</h3>
+                  <h3 className="text-xl text-charcoal">{build.build_type}</h3>
                 )}
 
                 {/* Add-ons */}
@@ -401,7 +401,7 @@ export default function MyVanClient({ customer, vehicle, listing, stages, build,
                     <ul className="space-y-1.5">
                       {build.pop_top && (
                         <li className="flex items-start gap-2 text-sm text-gray-700">
-                          <svg className="w-4 h-4 text-forest-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <svg className="w-4 h-4 text-ocean shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                           </svg>
                           Pop Top Roof Conversion
@@ -409,7 +409,7 @@ export default function MyVanClient({ customer, vehicle, listing, stages, build,
                       )}
                       {addonProducts.map(p => (
                         <li key={p.slug} className="flex items-start gap-2 text-sm text-gray-700">
-                          <svg className="w-4 h-4 text-forest-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <svg className="w-4 h-4 text-ocean shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                           </svg>
                           {p.name}
@@ -423,7 +423,7 @@ export default function MyVanClient({ customer, vehicle, listing, stages, build,
                 {build.total_quoted_aud && (
                   <div className="mt-5 pt-5 border-t border-gray-200 flex items-center justify-between">
                     <span className="text-sm font-semibold text-gray-600">Build Total</span>
-                    <span className="font-display text-lg text-forest-900">{centsToAud(build.total_quoted_aud)}</span>
+                    <span className="text-lg text-charcoal">{centsToAud(build.total_quoted_aud)}</span>
                   </div>
                 )}
               </div>
@@ -434,7 +434,7 @@ export default function MyVanClient({ customer, vehicle, listing, stages, build,
         {/* ── 3. Documents ── */}
         {documents.length > 0 && (
           <section>
-            <h2 className="font-display text-2xl text-forest-900 mb-5">Documents</h2>
+            <h2 className="text-2xl text-charcoal mb-5">Documents</h2>
             <div className="space-y-2">
               {documents.map(doc => (
                 <button
@@ -458,10 +458,10 @@ export default function MyVanClient({ customer, vehicle, listing, stages, build,
 
         {/* ── 4. Ask a Question ── */}
         <section>
-          <h2 className="font-display text-2xl text-forest-900 mb-4">Ask a Question</h2>
+          <h2 className="text-2xl text-charcoal mb-4">Ask a Question</h2>
           {questionSent ? (
-            <div className="bg-forest-50 border border-forest-100 rounded-2xl px-6 py-5 text-center">
-              <p className="text-forest-800 font-semibold">Thanks! We&apos;ll get back to you shortly.</p>
+            <div className="bg-cream border border-cream rounded-2xl px-6 py-5 text-center">
+              <p className="text-charcoal font-semibold">Thanks! We&apos;ll get back to you shortly.</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -470,12 +470,12 @@ export default function MyVanClient({ customer, vehicle, listing, stages, build,
                 onChange={e => setQuestion(e.target.value)}
                 placeholder="Type your question here..."
                 rows={3}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-forest-500 focus:border-transparent"
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ocean focus:border-transparent"
               />
               <button
                 onClick={sendQuestion}
                 disabled={!question.trim() || sendingQuestion}
-                className="text-sm px-5 py-2.5 bg-forest-600 text-white rounded-xl hover:bg-forest-700 disabled:opacity-50 font-medium"
+                className="text-sm px-5 py-2.5 bg-ocean text-white rounded-xl hover:bg-ocean disabled:opacity-50 font-medium"
               >
                 {sendingQuestion ? 'Sending...' : 'Send Question'}
               </button>
@@ -488,16 +488,16 @@ export default function MyVanClient({ customer, vehicle, listing, stages, build,
           <section className="bg-amber-50 border-2 border-amber-200 rounded-2xl px-6 py-6">
             <div className="flex items-start gap-3">
               <div>
-                <h3 className="font-display text-xl text-amber-900 mb-1">This Build is Available for Purchase</h3>
+                <h3 className="text-xl text-amber-900 mb-1">This Build is Available for Purchase</h3>
                 <p className="text-sm text-amber-800 mb-3">This van and build package is available for transfer to a new owner.</p>
                 {forSale.notes && <p className="text-sm text-amber-700 mb-3">{forSale.notes}</p>}
                 {forSale.price && (
-                  <p className="text-lg font-display text-amber-900 mb-4">Asking price: {centsToAud(forSale.price)}</p>
+                  <p className="text-lg text-amber-900 mb-4">Asking price: {centsToAud(forSale.price)}</p>
                 )}
                 <p className="text-sm text-amber-800 font-medium">Interested? Get in touch:</p>
                 <div className="mt-2 space-y-1">
-                  <a href="mailto:jared@dreamdrive.life" className="text-sm text-forest-700 hover:underline block">jared@dreamdrive.life</a>
-                  <a href="tel:0432182892" className="text-sm text-forest-700 hover:underline block">0432 182 892</a>
+                  <a href="mailto:jared@dreamdrive.life" className="text-sm text-ocean hover:underline block">jared@dreamdrive.life</a>
+                  <a href="tel:0432182892" className="text-sm text-ocean hover:underline block">0432 182 892</a>
                 </div>
               </div>
             </div>
@@ -505,15 +505,15 @@ export default function MyVanClient({ customer, vehicle, listing, stages, build,
         )}
 
         {/* ── Contact Footer ── */}
-        <section className="bg-forest-950 text-white rounded-2xl px-6 py-8 text-center">
-          <h3 className="font-display text-xl mb-2">Questions about your build?</h3>
+        <section className="bg-charcoal text-white rounded-2xl px-6 py-8 text-center">
+          <h3 className="text-xl mb-2">Questions about your build?</h3>
           <p className="text-white/60 text-sm mb-4">We&apos;re always happy to help.</p>
           <div className="space-y-1.5 text-sm text-white/80">
             <p>Questions? Call Jared: <a href="tel:0432182892" className="hover:text-white font-medium">0432 182 892</a></p>
             <p>Email: <a href="mailto:jared@dreamdrive.life" className="hover:text-white font-medium">jared@dreamdrive.life</a></p>
           </div>
           <div className="mt-6 pt-4 border-t border-white/10">
-            <Link href="/" className="text-sand-400 font-display text-lg hover:text-sand-300">Dream Drive</Link>
+            <Link href="/" className="text-sand text-lg hover:text-sand">Bare Camper</Link>
             <p className="text-white/40 text-xs mt-1">Find it. Build it. Drive it.</p>
           </div>
         </section>

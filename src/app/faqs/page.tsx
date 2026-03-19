@@ -13,7 +13,7 @@ export default function FaqsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-3xl mx-auto px-4 py-16">
-        <h1 className="font-display text-4xl text-forest-900 mb-10">Frequently Asked Questions</h1>
+        <h1 className="text-4xl text-charcoal mb-10">Frequently Asked Questions</h1>
         <div className="space-y-4">
           {FAQS.map((faq, i) => (
             <div key={i} className="bg-white border border-gray-200 rounded-2xl p-6">

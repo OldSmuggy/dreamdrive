@@ -1,0 +1,11 @@
+<svg viewBox="0 0 280 80" xmlns="http://www.w3.org/2000/svg">
+<!-- Bare Camper — BARE short mark with tent A — Dark variant -->
+<!-- B -->
+<path fill="#F5F3ED" fill-rule="evenodd" d="M24 10 L58 10 Q76 10 76 26 Q76 36 64 40 Q78 44 78 56 Q78 70 58 70 L24 70 Z M38 22 L56 22 Q64 22 64 29 Q64 36 56 36 L38 36 Z M38 46 L58 46 Q68 46 68 55 Q68 62 58 62 L38 62 Z"/>
+<!-- A tent -->
+<path fill="#F5F3ED" fill-rule="evenodd" d="M92 70 L122 10 L152 70 Z M110 70 L122 44 L134 70 Z"/>
+<!-- R -->
+<path fill="#F5F3ED" fill-rule="evenodd" d="M164 10 L164 70 L178 70 L178 48 L190 48 L204 70 L220 70 L204 46 Q216 40 216 28 Q216 10 194 10 Z M178 22 L192 22 Q204 22 204 30 Q204 38 192 38 L178 38 Z"/>
+<!-- E -->
+<path fill="#F5F3ED" d="M232 10 L232 70 L282 70 L282 58 L246 58 L246 46 L276 46 L276 36 L246 36 L246 22 L282 22 L282 10 Z"/>
+</svg>

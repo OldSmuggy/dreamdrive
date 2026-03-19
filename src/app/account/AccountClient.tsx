@@ -135,7 +135,7 @@ const depositStatusStyle: Record<string, string> = {
   pending: 'bg-yellow-100 text-yellow-700',
   active: 'bg-green-100 text-green-700',
   refunded: 'bg-gray-100 text-gray-500',
-  converted: 'bg-forest-100 text-forest-700',
+  converted: 'bg-cream text-ocean',
 }
 
 const invoiceStatusStyle: Record<string, string> = {
@@ -175,10 +175,10 @@ export default function AccountClient({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-forest-950 text-white">
+      <div className="bg-charcoal text-white">
         <div className="max-w-5xl mx-auto px-4 py-10">
           <p className="text-white/50 text-sm mb-1">My Account</p>
-          <h1 className="font-display text-3xl">{name}</h1>
+          <h1 className="text-3xl">{name}</h1>
           <p className="text-white/60 text-sm mt-1">{user.email}</p>
         </div>
       </div>
@@ -187,7 +187,7 @@ export default function AccountClient({
         <div className="flex gap-1 bg-white border border-gray-200 rounded-xl p-1.5 mb-8 overflow-x-auto">
           {tabs.map(t => (
             <button key={t.key} onClick={() => setTab(t.key)}
-              className={`flex-1 min-w-fit px-4 py-2 text-sm font-semibold rounded-lg whitespace-nowrap transition-colors ${tab === t.key ? 'bg-forest-600 text-white' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'}`}>
+              className={`flex-1 min-w-fit px-4 py-2 text-sm font-semibold rounded-lg whitespace-nowrap transition-colors ${tab === t.key ? 'bg-ocean text-white' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'}`}>
               {t.label}{t.count ? ` (${t.count})` : ''}
             </button>
           ))}
@@ -278,9 +278,9 @@ export default function AccountClient({
                         {poptop  && <BuildLine label="Pop Top Conversion" aud={poptop.rrp_aud} />}
                         {!fitout && !elec && !poptop && <div className="px-4 py-3 text-sm text-gray-400 text-center italic">No fit-out or extras added</div>}
                         {(b.total_aud_min || b.total_aud_max) && (
-                          <div className="bg-forest-50 px-4 py-3 flex justify-between items-center border-t border-forest-100">
-                            <span className="font-semibold text-forest-900 text-sm">Estimated total</span>
-                            <span className="font-display text-forest-700">
+                          <div className="bg-cream px-4 py-3 flex justify-between items-center border-t border-cream">
+                            <span className="font-semibold text-charcoal text-sm">Estimated total</span>
+                            <span className="text-ocean">
                               {b.total_aud_min && b.total_aud_max && b.total_aud_min !== b.total_aud_max
                                 ? `${centsToAud(b.total_aud_min)} – ${centsToAud(b.total_aud_max)}`
                                 : centsToAud(b.total_aud_min ?? b.total_aud_max ?? 0)}
@@ -326,7 +326,7 @@ export default function AccountClient({
                     <span className={`text-xs font-semibold px-2.5 py-1 rounded-full shrink-0 capitalize ${depositStatusStyle[d.status] ?? 'bg-gray-100 text-gray-600'}`}>{d.status}</span>
                   </div>
                   {(d.status === 'active' || d.status === 'pending') && (
-                    <p className="mt-3 text-xs text-gray-500">To request a refund, email <a href="mailto:jared@dreamdrive.life" className="text-forest-600 hover:underline">jared@dreamdrive.life</a></p>
+                    <p className="mt-3 text-xs text-gray-500">To request a refund, email <a href="mailto:jared@dreamdrive.life" className="text-ocean hover:underline">jared@dreamdrive.life</a></p>
                   )}
                 </div>
               ))}
@@ -355,14 +355,14 @@ export default function AccountClient({
                   <div key={order.id}>
                     <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
                       {/* Header */}
-                      <div className="bg-forest-950 px-6 py-5 flex items-center gap-4">
+                      <div className="bg-charcoal px-6 py-5 flex items-center gap-4">
                         <div className="w-16 h-12 rounded-lg overflow-hidden bg-white/10 shrink-0">
                           {order.listing?.photos?.[0]
                             ? <img src={order.listing.photos[0]} alt="" className="w-full h-full object-cover" /> // eslint-disable-line @next/next/no-img-element
                             : <div className="w-full h-full flex items-center justify-center text-white/30 text-xl">🚐</div>}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-display text-white text-lg leading-tight">
+                          <p className="text-white text-lg leading-tight">
                             {order.listing ? `${order.listing.model_year ?? ''} ${order.listing.model_name}` : 'Your Van'}
                           </p>
                           <p className="text-white/50 text-xs mt-0.5">Order started {new Date(order.created_at).toLocaleDateString('en-AU')}</p>
@@ -376,7 +376,7 @@ export default function AccountClient({
                           {/* Connecting line behind circles */}
                           <div className="absolute top-5 left-0 right-0 h-0.5 bg-gray-200 z-0" style={{ margin: '0 2.5rem' }} />
                           <div
-                            className="absolute top-5 left-0 h-0.5 bg-forest-500 z-0 transition-all duration-700"
+                            className="absolute top-5 left-0 h-0.5 bg-ocean z-0 transition-all duration-700"
                             style={{ margin: '0 2.5rem', width: `calc(${Math.max(0, getMainStageIdx(order.current_stage)) / (MAIN_STAGES.length - 1) * 100}% - 0px)` }}
                           />
                           {MAIN_STAGES.map((ms, mi) => {
@@ -386,9 +386,9 @@ export default function AccountClient({
                             const subLabel = isActive ? ms.currentSubLabel(order.current_stage) : null
                             return (
                               <div key={ms.num} className="flex flex-col items-center z-10 flex-1 px-1">
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-display text-lg font-bold transition-all mb-2 ${
-                                  isDone   ? 'bg-forest-600 text-white' :
-                                  isActive ? 'bg-forest-600 text-white ring-4 ring-forest-100' :
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold transition-all mb-2 ${
+                                  isDone   ? 'bg-ocean text-white' :
+                                  isActive ? 'bg-ocean text-white ring-4 ring-cream' :
                                              'bg-white border-2 border-gray-200 text-gray-300'
                                 }`}>
                                   {isDone ? (
@@ -396,15 +396,15 @@ export default function AccountClient({
                                   ) : isActive ? (
                                     <span className="relative flex items-center justify-center">
                                       {ms.num}
-                                      <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-sand-400 rounded-full animate-pulse" />
+                                      <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-sand rounded-full animate-pulse" />
                                     </span>
                                   ) : ms.num}
                                 </div>
-                                <p className={`text-xs font-semibold text-center leading-tight ${isActive ? 'text-forest-800' : isDone ? 'text-gray-600' : 'text-gray-300'}`}>
+                                <p className={`text-xs font-semibold text-center leading-tight ${isActive ? 'text-charcoal' : isDone ? 'text-gray-600' : 'text-gray-300'}`}>
                                   {ms.title}
                                 </p>
                                 {subLabel && (
-                                  <span className="mt-1 bg-forest-100 text-forest-700 text-[10px] font-bold px-1.5 py-0.5 rounded-full text-center leading-tight">
+                                  <span className="mt-1 bg-cream text-ocean text-[10px] font-bold px-1.5 py-0.5 rounded-full text-center leading-tight">
                                     {subLabel}
                                   </span>
                                 )}
@@ -417,23 +417,23 @@ export default function AccountClient({
                         {!isFinal && (() => {
                           const meta = STAGE_META[order.current_stage]
                           return meta ? (
-                            <div className="mt-6 bg-forest-50 border border-forest-200 rounded-xl px-4 py-3">
-                              <p className="text-sm font-semibold text-forest-800">{meta.label}</p>
+                            <div className="mt-6 bg-cream border border-ocean-light rounded-xl px-4 py-3">
+                              <p className="text-sm font-semibold text-charcoal">{meta.label}</p>
                               <p className="text-xs text-gray-600 mt-0.5">{meta.desc}</p>
-                              {meta.next && <p className="text-xs text-forest-600 mt-1 font-medium">{meta.next}</p>}
+                              {meta.next && <p className="text-xs text-ocean mt-1 font-medium">{meta.next}</p>}
                             </div>
                           ) : null
                         })()}
 
                         {/* Stage notes from admin */}
                         {order.stage_notes?.[order.current_stage] && (
-                          <div className="mt-3 bg-sand-50 border border-sand-200 rounded-xl px-4 py-3 text-xs text-gray-700">
+                          <div className="mt-3 bg-cream border border-sand rounded-xl px-4 py-3 text-xs text-gray-700">
                             <span className="font-semibold">Note from Dream Drive: </span>
                             {order.stage_notes[order.current_stage]}
                           </div>
                         )}
                         {order.admin_notes && !order.stage_notes && (
-                          <div className="mt-3 bg-sand-50 border border-sand-200 rounded-xl px-4 py-3 text-sm text-gray-700">
+                          <div className="mt-3 bg-cream border border-sand rounded-xl px-4 py-3 text-sm text-gray-700">
                             <span className="font-semibold text-gray-800">Message from Dream Drive: </span>{order.admin_notes}
                           </div>
                         )}
@@ -451,10 +451,10 @@ export default function AccountClient({
 
                       {/* Handover celebration */}
                       {isFinal && (
-                        <div className="mx-6 mb-6 bg-forest-600 rounded-xl px-5 py-5 text-center">
-                          <p className="font-display text-white text-2xl mb-1">Your adventure starts now! 🚐</p>
+                        <div className="mx-6 mb-6 bg-ocean rounded-xl px-5 py-5 text-center">
+                          <p className="text-white text-2xl mb-1">Your adventure starts now! 🚐</p>
                           <p className="text-white/70 text-sm mb-4">Contact us to arrange your handover date and location.</p>
-                          <a href="tel:0432182892" className="inline-block bg-sand-400 text-forest-950 font-semibold px-8 py-2.5 rounded-xl hover:bg-sand-300 transition-colors text-sm">
+                          <a href="tel:0432182892" className="inline-block bg-sand text-charcoal font-semibold px-8 py-2.5 rounded-xl hover:bg-sand transition-colors text-sm">
                             Call Jared — 0432 182 892
                           </a>
                         </div>
@@ -488,7 +488,7 @@ export default function AccountClient({
                                   <div className="flex items-center gap-3 shrink-0">
                                     <span className="font-semibold text-gray-900 text-sm">${(inv.amount_aud / 100).toLocaleString()} AUD</span>
                                     <span className={`text-xs font-bold px-2 py-0.5 rounded-full uppercase ${invoiceStatusStyle[inv.status] ?? 'bg-gray-100 text-gray-600'}`}>{inv.status}</span>
-                                    <button onClick={() => alert('For invoice copy, contact jared@dreamdrive.life')} className="text-xs text-forest-600 hover:underline">Download</button>
+                                    <button onClick={() => alert('For invoice copy, contact jared@dreamdrive.life')} className="text-xs text-ocean hover:underline">Download</button>
                                   </div>
                                 </div>
                               ))}
@@ -567,7 +567,7 @@ function OrderQuestion({ orderId }: { orderId: string }) {
     <div className="mx-6 mb-6 border-t border-gray-100 pt-5">
       <p className="text-sm font-semibold text-gray-700 mb-2">Ask a Question</p>
       {sent ? (
-        <p className="text-sm text-forest-700 font-medium bg-forest-50 border border-forest-200 rounded-xl px-4 py-3">
+        <p className="text-sm text-ocean font-medium bg-cream border border-ocean-light rounded-xl px-4 py-3">
           ✓ Question sent — we&apos;ll reply within 1 business day.
         </p>
       ) : (
@@ -577,7 +577,7 @@ function OrderQuestion({ orderId }: { orderId: string }) {
             onChange={e => setText(e.target.value.slice(0, 500))}
             rows={3}
             placeholder="Ask a question about your build..."
-            className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-forest-600"
+            className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ocean"
           />
           <div className="flex items-center justify-between mt-2">
             <span className="text-xs text-gray-400">{text.length}/500</span>
@@ -616,7 +616,7 @@ function EmptyState({ icon, title, desc, children }: { icon: string | React.Reac
       <div className="flex justify-center mb-4">
         {typeof icon === 'string' ? <span className="text-5xl">{icon}</span> : icon}
       </div>
-      <h3 className="font-display text-xl text-gray-700 mb-2">{title}</h3>
+      <h3 className="text-xl text-gray-700 mb-2">{title}</h3>
       <p className="text-gray-500 text-sm max-w-xs mx-auto">{desc}</p>
       {children}
     </div>

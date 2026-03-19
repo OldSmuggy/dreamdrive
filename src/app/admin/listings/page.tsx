@@ -20,7 +20,7 @@ export default async function AdminListingsPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="font-display text-3xl text-forest-900">Listings</h1>
+          <h1 className="text-3xl text-charcoal">Listings</h1>
           <p className="text-gray-500 text-sm mt-1">{listings.length} listings · click Edit on any row to update details, images or status</p>
         </div>
         <div className="flex gap-2">

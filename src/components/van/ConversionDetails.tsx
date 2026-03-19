@@ -51,8 +51,8 @@ export default function ConversionDetails({ videoUrl, showSpecs = true }: Props)
   const embedUrl = videoUrl ? extractVideoEmbed(videoUrl) : null
 
   return (
-    <div className="bg-sand-50 rounded-2xl p-6 md:p-8">
-      <h2 className="font-display text-2xl text-forest-900 mb-2">Pop Top Conversion Details</h2>
+    <div className="bg-cream rounded-2xl p-6 md:p-8">
+      <h2 className="text-2xl text-charcoal mb-2">Pop Top Conversion Details</h2>
       <p className="text-gray-500 text-sm mb-6">
         Dream Drive pop tops are fibreglass conversions that add ~600mm of standing height to your HiAce.
         They fold flat when driving and raise in seconds.
@@ -63,13 +63,13 @@ export default function ConversionDetails({ videoUrl, showSpecs = true }: Props)
           {/* LWB */}
           <div className="bg-white border border-gray-200 rounded-xl p-5">
             <div className="flex items-center gap-2 mb-3">
-              <span className="bg-forest-600 text-white text-xs font-bold px-2 py-0.5 rounded">LWB</span>
+              <span className="bg-ocean text-white text-xs font-bold px-2 py-0.5 rounded">LWB</span>
               <span className="font-semibold text-gray-800 text-sm">H200 Long Wheelbase</span>
             </div>
             <ul className="space-y-2">
               {LWB_SPECS.map((s, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                  <span className="text-forest-500 mt-0.5 shrink-0">✓</span>
+                  <span className="text-ocean mt-0.5 shrink-0">✓</span>
                   {s}
                 </li>
               ))}
@@ -79,13 +79,13 @@ export default function ConversionDetails({ videoUrl, showSpecs = true }: Props)
           {/* SLWB */}
           <div className="bg-white border border-gray-200 rounded-xl p-5">
             <div className="flex items-center gap-2 mb-3">
-              <span className="bg-forest-800 text-white text-xs font-bold px-2 py-0.5 rounded">SLWB</span>
+              <span className="bg-charcoal text-white text-xs font-bold px-2 py-0.5 rounded">SLWB</span>
               <span className="font-semibold text-gray-800 text-sm">Super Long Wheelbase H200</span>
             </div>
             <ul className="space-y-2">
               {SLWB_SPECS.map((s, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                  <span className="text-forest-500 mt-0.5 shrink-0">✓</span>
+                  <span className="text-ocean mt-0.5 shrink-0">✓</span>
                   {s}
                 </li>
               ))}

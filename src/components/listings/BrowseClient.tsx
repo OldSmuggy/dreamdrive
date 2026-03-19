@@ -236,8 +236,8 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
             <button key={f.value} onClick={() => setLocationFilter(f.value)}
               className={`px-4 py-1.5 text-sm font-medium rounded-full border transition-colors ${
                 locationFilter === f.value
-                  ? 'bg-forest-900 text-white border-forest-900'
-                  : 'bg-white text-forest-900 border-forest-900 hover:bg-forest-50'
+                  ? 'bg-charcoal text-white border-charcoal'
+                  : 'bg-white text-charcoal border-charcoal hover:bg-cream'
               }`}>
               {f.label}
             </button>
@@ -253,8 +253,8 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
             <button key={f.value} onClick={() => setTypeFilter(f.value)}
               className={`px-4 py-1.5 text-sm font-medium rounded-full border transition-colors ${
                 typeFilter === f.value
-                  ? 'bg-forest-900 text-white border-forest-900'
-                  : 'bg-white text-forest-900 border-forest-900 hover:bg-forest-50'
+                  ? 'bg-charcoal text-white border-charcoal'
+                  : 'bg-white text-charcoal border-charcoal hover:bg-cream'
               }`}>
               {f.label}
             </button>
@@ -266,7 +266,7 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
       <div className="flex flex-wrap gap-2 items-center">
         <span className="text-xs font-bold text-gray-400 uppercase tracking-wider w-20 shrink-0">Model</span>
         <select value={modelFilter} onChange={e => setModelFilter(e.target.value)}
-          className="border border-forest-900 text-forest-900 rounded-full px-4 py-1.5 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-forest-600">
+          className="border border-charcoal text-charcoal rounded-full px-4 py-1.5 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-ocean">
           {MODEL_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
 
@@ -294,8 +294,8 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
             <button key={f.value} onClick={() => setEngineFilter(f.value)}
               className={`px-4 py-1.5 text-sm font-medium rounded-full border transition-colors ${
                 engineFilter === f.value
-                  ? 'bg-forest-900 text-white border-forest-900'
-                  : 'bg-white text-forest-900 border-forest-900 hover:bg-forest-50'
+                  ? 'bg-charcoal text-white border-charcoal'
+                  : 'bg-white text-charcoal border-charcoal hover:bg-cream'
               }`}>
               {f.label}
             </button>
@@ -314,7 +314,7 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
                 {['2WD', '4WD'].map(d => (
                   <button key={d} onClick={() => toggleDrive(d)}
                     className={`px-3 py-1 text-sm rounded-full border transition-colors ${
-                      driveFilter.includes(d) ? 'bg-forest-900 text-white border-forest-900' : 'bg-white text-forest-900 border-forest-900 hover:bg-forest-50'
+                      driveFilter.includes(d) ? 'bg-charcoal text-white border-charcoal' : 'bg-white text-charcoal border-charcoal hover:bg-cream'
                     }`}>
                     {d}
                   </button>
@@ -374,7 +374,7 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
                     <span
                       className={`inline-flex items-center gap-1.5 px-3 py-1 text-sm rounded-full border transition-colors ${
                         colourFilter.includes(colour)
-                          ? 'bg-forest-900 text-white border-forest-900'
+                          ? 'bg-charcoal text-white border-charcoal'
                           : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
                       }`}
                     >
@@ -410,7 +410,7 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="flex items-baseline justify-between mb-6">
-        <h1 className="font-display text-3xl text-forest-900">Browse Vans</h1>
+        <h1 className="text-3xl text-charcoal">Browse Vans</h1>
         <span className="text-gray-500 text-sm">Showing {filtered.length} van{filtered.length !== 1 ? 's' : ''}</span>
       </div>
 
@@ -423,7 +423,7 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
       <div className="md:hidden mb-6">
         <button
           onClick={() => setDrawerOpen(true)}
-          className="w-full flex items-center justify-center gap-2 bg-white border border-gray-200 rounded-2xl px-4 py-3 text-sm font-medium text-forest-900 hover:bg-forest-50 transition-colors"
+          className="w-full flex items-center justify-center gap-2 bg-white border border-gray-200 rounded-2xl px-4 py-3 text-sm font-medium text-charcoal hover:bg-cream transition-colors"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
@@ -444,7 +444,7 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
           <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl max-h-[85vh] flex flex-col animate-slide-up">
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 shrink-0">
-              <h2 className="font-display text-lg text-forest-900">Filters</h2>
+              <h2 className="text-lg text-charcoal">Filters</h2>
               <button onClick={() => setDrawerOpen(false)} className="text-gray-400 hover:text-gray-600">
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -465,7 +465,7 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
               </button>
               <button
                 onClick={() => setDrawerOpen(false)}
-                className="flex-1 px-4 py-2.5 bg-forest-600 text-white rounded-lg text-sm font-medium hover:bg-forest-700"
+                className="flex-1 px-4 py-2.5 bg-ocean text-white rounded-lg text-sm font-medium hover:bg-ocean"
               >
                 Apply ({filtered.length})
               </button>
@@ -477,7 +477,7 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
       {/* ── For Sale Vehicles ── */}
       {forSaleVehicles.length > 0 && !hasActiveFilters && (
         <div className="mb-8">
-          <h2 className="font-display text-xl text-forest-900 mb-4">Contract for Sale</h2>
+          <h2 className="text-xl text-charcoal mb-4">Contract for Sale</h2>
           <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
             {forSaleVehicles.map(v => (
               <ForSaleCard key={v.id} vehicle={v} />
@@ -568,7 +568,7 @@ function ForSaleCard({ vehicle }: { vehicle: ForSaleVehicle }) {
         )}
 
         <div className="flex items-center justify-between mt-3 pt-3 border-t border-amber-100">
-          <span className="font-display text-amber-700 text-base font-semibold">
+          <span className="text-amber-700 text-base font-semibold">
             {vehicle.sale_price_aud ? centsToAud(vehicle.sale_price_aud) : 'POA'}
           </span>
           <button
@@ -586,24 +586,24 @@ function ForSaleCard({ vehicle }: { vehicle: ForSaleVehicle }) {
           <div className="bg-white rounded-2xl p-6 max-w-md w-full space-y-4" onClick={e => e.stopPropagation()}>
             {sent ? (
               <div className="text-center py-4">
-                <p className="font-display text-xl text-forest-900 mb-2">Thanks for your interest!</p>
+                <p className="text-xl text-charcoal mb-2">Thanks for your interest!</p>
                 <p className="text-sm text-gray-500">We&apos;ll be in touch shortly.</p>
-                <button onClick={() => setShowInterest(false)} className="mt-4 text-sm text-forest-600 hover:underline">Close</button>
+                <button onClick={() => setShowInterest(false)} className="mt-4 text-sm text-ocean hover:underline">Close</button>
               </div>
             ) : (
               <>
                 <div>
-                  <h3 className="font-display text-xl text-forest-900">Express Interest</h3>
+                  <h3 className="text-xl text-charcoal">Express Interest</h3>
                   <p className="text-sm text-gray-500 mt-1">{label} — {vehicle.sale_price_aud ? centsToAud(vehicle.sale_price_aud) : 'POA'}</p>
                 </div>
                 <div className="space-y-3">
-                  <input type="text" placeholder="Your name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-500" />
-                  <input type="email" placeholder="Email *" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-500" />
-                  <input type="tel" placeholder="Phone" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-500" />
-                  <textarea placeholder="Message (optional)" value={form.message} onChange={e => setForm(f => ({ ...f, message: e.target.value }))} rows={2} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-forest-500" />
+                  <input type="text" placeholder="Your name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ocean" />
+                  <input type="email" placeholder="Email *" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ocean" />
+                  <input type="tel" placeholder="Phone" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ocean" />
+                  <textarea placeholder="Message (optional)" value={form.message} onChange={e => setForm(f => ({ ...f, message: e.target.value }))} rows={2} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ocean" />
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={submit} disabled={sending || (!form.email && !form.phone)} className="flex-1 bg-forest-600 text-white text-sm font-medium py-2 rounded-lg hover:bg-forest-700 disabled:opacity-50">{sending ? 'Sending...' : 'Send'}</button>
+                  <button onClick={submit} disabled={sending || (!form.email && !form.phone)} className="flex-1 bg-ocean text-white text-sm font-medium py-2 rounded-lg hover:bg-ocean disabled:opacity-50">{sending ? 'Sending...' : 'Send'}</button>
                   <button onClick={() => setShowInterest(false)} className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50">Cancel</button>
                 </div>
               </>
@@ -655,7 +655,7 @@ function ListingCard({ listing, userId, initialSaved, jpyRate }: { listing: List
     if (diff < 3600000) return { text: `CLOSING IN ${m}m ${s}s`, cls: 'bg-red-600 text-white', pulse: true }
     if (diff < 24 * 3600000) return { text: `LAST CHANCE \u2014 ${h}h ${m}m ${s}s`, cls: 'bg-red-600 text-white', pulse: false }
     if (diff < 48 * 3600000) return { text: `CLOSING SOON \u2014 ${d > 0 ? d + 'd ' : ''}${h}h ${m}m`, cls: 'bg-amber-500 text-white', pulse: false }
-    return { text: `Auction in ${d}d ${h}h`, cls: 'text-forest-600', pulse: false }
+    return { text: `Auction in ${d}d ${h}h`, cls: 'text-ocean', pulse: false }
   }, [isAuctionPending, auctionTime, now])
 
   // Sold / unsold badges
@@ -693,13 +693,13 @@ function ListingCard({ listing, userId, initialSaved, jpyRate }: { listing: List
             </svg>
             <p className="text-white font-semibold text-sm leading-tight mb-1">Create a free account to see photos</p>
             {listing.contact_phone ? (
-              <a href={`tel:${listing.contact_phone.replace(/\s/g, '')}`} onClick={e => e.stopPropagation()} className="text-sand-400 font-semibold text-sm mt-1 hover:text-sand-300">
+              <a href={`tel:${listing.contact_phone.replace(/\s/g, '')}`} onClick={e => e.stopPropagation()} className="text-sand font-semibold text-sm mt-1 hover:text-sand">
                 📞 {listing.contact_phone}
               </a>
             ) : (
               <p className="text-white/70 text-xs">Free account — takes 30 seconds</p>
             )}
-            <span className="mt-2 bg-white text-forest-900 text-xs font-semibold px-3 py-1 rounded-full">Sign Up Free</span>
+            <span className="mt-2 bg-white text-charcoal text-xs font-semibold px-3 py-1 rounded-full">Sign Up Free</span>
           </div>
         )}
         {/* Top-left: location badge */}
@@ -718,7 +718,7 @@ function ListingCard({ listing, userId, initialSaved, jpyRate }: { listing: List
             </span>
           )}
           {listing.featured && listing.source === 'au_stock' && (
-            <span className="bg-forest-500 text-white text-xs font-bold px-2 py-0.5 rounded">FEATURED</span>
+            <span className="bg-ocean text-white text-xs font-bold px-2 py-0.5 rounded">FEATURED</span>
           )}
         </div>
         {/* Top-right: save + grade */}
@@ -765,7 +765,7 @@ function ListingCard({ listing, userId, initialSaved, jpyRate }: { listing: List
         )}
 
         {listing.source === 'au_stock' && listing.eta_date && (
-          <p className="text-xs text-forest-600 font-medium mt-1">
+          <p className="text-xs text-ocean font-medium mt-1">
             ETA ~{new Date(listing.eta_date).toLocaleDateString('en-AU', { month: 'short', year: 'numeric' })}
           </p>
         )}
@@ -776,7 +776,7 @@ function ListingCard({ listing, userId, initialSaved, jpyRate }: { listing: List
         )}
 
         <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-          <span className="font-display text-forest-700 text-base font-semibold">
+          <span className="text-ocean text-base font-semibold">
             {displayPrice}
             {isEstimate && priceCents && <span className="text-xs text-gray-400 font-normal ml-1">est.</span>}
           </span>

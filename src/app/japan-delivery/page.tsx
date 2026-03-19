@@ -4,7 +4,7 @@ export default function JapanDeliveryPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-3xl mx-auto px-4 py-16">
-        <h1 className="font-display text-4xl text-forest-900 mb-4">Japan Delivery</h1>
+        <h1 className="text-4xl text-charcoal mb-4">Japan Delivery</h1>
         <p className="text-gray-600 text-lg mb-8">
           Can't wait? We can deliver a van directly from Japan to your door — with all compliance and registration handled.
         </p>

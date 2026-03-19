@@ -43,20 +43,20 @@ export default function KumaqClient({ jpyApprox, content: initial }: { jpyApprox
           ← All Fit-Outs
         </Link>
         <div className="max-w-2xl">
-          <span className="inline-block bg-sand-400 text-forest-950 text-xs font-bold px-3 py-1 rounded-full mb-4 uppercase tracking-wide">
+          <span className="inline-block bg-sand text-charcoal text-xs font-bold px-3 py-1 rounded-full mb-4 uppercase tracking-wide">
             From $10,000 deposit to secure your build
           </span>
-          <h1 className="font-display text-5xl md:text-6xl text-white mb-3">The KUMAQ</h1>
-          <p className="text-sand-300 text-xl mb-8">The Ultimate Adventure Campervan</p>
+          <h1 className="text-5xl md:text-6xl text-white mb-3">The KUMAQ</h1>
+          <p className="text-sand text-xl mb-8">The Ultimate Adventure Campervan</p>
           <a href="tel:0432182892"
-            className="inline-block bg-sand-400 text-forest-950 font-semibold px-8 py-3.5 rounded-xl hover:bg-sand-300 transition-colors text-base">
+            className="inline-block bg-sand text-charcoal font-semibold px-8 py-3.5 rounded-xl hover:bg-sand transition-colors text-base">
             Book a Test Drive
           </a>
         </div>
       </FitoutHero>
 
       {/* Key features bar */}
-      <section className="bg-forest-900 text-white">
+      <section className="bg-charcoal text-white">
         <div className="max-w-6xl mx-auto px-4 py-6">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
             {[
@@ -89,10 +89,10 @@ export default function KumaqClient({ jpyApprox, content: initial }: { jpyApprox
 
       {/* Pricing */}
       <section className="max-w-6xl mx-auto px-4 py-12">
-        <div className="bg-forest-50 border border-forest-200 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-6">
+        <div className="bg-cream border border-ocean-light rounded-2xl p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-6">
           <div className="flex-1">
-            <p className="text-xs font-bold text-forest-600 uppercase tracking-wider mb-1">Fit-Out Price (fit-out only)</p>
-            <p className="font-display text-3xl text-forest-900">${FITOUT_AUD.toLocaleString('en-AU')} AUD</p>
+            <p className="text-xs font-bold text-ocean uppercase tracking-wider mb-1">Fit-Out Price (fit-out only)</p>
+            <p className="text-3xl text-charcoal">${FITOUT_AUD.toLocaleString('en-AU')} AUD</p>
             <p className="text-gray-500 text-sm mt-1">approx. ¥{jpyApprox.toLocaleString('en-AU')} JPY</p>
             <p className="text-xs text-gray-400 mt-3">
               Fit-out price is separate from the base van. Van price depends on the specific vehicle and exchange rate at time of purchase.
@@ -107,7 +107,7 @@ export default function KumaqClient({ jpyApprox, content: initial }: { jpyApprox
       {/* About */}
       <section className="max-w-6xl mx-auto px-4 py-16">
         <div className="max-w-3xl">
-          <h2 className="font-display text-3xl text-forest-900 mb-4">About the KUMAQ</h2>
+          <h2 className="text-3xl text-charcoal mb-4">About the KUMAQ</h2>
           <p className="text-gray-600 text-lg leading-relaxed">
             The KUMAQ is the ultimate vehicle for road trip adventures. With seating and sleeping for up to 4,
             this campervan has everything you need to hit the road in style and comfort. The versatile layout,
@@ -118,9 +118,9 @@ export default function KumaqClient({ jpyApprox, content: initial }: { jpyApprox
       </section>
 
       {/* Vehicle specs */}
-      <section className="bg-sand-50 py-16">
+      <section className="bg-cream py-16">
         <div className="max-w-6xl mx-auto px-4">
-          <h2 className="font-display text-3xl text-forest-900 mb-10">Vehicle Specifications</h2>
+          <h2 className="text-3xl text-charcoal mb-10">Vehicle Specifications</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {[
               { label: '4WD Diesel', value: '8–10 km/L' },
@@ -129,7 +129,7 @@ export default function KumaqClient({ jpyApprox, content: initial }: { jpyApprox
               { label: 'Wheelbase', value: 'Super Long' },
             ].map(s => (
               <div key={s.label} className="bg-white border border-gray-200 rounded-2xl p-6 text-center">
-                <p className="font-display text-3xl text-forest-700 mb-1">{s.value}</p>
+                <p className="text-3xl text-ocean mb-1">{s.value}</p>
                 <p className="text-sm text-gray-500">{s.label}</p>
               </div>
             ))}
@@ -140,7 +140,7 @@ export default function KumaqClient({ jpyApprox, content: initial }: { jpyApprox
 
       {/* Interior Features */}
       <section className="max-w-6xl mx-auto px-4 py-16">
-        <h2 className="font-display text-3xl text-forest-900 mb-2">Interior Features</h2>
+        <h2 className="text-3xl text-charcoal mb-2">Interior Features</h2>
         <p className="text-gray-500 mb-10">Built for serious adventure without sacrificing comfort.</p>
         <div className="grid sm:grid-cols-2 gap-6">
           {[
@@ -179,7 +179,7 @@ export default function KumaqClient({ jpyApprox, content: initial }: { jpyApprox
         <div className="max-w-6xl mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-12">
             <div>
-              <h2 className="font-display text-3xl text-forest-900 mb-6">Electrical System</h2>
+              <h2 className="text-3xl text-charcoal mb-6">Electrical System</h2>
               <ul className="space-y-2.5 text-sm text-gray-700">
                 {[
                   '240V system (two 100Ah lithium batteries)',
@@ -189,17 +189,17 @@ export default function KumaqClient({ jpyApprox, content: initial }: { jpyApprox
                   'Battery monitoring with fuse box and solar charge controller',
                 ].map(item => (
                   <li key={item} className="flex items-start gap-2.5">
-                    <span className="text-forest-600 shrink-0 mt-0.5">⚡</span>
+                    <span className="text-ocean shrink-0 mt-0.5">⚡</span>
                     {item}
                   </li>
                 ))}
               </ul>
-              <div className="mt-4 bg-sand-50 border border-sand-200 rounded-xl px-4 py-3 text-sm text-gray-700">
-                <span className="font-semibold text-forest-700">Optional:</span> Solar panels — $2,000 AUD
+              <div className="mt-4 bg-cream border border-sand rounded-xl px-4 py-3 text-sm text-gray-700">
+                <span className="font-semibold text-ocean">Optional:</span> Solar panels — $2,000 AUD
               </div>
             </div>
             <div>
-              <h2 className="font-display text-3xl text-forest-900 mb-6">Water System</h2>
+              <h2 className="text-3xl text-charcoal mb-6">Water System</h2>
               <ul className="space-y-2.5 text-sm text-gray-700">
                 {[
                   'Two 19L water tanks standard',
@@ -219,11 +219,11 @@ export default function KumaqClient({ jpyApprox, content: initial }: { jpyApprox
 
       {/* Optional Upgrades */}
       <section className="max-w-6xl mx-auto px-4 py-16">
-        <h2 className="font-display text-3xl text-forest-900 mb-8">Optional Upgrades</h2>
+        <h2 className="text-3xl text-charcoal mb-8">Optional Upgrades</h2>
         <div className="flex flex-wrap gap-3">
           {UPGRADES.map(u => (
             <span key={u.label}
-              className="bg-forest-50 border border-forest-200 text-forest-800 text-sm font-medium px-4 py-2 rounded-full">
+              className="bg-cream border border-ocean-light text-charcoal text-sm font-medium px-4 py-2 rounded-full">
               {u.label}{u.price ? ` — ${u.price}` : ''}
             </span>
           ))}
@@ -231,11 +231,11 @@ export default function KumaqClient({ jpyApprox, content: initial }: { jpyApprox
       </section>
 
       {/* Purchase section */}
-      <section className="bg-forest-950 text-white py-16 px-4">
+      <section className="bg-charcoal text-white py-16 px-4">
         <div className="max-w-4xl mx-auto">
           <div className="grid md:grid-cols-2 gap-10 items-center">
             <div>
-              <h2 className="font-display text-4xl text-white mb-6">Secure Your KUMAQ Build</h2>
+              <h2 className="text-4xl text-white mb-6">Secure Your KUMAQ Build</h2>
               <dl className="space-y-4">
                 {[
                   { label: 'Deposit to secure', value: '$10,000 AUD' },
@@ -252,8 +252,8 @@ export default function KumaqClient({ jpyApprox, content: initial }: { jpyApprox
             </div>
             <div className="bg-white/10 rounded-2xl p-8 text-center">
               <p className="text-white/70 text-sm mb-2">Ready to get started?</p>
-              <p className="font-display text-3xl text-white mb-6">$10,000 AUD secures your build slot</p>
-              <Link href="/quiz" className="block bg-sand-400 text-forest-950 font-semibold px-8 py-3.5 rounded-xl hover:bg-sand-300 transition-colors text-base mb-3">
+              <p className="text-3xl text-white mb-6">$10,000 AUD secures your build slot</p>
+              <Link href="/quiz" className="block bg-sand text-charcoal font-semibold px-8 py-3.5 rounded-xl hover:bg-sand transition-colors text-base mb-3">
                 Enquire About KUMAQ
               </Link>
               <a href="tel:0432182892" className="block border border-white/30 text-white font-semibold px-8 py-3.5 rounded-xl hover:bg-white/10 transition-colors text-base">
@@ -265,9 +265,9 @@ export default function KumaqClient({ jpyApprox, content: initial }: { jpyApprox
       </section>
 
       {/* Bottom CTA */}
-      <section className="bg-sand-50 border-t border-sand-200 py-16 px-4">
+      <section className="bg-cream border-t border-sand py-16 px-4">
         <div className="max-w-2xl mx-auto text-center">
-          <h2 className="font-display text-3xl text-forest-900 mb-3">Not sure which van is right for you?</h2>
+          <h2 className="text-3xl text-charcoal mb-3">Not sure which van is right for you?</h2>
           <p className="text-gray-600 mb-8">Take our quick quiz and we&apos;ll match you with the perfect build.</p>
           <Link href="/quiz" className="btn-primary text-base px-8 py-3 inline-block">
             Take the Van Quiz →

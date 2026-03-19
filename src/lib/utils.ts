@@ -88,7 +88,7 @@ export function sourceLabel(source: string): string {
 }
 
 export function sourceBadgeColor(source: string): string {
-  return { auction: 'bg-amber-500', dealer_carsensor: 'bg-blue-500', dealer_goonet: 'bg-blue-500', au_stock: 'bg-forest-600' }[source] ?? 'bg-gray-500'
+  return { auction: 'bg-amber-500', dealer_carsensor: 'bg-blue-500', dealer_goonet: 'bg-blue-500', au_stock: 'bg-ocean' }[source] ?? 'bg-gray-500'
 }
 
 // ---- Location-based status badges ----
@@ -112,7 +112,7 @@ export function fitOutLevelInfo(level: string | null | undefined): {
   const map: Record<string, { label: string; desc: string; cls: string }> = {
     empty:   { label: 'Empty Van',      desc: 'Standard cargo or passenger configuration',                                         cls: 'bg-gray-100 text-gray-600 border-gray-200' },
     partial: { label: 'Head Start',     desc: 'Existing mods — bed platform, lining, or basic cabinetry. Ready for Dream Drive fit-out.', cls: 'bg-blue-50 text-blue-700 border-blue-200' },
-    full:    { label: 'Full Campervan', desc: 'Fully converted camper — ready to travel',                                         cls: 'bg-forest-50 text-forest-700 border-forest-200' },
+    full:    { label: 'Full Campervan', desc: 'Fully converted camper — ready to travel',                                         cls: 'bg-cream text-ocean border-ocean-light' },
   }
   return map[level] ?? null
 }

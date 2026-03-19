@@ -121,7 +121,7 @@ export default function VehiclesForSaleClient({
               </Link>
               <button
                 onClick={() => { setTransferFor(transferFor === v.id ? null : v.id); setTransferTo(''); setTransferSearch('') }}
-                className="text-xs px-3 py-1.5 bg-forest-600 text-white rounded-lg hover:bg-forest-700"
+                className="text-xs px-3 py-1.5 bg-ocean text-white rounded-lg hover:bg-ocean"
               >
                 Transfer to Customer
               </button>
@@ -144,7 +144,7 @@ export default function VehiclesForSaleClient({
                   value={transferSearch}
                   onChange={e => { setTransferSearch(e.target.value); setTransferTo('') }}
                   placeholder="Search customers…"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ocean"
                 />
                 {transferSearch && (
                   <div className="max-h-32 overflow-y-auto border border-gray-200 rounded-lg bg-white">
@@ -158,7 +158,7 @@ export default function VehiclesForSaleClient({
                           <button
                             key={c.id}
                             onClick={() => { setTransferTo(c.id); setTransferSearch(name) }}
-                            className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 ${selected ? 'bg-forest-50 text-forest-700 font-medium' : ''}`}
+                            className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 ${selected ? 'bg-cream text-ocean font-medium' : ''}`}
                           >
                             {name}
                           </button>
@@ -171,7 +171,7 @@ export default function VehiclesForSaleClient({
                   <button
                     onClick={() => handleTransfer(v.id)}
                     disabled={!transferTo || transferring}
-                    className="text-xs px-4 py-2 bg-forest-600 text-white rounded-lg hover:bg-forest-700 disabled:opacity-50"
+                    className="text-xs px-4 py-2 bg-ocean text-white rounded-lg hover:bg-ocean disabled:opacity-50"
                   >
                     {transferring ? 'Transferring…' : 'Confirm Transfer'}
                   </button>

@@ -32,7 +32,7 @@ export default async function HomePage() {
       <AuctionBanner />
 
       {/* ─── 1. HERO ─────────────────────────────────────── */}
-      <section className="relative bg-forest-950 text-white overflow-hidden">
+      <section className="relative bg-charcoal text-white overflow-hidden">
         {hero_video_url ? (
           <>
             <video
@@ -48,14 +48,14 @@ export default async function HomePage() {
           <>
             <div className="absolute inset-0 opacity-20"
               style={{ backgroundImage: 'url(/hero-van.jpg)', backgroundSize: 'cover', backgroundPosition: 'center' }} />
-            <div className="absolute inset-0 bg-gradient-to-b from-forest-950/60 via-forest-950/40 to-forest-950" />
+            <div className="absolute inset-0 bg-gradient-to-b from-charcoal/60 via-charcoal/40 to-charcoal" />
           </>
         )}
 
         <div className="relative max-w-6xl mx-auto px-4 py-28 md:py-40" style={{ zIndex: 2 }}>
-          <p className="text-sand-400 text-sm font-semibold tracking-widest uppercase mb-4">Dream Drive Van Builder</p>
+          <p className="text-sand text-sm font-semibold tracking-widest uppercase mb-4">Bare Camper</p>
           <h1
-            className="font-display text-5xl md:text-7xl leading-tight mb-6 text-white"
+            className="text-5xl md:text-7xl leading-tight mb-6 text-white font-bold"
             style={hero_video_url ? { textShadow: '0 1px 3px rgba(0,0,0,0.5)' } : undefined}
           >
             Find it.<br />Build it.<br />Drive it.
@@ -81,7 +81,7 @@ export default async function HomePage() {
       {/* ─── 2. THREE PATHS ───────────────────────────────── */}
       <section className="max-w-6xl mx-auto px-4 py-20">
         <div className="text-center mb-12">
-          <h2 className="font-display text-4xl text-forest-900 mb-3">Three ways to van life</h2>
+          <h2 className="text-4xl text-charcoal mb-3 font-bold">Three ways to van life</h2>
           <p className="text-gray-500 max-w-lg mx-auto">Whether you want a turn-key camper, a premium fit-out on your own van, or a DIY project — we&apos;ve got the path for you.</p>
         </div>
         <div className="grid md:grid-cols-3 gap-8">
@@ -96,10 +96,10 @@ export default async function HomePage() {
                 {path.icon}
               </div>
               <div className="p-6 flex flex-col flex-1">
-                <span className="text-xs font-semibold tracking-widest text-sand-500 uppercase mb-2">{path.tag}</span>
-                <h3 className="font-display text-2xl text-forest-900 mb-2">{path.name}</h3>
+                <span className="text-xs font-semibold tracking-widest text-driftwood uppercase mb-2">{path.tag}</span>
+                <h3 className="text-2xl text-charcoal mb-2 font-bold">{path.name}</h3>
                 <p className="text-gray-500 text-sm leading-relaxed flex-1">{path.desc}</p>
-                <span className="mt-4 text-forest-600 font-semibold text-sm group-hover:underline">{path.cta} →</span>
+                <span className="mt-4 text-ocean font-semibold text-sm group-hover:underline">{path.cta} →</span>
               </div>
             </Link>
           ))}
@@ -108,14 +108,14 @@ export default async function HomePage() {
 
       {/* ─── 3. FEATURED VAN ──────────────────────────────── */}
       {featuredVan && (
-        <section className="bg-sand-50 py-16">
+        <section className="bg-cream py-16">
           <div className="max-w-6xl mx-auto px-4">
             <div className="flex items-center justify-between mb-8">
               <div>
-                <h2 className="font-display text-3xl text-forest-900">Featured Van</h2>
+                <h2 className="text-3xl text-charcoal font-bold">Featured Van</h2>
                 <p className="text-gray-500 mt-1">Hand-picked from our current stock</p>
               </div>
-              <Link href="/browse" className="text-forest-600 font-semibold hover:underline text-sm">
+              <Link href="/browse" className="text-ocean font-semibold hover:underline text-sm">
                 Browse all vans →
               </Link>
             </div>
@@ -127,17 +127,17 @@ export default async function HomePage() {
       {/* ─── 4. PRODUCT SHOWCASE ──────────────────────────── */}
       <section className="max-w-6xl mx-auto px-4 py-16">
         <div className="text-center mb-12">
-          <h2 className="font-display text-4xl text-forest-900 mb-3">Build Yours, Your Way</h2>
-          <p className="text-gray-500 max-w-xl mx-auto">Every product Dream Drive sells. Mix and match to your budget and adventure style.</p>
+          <h2 className="text-4xl text-charcoal mb-3 font-bold">Build Yours, Your Way</h2>
+          <p className="text-gray-500 max-w-xl mx-auto">Every product in our range. Mix and match to your budget and adventure style.</p>
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {PRODUCTS.map(p => (
             <div key={p.slug} className="border border-gray-200 rounded-2xl p-6 hover:shadow-md transition-shadow flex flex-col">
               <div className="text-3xl mb-3">{p.icon}</div>
-              <h3 className="font-display text-xl mb-2">{p.name}</h3>
+              <h3 className="text-xl mb-2 font-bold">{p.name}</h3>
               <p className="text-gray-500 text-sm leading-relaxed flex-1">{p.desc}</p>
               <div className="mt-4 pt-4 border-t border-gray-100">
-                <Link href={p.href} className="text-forest-600 font-semibold text-sm hover:underline">
+                <Link href={p.href} className="text-ocean font-semibold text-sm hover:underline">
                   More details →
                 </Link>
               </div>
@@ -152,13 +152,13 @@ export default async function HomePage() {
       </section>
 
       {/* ─── 5. HOW IT WORKS ──────────────────────────────── */}
-      <section className="bg-forest-950 text-white py-16">
+      <section className="bg-charcoal text-white py-16">
         <div className="max-w-6xl mx-auto px-4">
-          <h2 className="font-display text-4xl text-center mb-12">How It Works</h2>
+          <h2 className="text-4xl text-center mb-12 font-bold">How It Works</h2>
           <div className="grid md:grid-cols-4 gap-8">
             {STEPS.map((s, i) => (
               <div key={i}>
-                <div className="text-sand-400 font-display text-5xl mb-4">{i + 1}</div>
+                <div className="text-sand text-5xl mb-4 font-bold">{i + 1}</div>
                 <h3 className="font-semibold text-lg mb-2">{s.title}</h3>
                 <p className="text-gray-400 text-sm leading-relaxed">{s.desc}</p>
               </div>
@@ -173,7 +173,7 @@ export default async function HomePage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {TRUST.map(t => (
               <div key={t.label}>
-                <p className="font-display text-3xl text-forest-900 mb-1">{t.value}</p>
+                <p className="text-3xl text-charcoal mb-1 font-bold">{t.value}</p>
                 <p className="text-gray-500 text-sm">{t.label}</p>
               </div>
             ))}
@@ -182,9 +182,9 @@ export default async function HomePage() {
       </section>
 
       {/* ─── 7. CTA FOOTER ────────────────────────────────── */}
-      <section className="bg-forest-900 text-white py-20 text-center">
+      <section className="bg-charcoal text-white py-20 text-center">
         <div className="max-w-2xl mx-auto px-4">
-          <h2 className="font-display text-4xl md:text-5xl mb-4">Ready to start?</h2>
+          <h2 className="text-4xl md:text-5xl mb-4 font-bold">Ready to start?</h2>
           <p className="text-gray-300 text-lg mb-10 leading-relaxed">
             Browse available vans, build your dream configuration, or talk to us directly.
           </p>
@@ -194,15 +194,15 @@ export default async function HomePage() {
           </div>
           <p className="mt-10 text-gray-400 text-sm">
             Questions?{' '}
-            <a href="mailto:jared@dreamdrive.life" className="text-sand-400 hover:text-sand-300">jared@dreamdrive.life</a>
+            <a href="mailto:jared@dreamdrive.life" className="text-sand hover:text-sand-light">jared@dreamdrive.life</a>
             {' · '}
-            <a href="tel:0432182892" className="text-sand-400 hover:text-sand-300">0432 182 892</a>
+            <a href="tel:0432182892" className="text-sand hover:text-sand-light">0432 182 892</a>
           </p>
         </div>
       </section>
 
       <footer className="border-t border-gray-100 py-6 text-center text-gray-400 text-xs">
-        <p>Dream Drive (AU) • DIY RV Solutions (AU) • Japan Import Service</p>
+        <p>Bare Camper (AU) &middot; DIY RV Solutions (AU) &middot; Japan Import Service</p>
       </footer>
     </div>
   )
@@ -213,7 +213,7 @@ function FeaturedVanCard({ listing }: { listing: Listing }) {
   const photo = listing.photos[0] ?? null
   const isAuStock = listing.source === 'au_stock'
   const badge = isAuStock ? 'IN STOCK AU' : listing.source === 'auction' ? 'AUCTION' : 'DEALER'
-  const badgeColor = isAuStock ? 'bg-forest-600' : listing.source === 'auction' ? 'bg-amber-500' : 'bg-blue-600'
+  const badgeColor = isAuStock ? 'bg-ocean' : listing.source === 'auction' ? 'bg-amber-500' : 'bg-blue-600'
 
   return (
     <Link
@@ -230,11 +230,11 @@ function FeaturedVanCard({ listing }: { listing: Listing }) {
         <span className={`absolute top-3 left-3 ${badgeColor} text-white text-xs font-bold px-2 py-0.5 rounded`}>{badge}</span>
       </div>
       <div className="p-8 flex flex-col justify-center">
-        <h3 className="font-display text-3xl text-forest-900 mb-2">{listing.model_name}</h3>
+        <h3 className="text-3xl text-charcoal mb-2 font-bold">{listing.model_name}</h3>
         <p className="text-gray-500 mb-4">
           {listing.model_year} · {listing.mileage_km ? `${listing.mileage_km.toLocaleString()} km` : '—'} · {listing.drive ?? '—'}
         </p>
-        <p className="font-display text-forest-700 text-3xl mb-6">
+        <p className="text-ocean text-3xl mb-6 font-bold">
           {isAuStock && listing.au_price_aud
             ? centsToAud(listing.au_price_aud)
             : listing.aud_estimate

@@ -52,7 +52,7 @@ export default function SettingsEditor({ initial }: { initial: Setting[] }) {
   }
 
   const inputClass =
-    'w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-forest-600 focus:border-transparent bg-white font-mono'
+    'w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ocean focus:border-transparent bg-white font-mono'
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
@@ -61,7 +61,7 @@ export default function SettingsEditor({ initial }: { initial: Setting[] }) {
         return (
           <div
             key={s.key}
-            className={`px-5 py-4 ${i > 0 ? 'border-t border-gray-100' : ''} ${isEditing ? 'bg-forest-50' : i % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}
+            className={`px-5 py-4 ${i > 0 ? 'border-t border-gray-100' : ''} ${isEditing ? 'bg-cream' : i % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}
           >
             <div className="flex gap-4 items-start">
               {/* Key + label */}
@@ -92,7 +92,7 @@ export default function SettingsEditor({ initial }: { initial: Setting[] }) {
                       <button
                         onClick={() => handleSave(s.key)}
                         disabled={saving}
-                        className="text-xs px-3 py-1.5 bg-forest-600 text-white rounded-lg font-semibold hover:bg-forest-700 disabled:opacity-50"
+                        className="text-xs px-3 py-1.5 bg-ocean text-white rounded-lg font-semibold hover:bg-ocean disabled:opacity-50"
                       >
                         {saving ? 'Saving…' : 'Save'}
                       </button>
@@ -111,11 +111,11 @@ export default function SettingsEditor({ initial }: { initial: Setting[] }) {
                     </p>
                     <div className="flex items-center gap-2 shrink-0">
                       {savedKey === s.key && (
-                        <span className="text-xs text-forest-700 font-semibold">✓ Saved</span>
+                        <span className="text-xs text-ocean font-semibold">✓ Saved</span>
                       )}
                       <button
                         onClick={() => startEdit(s)}
-                        className="text-xs px-3 py-1.5 border border-forest-600 text-forest-700 rounded-lg font-semibold hover:bg-forest-50"
+                        className="text-xs px-3 py-1.5 border border-ocean text-ocean rounded-lg font-semibold hover:bg-cream"
                       >
                         Edit
                       </button>

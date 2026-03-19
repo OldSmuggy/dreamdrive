@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import Link from 'next/link'
 
-const inputCls = 'w-full px-3 py-2.5 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-forest-600 focus:border-transparent'
+const inputCls = 'w-full px-3 py-2.5 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-ocean focus:border-transparent'
 
 function LoginForm() {
   const searchParams = useSearchParams()
@@ -110,7 +110,7 @@ function LoginForm() {
           <div className="text-4xl mb-4">✓</div>
           <h2 className="text-xl font-bold text-gray-900 mb-2">{successMsg}</h2>
           <p className="text-gray-500 text-sm mb-4">Redirecting you now...</p>
-          <Link href={next} className="text-forest-600 text-sm hover:underline">Go to your account</Link>
+          <Link href={next} className="text-ocean text-sm hover:underline">Go to your account</Link>
         </div>
       </div>
     )
@@ -120,7 +120,7 @@ function LoginForm() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <Link href="/" className="font-display text-2xl text-forest-800 hover:text-forest-700">Dream Drive</Link>
+          <Link href="/" className="text-2xl text-charcoal hover:text-ocean">Dream Drive</Link>
           <p className="text-gray-500 text-sm mt-1">{tab === 'signin' ? 'Sign in to your account' : 'Create your account'}</p>
         </div>
 
@@ -183,10 +183,10 @@ function LoginForm() {
                   placeholder="••••••••" className={inputCls} />
               </div>
               <div className="text-right mb-5">
-                <Link href="/reset-password" className="text-xs text-forest-600 hover:underline">Forgot password?</Link>
+                <Link href="/reset-password" className="text-xs text-ocean hover:underline">Forgot password?</Link>
               </div>
               <button onClick={handleSignIn} disabled={loading || !email || !password}
-                className="w-full py-2.5 bg-forest-800 text-white font-semibold rounded-lg hover:bg-forest-700 disabled:opacity-50 text-sm">
+                className="w-full py-2.5 bg-charcoal text-white font-semibold rounded-lg hover:bg-ocean disabled:opacity-50 text-sm">
                 {loading ? 'Signing in…' : 'Sign in'}
               </button>
             </>
@@ -220,14 +220,14 @@ function LoginForm() {
               </div>
               <label className="flex items-start gap-2.5 cursor-pointer mb-5">
                 <input type="checkbox" checked={agreedTerms} onChange={e => setAgreedTerms(e.target.checked)}
-                  className="w-4 h-4 mt-0.5 accent-forest-600 shrink-0" />
+                  className="w-4 h-4 mt-0.5 accent-ocean shrink-0" />
                 <span className="text-sm text-gray-600">
                   I agree to the{' '}
-                  <Link href="/terms" className="text-forest-600 hover:underline">Terms &amp; Conditions</Link>
+                  <Link href="/terms" className="text-ocean hover:underline">Terms &amp; Conditions</Link>
                 </span>
               </label>
               <button onClick={handleSignUp} disabled={loading || !signupEmail || !signupPassword || !agreedTerms}
-                className="w-full py-2.5 bg-forest-800 text-white font-semibold rounded-lg hover:bg-forest-700 disabled:opacity-50 text-sm">
+                className="w-full py-2.5 bg-charcoal text-white font-semibold rounded-lg hover:bg-ocean disabled:opacity-50 text-sm">
                 {loading ? 'Creating account…' : 'Create Account'}
               </button>
             </>

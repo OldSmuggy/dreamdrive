@@ -136,17 +136,17 @@ export default async function ProductPage({ params }: { params: { slug: string }
     <div className="min-h-screen">
 
       {/* ---- Hero ---- */}
-      <section className="bg-forest-950 text-white">
+      <section className="bg-charcoal text-white">
         <div className="max-w-6xl mx-auto px-4 py-16 md:py-24">
           <div className="flex items-start gap-6">
             {extras?.icon && (
               <span className="text-5xl md:text-6xl leading-none mt-1">{extras.icon}</span>
             )}
             <div>
-              <span className="inline-block bg-forest-800 text-forest-300 text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded mb-4">
+              <span className="inline-block bg-charcoal text-ocean text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded mb-4">
                 {categoryLabel}
               </span>
-              <h1 className="font-display text-4xl md:text-5xl leading-tight mb-3">
+              <h1 className="text-4xl md:text-5xl leading-tight mb-3">
                 {product.name}
               </h1>
               {extras?.tagline && (
@@ -161,7 +161,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
       <section className="bg-white border-b border-gray-100 sticky top-16 z-10">
         <div className="max-w-6xl mx-auto px-4 py-5 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-baseline gap-3 flex-wrap">
-            <span className="font-display text-3xl text-forest-700">
+            <span className="text-3xl text-ocean">
               {price > 0 ? centsToAud(price) : 'Contact for price'}
             </span>
             {isSpecial && product.rrp_aud > 0 && price !== product.rrp_aud && (
@@ -191,7 +191,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
       <section className="max-w-6xl mx-auto px-4 py-14">
         <div className="grid md:grid-cols-2 gap-12 items-start">
           <div>
-            <h2 className="font-display text-3xl text-forest-900 mb-5">About this product</h2>
+            <h2 className="text-3xl text-charcoal mb-5">About this product</h2>
             <p className="text-gray-600 leading-relaxed text-lg">
               {product.description ?? 'Contact us for more information about this product.'}
             </p>
@@ -210,11 +210,11 @@ export default async function ProductPage({ params }: { params: { slug: string }
 
           {extras?.features && (
             <div>
-              <h2 className="font-display text-3xl text-forest-900 mb-5">What&apos;s included</h2>
+              <h2 className="text-3xl text-charcoal mb-5">What&apos;s included</h2>
               <ul className="space-y-3">
                 {extras.features.map(f => (
                   <li key={f} className="flex items-start gap-3">
-                    <span className="text-forest-500 font-bold mt-0.5 flex-shrink-0">✓</span>
+                    <span className="text-ocean font-bold mt-0.5 flex-shrink-0">✓</span>
                     <span className="text-gray-700">{f}</span>
                   </li>
                 ))}
@@ -225,9 +225,9 @@ export default async function ProductPage({ params }: { params: { slug: string }
       </section>
 
       {/* ---- CTA section ---- */}
-      <section className="bg-sand-50 py-14">
+      <section className="bg-cream py-14">
         <div className="max-w-2xl mx-auto px-4 text-center">
-          <h2 className="font-display text-3xl text-forest-900 mb-3">Ready to build?</h2>
+          <h2 className="text-3xl text-charcoal mb-3">Ready to build?</h2>
           <p className="text-gray-500 mb-8 leading-relaxed">
             Add this to your van build, combine with electrical and a pop top, then book a free
             consultation call to confirm everything.
@@ -245,11 +245,11 @@ export default async function ProductPage({ params }: { params: { slug: string }
 
       {/* ---- Footer ---- */}
       <footer className="border-t border-gray-100 py-8 text-center text-gray-400 text-sm">
-        <p>Dream Drive (AU) • DIY RV Solutions (AU) • Japan Import Service</p>
+        <p>Bare Camper (AU) • DIY RV Solutions (AU) • Japan Import Service</p>
         <p className="mt-1">
-          <a href="mailto:jared@dreamdrive.life" className="hover:text-forest-600">jared@dreamdrive.life</a>
+          <a href="mailto:jared@dreamdrive.life" className="hover:text-ocean">jared@dreamdrive.life</a>
           {' · '}
-          <a href="tel:0432182892" className="hover:text-forest-600">0432 182 892</a>
+          <a href="tel:0432182892" className="hover:text-ocean">0432 182 892</a>
         </p>
       </footer>
 

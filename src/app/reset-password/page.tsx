@@ -40,7 +40,7 @@ function ResetForm() {
               <div className="text-4xl mb-3">📬</div>
               <p className="font-semibold text-gray-900 mb-1">Check your inbox</p>
               <p className="text-gray-500 text-sm mb-6">We've sent a reset link to <strong>{email}</strong></p>
-              <Link href="/login" className="text-forest-600 text-sm hover:underline">Back to sign in</Link>
+              <Link href="/login" className="text-ocean text-sm hover:underline">Back to sign in</Link>
             </div>
           ) : (
             <>
@@ -53,18 +53,18 @@ function ResetForm() {
                   onChange={e => setEmail(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleReset()}
                   placeholder="you@example.com"
-                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-forest-600"
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-ocean"
                   autoFocus
                 />
               </div>
               <button
                 onClick={handleReset}
                 disabled={loading || !email}
-                className="w-full py-2.5 bg-forest-800 text-white font-semibold rounded-lg hover:bg-forest-700 disabled:opacity-50 text-sm mb-4"
+                className="w-full py-2.5 bg-charcoal text-white font-semibold rounded-lg hover:bg-ocean disabled:opacity-50 text-sm mb-4"
               >
                 {loading ? 'Sending…' : 'Send Reset Link'}
               </button>
-              <Link href="/login" className="block text-center text-forest-600 text-sm hover:underline">Back to sign in</Link>
+              <Link href="/login" className="block text-center text-ocean text-sm hover:underline">Back to sign in</Link>
             </>
           )}
         </div>

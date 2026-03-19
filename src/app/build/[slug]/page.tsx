@@ -11,11 +11,11 @@ interface Props {
 
 export async function generateMetadata({ params }: Props) {
   return {
-    title: `Build #${params.slug} | Dream Drive`,
-    description: 'View this custom campervan build from Dream Drive. Configure your own or enquire about this one.',
+    title: `Build #${params.slug} | Bare Camper`,
+    description: 'View this custom campervan build from Bare Camper. Configure your own or enquire about this one.',
     openGraph: {
-      title: `Custom Campervan Build | Dream Drive`,
-      description: 'A custom campervan build from Dream Drive. Browse, configure, or get in touch.',
+      title: `Custom Campervan Build | Bare Camper`,
+      description: 'A custom campervan build from Bare Camper. Browse, configure, or get in touch.',
     },
   }
 }
@@ -50,9 +50,9 @@ export default async function BuildSharePage({ params }: Props) {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header bar */}
-      <div className="bg-forest-950 text-white py-4 px-6">
+      <div className="bg-charcoal text-white py-4 px-6">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <Link href="/" className="font-display text-xl text-white">Dream Drive</Link>
+          <Link href="/" className="text-xl text-white">Dream Drive</Link>
           <Link href="/configurator" className="btn-ghost btn-sm text-sm">
             Build One Like This →
           </Link>
@@ -62,7 +62,7 @@ export default async function BuildSharePage({ params }: Props) {
       <div className="max-w-4xl mx-auto px-4 py-10">
         <div className="mb-6">
           <p className="text-gray-500 text-sm mb-1">Shared Build</p>
-          <h1 className="font-display text-3xl text-forest-900">Custom Campervan Build</h1>
+          <h1 className="text-3xl text-charcoal">Custom Campervan Build</h1>
           <p className="text-gray-400 text-xs mt-1">
             Created {new Date(build.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })}
           </p>
@@ -126,7 +126,7 @@ export default async function BuildSharePage({ params }: Props) {
             )}
 
             {/* Notice */}
-            <div className="bg-forest-50 border border-forest-200 rounded-xl px-4 py-3 text-sm text-forest-800">
+            <div className="bg-cream border border-ocean-light rounded-xl px-4 py-3 text-sm text-charcoal">
               This is a shared build configuration. Prices are indicative — confirmed at consultation.
             </div>
           </div>
@@ -136,14 +136,14 @@ export default async function BuildSharePage({ params }: Props) {
 
             {/* Price card */}
             <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-              <div className="bg-forest-950 text-white px-5 py-4">
-                <h3 className="font-display text-xl">Estimated Price</h3>
+              <div className="bg-charcoal text-white px-5 py-4">
+                <h3 className="text-xl">Estimated Price</h3>
                 <p className="text-white/60 text-xs mt-0.5">Confirmed at consultation</p>
               </div>
               <div className="px-5 py-5">
                 {total > 0 ? (
                   <>
-                    <p className="font-display text-4xl text-forest-700">{centsToAud(total)}</p>
+                    <p className="text-4xl text-ocean">{centsToAud(total)}</p>
                     <p className="text-xs text-gray-400 mt-1">
                       {isTamaMana ? 'Van + full conversion included.' : 'Estimate. Van price based on current exchange rates.'}
                       {' '}All prices AUD incl. GST.

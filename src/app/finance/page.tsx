@@ -3,7 +3,7 @@ import FinanceCalculator from './FinanceCalculator'
 import LeadForm from './LeadForm'
 
 export const metadata: Metadata = {
-  title: 'Finance | Dream Drive',
+  title: 'Finance | Bare Camper',
   description:
     'Finance your Toyota Hiace van and fit-out in one loan. We compare 40+ Australian lenders for personal loans and chattel mortgages.',
 }
@@ -65,10 +65,10 @@ export default function FinancePage() {
     <div className="min-h-screen">
 
       {/* ---- Hero ---- */}
-      <section style={{ backgroundColor: '#1a3a2a' }} className="text-white">
+      <section style={{ backgroundColor: '#2C2C2A' }} className="text-white">
         <div className="max-w-6xl mx-auto px-4 py-20 md:py-32">
-          <p className="text-sand-400 text-sm font-semibold tracking-widest uppercase mb-4">Dream Drive Finance</p>
-          <h1 className="font-display text-4xl md:text-6xl leading-tight mb-6 max-w-3xl">
+          <p className="text-sand text-sm font-semibold tracking-widest uppercase mb-4">Bare Camper Finance</p>
+          <h1 className="text-4xl md:text-6xl leading-tight mb-6 max-w-3xl">
             Finance your van + fit-out in one loan
           </h1>
           <p className="text-gray-300 text-lg max-w-xl mb-10 leading-relaxed">
@@ -87,7 +87,7 @@ export default function FinancePage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {STATS.map(stat => (
               <div key={stat.value}>
-                <p className="font-display text-2xl md:text-3xl text-forest-700 leading-snug mb-1">
+                <p className="text-2xl md:text-3xl text-ocean leading-snug mb-1">
                   {stat.value}
                 </p>
                 <p className="text-sm text-gray-500">{stat.label}</p>
@@ -101,13 +101,13 @@ export default function FinancePage() {
       <FinanceCalculator />
 
       {/* ---- How it works ---- */}
-      <section className="bg-forest-950 text-white py-16">
+      <section className="bg-charcoal text-white py-16">
         <div className="max-w-6xl mx-auto px-4">
-          <h2 className="font-display text-4xl text-center mb-12">How It Works</h2>
+          <h2 className="text-4xl text-center mb-12">How It Works</h2>
           <div className="grid md:grid-cols-3 gap-10">
             {HOW_IT_WORKS.map(step => (
               <div key={step.step}>
-                <div className="text-sand-400 font-display text-5xl mb-4">{step.step}</div>
+                <div className="text-sand text-5xl mb-4">{step.step}</div>
                 <h3 className="font-semibold text-lg mb-2">{step.title}</h3>
                 <p className="text-gray-400 text-sm leading-relaxed">{step.desc}</p>
               </div>
@@ -119,9 +119,9 @@ export default function FinancePage() {
       {/* ---- Finance option cards ---- */}
       <section className="max-w-6xl mx-auto px-4 py-16">
         <div className="text-center mb-10">
-          <h2 className="font-display text-4xl text-forest-900 mb-3">Finance Options</h2>
+          <h2 className="text-4xl text-charcoal mb-3">Finance Options</h2>
           <p className="text-gray-500 max-w-xl mx-auto">
-            Two products suit most Dream Drive buyers. Our team recommends the right fit for your situation.
+            Two products suit most Bare Camper buyers. Our team recommends the right fit for your situation.
           </p>
         </div>
         <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
@@ -133,16 +133,16 @@ export default function FinancePage() {
               <div className="flex items-start gap-4 mb-5">
                 <span className="text-4xl leading-none">{option.icon}</span>
                 <div>
-                  <span className="inline-block bg-forest-100 text-forest-700 text-xs font-semibold px-2.5 py-0.5 rounded mb-1.5">
+                  <span className="inline-block bg-cream text-ocean text-xs font-semibold px-2.5 py-0.5 rounded mb-1.5">
                     {option.badge}
                   </span>
-                  <h3 className="font-display text-2xl text-forest-900">{option.title}</h3>
+                  <h3 className="text-2xl text-charcoal">{option.title}</h3>
                 </div>
               </div>
               <ul className="space-y-2.5">
                 {option.features.map(f => (
                   <li key={f} className="flex items-start gap-2.5 text-sm text-gray-600">
-                    <span className="text-forest-500 mt-px flex-shrink-0 font-bold">✓</span>
+                    <span className="text-ocean mt-px flex-shrink-0 font-bold">✓</span>
                     {f}
                   </li>
                 ))}
@@ -153,10 +153,10 @@ export default function FinancePage() {
       </section>
 
       {/* ---- Lead capture form (client component) ---- */}
-      <section id="get-finance" className="bg-sand-50 py-16">
+      <section id="get-finance" className="bg-cream py-16">
         <div className="max-w-2xl mx-auto px-4">
           <div className="text-center mb-10">
-            <h2 className="font-display text-4xl text-forest-900 mb-3">Get Finance Options</h2>
+            <h2 className="text-4xl text-charcoal mb-3">Get Finance Options</h2>
             <p className="text-gray-500">
               No credit check. No commitment. Tailored options within 24 hours.
             </p>
@@ -171,9 +171,9 @@ export default function FinancePage() {
       <footer className="border-t border-gray-100 py-8 text-center text-gray-400 text-sm">
         <p>Dream Drive (AU) • DIY RV Solutions (AU) • Japan Import Service</p>
         <p className="mt-1">
-          <a href="mailto:jared@dreamdrive.life" className="hover:text-forest-600">jared@dreamdrive.life</a>
+          <a href="mailto:jared@dreamdrive.life" className="hover:text-ocean">jared@dreamdrive.life</a>
           {' · '}
-          <a href="tel:0432182892" className="hover:text-forest-600">0432 182 892</a>
+          <a href="tel:0432182892" className="hover:text-ocean">0432 182 892</a>
         </p>
       </footer>
 

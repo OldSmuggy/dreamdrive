@@ -148,7 +148,7 @@ export default function CustomersClient({ customers: initial }: { customers: Cus
               onClick={() => { setTab(t); setSelected(new Set()) }}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-colors ${
                 tab === t
-                  ? 'bg-forest-600 text-white'
+                  ? 'bg-ocean text-white'
                   : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
               }`}
             >
@@ -165,14 +165,14 @@ export default function CustomersClient({ customers: initial }: { customers: Cus
           placeholder="Search by name, email or phone…"
           value={q}
           onChange={e => setQ(e.target.value)}
-          className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-forest-500"
+          className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ocean"
         />
       </div>
 
       {/* Batch action bar */}
       {hasSelection && (
-        <div className="flex items-center gap-2 mb-3 bg-forest-50 border border-forest-200 rounded-xl px-4 py-2.5">
-          <span className="text-xs font-semibold text-forest-700">{selected.size} selected</span>
+        <div className="flex items-center gap-2 mb-3 bg-cream border border-ocean-light rounded-xl px-4 py-2.5">
+          <span className="text-xs font-semibold text-ocean">{selected.size} selected</span>
           <div className="flex-1" />
           {tab !== 'archived' && (
             <button onClick={() => batchAction('archive')} disabled={acting} className="text-xs px-3 py-1.5 border border-gray-300 rounded-lg text-gray-600 hover:bg-white disabled:opacity-50">
@@ -213,7 +213,7 @@ export default function CustomersClient({ customers: initial }: { customers: Cus
               type="checkbox"
               checked={selected.size === filtered.length && filtered.length > 0}
               onChange={toggleAll}
-              className="w-3.5 h-3.5 text-forest-600 rounded border-gray-300"
+              className="w-3.5 h-3.5 text-ocean rounded border-gray-300"
             />
             Select all ({filtered.length})
           </label>
@@ -230,7 +230,7 @@ export default function CustomersClient({ customers: initial }: { customers: Cus
             <div
               key={c.id}
               className={`flex items-center gap-3 bg-white border rounded-xl px-4 py-3 transition-all ${
-                isSelected ? 'border-forest-400 bg-forest-50/30 shadow-sm' : 'border-gray-200 hover:shadow-sm hover:border-gray-300'
+                isSelected ? 'border-ocean bg-cream/30 shadow-sm' : 'border-gray-200 hover:shadow-sm hover:border-gray-300'
               }`}
             >
               <input
@@ -238,13 +238,13 @@ export default function CustomersClient({ customers: initial }: { customers: Cus
                 checked={isSelected}
                 onChange={() => toggleSelect(c.id)}
                 onClick={e => e.stopPropagation()}
-                className="w-4 h-4 text-forest-600 rounded border-gray-300 shrink-0 cursor-pointer"
+                className="w-4 h-4 text-ocean rounded border-gray-300 shrink-0 cursor-pointer"
               />
               <Link
                 href={`/admin/customers/${c.id}`}
                 className="flex items-center gap-4 flex-1 min-w-0"
               >
-                <div className="w-10 h-10 rounded-full bg-forest-100 text-forest-700 flex items-center justify-center text-sm font-semibold shrink-0">
+                <div className="w-10 h-10 rounded-full bg-cream text-ocean flex items-center justify-center text-sm font-semibold shrink-0">
                   {(c.first_name[0] ?? '?').toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">

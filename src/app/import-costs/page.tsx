@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import ImportCalculator from './ImportCalculator'
 
 export const metadata: Metadata = {
-  title: 'Import Costs | Dream Drive',
+  title: 'Import Costs | Bare Camper',
   description: 'Understand the true cost of importing a Toyota Hiace H200 from Japan to Australia — shipping, duty, compliance and registration explained.',
 }
 
@@ -64,16 +64,16 @@ export default function ImportCostsPage() {
           <span className="text-base shrink-0">⚠️</span>
           <p>
             <strong>All costs shown are estimates and subject to change.</strong>{' '}
-            Final pricing is confirmed at your free consultation call with the Dream Drive team.
+            Final pricing is confirmed at your free consultation call with the Bare Camper team.
           </p>
         </div>
       </div>
 
       {/* ---- Hero ---- */}
-      <section className="bg-forest-950 text-white">
+      <section className="bg-charcoal text-white">
         <div className="max-w-5xl mx-auto px-4 py-16 md:py-24">
-          <p className="text-sand-400 text-sm font-semibold tracking-widest uppercase mb-4">Import Cost Guide</p>
-          <h1 className="font-display text-4xl md:text-6xl leading-tight mb-5">
+          <p className="text-sand text-sm font-semibold tracking-widest uppercase mb-4">Import Cost Guide</p>
+          <h1 className="text-4xl md:text-6xl leading-tight mb-5">
             What Does It Cost to Import a Hiace?
           </h1>
           <p className="text-gray-300 text-lg max-w-2xl leading-relaxed">
@@ -84,7 +84,7 @@ export default function ImportCostsPage() {
 
       {/* ---- What's included ---- */}
       <section className="max-w-5xl mx-auto px-4 py-14">
-        <h2 className="font-display text-3xl text-forest-900 mb-2">What&apos;s Included</h2>
+        <h2 className="text-3xl text-charcoal mb-2">What&apos;s Included</h2>
         <p className="text-gray-500 mb-8">
           Vehicle inspection is included in the sourcing fee — you don&apos;t pay it separately.
         </p>
@@ -99,9 +99,9 @@ export default function ImportCostsPage() {
       </section>
 
       {/* ---- Calculator ---- */}
-      <section className="bg-sand-50 py-14">
+      <section className="bg-cream py-14">
         <div className="max-w-5xl mx-auto px-4">
-          <h2 className="font-display text-3xl text-forest-900 mb-2">Cost Calculator</h2>
+          <h2 className="text-3xl text-charcoal mb-2">Cost Calculator</h2>
           <p className="text-gray-500 mb-8">
             Adjust the sliders to estimate your total landed cost. Fit-out costs are separate — see the table below.
           </p>
@@ -111,7 +111,7 @@ export default function ImportCostsPage() {
 
       {/* ---- Fit-out comparison ---- */}
       <section className="max-w-5xl mx-auto px-4 py-14">
-        <h2 className="font-display text-3xl text-forest-900 mb-2">Add a Fit-Out</h2>
+        <h2 className="text-3xl text-charcoal mb-2">Add a Fit-Out</h2>
         <p className="text-gray-500 mb-8 max-w-2xl">
           Import costs get you the van — fit-outs make it a home. All installations are done at our Brisbane workshop. Prices are indicative ranges; exact pricing at consultation.
         </p>
@@ -119,11 +119,11 @@ export default function ImportCostsPage() {
           {FITOUTS.map(f => (
             <div key={f.name} className="bg-white border border-gray-200 rounded-2xl p-6 flex flex-col">
               <div className="text-3xl mb-3">{f.icon}</div>
-              <h3 className="font-display text-xl text-forest-900 mb-1">{f.name}</h3>
+              <h3 className="text-xl text-charcoal mb-1">{f.name}</h3>
               <p className="text-sm text-gray-500 leading-relaxed flex-1">{f.desc}</p>
               <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
-                <span className="font-display text-forest-700 text-lg">{f.range}</span>
-                <Link href={f.href} className="text-forest-600 font-semibold text-sm hover:underline">
+                <span className="text-ocean text-lg">{f.range}</span>
+                <Link href={f.href} className="text-ocean font-semibold text-sm hover:underline">
                   Details →
                 </Link>
               </div>
@@ -132,8 +132,8 @@ export default function ImportCostsPage() {
         </div>
 
         {/* CTA */}
-        <div className="bg-forest-950 text-white rounded-2xl p-8 text-center">
-          <h3 className="font-display text-3xl mb-3">Ready to get an exact quote?</h3>
+        <div className="bg-charcoal text-white rounded-2xl p-8 text-center">
+          <h3 className="text-3xl mb-3">Ready to get an exact quote?</h3>
           <p className="text-gray-300 mb-6 max-w-lg mx-auto">
             Book a free 30-minute call and we&apos;ll walk through the full landed cost for the exact van and build you have in mind.
           </p>
@@ -152,9 +152,9 @@ export default function ImportCostsPage() {
       <footer className="border-t border-gray-100 py-8 text-center text-gray-400 text-sm">
         <p>Dream Drive (AU) • DIY RV Solutions (AU) • Japan Import Service</p>
         <p className="mt-1">
-          <a href="mailto:jared@dreamdrive.life" className="hover:text-forest-600">jared@dreamdrive.life</a>
+          <a href="mailto:jared@dreamdrive.life" className="hover:text-ocean">jared@dreamdrive.life</a>
           {' · '}
-          <a href="tel:0432182892" className="hover:text-forest-600">0432 182 892</a>
+          <a href="tel:0432182892" className="hover:text-ocean">0432 182 892</a>
         </p>
       </footer>
     </div>

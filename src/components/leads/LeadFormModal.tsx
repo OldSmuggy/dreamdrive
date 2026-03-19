@@ -93,10 +93,10 @@ export default function LeadFormModal({
         >
           <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
             {/* Header */}
-            <div className="bg-forest-950 text-white px-6 py-5">
+            <div className="bg-charcoal text-white px-6 py-5">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h3 className="font-display text-2xl mb-1">{modalTitle}</h3>
+                  <h3 className="text-2xl mb-1">{modalTitle}</h3>
                   <p className="text-white/70 text-sm leading-relaxed">{modalSubtitle}</p>
                 </div>
                 <button
@@ -163,7 +163,7 @@ export default function LeadFormModal({
 
                   <p className="text-xs text-center text-gray-400">
                     Or email directly:{' '}
-                    <a href="mailto:jared@dreamdrive.life" className="text-forest-600 hover:underline">
+                    <a href="mailto:jared@dreamdrive.life" className="text-ocean hover:underline">
                       jared@dreamdrive.life
                     </a>
                   </p>
@@ -171,7 +171,7 @@ export default function LeadFormModal({
               ) : (
                 <div className="text-center py-8">
                   <div className="text-5xl mb-4">✅</div>
-                  <h4 className="font-display text-2xl text-forest-900 mb-2">
+                  <h4 className="text-2xl text-charcoal mb-2">
                     Thanks{name ? `, ${name}` : ''}!
                   </h4>
                   <p className="text-gray-500 text-sm leading-relaxed">
@@ -179,7 +179,7 @@ export default function LeadFormModal({
                   </p>
                   <button
                     onClick={handleClose}
-                    className="mt-6 text-forest-600 font-semibold text-sm hover:underline"
+                    className="mt-6 text-ocean font-semibold text-sm hover:underline"
                   >
                     Close
                   </button>

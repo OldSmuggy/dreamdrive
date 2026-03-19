@@ -45,7 +45,7 @@ function toDraftState(l: Listing): DraftState {
 }
 
 const inputClass =
-  'w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-forest-600 bg-white'
+  'w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ocean bg-white'
 
 function upgradeImageUrl(url: string): string {
   try {
@@ -218,7 +218,7 @@ export default function DraftEditor({ initial }: { initial: Listing[] }) {
             type="checkbox"
             checked={allSelected}
             onChange={toggleAll}
-            className="w-4 h-4 accent-forest-600"
+            className="w-4 h-4 accent-ocean"
           />
           <span className="text-sm text-gray-600">
             {selected.size > 0 ? `${selected.size} selected` : 'Select all'}
@@ -231,7 +231,7 @@ export default function DraftEditor({ initial }: { initial: Listing[] }) {
             <button
               onClick={bulkApprove}
               disabled={bulkWorking}
-              className="text-sm font-semibold px-3 py-1.5 rounded-lg bg-forest-600 text-white hover:bg-forest-700 disabled:opacity-50"
+              className="text-sm font-semibold px-3 py-1.5 rounded-lg bg-ocean text-white hover:bg-ocean disabled:opacity-50"
             >
               {bulkWorking ? 'Working\u2026' : `\u2713 Approve & Publish (${selected.size})`}
             </button>
@@ -258,7 +258,7 @@ export default function DraftEditor({ initial }: { initial: Listing[] }) {
         return (
           <div
             key={l.id}
-            className={`bg-white border rounded-xl overflow-hidden ${isEditing ? 'border-forest-300 shadow-md' : isSelected ? 'border-forest-300' : 'border-gray-200'}`}
+            className={`bg-white border rounded-xl overflow-hidden ${isEditing ? 'border-ocean shadow-md' : isSelected ? 'border-ocean' : 'border-gray-200'}`}
           >
             {/* Header */}
             <div className="p-5 flex gap-3 items-start">
@@ -266,7 +266,7 @@ export default function DraftEditor({ initial }: { initial: Listing[] }) {
                 type="checkbox"
                 checked={isSelected}
                 onChange={() => toggleOne(l.id)}
-                className="w-4 h-4 mt-1 accent-forest-600 shrink-0"
+                className="w-4 h-4 mt-1 accent-ocean shrink-0"
               />
 
               {l.photos?.[0] && (
@@ -279,7 +279,7 @@ export default function DraftEditor({ initial }: { initial: Listing[] }) {
                   <span className="text-xs bg-amber-100 text-amber-700 font-semibold px-2 py-0.5 rounded">DRAFT</span>
                   {pdfUrl && (
                     <a href={pdfUrl} target="_blank" rel="noopener noreferrer"
-                      className="text-xs text-forest-600 hover:underline font-medium">
+                      className="text-xs text-ocean hover:underline font-medium">
                       View PDF
                     </a>
                   )}
@@ -315,7 +315,7 @@ export default function DraftEditor({ initial }: { initial: Listing[] }) {
                     className={`text-sm font-semibold px-3 py-1.5 rounded-lg border ${
                       isEditing
                         ? 'border-gray-300 text-gray-600 hover:bg-gray-50'
-                        : 'border-forest-600 text-forest-700 hover:bg-forest-50'
+                        : 'border-ocean text-ocean hover:bg-cream'
                     }`}
                   >
                     {isEditing ? 'Cancel' : 'Edit'}
@@ -339,7 +339,7 @@ export default function DraftEditor({ initial }: { initial: Listing[] }) {
 
             {/* Edit form with side-by-side PDF viewer */}
             {isEditing && draft && (
-              <div className="border-t border-forest-100 bg-gray-50 p-5">
+              <div className="border-t border-cream bg-gray-50 p-5">
                 <div className="grid lg:grid-cols-2 gap-6">
 
                   {/* Left: PDF Viewer */}
@@ -349,7 +349,7 @@ export default function DraftEditor({ initial }: { initial: Listing[] }) {
                         <div className="flex items-center justify-between mb-2">
                           <p className="text-xs font-semibold text-gray-600">Auction Sheet</p>
                           <a href={pdfUrl} target="_blank" rel="noopener noreferrer"
-                            className="text-xs text-forest-600 hover:underline">
+                            className="text-xs text-ocean hover:underline">
                             Open in new tab
                           </a>
                         </div>
@@ -493,7 +493,7 @@ export default function DraftEditor({ initial }: { initial: Listing[] }) {
                               className="absolute top-0.5 right-0.5 w-5 h-5 bg-red-600 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                             >\u2715</button>
                             {i === 0 && (
-                              <span className="absolute bottom-0.5 left-0.5 bg-forest-600 text-white text-[9px] font-bold px-1 rounded">COVER</span>
+                              <span className="absolute bottom-0.5 left-0.5 bg-ocean text-white text-[9px] font-bold px-1 rounded">COVER</span>
                             )}
                           </div>
                         ))}
@@ -506,7 +506,7 @@ export default function DraftEditor({ initial }: { initial: Listing[] }) {
                           placeholder="Paste image URL"
                           className={`${inputClass} flex-1`}
                         />
-                        <button onClick={addPhoto} className="px-3 py-2 bg-forest-600 text-white text-sm rounded-lg hover:bg-forest-700 shrink-0">
+                        <button onClick={addPhoto} className="px-3 py-2 bg-ocean text-white text-sm rounded-lg hover:bg-ocean shrink-0">
                           Add
                         </button>
                         <PhotoUploadButton onUploaded={url => setDraft(s => s ? { ...s, photos: [...s.photos, url] } : s)} />

@@ -74,10 +74,10 @@ export default function QuizPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
         <div className="max-w-lg w-full bg-white rounded-3xl shadow-lg p-8 text-center">
           <div className="text-5xl mb-4">🎉</div>
-          <h2 className="font-display text-3xl text-forest-900 mb-2">Your Dream Build</h2>
+          <h2 className="text-3xl text-charcoal mb-2">Your Dream Build</h2>
           <p className="text-gray-500 mb-6">Based on your answers, here's what we'd recommend:</p>
 
-          <div className="bg-forest-50 rounded-2xl p-5 mb-6 text-left space-y-3">
+          <div className="bg-cream rounded-2xl p-5 mb-6 text-left space-y-3">
             <Rec label="Fit-Out" value={rec.fitout === 'MANA' ? 'MANA — liveable 2-person adventure build' : 'TAMA — 6-seat family-friendly conversion'} />
             {rec.poptop && <Rec label="Roof" value="Pop Top conversion — adds 600mm height" />}
             <Rec label="Drive" value={rec.drive} />
@@ -101,21 +101,21 @@ export default function QuizPage() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="max-w-lg w-full">
         <div className="mb-8 text-center">
-          <h1 className="font-display text-3xl text-forest-900 mb-1">Van Match Quiz</h1>
+          <h1 className="text-3xl text-charcoal mb-1">Van Match Quiz</h1>
           <p className="text-gray-500 text-sm">2–3 minutes • {QUESTIONS.length - current} questions left</p>
         </div>
 
         {/* Progress bar */}
         <div className="h-1.5 bg-gray-200 rounded-full mb-8">
-          <div className="h-full bg-forest-500 rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
+          <div className="h-full bg-ocean rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
         </div>
 
         <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-8">
-          <p className="font-display text-2xl text-gray-900 mb-6">{q.q}</p>
+          <p className="text-2xl text-gray-900 mb-6">{q.q}</p>
           <div className="space-y-3">
             {q.options.map(opt => (
               <button key={opt} onClick={() => answer(opt)}
-                className="w-full text-left px-5 py-4 rounded-xl border-2 border-gray-200 hover:border-forest-500 hover:bg-forest-50 transition-colors font-medium text-gray-800">
+                className="w-full text-left px-5 py-4 rounded-xl border-2 border-gray-200 hover:border-ocean hover:bg-cream transition-colors font-medium text-gray-800">
                 {opt}
               </button>
             ))}
@@ -136,7 +136,7 @@ function Rec({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex gap-3">
       <span className="text-gray-500 text-sm w-20 shrink-0">{label}</span>
-      <span className="text-forest-800 text-sm font-semibold">{value}</span>
+      <span className="text-charcoal text-sm font-semibold">{value}</span>
     </div>
   )
 }

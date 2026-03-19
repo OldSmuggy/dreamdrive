@@ -48,8 +48,8 @@ export default function FitOutsClient({ content: initial }: { content: Record<st
       {/* Hero */}
       <FitoutHero fallbackImage={content.hero_image || STATIC_HERO} heroImage={content.hero_image} heroVideo={content.hero_video}>
         <div className="max-w-3xl mx-auto text-center">
-          <p className="text-sand-400 text-sm font-semibold uppercase tracking-widest mb-3">Dream Drive</p>
-          <h1 className="font-display text-5xl md:text-6xl text-white mb-5">Dream Drive Fit-Out Range</h1>
+          <p className="text-sand text-sm font-semibold uppercase tracking-widest mb-3">Dream Drive</p>
+          <h1 className="text-5xl md:text-6xl text-white mb-5">Dream Drive Fit-Out Range</h1>
           <p className="text-white/70 text-lg md:text-xl leading-relaxed">
             Purpose-built campervans handcrafted in Japan.<br className="hidden sm:block" />
             Every build designed for Australian adventure.
@@ -87,10 +87,10 @@ export default function FitOutsClient({ content: initial }: { content: Record<st
                 />
               </div>
               <div className="p-6">
-                <h2 className="font-display text-2xl text-forest-900 mb-1">{f.name}</h2>
-                <p className="text-sand-600 text-sm font-semibold mb-3">{f.price}</p>
+                <h2 className="text-2xl text-charcoal mb-1">{f.name}</h2>
+                <p className="text-driftwood text-sm font-semibold mb-3">{f.price}</p>
                 <p className="text-gray-600 text-sm leading-relaxed mb-5">{f.desc}</p>
-                <span className="inline-flex items-center gap-1 text-forest-700 text-sm font-semibold group-hover:gap-2 transition-all">
+                <span className="inline-flex items-center gap-1 text-ocean text-sm font-semibold group-hover:gap-2 transition-all">
                   View details <span aria-hidden>→</span>
                 </span>
               </div>
@@ -100,9 +100,9 @@ export default function FitOutsClient({ content: initial }: { content: Record<st
       </section>
 
       {/* CTA banner */}
-      <section className="bg-sand-50 border-t border-sand-200">
+      <section className="bg-cream border-t border-sand">
         <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-          <h2 className="font-display text-3xl text-forest-900 mb-3">Not sure which fit-out is right for you?</h2>
+          <h2 className="text-3xl text-charcoal mb-3">Not sure which fit-out is right for you?</h2>
           <p className="text-gray-600 mb-8">Answer a few quick questions and we&apos;ll match you with the perfect build.</p>
           <Link href="/quiz" className="btn-primary text-base px-8 py-3 inline-block">
             Take the Van Quiz →

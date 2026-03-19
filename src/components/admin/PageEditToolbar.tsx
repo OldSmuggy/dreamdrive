@@ -85,19 +85,19 @@ export default function PageEditToolbar({ pageSlug, pageName, content, onContent
   return (
     <>
       {/* Floating toolbar — bottom of screen */}
-      <div className="fixed bottom-0 left-0 right-0 z-[100] bg-[#1a3a2a] text-white px-4 py-2.5 flex items-center gap-3 text-sm shadow-[0_-4px_12px_rgba(0,0,0,0.15)]">
+      <div className="fixed bottom-0 left-0 right-0 z-[100] bg-[#2C2C2A] text-white px-4 py-2.5 flex items-center gap-3 text-sm shadow-[0_-4px_12px_rgba(0,0,0,0.15)]">
         <span className="font-semibold shrink-0">Admin</span>
         <span className="text-white/50">—</span>
         <span className="text-white/70 truncate">Editing: {pageName}</span>
         <div className="flex-1" />
-        <button onClick={() => setPanel(panel === 'hero' ? null : 'hero')} className={`px-3 py-1 rounded text-xs font-medium transition-colors ${panel === 'hero' ? 'bg-white text-forest-900' : 'bg-white/15 hover:bg-white/25'}`}>
+        <button onClick={() => setPanel(panel === 'hero' ? null : 'hero')} className={`px-3 py-1 rounded text-xs font-medium transition-colors ${panel === 'hero' ? 'bg-white text-charcoal' : 'bg-white/15 hover:bg-white/25'}`}>
           Edit Hero
         </button>
-        <button onClick={() => setPanel(panel === 'gallery' ? null : 'gallery')} className={`px-3 py-1 rounded text-xs font-medium transition-colors ${panel === 'gallery' ? 'bg-white text-forest-900' : 'bg-white/15 hover:bg-white/25'}`}>
+        <button onClick={() => setPanel(panel === 'gallery' ? null : 'gallery')} className={`px-3 py-1 rounded text-xs font-medium transition-colors ${panel === 'gallery' ? 'bg-white text-charcoal' : 'bg-white/15 hover:bg-white/25'}`}>
           Edit Gallery
         </button>
         {(extraImages ?? []).length > 0 && (
-          <button onClick={() => setPanel(panel === 'extra' ? null : 'extra')} className={`px-3 py-1 rounded text-xs font-medium transition-colors ${panel === 'extra' ? 'bg-white text-forest-900' : 'bg-white/15 hover:bg-white/25'}`}>
+          <button onClick={() => setPanel(panel === 'extra' ? null : 'extra')} className={`px-3 py-1 rounded text-xs font-medium transition-colors ${panel === 'extra' ? 'bg-white text-charcoal' : 'bg-white/15 hover:bg-white/25'}`}>
             Edit Images
           </button>
         )}
@@ -324,7 +324,7 @@ function FileUploadButton({
       <button
         onClick={() => ref.current?.click()}
         disabled={uploading}
-        className="text-xs px-3 py-1.5 bg-forest-600 text-white rounded-lg hover:bg-forest-700 disabled:opacity-50"
+        className="text-xs px-3 py-1.5 bg-ocean text-white rounded-lg hover:bg-ocean disabled:opacity-50"
       >
         {uploading ? 'Uploading…' : label}
       </button>
@@ -396,7 +396,7 @@ export function EditableImage({
     >
       <div>
         <p className="text-gray-400 text-sm">{placeholderText ?? 'Photo coming soon'}</p>
-        {isAdmin && onEdit && <p className="text-forest-600 text-xs mt-1 font-medium">Click to add image</p>}
+        {isAdmin && onEdit && <p className="text-ocean text-xs mt-1 font-medium">Click to add image</p>}
       </div>
     </div>
   )

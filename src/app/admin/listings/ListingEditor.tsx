@@ -112,7 +112,7 @@ function toEditState(l: Listing): EditState {
 }
 
 const inputClass =
-  'w-full px-3 py-2 border border-gray-300 rounded-lg text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-forest-600 bg-white'
+  'w-full px-3 py-2 border border-gray-300 rounded-lg text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-ocean bg-white'
 
 // Try to upgrade a Goo-net / Car Sensor thumbnail URL to the largest available version
 function upgradeImageUrl(url: string): string {
@@ -184,7 +184,7 @@ function ListingRow({
     : '—'
 
   return (
-    <div className={`bg-white border rounded-xl overflow-hidden ${isEditing ? 'border-forest-300 shadow-md' : isSelected ? 'border-forest-300' : 'border-gray-200'}`}>
+    <div className={`bg-white border rounded-xl overflow-hidden ${isEditing ? 'border-ocean shadow-md' : isSelected ? 'border-ocean' : 'border-gray-200'}`}>
       {/* Row summary */}
       <div className="px-4 py-3">
 
@@ -194,14 +194,14 @@ function ListingRow({
             type="checkbox"
             checked={isSelected}
             onChange={onToggleSelect}
-            className="w-4 h-4 accent-forest-600 shrink-0"
+            className="w-4 h-4 accent-ocean shrink-0"
           />
           {l.photos?.[0] && (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={l.photos[0]} alt="" className="w-16 h-11 object-cover rounded shrink-0" />
           )}
           <span className={`shrink-0 text-xs font-bold px-2 py-0.5 rounded text-white ${
-            l.source === 'au_stock' ? 'bg-forest-600' : l.source === 'auction' ? 'bg-amber-500' : 'bg-blue-600'
+            l.source === 'au_stock' ? 'bg-ocean' : l.source === 'auction' ? 'bg-amber-500' : 'bg-blue-600'
           }`}>
             {sourceLabel(l.source)}
           </span>
@@ -216,15 +216,15 @@ function ListingRow({
           )}
           <span className="text-gray-400 shrink-0 text-xs">{l.model_year ?? '—'}</span>
           <span className="text-gray-400 shrink-0 text-xs">{l.mileage_km?.toLocaleString() ?? '—'} km</span>
-          <span className="text-forest-700 font-semibold shrink-0 text-xs">{price}</span>
+          <span className="text-ocean font-semibold shrink-0 text-xs">{price}</span>
           <span className={`text-xs px-2 py-0.5 rounded shrink-0 ${
             l.status === 'available' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
           }`}>{l.status}</span>
-          {isSaved && <span className="text-xs text-forest-700 font-semibold shrink-0">✓ Saved</span>}
+          {isSaved && <span className="text-xs text-ocean font-semibold shrink-0">✓ Saved</span>}
           <button
             onClick={() => isEditing ? onCancelEdit() : onStartEdit()}
             className={`text-xs font-semibold px-3 py-1.5 rounded-lg border shrink-0 ${
-              isEditing ? 'border-gray-300 text-gray-600 hover:bg-gray-50' : 'border-forest-600 text-forest-700 hover:bg-forest-50'
+              isEditing ? 'border-gray-300 text-gray-600 hover:bg-gray-50' : 'border-ocean text-ocean hover:bg-cream'
             }`}
           >
             {isEditing ? 'Cancel' : 'Edit'}
@@ -244,7 +244,7 @@ function ListingRow({
               type="checkbox"
               checked={isSelected}
               onChange={onToggleSelect}
-              className="w-4 h-4 accent-forest-600 mt-1 shrink-0"
+              className="w-4 h-4 accent-ocean mt-1 shrink-0"
             />
             {l.photos?.[0] && (
               // eslint-disable-next-line @next/next/no-img-element
@@ -253,7 +253,7 @@ function ListingRow({
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
                 <span className={`text-xs font-bold px-1.5 py-0.5 rounded text-white ${
-                  l.source === 'au_stock' ? 'bg-forest-600' : l.source === 'auction' ? 'bg-amber-500' : 'bg-blue-600'
+                  l.source === 'au_stock' ? 'bg-ocean' : l.source === 'auction' ? 'bg-amber-500' : 'bg-blue-600'
                 }`}>
                   {sourceLabel(l.source)}
                 </span>
@@ -275,16 +275,16 @@ function ListingRow({
 
           {/* Bottom: price + status + buttons */}
           <div className="flex items-center gap-2 mt-2.5 pt-2.5 border-t border-gray-100">
-            <span className="font-semibold text-forest-700 text-sm">{price}</span>
+            <span className="font-semibold text-ocean text-sm">{price}</span>
             <span className={`text-xs px-2 py-0.5 rounded ${
               l.status === 'available' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
             }`}>{l.status}</span>
-            {isSaved && <span className="text-xs text-forest-700 font-semibold">✓ Saved</span>}
+            {isSaved && <span className="text-xs text-ocean font-semibold">✓ Saved</span>}
             <div className="ml-auto flex gap-2 shrink-0">
               <button
                 onClick={() => isEditing ? onCancelEdit() : onStartEdit()}
                 className={`min-h-[44px] px-4 text-sm font-semibold rounded-lg border ${
-                  isEditing ? 'border-gray-300 text-gray-600' : 'border-forest-600 text-forest-700'
+                  isEditing ? 'border-gray-300 text-gray-600' : 'border-ocean text-ocean'
                 }`}
               >
                 {isEditing ? 'Cancel' : 'Edit'}
@@ -302,13 +302,13 @@ function ListingRow({
 
       {/* Edit form */}
       {isEditing && editState && (
-        <div className="border-t border-forest-100 bg-gray-50 p-5 pb-24 md:pb-5">
+        <div className="border-t border-cream bg-gray-50 p-5 pb-24 md:pb-5">
 
           {/* Lead image — large preview with focal point picker */}
           {editState.photos[0] && (
             <div className="mb-5">
               <p className="text-xs text-gray-500 mb-1.5">
-                Cover image — <span className="text-forest-600 font-medium">click to set focal point</span>
+                Cover image — <span className="text-ocean font-medium">click to set focal point</span>
                 <span className="text-gray-400 ml-1.5">({editState.image_focal_point || '50% 50%'})</span>
               </p>
               <div
@@ -378,7 +378,7 @@ function ListingRow({
                   <div className="flex flex-wrap gap-1">
                     {['White', 'Silver', 'Black', 'Pearl', 'Khaki', 'Grey', 'Blue'].map(c => (
                       <button key={c} type="button" onClick={() => onSet('body_colour', c)}
-                        className={`text-xs px-2 py-1 rounded-full border transition-colors ${editState.body_colour === c ? 'bg-forest-600 text-white border-forest-600' : 'bg-white text-gray-600 border-gray-300 hover:border-forest-400'}`}>
+                        className={`text-xs px-2 py-1 rounded-full border transition-colors ${editState.body_colour === c ? 'bg-ocean text-white border-ocean' : 'bg-white text-gray-600 border-gray-300 hover:border-ocean'}`}>
                         {c}
                       </button>
                     ))}
@@ -651,7 +651,7 @@ function ListingRow({
                       type="checkbox"
                       checked={editState[field] as boolean}
                       onChange={e => onSet(field, e.target.checked)}
-                      className="w-4 h-4 accent-forest-600"
+                      className="w-4 h-4 accent-ocean"
                     />
                     <span className="text-sm text-gray-700">{label}</span>
                   </label>
@@ -711,7 +711,7 @@ function ListingRow({
                     )}
                   </div>
                   {i === 0 && (
-                    <span className="absolute top-1 left-1 bg-forest-600 text-white text-[10px] font-bold px-1 rounded">COVER</span>
+                    <span className="absolute top-1 left-1 bg-ocean text-white text-[10px] font-bold px-1 rounded">COVER</span>
                   )}
                 </div>
               ))}
@@ -724,7 +724,7 @@ function ListingRow({
                 placeholder="Paste image URL (auto-upgraded to full res)"
                 className={`${inputClass} flex-1`}
               />
-              <button onClick={onAddPhoto} className="px-4 py-2 bg-forest-600 text-white text-sm rounded-lg hover:bg-forest-700 shrink-0">
+              <button onClick={onAddPhoto} className="px-4 py-2 bg-ocean text-white text-sm rounded-lg hover:bg-ocean shrink-0">
                 Add URL
               </button>
               <PhotoUploadButton onUploaded={onUploadPhoto} />
@@ -743,7 +743,7 @@ function ListingRow({
                 type="checkbox"
                 checked={editState.show_interior_gallery}
                 onChange={e => onSet('show_interior_gallery', e.target.checked)}
-                className="w-4 h-4 accent-forest-600"
+                className="w-4 h-4 accent-ocean"
               />
               <span className="text-sm text-gray-700">Show interior gallery on listing page</span>
             </label>
@@ -766,7 +766,7 @@ function ListingRow({
                 placeholder="Paste interior photo URL"
                 className={`${inputClass} flex-1`}
               />
-              <button onClick={onAddInteriorPhoto} className="px-4 py-2 bg-forest-600 text-white text-sm rounded-lg hover:bg-forest-700 shrink-0">
+              <button onClick={onAddInteriorPhoto} className="px-4 py-2 bg-ocean text-white text-sm rounded-lg hover:bg-ocean shrink-0">
                 Add URL
               </button>
               <PhotoUploadButton onUploaded={onUploadInteriorPhoto} />
@@ -1052,7 +1052,7 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
     if (items.length === 0) return null
     return (
       <section className="mb-8">
-        <h2 className="font-display text-xl text-forest-800 mb-3">{title} ({items.length})</h2>
+        <h2 className="text-xl text-charcoal mb-3">{title} ({items.length})</h2>
         <div className="space-y-2">
           {items.map(l => (
             <ListingRow
@@ -1100,7 +1100,7 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
             type="checkbox"
             checked={allSelected}
             onChange={toggleAll}
-            className="w-4 h-4 accent-forest-600"
+            className="w-4 h-4 accent-ocean"
           />
           <span className="text-sm text-gray-600">
             {selected.size > 0 ? `${selected.size} selected` : 'Select all'}
@@ -1112,7 +1112,7 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
             <button
               onClick={bulkGoLive}
               disabled={bulkWorking}
-              className="text-sm font-semibold px-4 py-2.5 min-h-[44px] rounded-lg bg-forest-600 text-white hover:bg-forest-700 disabled:opacity-50"
+              className="text-sm font-semibold px-4 py-2.5 min-h-[44px] rounded-lg bg-ocean text-white hover:bg-ocean disabled:opacity-50"
             >
               {bulkWorking ? 'Working…' : `✓ Go Live (${selected.size})`}
             </button>

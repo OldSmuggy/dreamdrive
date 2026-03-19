@@ -151,7 +151,7 @@ export default function ConfiguratorClient({
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-10">
-      <h1 className="font-display text-4xl text-forest-900 mb-2">Build Your Van</h1>
+      <h1 className="text-4xl text-charcoal mb-2">Build Your Van</h1>
       <p className="text-gray-500 mb-8">Configure your complete build. Every step is optional — build as much or as little as you want.</p>
 
       {/* Progress */}
@@ -159,7 +159,7 @@ export default function ConfiguratorClient({
         {STEPS.map((s, i) => (
           <button key={s} onClick={() => i <= step && setStep(i)}
             className={`shrink-0 px-3 py-2 rounded-full text-sm font-semibold transition-colors ${
-              i === step ? 'bg-forest-600 text-white' : i < step ? 'bg-forest-100 text-forest-700' : 'bg-gray-100 text-gray-400'
+              i === step ? 'bg-ocean text-white' : i < step ? 'bg-cream text-ocean' : 'bg-gray-100 text-gray-400'
             }`}>
             {i + 1}. {s}
           </button>
@@ -210,11 +210,11 @@ export default function ConfiguratorClient({
               onSelect={() => { setFitout(null); setComingSoon('bed-only'); setStep(5) }}
             />
             <div
-              className={`border-2 rounded-2xl p-5 cursor-pointer transition-colors ${!fitout && !comingSoon ? 'border-forest-500 bg-forest-50' : 'border-gray-200 hover:border-gray-300'}`}
+              className={`border-2 rounded-2xl p-5 cursor-pointer transition-colors ${!fitout && !comingSoon ? 'border-ocean bg-cream' : 'border-gray-200 hover:border-gray-300'}`}
               onClick={() => { setFitout(null); setComingSoon(null) }}>
               <p className="font-semibold text-gray-800">No Fit-Out</p>
               <p className="text-sm text-gray-500 mt-1">Base van only — arrange your own interior</p>
-              <p className="font-display text-forest-600 text-lg mt-3">$0</p>
+              <p className="text-ocean text-lg mt-3">$0</p>
             </div>
           </div>
           {fitout?.slug === GRID_SLUG && (
@@ -231,7 +231,7 @@ export default function ConfiguratorClient({
 
           {/* Electrical inclusion banner */}
           {hasPremiumFitout && (
-            <div className="flex gap-3 bg-forest-50 border border-forest-300 rounded-xl px-4 py-3 text-sm text-forest-800 mb-5">
+            <div className="flex gap-3 bg-cream border border-ocean rounded-xl px-4 py-3 text-sm text-charcoal mb-5">
               <span className="shrink-0 mt-0.5">✓</span>
               <p>
                 <strong>Electrical system included</strong> — Your {fitout!.name} fit-out includes a 200AH lithium battery, 2000W inverter, DC charger, shore power, and LED lighting as standard.
@@ -261,7 +261,7 @@ export default function ConfiguratorClient({
               <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Add-On Options</p>
               <div
                 onClick={() => setWithRearAC(v => !v)}
-                className={`border-2 rounded-2xl p-5 cursor-pointer transition-colors ${withRearAC ? 'border-forest-500 bg-forest-50' : 'border-gray-200 hover:border-gray-300'}`}>
+                className={`border-2 rounded-2xl p-5 cursor-pointer transition-colors ${withRearAC ? 'border-ocean bg-cream' : 'border-gray-200 hover:border-gray-300'}`}>
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
@@ -273,10 +273,10 @@ export default function ConfiguratorClient({
                     )}
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="font-display text-forest-700 text-xl">
+                    <p className="text-ocean text-xl">
                       {effectivePrice(rearACProduct) === 0 ? 'Contact' : centsToAud(effectivePrice(rearACProduct))}
                     </p>
-                    <div className={`mt-2 w-6 h-6 rounded border-2 flex items-center justify-center ml-auto ${withRearAC ? 'bg-forest-600 border-forest-600 text-white' : 'border-gray-300'}`}>
+                    <div className={`mt-2 w-6 h-6 rounded border-2 flex items-center justify-center ml-auto ${withRearAC ? 'bg-ocean border-ocean text-white' : 'border-gray-300'}`}>
                       {withRearAC && '✓'}
                     </div>
                   </div>
@@ -292,22 +292,22 @@ export default function ConfiguratorClient({
                 onSelect={() => setElectrical(prev => prev?.id === p.id ? null : p)} />
             ))}
             <div
-              className={`border-2 rounded-2xl p-5 cursor-pointer transition-colors ${!electrical ? 'border-forest-500 bg-forest-50' : 'border-gray-200 hover:border-gray-300'}`}
+              className={`border-2 rounded-2xl p-5 cursor-pointer transition-colors ${!electrical ? 'border-ocean bg-cream' : 'border-gray-200 hover:border-gray-300'}`}
               onClick={() => setElectrical(null)}>
               {hasPremiumFitout ? (
                 <>
                   <div className="flex items-center gap-2 mb-1">
                     <p className="font-semibold text-gray-800">Keep Included System</p>
-                    <span className="text-xs bg-forest-100 text-forest-700 px-2 py-0.5 rounded font-medium">Recommended</span>
+                    <span className="text-xs bg-cream text-ocean px-2 py-0.5 rounded font-medium">Recommended</span>
                   </div>
                   <p className="text-sm text-gray-500">Already included in your fit-out price — no extra cost</p>
-                  <p className="font-display text-forest-600 text-lg mt-3">$0 <span className="text-xs text-gray-400 font-sans font-normal">(included)</span></p>
+                  <p className="text-ocean text-lg mt-3">$0 <span className="text-xs text-gray-400 font-sans font-normal">(included)</span></p>
                 </>
               ) : (
                 <>
                   <p className="font-semibold text-gray-800">No Electrical</p>
                   <p className="text-sm text-gray-500 mt-1">Base van electrics only</p>
-                  <p className="font-display text-forest-600 text-lg mt-3">$0</p>
+                  <p className="text-ocean text-lg mt-3">$0</p>
                 </>
               )}
             </div>
@@ -319,7 +319,7 @@ export default function ConfiguratorClient({
       {step === 3 && (
         <StepPanel title="Fiberglass Pop Top Roof" onBack={() => setStep(2)} onNext={() => setStep(4)}>
           {isMana && (
-            <div className="flex gap-3 bg-forest-50 border border-forest-300 rounded-xl px-4 py-3 text-sm text-forest-800 mb-5">
+            <div className="flex gap-3 bg-cream border border-ocean rounded-xl px-4 py-3 text-sm text-charcoal mb-5">
               <span className="shrink-0 mt-0.5">✓</span>
               <p>
                 <strong>The MANA already includes a pop top as standard</strong> — this is included in your fit-out price. You do not need to add it here.
@@ -327,13 +327,13 @@ export default function ConfiguratorClient({
             </div>
           )}
           {poptop && (
-            <div className={`border-2 rounded-2xl p-6 transition-colors mb-4 ${isMana ? 'border-gray-200 opacity-50 cursor-not-allowed' : `cursor-pointer ${withPoptop ? 'border-forest-500 bg-forest-50' : 'border-gray-200 hover:border-gray-300'}`}`}
+            <div className={`border-2 rounded-2xl p-6 transition-colors mb-4 ${isMana ? 'border-gray-200 opacity-50 cursor-not-allowed' : `cursor-pointer ${withPoptop ? 'border-ocean bg-cream' : 'border-gray-200 hover:border-gray-300'}`}`}
               onClick={() => !isMana && setWithPoptop(v => !v)}>
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <p className="font-semibold text-gray-900 text-lg">{isMana ? 'Pop Top Conversion' : 'Add Pop Top Conversion'}</p>
-                    {isMana && <span className="text-xs bg-forest-100 text-forest-700 px-2 py-0.5 rounded font-medium">Included with MANA</span>}
+                    {isMana && <span className="text-xs bg-cream text-ocean px-2 py-0.5 rounded font-medium">Included with MANA</span>}
                   </div>
                   <p className="text-sm text-gray-500">{poptop.description}</p>
                   <ul className="text-sm text-gray-600 mt-3 space-y-1">
@@ -345,10 +345,10 @@ export default function ConfiguratorClient({
                 </div>
                 <div className="ml-4 text-right shrink-0">
                   {isMana ? (
-                    <p className="font-display text-forest-700 text-2xl">Included</p>
+                    <p className="text-ocean text-2xl">Included</p>
                   ) : (
                     <>
-                      <p className="font-display text-forest-700 text-2xl">{centsToAud(effectivePrice(poptop))}</p>
+                      <p className="text-ocean text-2xl">{centsToAud(effectivePrice(poptop))}</p>
                       {activeSpecial(poptop) && poptop.special_price_aud && (
                         <p className="text-xs text-gray-400 line-through mt-0.5">{centsToAud(poptop.rrp_aud)}</p>
                       )}
@@ -360,7 +360,7 @@ export default function ConfiguratorClient({
             </div>
           )}
           {withPoptop && (
-            <div className="bg-sand-50 rounded-xl p-4 text-sm">
+            <div className="bg-cream rounded-xl p-4 text-sm">
               <p className="font-semibold text-gray-700">Installed at our Brisbane factory on arrival — within 2 weeks of your van landing.</p>
             </div>
           )}
@@ -399,18 +399,18 @@ export default function ConfiguratorClient({
             <ImportRow label="Compliance & ADR" value={`~${centsToAud(COMPLIANCE)}`} note="Includes inspection (covered by sourcing fee)" />
             <ImportRow label="Registration" value={`${centsToAud(REG_MIN)} – ${centsToAud(REG_MAX)}`} note="Varies by state" />
 
-            <div className="bg-forest-950 text-white px-5 py-4 flex justify-between items-center">
+            <div className="bg-charcoal text-white px-5 py-4 flex justify-between items-center">
               <div>
-                <p className="font-display text-base">Estimated Total on Australian Roads</p>
+                <p className="text-base">Estimated Total on Australian Roads</p>
                 <p className="text-white/50 text-xs mt-0.5">Excluding fit-out &amp; accessories</p>
               </div>
               <div className="text-right">
                 {vanFobCents !== null ? (
-                  <p className="font-display text-xl text-sand-400">
+                  <p className="text-xl text-sand">
                     {centsToAud(importMin)} – {centsToAud(importMax)}
                   </p>
                 ) : (
-                  <p className="font-display text-xl text-sand-400">TBC at consultation</p>
+                  <p className="text-xl text-sand">TBC at consultation</p>
                 )}
               </div>
             </div>
@@ -418,7 +418,7 @@ export default function ConfiguratorClient({
 
           <p className="text-xs text-gray-400">
             Exchange rate fluctuations affect the JPY → AUD purchase price. Final price depends on the rate at time of payment.
-            <Link href="/import-costs" className="text-forest-600 hover:underline ml-1" target="_blank">
+            <Link href="/import-costs" className="text-ocean hover:underline ml-1" target="_blank">
               Full import cost guide →
             </Link>
           </p>
@@ -428,7 +428,7 @@ export default function ConfiguratorClient({
       {/* ---- Step 5: Summary ---- */}
       {step === 5 && (
         <div>
-          <h2 className="font-display text-2xl text-forest-900 mb-6">Your Build Summary</h2>
+          <h2 className="text-2xl text-charcoal mb-6">Your Build Summary</h2>
 
           {/* Coming Soon notice */}
           {comingSoon && (
@@ -470,9 +470,9 @@ export default function ConfiguratorClient({
               />
             )}
 
-            <div className="bg-forest-50 px-5 py-4 flex justify-between items-center">
-              <span className="font-display text-lg text-forest-900">Estimated Total</span>
-              <span className="font-display text-2xl text-forest-700">
+            <div className="bg-cream px-5 py-4 flex justify-between items-center">
+              <span className="text-lg text-charcoal">Estimated Total</span>
+              <span className="text-2xl text-ocean">
                 {min === max ? centsToAud(min) : `${centsToAud(min)} – ${centsToAud(max)}`}
               </span>
             </div>
@@ -485,8 +485,8 @@ export default function ConfiguratorClient({
 
           {/* Save & Share form */}
           {!leadSent ? (
-            <div className="bg-sand-50 border border-sand-200 rounded-2xl p-6 mb-6">
-              <h3 className="font-display text-xl mb-1">Save & Share This Build</h3>
+            <div className="bg-cream border border-sand rounded-2xl p-6 mb-6">
+              <h3 className="text-xl mb-1">Save & Share This Build</h3>
               <p className="text-gray-500 text-sm mb-5">Enter your details to save a shareable link and book a free consultation call.</p>
               <form onSubmit={handleLeadSubmit} className="space-y-3">
                 <div className="grid sm:grid-cols-2 gap-3">
@@ -515,10 +515,10 @@ export default function ConfiguratorClient({
               </form>
             </div>
           ) : (
-            <div className="bg-forest-50 border border-forest-200 rounded-2xl p-6 text-center mb-6">
+            <div className="bg-cream border border-ocean-light rounded-2xl p-6 text-center mb-6">
               <div className="text-3xl mb-2">✅</div>
-              <h3 className="font-display text-xl text-forest-800">Build saved!</h3>
-              <p className="text-forest-600 text-sm mt-1">Jared will reach out within 24 hours to confirm your build and next steps.</p>
+              <h3 className="text-xl text-charcoal">Build saved!</h3>
+              <p className="text-ocean text-sm mt-1">Jared will reach out within 24 hours to confirm your build and next steps.</p>
             </div>
           )}
 
@@ -536,7 +536,7 @@ function StepPanel({ title, children, onBack, onNext }: {
 }) {
   return (
     <div>
-      <h2 className="font-display text-2xl text-forest-900 mb-6">{title}</h2>
+      <h2 className="text-2xl text-charcoal mb-6">{title}</h2>
       {children}
       <div className="flex gap-3 mt-8">
         {onBack && <button onClick={onBack} className="btn-secondary">← Back</button>}
@@ -551,7 +551,7 @@ function ProductCard({ product, selected, onSelect, jpyRate }: { product: Produc
   const price = effectivePrice(product)
   return (
     <div onClick={onSelect}
-      className={`border-2 rounded-2xl p-5 cursor-pointer transition-colors ${selected ? 'border-forest-500 bg-forest-50' : 'border-gray-200 hover:border-gray-300'}`}>
+      className={`border-2 rounded-2xl p-5 cursor-pointer transition-colors ${selected ? 'border-ocean bg-cream' : 'border-gray-200 hover:border-gray-300'}`}>
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -564,7 +564,7 @@ function ProductCard({ product, selected, onSelect, jpyRate }: { product: Produc
         </div>
       </div>
       <div className="mt-3 flex flex-col gap-0.5">
-        <span className="font-display text-forest-700 text-xl">
+        <span className="text-ocean text-xl">
           {price === 0 ? 'Contact for price' : centsToAud(price)}
         </span>
         {jpyRate && price > 0 && (
@@ -613,7 +613,7 @@ function SummaryRow({ label, value, sub, badge, badgeColor, special }: {
         </div>
         {sub && <p className="text-xs text-gray-500 mt-0.5">{sub}</p>}
       </div>
-      <span className="font-display text-gray-900 text-lg ml-4 shrink-0">{value}</span>
+      <span className="text-gray-900 text-lg ml-4 shrink-0">{value}</span>
     </div>
   )
 }
@@ -646,7 +646,7 @@ function ComingSoonCard({ name, description, selected, onSelect }: {
         </div>
       </div>
       <div className="mt-3">
-        <span className="inline-block bg-forest-50 text-forest-700 border border-forest-200 text-sm font-medium px-4 py-1.5 rounded-lg">
+        <span className="inline-block bg-cream text-ocean border border-ocean-light text-sm font-medium px-4 py-1.5 rounded-lg">
           Enquire for pricing →
         </span>
       </div>

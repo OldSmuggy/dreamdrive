@@ -361,7 +361,7 @@ function StageTracker({
     <div className="space-y-3">
       {/* Set Full Timeline button */}
       <div className="flex justify-end">
-        <button onClick={openTimeline} className="text-xs px-3 py-1.5 border border-forest-600 text-forest-600 rounded-lg hover:bg-forest-50">
+        <button onClick={openTimeline} className="text-xs px-3 py-1.5 border border-ocean text-ocean rounded-lg hover:bg-cream">
           Set Full Timeline
         </button>
       </div>
@@ -370,7 +370,7 @@ function StageTracker({
       {showTimeline && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4" onClick={() => setShowTimeline(false)}>
           <div className="bg-white rounded-2xl p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <h3 className="font-display text-lg text-forest-900 mb-4">Set Full Timeline</h3>
+            <h3 className="text-lg text-charcoal mb-4">Set Full Timeline</h3>
             <div className="space-y-3">
               {sortedStages.map(stage => {
                 const d = timelineDates[stage.id]
@@ -397,7 +397,7 @@ function StageTracker({
               })}
             </div>
             <div className="flex gap-2 mt-4">
-              <button onClick={saveTimeline} disabled={savingTimeline} className="flex-1 bg-forest-600 text-white text-sm font-medium py-2 rounded-lg hover:bg-forest-700 disabled:opacity-50">{savingTimeline ? 'Saving...' : 'Save All'}</button>
+              <button onClick={saveTimeline} disabled={savingTimeline} className="flex-1 bg-ocean text-white text-sm font-medium py-2 rounded-lg hover:bg-ocean disabled:opacity-50">{savingTimeline ? 'Saving...' : 'Save All'}</button>
               <button onClick={() => setShowTimeline(false)} className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50">Cancel</button>
             </div>
           </div>
@@ -419,10 +419,10 @@ function StageTracker({
             let dateColor   = 'text-gray-300'
             if (done && stage.completed_at) {
               dateDisplay = fmtDate(stage.completed_at)
-              dateColor   = isFutureDate(stage.completed_at) ? 'text-gray-400 italic' : 'text-forest-500'
+              dateColor   = isFutureDate(stage.completed_at) ? 'text-gray-400 italic' : 'text-ocean'
             } else if (active && stage.entered_at) {
               dateDisplay = fmtDate(stage.entered_at)
-              dateColor   = 'text-forest-400'
+              dateColor   = 'text-ocean'
             } else if (upcoming && forecast) {
               dateDisplay = fmtDate(forecast)
               dateColor   = 'text-gray-400 italic'
@@ -441,8 +441,8 @@ function StageTracker({
                     className="flex flex-col items-center group"
                   >
                     <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-colors
-                      ${done   ? 'bg-forest-600 border-forest-600 text-white'                       : ''}
-                      ${active ? 'bg-white border-forest-600 text-forest-700 ring-2 ring-forest-200' : ''}
+                      ${done   ? 'bg-ocean border-ocean text-white'                       : ''}
+                      ${active ? 'bg-white border-ocean text-ocean ring-2 ring-ocean-light' : ''}
                       ${upcoming ? 'bg-gray-100 border-gray-300 text-gray-400 hover:border-gray-400' : ''}
                     `}>
                       {done ? (
@@ -451,7 +451,7 @@ function StageTracker({
                         </svg>
                       ) : <span>{i + 1}</span>}
                     </div>
-                    <p className={`text-[10px] mt-1 whitespace-nowrap leading-tight text-center max-w-[56px] ${active ? 'text-forest-700 font-semibold' : done ? 'text-forest-500' : 'text-gray-400'}`}>
+                    <p className={`text-[10px] mt-1 whitespace-nowrap leading-tight text-center max-w-[56px] ${active ? 'text-ocean font-semibold' : done ? 'text-ocean' : 'text-gray-400'}`}>
                       {STAGE_LABELS[stage.stage]}
                     </p>
                   </button>
@@ -460,7 +460,7 @@ function StageTracker({
                   )}
                 </div>
                 {i < sortedStages.length - 1 && (
-                  <div className={`h-0.5 w-6 mx-0.5 mt-3.5 shrink-0 ${i < currentIdx ? 'bg-forest-600' : 'bg-gray-200'}`} />
+                  <div className={`h-0.5 w-6 mx-0.5 mt-3.5 shrink-0 ${i < currentIdx ? 'bg-ocean' : 'bg-gray-200'}`} />
                 )}
               </div>
             )
@@ -483,7 +483,7 @@ function StageTracker({
               {upcoming && (
                 <button
                   onClick={() => jumpTo(s.stage)}
-                  className="text-xs px-2 py-1 bg-forest-600 text-white rounded hover:bg-forest-700"
+                  className="text-xs px-2 py-1 bg-ocean text-white rounded hover:bg-ocean"
                 >
                   Jump to this stage
                 </button>
@@ -540,7 +540,7 @@ function StageTracker({
           ← Back
         </button>
         <div className="flex-1 text-center">
-          <span className="text-xs font-semibold text-forest-700">
+          <span className="text-xs font-semibold text-ocean">
             {currentStage ? STAGE_LABELS[currentStage.stage] : '—'}
           </span>
           <span className="text-xs text-gray-400 ml-1">({currentIdx + 1}/{visibleKeys.length})</span>
@@ -548,7 +548,7 @@ function StageTracker({
         <button
           onClick={() => advance('advance')}
           disabled={!canAdvance || advancing}
-          className="text-xs px-3 py-1.5 bg-forest-600 text-white rounded-lg hover:bg-forest-700 disabled:opacity-40"
+          className="text-xs px-3 py-1.5 bg-ocean text-white rounded-lg hover:bg-ocean disabled:opacity-40"
         >
           {advancing ? '…' : 'Advance →'}
         </button>
@@ -562,7 +562,7 @@ function StageTracker({
             value={noteText}
             onChange={e => setNoteText(e.target.value)}
             placeholder={`Add note to "${STAGE_LABELS[currentStage.stage]}"…`}
-            className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-forest-500"
+            className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ocean"
             onKeyDown={e => e.key === 'Enter' && saveNote()}
           />
           <button
@@ -679,7 +679,7 @@ function BuildEditor({
           <select
             value={form.build_type}
             onChange={e => setForm(f => ({ ...f, build_type: e.target.value }))}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-forest-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-ocean"
           >
             {BUILD_TYPES.map(bt => <option key={bt.value} value={bt.value}>{bt.label}</option>)}
           </select>
@@ -689,7 +689,7 @@ function BuildEditor({
           <select
             value={form.build_location}
             onChange={e => setForm(f => ({ ...f, build_location: e.target.value }))}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-forest-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-ocean"
           >
             <option value="">—</option>
             <option value="japan">Japan</option>
@@ -703,7 +703,7 @@ function BuildEditor({
           <label className="block text-xs font-semibold text-gray-600 mb-1">Conversion Fee (AUD)</label>
           <div className="relative">
             <span className="absolute left-3 top-2 text-sm text-gray-400">$</span>
-            <input type="number" value={form.conversion_fee_aud} onChange={e => setForm(f => ({ ...f, conversion_fee_aud: e.target.value }))} className="w-full border border-gray-300 rounded-lg pl-7 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-500" placeholder="0" />
+            <input type="number" value={form.conversion_fee_aud} onChange={e => setForm(f => ({ ...f, conversion_fee_aud: e.target.value }))} className="w-full border border-gray-300 rounded-lg pl-7 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ocean" placeholder="0" />
           </div>
         </div>
       )}
@@ -712,13 +712,13 @@ function BuildEditor({
         <div className="space-y-2">
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1">Custom Build Description</label>
-            <textarea value={form.custom_description} onChange={e => setForm(f => ({ ...f, custom_description: e.target.value }))} rows={2} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-forest-500" />
+            <textarea value={form.custom_description} onChange={e => setForm(f => ({ ...f, custom_description: e.target.value }))} rows={2} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ocean" />
           </div>
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1">Custom Quote (AUD)</label>
             <div className="relative">
               <span className="absolute left-3 top-2 text-sm text-gray-400">$</span>
-              <input type="number" value={form.custom_quote_aud} onChange={e => setForm(f => ({ ...f, custom_quote_aud: e.target.value }))} className="w-full border border-gray-300 rounded-lg pl-7 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-500" />
+              <input type="number" value={form.custom_quote_aud} onChange={e => setForm(f => ({ ...f, custom_quote_aud: e.target.value }))} className="w-full border border-gray-300 rounded-lg pl-7 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ocean" />
             </div>
           </div>
         </div>
@@ -728,7 +728,7 @@ function BuildEditor({
       <label className="flex items-center gap-3 cursor-pointer">
         <div
           onClick={() => setForm(f => ({ ...f, pop_top: !f.pop_top }))}
-          className={`w-10 h-6 rounded-full transition-colors relative ${form.pop_top ? 'bg-forest-600' : 'bg-gray-300'}`}
+          className={`w-10 h-6 rounded-full transition-colors relative ${form.pop_top ? 'bg-ocean' : 'bg-gray-300'}`}
         >
           <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.pop_top ? 'translate-x-5' : 'translate-x-1'}`} />
         </div>
@@ -741,7 +741,7 @@ function BuildEditor({
           <label className="block text-xs font-semibold text-gray-600 mb-1">Pop Top Fee (AUD)</label>
           <div className="relative">
             <span className="absolute left-3 top-2 text-sm text-gray-400">$</span>
-            <input type="number" value={form.pop_top_fee_aud} onChange={e => setForm(f => ({ ...f, pop_top_fee_aud: e.target.value }))} className="w-full border border-gray-300 rounded-lg pl-7 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-500" />
+            <input type="number" value={form.pop_top_fee_aud} onChange={e => setForm(f => ({ ...f, pop_top_fee_aud: e.target.value }))} className="w-full border border-gray-300 rounded-lg pl-7 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ocean" />
           </div>
         </div>
       )}
@@ -756,7 +756,7 @@ function BuildEditor({
               const checked = form.addon_slugs.includes(p.slug)
               return (
                 <label key={p.slug} className="flex items-center gap-3 cursor-pointer">
-                  <input type="checkbox" checked={checked} onChange={() => toggleProduct(p.slug)} className="w-4 h-4 text-forest-600 rounded border-gray-300 focus:ring-forest-500" />
+                  <input type="checkbox" checked={checked} onChange={() => toggleProduct(p.slug)} className="w-4 h-4 text-ocean rounded border-gray-300 focus:ring-ocean" />
                   <span className={`text-sm flex-1 ${checked ? 'text-gray-900' : 'text-gray-600'}`}>{p.name}</span>
                   <span className="text-xs text-gray-400">{centsToAud(price)}</span>
                 </label>
@@ -772,13 +772,13 @@ function BuildEditor({
           <label className="block text-xs font-semibold text-gray-600 mb-1">Total Quoted (AUD)</label>
           <div className="relative">
             <span className="absolute left-3 top-2 text-sm text-gray-400">$</span>
-            <input type="number" value={form.total_quoted_aud} onChange={e => setForm(f => ({ ...f, total_quoted_aud: e.target.value }))} placeholder={estimatedTotal > 0 ? String(estimatedTotal / 100) : '0'} className="w-full border border-gray-300 rounded-lg pl-7 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-500" />
+            <input type="number" value={form.total_quoted_aud} onChange={e => setForm(f => ({ ...f, total_quoted_aud: e.target.value }))} placeholder={estimatedTotal > 0 ? String(estimatedTotal / 100) : '0'} className="w-full border border-gray-300 rounded-lg pl-7 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ocean" />
           </div>
           {estimatedTotal > 0 && <p className="text-xs text-gray-400 mt-0.5">Auto-calculated: {centsToAud(estimatedTotal)}</p>}
         </div>
         <div>
           <label className="block text-xs font-semibold text-gray-600 mb-1">Build Status</label>
-          <select value={form.build_status} onChange={e => setForm(f => ({ ...f, build_status: e.target.value }))} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-forest-500">
+          <select value={form.build_status} onChange={e => setForm(f => ({ ...f, build_status: e.target.value }))} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-ocean">
             {Object.entries(BUILD_STATUS_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
         </div>
@@ -786,13 +786,13 @@ function BuildEditor({
 
       <div>
         <label className="block text-xs font-semibold text-gray-600 mb-1">Build Notes</label>
-        <textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={2} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-forest-500" />
+        <textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={2} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ocean" />
       </div>
 
       <button
         onClick={save}
         disabled={saving}
-        className={`text-xs px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 ${saved ? 'bg-green-600 text-white' : 'bg-forest-600 text-white hover:bg-forest-700'}`}
+        className={`text-xs px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 ${saved ? 'bg-green-600 text-white' : 'bg-ocean text-white hover:bg-ocean'}`}
       >
         {saving ? 'Saving…' : saved ? 'Saved ✓' : 'Save Build'}
       </button>
@@ -881,7 +881,7 @@ function DocSection({
           <div className="flex items-center gap-2 min-w-0">
             <span className="text-base shrink-0">{doc.file_type === 'pdf' ? '📄' : doc.file_type === 'image' ? '🖼️' : '📎'}</span>
             <div className="min-w-0">
-              <button onClick={() => window.open(doc.file_url, '_blank')} className="text-sm font-medium text-forest-700 hover:underline truncate block">{doc.name}</button>
+              <button onClick={() => window.open(doc.file_url, '_blank')} className="text-sm font-medium text-ocean hover:underline truncate block">{doc.name}</button>
               <div className="flex items-center gap-2 mt-0.5">
                 <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${DOC_TYPE_BADGE[doc.document_type] ?? DOC_TYPE_BADGE.other}`}>
                   {DOC_TYPES.find(d => d.value === doc.document_type)?.label ?? doc.document_type}
@@ -915,27 +915,27 @@ function DocSection({
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 space-y-2">
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1">File</label>
-            <input ref={fileRef} type="file" accept=".pdf,.jpg,.jpeg,.png,.webp" onChange={e => { const f = e.target.files?.[0] ?? null; setSelectedFile(f); if (f && !docName) setDocName(f.name.replace(/\.[^.]+$/, '')) }} className="w-full text-xs text-gray-600 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-forest-600 file:text-white hover:file:bg-forest-700" />
+            <input ref={fileRef} type="file" accept=".pdf,.jpg,.jpeg,.png,.webp" onChange={e => { const f = e.target.files?.[0] ?? null; setSelectedFile(f); if (f && !docName) setDocName(f.name.replace(/\.[^.]+$/, '')) }} className="w-full text-xs text-gray-600 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-ocean file:text-white hover:file:bg-ocean" />
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1">Display Name</label>
-              <input type="text" value={docName} onChange={e => setDocName(e.target.value)} className="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-forest-500" />
+              <input type="text" value={docName} onChange={e => setDocName(e.target.value)} className="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ocean" />
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1">Type</label>
-              <select value={docType} onChange={e => setDocType(e.target.value)} className="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-forest-500">
+              <select value={docType} onChange={e => setDocType(e.target.value)} className="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-ocean">
                 {DOC_TYPES.map(dt => <option key={dt.value} value={dt.value}>{dt.label}</option>)}
               </select>
             </div>
           </div>
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1">Notes (optional)</label>
-            <input type="text" value={docNotes} onChange={e => setDocNotes(e.target.value)} className="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-forest-500" />
+            <input type="text" value={docNotes} onChange={e => setDocNotes(e.target.value)} className="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ocean" />
           </div>
           {uploadErr && <p className="text-xs text-red-600">{uploadErr}</p>}
           <div className="flex gap-2">
-            <button onClick={upload} disabled={!selectedFile || uploading} className="text-xs px-3 py-1.5 bg-forest-600 text-white rounded-lg hover:bg-forest-700 disabled:opacity-50">{uploading ? 'Uploading…' : 'Upload'}</button>
+            <button onClick={upload} disabled={!selectedFile || uploading} className="text-xs px-3 py-1.5 bg-ocean text-white rounded-lg hover:bg-ocean disabled:opacity-50">{uploading ? 'Uploading…' : 'Upload'}</button>
             <button onClick={() => { setShowUpload(false); setSelectedFile(null); setUploadErr(null) }} className="text-xs px-3 py-1.5 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">Cancel</button>
           </div>
         </div>
@@ -1161,7 +1161,7 @@ function VehicleCard({
                 {[vehicle.listing.grade, vehicle.listing.chassis_code, vehicle.listing.bid_no].filter(Boolean).join(' · ')}
                 {vehicle.listing.mileage_km && ` · ${vehicle.listing.mileage_km.toLocaleString()} km`}
                 {' '}
-                <Link href={`/van/${vehicle.listing.id}`} target="_blank" className="text-forest-600 hover:underline">View →</Link>
+                <Link href={`/van/${vehicle.listing.id}`} target="_blank" className="text-ocean hover:underline">View →</Link>
               </p>
             )}
             {vehicle.build_date && (
@@ -1200,7 +1200,7 @@ function VehicleCard({
             {vehicle.listing ? (
               <button onClick={unlinkListing} className="text-xs text-gray-400 hover:text-red-500">Unlink</button>
             ) : (
-              <button onClick={() => setShowListingSearch(v => !v)} className="text-xs px-2.5 py-1 bg-forest-600 text-white rounded-lg hover:bg-forest-700">
+              <button onClick={() => setShowListingSearch(v => !v)} className="text-xs px-2.5 py-1 bg-ocean text-white rounded-lg hover:bg-ocean">
                 {showListingSearch ? 'Cancel' : 'Link a Listing'}
               </button>
             )}
@@ -1220,7 +1220,7 @@ function VehicleCard({
           )}
           {showListingSearch && (
             <div className="mt-2 relative">
-              <input type="text" value={listingQuery} onChange={e => searchListings(e.target.value)} placeholder="Search by model, chassis, bid no…" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-500" autoFocus />
+              <input type="text" value={listingQuery} onChange={e => searchListings(e.target.value)} placeholder="Search by model, chassis, bid no…" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ocean" autoFocus />
               {listingResults.length > 0 && (
                 <div className="absolute z-20 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-52 overflow-y-auto">
                   {listingResults.map(l => (
@@ -1235,7 +1235,7 @@ function VehicleCard({
                 </div>
               )}
               <div className="mt-1 text-right">
-                <Link href="/admin/listings" target="_blank" className="text-xs text-forest-600 hover:underline">Browse all listings →</Link>
+                <Link href="/admin/listings" target="_blank" className="text-xs text-ocean hover:underline">Browse all listings →</Link>
               </div>
             </div>
           )}
@@ -1263,7 +1263,7 @@ function VehicleCard({
                   <div><label className="block text-xs text-gray-500 mb-1">Colour</label><input type="text" value={prefs.colour ?? ''} onChange={e => setPrefs(p => ({ ...p, colour: e.target.value }))} className="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-xs" placeholder="White or Silver" /></div>
                 </div>
                 <div><label className="block text-xs text-gray-500 mb-1">Notes</label><textarea value={prefs.notes ?? ''} onChange={e => setPrefs(p => ({ ...p, notes: e.target.value }))} rows={2} className="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-xs resize-none" /></div>
-                <button onClick={savePrefs} disabled={savingPrefs} className="text-xs px-3 py-1.5 bg-forest-600 text-white rounded-lg hover:bg-forest-700 disabled:opacity-50">{savingPrefs ? 'Saving…' : 'Save Preferences'}</button>
+                <button onClick={savePrefs} disabled={savingPrefs} className="text-xs px-3 py-1.5 bg-ocean text-white rounded-lg hover:bg-ocean disabled:opacity-50">{savingPrefs ? 'Saving…' : 'Save Preferences'}</button>
               </div>
             )}
           </div>
@@ -1300,7 +1300,7 @@ function VehicleCard({
           <div className="flex items-center justify-between mb-3">
             <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Stage Tracker</p>
             <label className="flex items-center gap-1.5 cursor-pointer">
-              <input type="checkbox" checked={designApproval} onChange={e => setDesignApproval(e.target.checked)} className="w-3.5 h-3.5 text-forest-600 rounded border-gray-300" />
+              <input type="checkbox" checked={designApproval} onChange={e => setDesignApproval(e.target.checked)} className="w-3.5 h-3.5 text-ocean rounded border-gray-300" />
               <span className="text-[10px] text-gray-500">Design Approval</span>
             </label>
           </div>
@@ -1320,7 +1320,7 @@ function VehicleCard({
           <button onClick={() => setShowBuild(v => !v)} className="flex items-center gap-2 text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1 hover:text-gray-800 w-full text-left">
             <span>Build Assignment</span>
             {buildForVehicle && (
-              <span className="text-xs font-normal normal-case text-forest-600">
+              <span className="text-xs font-normal normal-case text-ocean">
                 {BUILD_TYPES.find(b => b.value === buildForVehicle.build_type)?.label ?? buildForVehicle.build_type}
                 {buildForVehicle.total_quoted_aud ? ` — ${centsToAud(buildForVehicle.total_quoted_aud)}` : ''}
               </span>
@@ -1343,7 +1343,7 @@ function VehicleCard({
         {/* ── Vehicle Notes ── */}
         <div>
           <label className="block text-xs font-semibold text-gray-600 mb-1.5">Vehicle Notes</label>
-          <textarea rows={2} value={vehicleNotes} onChange={e => setVehicleNotes(e.target.value)} placeholder="Notes about this vehicle…" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-forest-500" />
+          <textarea rows={2} value={vehicleNotes} onChange={e => setVehicleNotes(e.target.value)} placeholder="Notes about this vehicle…" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ocean" />
           <button onClick={saveNotes} disabled={savingNotes} className="mt-1.5 text-xs px-3 py-1.5 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 disabled:opacity-50">{savingNotes ? 'Saving…' : 'Save Notes'}</button>
         </div>
 
@@ -1356,7 +1356,7 @@ function VehicleCard({
           {showSale && (
             <div className="mt-2 space-y-3">
               <label className="flex items-center gap-3 cursor-pointer">
-                <input type="checkbox" checked={saleEnabled} onChange={e => setSaleEnabled(e.target.checked)} className="w-4 h-4 text-forest-600 rounded border-gray-300" />
+                <input type="checkbox" checked={saleEnabled} onChange={e => setSaleEnabled(e.target.checked)} className="w-4 h-4 text-ocean rounded border-gray-300" />
                 <span className="text-sm text-gray-700">List this vehicle for sale on browse page</span>
               </label>
               {saleEnabled && (
@@ -1365,16 +1365,16 @@ function VehicleCard({
                     <label className="block text-xs text-gray-500 mb-1">Sale Price (AUD) *</label>
                     <div className="relative">
                       <span className="absolute left-3 top-2 text-sm text-gray-400">$</span>
-                      <input type="number" value={salePrice} onChange={e => setSalePrice(e.target.value)} className="w-full border border-gray-300 rounded-lg pl-7 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-500" placeholder="0" />
+                      <input type="number" value={salePrice} onChange={e => setSalePrice(e.target.value)} className="w-full border border-gray-300 rounded-lg pl-7 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ocean" placeholder="0" />
                     </div>
                   </div>
                   <div>
                     <label className="block text-xs text-gray-500 mb-1">Sale Notes (visible to buyers)</label>
-                    <textarea value={saleNotes} onChange={e => setSaleNotes(e.target.value)} rows={2} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-forest-500" placeholder="e.g. TAMA build at Van Building stage, expected delivery April 2026" />
+                    <textarea value={saleNotes} onChange={e => setSaleNotes(e.target.value)} rows={2} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ocean" placeholder="e.g. TAMA build at Van Building stage, expected delivery April 2026" />
                   </div>
                 </>
               )}
-              <button onClick={saveSaleSettings} disabled={savingSale} className="text-xs px-3 py-1.5 bg-forest-600 text-white rounded-lg hover:bg-forest-700 disabled:opacity-50">
+              <button onClick={saveSaleSettings} disabled={savingSale} className="text-xs px-3 py-1.5 bg-ocean text-white rounded-lg hover:bg-ocean disabled:opacity-50">
                 {savingSale ? 'Saving…' : 'Save Sale Settings'}
               </button>
             </div>
@@ -1457,7 +1457,7 @@ function ReadinessChecklist({
             checked={!!checklist[item.key]}
             onChange={() => toggle(item.key)}
             disabled={saving}
-            className="w-4 h-4 text-forest-600 rounded border-gray-300 focus:ring-forest-500"
+            className="w-4 h-4 text-ocean rounded border-gray-300 focus:ring-ocean"
           />
           <span className={`text-sm ${checklist[item.key] ? 'text-gray-700 line-through' : 'text-gray-700'}`}>{item.label}</span>
         </label>
@@ -1555,10 +1555,10 @@ export default function CustomerDetailClient({
         <div className="flex items-center gap-3">
           <Link href="/admin/customers" className="text-gray-400 hover:text-gray-600 text-sm shrink-0">← Customers</Link>
           <span className="text-gray-300">/</span>
-          <div className="w-11 h-11 rounded-full bg-forest-100 text-forest-700 flex items-center justify-center text-lg font-bold shrink-0">{customer.first_name[0].toUpperCase()}</div>
+          <div className="w-11 h-11 rounded-full bg-cream text-ocean flex items-center justify-center text-lg font-bold shrink-0">{customer.first_name[0].toUpperCase()}</div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="font-display text-xl text-forest-900 leading-tight">{fullName}</h1>
+              <h1 className="text-xl text-charcoal leading-tight">{fullName}</h1>
               <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${statusBadge[customer.status] ?? 'bg-gray-100 text-gray-600'}`}>{customer.status}</span>
             </div>
             <p className="text-sm text-gray-400">{[customer.email, customer.phone, customer.state].filter(Boolean).join(' · ')}</p>
@@ -1579,7 +1579,7 @@ export default function CustomerDetailClient({
       <div>
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-semibold text-gray-900 text-sm">Vehicles ({vehicles.length})</h2>
-          <button onClick={() => setShowAddVehicle(v => !v)} className="text-xs px-3 py-1.5 bg-forest-600 text-white rounded-lg hover:bg-forest-700">+ Add Vehicle</button>
+          <button onClick={() => setShowAddVehicle(v => !v)} className="text-xs px-3 py-1.5 bg-ocean text-white rounded-lg hover:bg-ocean">+ Add Vehicle</button>
         </div>
 
         {showAddVehicle && (
@@ -1588,7 +1588,7 @@ export default function CustomerDetailClient({
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Description (optional)</label>
-                <input type="text" value={addVehicleDesc} onChange={e => setAddVehicleDesc(e.target.value)} placeholder="e.g. 2022 Super GL 4WD Diesel" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-forest-500" />
+                <input type="text" value={addVehicleDesc} onChange={e => setAddVehicleDesc(e.target.value)} placeholder="e.g. 2022 Super GL 4WD Diesel" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ocean" />
               </div>
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Build Date</label>
@@ -1597,10 +1597,10 @@ export default function CustomerDetailClient({
             </div>
             <div>
               <label className="block text-xs text-gray-500 mb-1">Notes (optional)</label>
-              <textarea value={addVehicleNotes} onChange={e => setAddVehicleNotes(e.target.value)} rows={2} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-forest-500" />
+              <textarea value={addVehicleNotes} onChange={e => setAddVehicleNotes(e.target.value)} rows={2} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ocean" />
             </div>
             <div className="flex gap-2">
-              <button type="submit" disabled={addingVehicle} className="text-xs px-4 py-2 bg-forest-600 text-white rounded-lg hover:bg-forest-700 disabled:opacity-50">{addingVehicle ? 'Adding…' : 'Add Vehicle'}</button>
+              <button type="submit" disabled={addingVehicle} className="text-xs px-4 py-2 bg-ocean text-white rounded-lg hover:bg-ocean disabled:opacity-50">{addingVehicle ? 'Adding…' : 'Add Vehicle'}</button>
               <button type="button" onClick={() => setShowAddVehicle(false)} className="text-xs px-3 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">Cancel</button>
             </div>
           </form>

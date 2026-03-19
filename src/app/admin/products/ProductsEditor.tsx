@@ -116,7 +116,7 @@ export default function ProductsEditor({ initial }: { initial: Product[] }) {
 
   const now = Date.now()
   const inputClass =
-    'w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-forest-600 focus:border-transparent bg-white'
+    'w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ocean focus:border-transparent bg-white'
 
   return (
     <div className="space-y-3">
@@ -129,7 +129,7 @@ export default function ProductsEditor({ initial }: { initial: Product[] }) {
         return (
           <div
             key={p.id}
-            className={`bg-white border rounded-xl overflow-hidden transition-shadow ${isEditing ? 'shadow-md border-forest-300' : 'border-gray-200'} ${!p.visible ? 'opacity-60' : ''}`}
+            className={`bg-white border rounded-xl overflow-hidden transition-shadow ${isEditing ? 'shadow-md border-ocean' : 'border-gray-200'} ${!p.visible ? 'opacity-60' : ''}`}
           >
             {/* ---- Header row ---- */}
             <div className="p-5 flex items-start justify-between gap-4">
@@ -147,7 +147,7 @@ export default function ProductsEditor({ initial }: { initial: Product[] }) {
                     </span>
                   )}
                   {savedId === p.id && (
-                    <span className="text-xs bg-forest-100 text-forest-700 px-2 py-0.5 rounded font-semibold">✓ Saved</span>
+                    <span className="text-xs bg-cream text-ocean px-2 py-0.5 rounded font-semibold">✓ Saved</span>
                   )}
                 </div>
                 {p.description && (
@@ -169,7 +169,7 @@ export default function ProductsEditor({ initial }: { initial: Product[] }) {
                   className={`text-sm font-semibold px-4 py-2 rounded-lg border transition-colors ${
                     isEditing
                       ? 'border-gray-300 text-gray-600 hover:bg-gray-50'
-                      : 'border-forest-600 text-forest-700 hover:bg-forest-50'
+                      : 'border-ocean text-ocean hover:bg-cream'
                   }`}
                 >
                   {isEditing ? 'Cancel' : 'Edit'}
@@ -179,7 +179,7 @@ export default function ProductsEditor({ initial }: { initial: Product[] }) {
 
             {/* ---- Inline edit form ---- */}
             {isEditing && editState && (
-              <div className="border-t border-forest-100 bg-gray-50 p-5">
+              <div className="border-t border-cream bg-gray-50 p-5">
                 <div className="grid md:grid-cols-2 gap-4 mb-5">
                   <div>
                     <label className="block text-xs font-semibold text-gray-600 mb-1.5">Name</label>
@@ -242,7 +242,7 @@ export default function ProductsEditor({ initial }: { initial: Product[] }) {
                         type="checkbox"
                         checked={editState.visible}
                         onChange={e => set('visible', e.target.checked)}
-                        className="w-4 h-4 accent-forest-600"
+                        className="w-4 h-4 accent-ocean"
                       />
                       <span className="text-sm text-gray-700">
                         {editState.visible ? 'Visible' : 'Hidden — won\'t appear to customers'}
@@ -319,7 +319,7 @@ export default function ProductsEditor({ initial }: { initial: Product[] }) {
                           className="absolute top-0.5 right-0.5 w-5 h-5 bg-red-600 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                         >✕</button>
                         {i === 0 && (
-                          <span className="absolute bottom-0.5 left-0.5 bg-forest-600 text-white text-[9px] font-bold px-1 rounded">1st</span>
+                          <span className="absolute bottom-0.5 left-0.5 bg-ocean text-white text-[9px] font-bold px-1 rounded">1st</span>
                         )}
                       </div>
                     ))}
@@ -334,7 +334,7 @@ export default function ProductsEditor({ initial }: { initial: Product[] }) {
                     />
                     <button
                       onClick={addImage}
-                      className="px-4 py-2 bg-forest-600 text-white text-sm rounded-lg hover:bg-forest-700 shrink-0"
+                      className="px-4 py-2 bg-ocean text-white text-sm rounded-lg hover:bg-ocean shrink-0"
                     >
                       Add
                     </button>

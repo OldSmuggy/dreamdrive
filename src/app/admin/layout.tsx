@@ -1,6 +1,6 @@
 import AdminNav from './AdminNav'
 
-export const metadata = { title: { template: '%s | Admin — Dream Drive', default: 'Admin' } }
+export const metadata = { title: { template: '%s | Admin — Bare Camper', default: 'Admin' } }
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (

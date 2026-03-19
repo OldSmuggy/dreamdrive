@@ -51,7 +51,7 @@ export default function AuctionCountdownBanner({ auctionTime, auctionResult, sol
   if (auctionResult === 'sold') {
     return (
       <div className="bg-green-600 text-white rounded-2xl px-6 py-5 mb-6">
-        <p className="font-display text-xl mb-1">SOLD at auction</p>
+        <p className="text-xl mb-1">SOLD at auction</p>
         {soldPriceJpy && (
           <p className="text-white/90 text-sm">
             Sold for {fmtJpy(soldPriceJpy)} (~{fmtAud(soldPriceJpy, jpyRate)})
@@ -68,7 +68,7 @@ export default function AuctionCountdownBanner({ auctionTime, auctionResult, sol
   if (auctionResult === 'unsold') {
     return (
       <div className="bg-amber-500 text-white rounded-2xl px-6 py-5 mb-6">
-        <p className="font-display text-xl mb-1">Passed in at auction</p>
+        <p className="text-xl mb-1">Passed in at auction</p>
         {topBidJpy && (
           <p className="text-white/90 text-sm mb-2">
             Highest bid: {fmtJpy(topBidJpy)} (~{fmtAud(topBidJpy, jpyRate)}) — did not meet reserve
@@ -88,7 +88,7 @@ export default function AuctionCountdownBanner({ auctionTime, auctionResult, sol
   if (auctionResult === 'no_sale') {
     return (
       <div className="bg-gray-500 text-white rounded-2xl px-6 py-5 mb-6">
-        <p className="font-display text-xl mb-1">Auction cancelled</p>
+        <p className="text-xl mb-1">Auction cancelled</p>
         <Link href={`/van/${listingId}#contact`} className="inline-block mt-2 bg-white text-gray-700 font-semibold text-sm px-5 py-2 rounded-lg hover:bg-gray-50">
           Contact us about this van
         </Link>
@@ -103,7 +103,7 @@ export default function AuctionCountdownBanner({ auctionTime, auctionResult, sol
   if (diff <= 0) {
     return (
       <div className="bg-gray-600 text-white rounded-2xl px-6 py-5 mb-6">
-        <p className="font-display text-xl">Auction ended — result pending</p>
+        <p className="text-xl">Auction ended — result pending</p>
         <p className="text-white/70 text-sm mt-1">We&apos;ll update this page when the result is confirmed.</p>
       </div>
     )
@@ -123,9 +123,9 @@ export default function AuctionCountdownBanner({ auctionTime, auctionResult, sol
   const isUrgent = diff < 24 * 3600000
 
   return (
-    <div className={`rounded-2xl px-6 py-5 mb-6 ${isUrgent ? 'bg-red-600' : 'bg-forest-700'} text-white`}>
+    <div className={`rounded-2xl px-6 py-5 mb-6 ${isUrgent ? 'bg-red-600' : 'bg-ocean'} text-white`}>
       <p className="text-white/80 text-sm mb-1">This van goes to auction in:</p>
-      <p className={`font-display text-3xl tabular-nums ${isUrgent ? 'animate-pulse' : ''}`}>
+      <p className={`text-3xl tabular-nums ${isUrgent ? 'animate-pulse' : ''}`}>
         {countdownStr}
       </p>
       <p className="text-white/60 text-xs mt-2">
@@ -133,7 +133,7 @@ export default function AuctionCountdownBanner({ auctionTime, auctionResult, sol
       </p>
       <Link
         href="#deposit"
-        className="inline-block mt-3 bg-white text-forest-700 font-semibold text-sm px-5 py-2.5 rounded-lg hover:bg-forest-50"
+        className="inline-block mt-3 bg-white text-ocean font-semibold text-sm px-5 py-2.5 rounded-lg hover:bg-cream"
       >
         Hold This Van — $500 Deposit
       </Link>
