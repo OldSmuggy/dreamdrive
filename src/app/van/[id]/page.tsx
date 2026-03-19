@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { createSupabaseServer } from '@/lib/supabase-server'
 import { getJpyRate } from '@/lib/settings'
 import { listingDisplayPrice } from '@/lib/pricing'
+import { generateMeta } from '@/lib/seo'
 import { centsToAud, scoreColor, scoreLabel, sourceLabel, sourceBadgeColor, auctionUrgency, locationBadgeInfo, fitOutLevelInfo } from '@/lib/utils'
 import AuctionBanner from '@/components/ui/AuctionBanner'
 import AuctionCountdownBanner from '@/components/van/AuctionCountdownBanner'
@@ -14,8 +15,14 @@ import type { Listing } from '@/types'
 
 export async function generateMetadata({ params }: { params: { id: string } }) {
   const supabase = createSupabaseServer()
-  const { data } = await supabase.from('listings').select('model_name, model_year').eq('id', params.id).single()
-  return { title: data ? `${data.model_year} ${data.model_name}` : 'Van Detail' }
+  const { data } = await supabase.from('listings').select('model_name, model_year, description, photos').eq('id', params.id).single()
+  if (!data) return { title: 'Van Detail' }
+  return generateMeta({
+    title: `${data.model_year} ${data.model_name}`,
+    description: data.description || `${data.model_year} ${data.model_name} — imported from Japan by Dream Drive. View photos, specs and pricing.`,
+    image: data.photos?.[0],
+    url: `/van/${params.id}`,
+  })
 }
 
 export default async function VanDetailPage({ params }: { params: { id: string } }) {
@@ -76,8 +83,36 @@ export default async function VanDetailPage({ params }: { params: { id: string }
     : listing.source === 'au_stock' ? 'Reserve Now — $500 Deposit'
     : 'Express Interest — Book a Call'
 
+  const vehicleJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Vehicle',
+    name: `${listing.model_year} ${listing.model_name}`,
+    brand: 'Toyota',
+    model: 'Hiace',
+    vehicleModelDate: listing.model_year?.toString(),
+    ...(listing.mileage_km && {
+      mileageFromOdometer: {
+        '@type': 'QuantitativeValue',
+        value: listing.mileage_km,
+        unitCode: 'KMT',
+      },
+    }),
+    ...(priceCents && {
+      offers: {
+        '@type': 'Offer',
+        price: (priceCents / 100).toFixed(2),
+        priceCurrency: 'AUD',
+        availability: 'https://schema.org/InStock',
+      },
+    }),
+  }
+
   return (
     <div className="min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(vehicleJsonLd) }}
+      />
       <AuctionBanner />
 
       <div className="max-w-6xl mx-auto px-4 py-8">

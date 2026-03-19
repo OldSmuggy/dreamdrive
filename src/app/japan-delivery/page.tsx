@@ -1,4 +1,10 @@
-export const metadata = { title: 'Japan Delivery' }
+import { generateMeta } from '@/lib/seo'
+
+export const metadata = generateMeta({
+  title: 'Japan Delivery — Take Delivery in Tokyo, Drive Japan',
+  description: 'Take delivery of your Dream Drive campervan in Tokyo, drive Japan, then we ship it home to Australia. An import experience like no other.',
+  url: '/japan-delivery',
+})
 
 export default function JapanDeliveryPage() {
   return (

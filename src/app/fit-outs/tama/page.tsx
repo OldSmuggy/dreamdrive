@@ -1,9 +1,14 @@
 import Link from 'next/link'
 import { getJpyRate } from '@/lib/settings'
 import { createAdminClient } from '@/lib/supabase'
+import { generateMeta } from '@/lib/seo'
 import TamaClient from './TamaClient'
 
-export const metadata = { title: 'TAMA Pop Top | Dream Drive Fit-Outs' }
+export const metadata = generateMeta({
+  title: 'TAMA Campervan — 6-Seat Pop Top Conversion from $106,000',
+  description: 'The Dream Drive TAMA is a 6-seat pop top campervan built on the Toyota Hiace H200. Handcrafted in Tokyo, delivered to Australia from $106,000 driveaway.',
+  url: '/fit-outs/tama',
+})
 export const dynamic = 'force-dynamic'
 
 const FITOUT_AUD = 47000

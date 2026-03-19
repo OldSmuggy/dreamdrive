@@ -2,8 +2,15 @@ import Link from 'next/link'
 import { createSupabaseServer } from '@/lib/supabase-server'
 import { centsToAud } from '@/lib/utils'
 import { getSiteSettings } from '@/lib/site-settings'
+import { generateMeta } from '@/lib/seo'
 import AuctionBanner from '@/components/ui/AuctionBanner'
 import type { Listing } from '@/types'
+
+export const metadata = generateMeta({
+  title: 'Import a Toyota Hiace from Japan — Build Your Campervan',
+  description: "Browse Japan auction and dealer Hiace vans, configure your Dream Drive campervan conversion, and get a transparent all-in price. Australia's van life platform.",
+  url: '/',
+})
 
 export default async function HomePage() {
   let featuredVan: Listing | null = null
@@ -27,8 +34,31 @@ export default async function HomePage() {
     // Supabase unreachable — render page without listings
   }
 
+  const orgJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'AutoDealer',
+    name: 'Dream Drive',
+    description: 'Import Toyota Hiace vans from Japan and build your campervan conversion',
+    url: 'https://dreamdrive-zeta.vercel.app',
+    telephone: '0432182892',
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: '1/10 Jones Road',
+      addressLocality: 'Capalaba',
+      addressRegion: 'QLD',
+      postalCode: '4157',
+      addressCountry: 'AU',
+    },
+    openingHours: 'Mo-Fr 10:00-16:00',
+    priceRange: '$$',
+  }
+
   return (
     <div className="min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
+      />
       <AuctionBanner />
 
       {/* ─── 1. HERO ─────────────────────────────────────── */}

@@ -1,12 +1,12 @@
-import type { Metadata } from 'next'
 import FinanceCalculator from './FinanceCalculator'
 import LeadForm from './LeadForm'
+import { generateMeta } from '@/lib/seo'
 
-export const metadata: Metadata = {
-  title: 'Finance | Bare Camper',
-  description:
-    'Finance your Toyota Hiace van and fit-out in one loan. We compare 40+ Australian lenders for personal loans and chattel mortgages.',
-}
+export const metadata = generateMeta({
+  title: 'Finance Your Campervan Import — Personal & Business Loans',
+  description: 'Calculate your repayments and enquire about finance for your Japan import van and Dream Drive conversion. Personal and chattel mortgage options available.',
+  url: '/finance',
+})
 
 const STATS = [
   { value: 'Personal & business', label: 'loans available' },

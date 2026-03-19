@@ -1,11 +1,12 @@
 import Link from 'next/link'
-import type { Metadata } from 'next'
 import ImportCalculator from './ImportCalculator'
+import { generateMeta } from '@/lib/seo'
 
-export const metadata: Metadata = {
-  title: 'Import Costs | Bare Camper',
-  description: 'Understand the true cost of importing a Toyota Hiace H200 from Japan to Australia — shipping, duty, compliance and registration explained.',
-}
+export const metadata = generateMeta({
+  title: 'How Much Does It Cost to Import a Hiace from Japan?',
+  description: 'Transparent breakdown of every cost involved in importing a Toyota Hiace from Japan to Australia — auction fees, shipping, compliance, and registration.',
+  url: '/import-costs',
+})
 
 const FITOUTS = [
   {

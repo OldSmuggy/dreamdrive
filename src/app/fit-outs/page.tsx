@@ -1,7 +1,12 @@
 import { createAdminClient } from '@/lib/supabase'
+import { generateMeta } from '@/lib/seo'
 import FitOutsClient from './FitOutsClient'
 
-export const metadata = { title: 'Fit-Outs | Dream Drive' }
+export const metadata = generateMeta({
+  title: 'Dream Drive Campervan Fit-Outs — TAMA, MANA & KUMA',
+  description: 'Handcrafted campervan conversions built on the Toyota Hiace H200. Choose from TAMA, MANA, or KUMA fit-outs, all built in our Tokyo facility.',
+  url: '/fit-outs',
+})
 export const dynamic = 'force-dynamic'
 
 export default async function FitOutsPage() {

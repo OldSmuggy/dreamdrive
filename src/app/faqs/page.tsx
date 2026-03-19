@@ -1,4 +1,10 @@
-export const metadata = { title: 'FAQs' }
+import { generateMeta } from '@/lib/seo'
+
+export const metadata = generateMeta({
+  title: 'Frequently Asked Questions — Importing a Hiace to Australia',
+  description: 'Everything you need to know about importing a Toyota Hiace from Japan, campervan conversions, compliance, and the Dream Drive build process.',
+  url: '/faqs',
+})
 
 const FAQS = [
   { q: 'How long does the import process take?', a: 'Typically 8–12 weeks from auction win to Australian delivery. This includes shipping (4–5 weeks), quarantine (1 week), compliance (1–2 weeks), and registration.' },

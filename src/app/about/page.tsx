@@ -1,4 +1,10 @@
-export const metadata = { title: 'About Bare Camper' }
+import { generateMeta } from '@/lib/seo'
+
+export const metadata = generateMeta({
+  title: 'About Dream Drive — Handcrafted Campervans from Japan',
+  description: 'Dream Drive builds premium campervans on the Toyota Hiace H200, handcrafted in Tokyo and delivered to Australia. Founded by Jared Campion in 2018.',
+  url: '/about',
+})
 
 export default function AboutPage() {
   return (

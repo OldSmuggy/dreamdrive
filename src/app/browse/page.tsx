@@ -1,11 +1,16 @@
 import { createSupabaseServer } from '@/lib/supabase-server'
 import { createAdminClient } from '@/lib/supabase'
 import { getJpyRate } from '@/lib/settings'
+import { generateMeta } from '@/lib/seo'
 import AuctionBanner from '@/components/ui/AuctionBanner'
 import BrowseClient from '@/components/listings/BrowseClient'
 import type { Listing } from '@/types'
 
-export const metadata = { title: 'Browse Vans' }
+export const metadata = generateMeta({
+  title: 'Browse Toyota Hiace Vans from Japan',
+  description: 'Browse available Toyota Hiace H200 vans from Japan auction and dealers. Filter by year, mileage, grade and drive type. All-in AUD price estimates shown.',
+  url: '/browse',
+})
 
 interface Props {
   searchParams: {
