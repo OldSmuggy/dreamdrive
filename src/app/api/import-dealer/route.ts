@@ -118,10 +118,71 @@ function parseDrive(raw: string | null): '2WD' | '4WD' | null {
   return (raw.includes('4WD') || raw.includes('4×4') || raw.includes('AWD') || raw.includes('四輪')) ? '4WD' : '2WD'
 }
 
+// Preferred photo categories for smart auto-selection (Car Sensor)
+// 6 exterior angles + 4 interior shots = 10 best images
+const PREFERRED_EXTERIOR = ['左斜前', '正面', '左', '右', '右斜後', '後']
+const PREFERRED_INTERIOR = ['インパネ全体', '運転席', '後部座席', 'シートアレンジ']
+const PREFERRED_CATEGORIES = [...PREFERRED_EXTERIOR, ...PREFERRED_INTERIOR]
+
+// Extract high-res photos from Car Sensor .js-photo elements with smart category selection
+function extractCarSensorPhotos(html: string): string[] {
+  // Match .js-photo anchor elements with data-photohq/data-photo and data-categoryname
+  const photoRe = /<a[^>]*class="[^"]*js-photo[^"]*"[^>]*>/gi
+  const photos: { url: string; category: string }[] = []
+  let m
+
+  while ((m = photoRe.exec(html)) !== null) {
+    const tag = html.slice(m.index, html.indexOf('>', m.index + m[0].length - 1) + 1)
+
+    // Prefer data-photohq (full resolution), fall back to data-photo (640×480)
+    const hqMatch = tag.match(/data-photohq="(https?:\/\/[^"]+)"/)
+    const medMatch = tag.match(/data-photo="(https?:\/\/[^"]+)"/)
+    const url = hqMatch?.[1] || medMatch?.[1]
+    if (!url) continue
+
+    const catMatch = tag.match(/data-categoryname="([^"]*)"/)
+    const category = catMatch?.[1] ?? ''
+
+    photos.push({ url, category })
+  }
+
+  if (photos.length === 0) return []
+
+  // Smart selection: pick best 10 by category
+  const selected: string[] = []
+  const used = new Set<number>()
+
+  // First pass: pick one photo per preferred category (in order)
+  for (const cat of PREFERRED_CATEGORIES) {
+    if (selected.length >= 10) break
+    const idx = photos.findIndex((p, i) => !used.has(i) && p.category === cat)
+    if (idx !== -1) {
+      selected.push(photos[idx].url)
+      used.add(idx)
+    }
+  }
+
+  // Second pass: fill remaining slots from unused photos
+  for (let i = 0; i < photos.length && selected.length < 10; i++) {
+    if (!used.has(i)) {
+      selected.push(photos[i].url)
+      used.add(i)
+    }
+  }
+
+  return selected
+}
+
 // Extract photos — tries src and data-src (lazy-loaded images)
 function extractPhotos(html: string, source: DealerSource): string[] {
+  // Car Sensor: use .js-photo elements for high-res images with smart selection
+  if (source === 'dealer_carsensor') {
+    const csPhotos = extractCarSensorPhotos(html)
+    if (csPhotos.length > 0) return csPhotos
+    // Fall through to generic extraction if .js-photo elements not found
+  }
+
   const urls = new Set<string>()
-  const domainHint = source === 'dealer_goonet' ? 'goo-net\\|carview\\|goo-net\\|cdn\\.goo' : 'carsensor'
   const attrs = ['src', 'data-src', 'data-original', 'data-lazy-src']
 
   for (const attr of attrs) {

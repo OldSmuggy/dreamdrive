@@ -124,6 +124,11 @@ function upgradeImageUrl(url: string): string {
       u.searchParams.delete('h')
       return u.toString()
     }
+    // Car Sensor: convert tiny S-prefix thumbnails (80×60) to medium (640×480)
+    // e.g. /SU00051137032_1_001.jpg → /U00051137032_1_001.jpg
+    if (url.includes('carsensor') && /\/SU\d/.test(url)) {
+      return url.replace(/\/SU(\d)/, '/U$1')
+    }
     // Path-based size suffixes: _150x112.jpg → .jpg, /resize/w=150 → /resize/w=800
     return url
       .replace(/_\d+x\d+(\.(jpg|jpeg|png))/i, '$1')
