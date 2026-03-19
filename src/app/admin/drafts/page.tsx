@@ -26,14 +26,12 @@ export default async function AdminDraftsPage() {
         </p>
       </div>
 
-      {!process.env.ANTHROPIC_API_KEY && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 text-sm text-amber-900">
-          <p className="font-semibold mb-1">AI translation not configured</p>
-          <p className="text-amber-800">
-            Add <code className="bg-amber-100 px-1 rounded font-mono">ANTHROPIC_API_KEY</code> to your Vercel environment variables to automatically translate Japanese fields on import. Until then, translate manually using the Edit form below.
-          </p>
-        </div>
-      )}
+      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 text-sm text-amber-900">
+        <p className="font-semibold mb-1">Manual entry mode</p>
+        <p className="text-amber-800">
+          AI extraction is currently disabled. Use CoWork to fill in fields automatically, or edit manually using the form below.
+        </p>
+      </div>
 
       <DraftEditor initial={drafts} />
     </div>

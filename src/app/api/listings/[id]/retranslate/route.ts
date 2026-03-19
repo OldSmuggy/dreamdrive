@@ -2,7 +2,11 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
-import Anthropic from '@anthropic-ai/sdk'
+
+function isCreditsError(err: unknown): boolean {
+  const msg = String(err).toLowerCase()
+  return msg.includes('credit') || msg.includes('insufficient_balance') || msg.includes('billing') || msg.includes('rate_limit')
+}
 
 export async function POST(
   _req: NextRequest,
@@ -10,7 +14,9 @@ export async function POST(
 ) {
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) {
-    return NextResponse.json({ error: 'ANTHROPIC_API_KEY not configured' }, { status: 503 })
+    return NextResponse.json({
+      error: 'Translation unavailable \u2014 API credits needed. Use CoWork to translate manually.',
+    }, { status: 503 })
   }
 
   const supabase = createAdminClient()
@@ -30,6 +36,7 @@ export async function POST(
   const modelName = listing.model_name ?? 'TOYOTA HIACE'
 
   try {
+    const Anthropic = (await import('@anthropic-ai/sdk')).default
     const client = new Anthropic({ apiKey })
     const features = [
       listing.has_nav && 'Navigation system',
@@ -83,6 +90,12 @@ Respond ONLY with valid JSON in this exact format:
     if (updateError) throw new Error(updateError.message)
     return NextResponse.json({ success: true, listing: updated })
   } catch (e) {
+    if (isCreditsError(e)) {
+      console.warn('[retranslate] Anthropic API credits unavailable')
+      return NextResponse.json({
+        error: 'Translation unavailable \u2014 API credits needed. Use CoWork to translate manually.',
+      }, { status: 503 })
+    }
     return NextResponse.json({ error: String(e) }, { status: 500 })
   }
 }

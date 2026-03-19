@@ -316,8 +316,13 @@ Respond ONLY with valid JSON in this exact format:
         description: result.description || '',
       }
     }
-  } catch {
-    // Fall through to raw values
+  } catch (err) {
+    const msg = String(err).toLowerCase()
+    if (msg.includes('credit') || msg.includes('insufficient_balance') || msg.includes('billing')) {
+      console.warn('[import-dealer] Anthropic API credits unavailable — using raw Japanese values')
+    } else {
+      console.error('[import-dealer] Translation error:', err)
+    }
   }
 
   return { modelName: parsed.modelName, grade: parsed.grade, bodyColour: parsed.bodyColour, description: '' }

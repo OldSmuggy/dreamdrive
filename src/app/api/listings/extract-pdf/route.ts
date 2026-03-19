@@ -2,7 +2,11 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
-import Anthropic from '@anthropic-ai/sdk'
+
+function isCreditsError(err: unknown): boolean {
+  const msg = String(err).toLowerCase()
+  return msg.includes('credit') || msg.includes('insufficient_balance') || msg.includes('billing') || msg.includes('rate_limit')
+}
 
 const EXTRACTION_PROMPT = `You are extracting data from a Japanese car auction sheet (NINJA Car Trade format).
 Extract every field you can find and return ONLY a JSON object with these exact keys:
@@ -57,45 +61,6 @@ export async function POST(req: NextRequest) {
     const buffer = await file.arrayBuffer()
     const base64 = Buffer.from(buffer).toString('base64')
 
-    // Call Anthropic API with the PDF
-    const anthropic = new Anthropic()
-    const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 2000,
-      messages: [
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'document',
-              source: { type: 'base64', media_type: 'application/pdf', data: base64 },
-            },
-            { type: 'text', text: EXTRACTION_PROMPT },
-          ],
-        },
-      ],
-    })
-
-    // Extract text response
-    const textBlock = message.content.find(b => b.type === 'text')
-    if (!textBlock || textBlock.type !== 'text') {
-      return NextResponse.json({ error: 'No text response from AI' }, { status: 500 })
-    }
-
-    // Parse JSON from response (handle markdown code blocks)
-    let rawJson = textBlock.text.trim()
-    if (rawJson.startsWith('```')) {
-      rawJson = rawJson.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '')
-    }
-
-    let extracted: Record<string, unknown>
-    try {
-      extracted = JSON.parse(rawJson)
-    } catch {
-      console.error('Failed to parse AI response:', rawJson)
-      return NextResponse.json({ error: 'Failed to parse extraction result', raw: rawJson }, { status: 500 })
-    }
-
     // Upload the PDF to storage as the inspection sheet
     const supabase = createAdminClient()
     const storagePath = `inspection-sheets/${Date.now()}-${file.name}`
@@ -109,54 +74,104 @@ export async function POST(req: NextRequest) {
 
     const inspectionSheetUrl = urlData?.publicUrl ?? null
 
-    // Create listing in database
+    // Try AI extraction — gracefully degrade if credits unavailable
+    let extracted: Record<string, unknown> = {}
+    let aiAvailable = false
+
+    try {
+      const Anthropic = (await import('@anthropic-ai/sdk')).default
+      const anthropic = new Anthropic()
+      const message = await anthropic.messages.create({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 2000,
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'document',
+                source: { type: 'base64', media_type: 'application/pdf', data: base64 },
+              },
+              { type: 'text', text: EXTRACTION_PROMPT },
+            ],
+          },
+        ],
+      })
+
+      const textBlock = message.content.find(b => b.type === 'text')
+      if (textBlock && textBlock.type === 'text') {
+        let rawJson = textBlock.text.trim()
+        if (rawJson.startsWith('```')) {
+          rawJson = rawJson.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '')
+        }
+        try {
+          extracted = JSON.parse(rawJson)
+          aiAvailable = true
+        } catch {
+          console.error('Failed to parse AI response:', rawJson)
+        }
+      }
+    } catch (err) {
+      if (isCreditsError(err)) {
+        console.warn('[extract-pdf] Anthropic API credits unavailable — creating listing with empty fields')
+      } else {
+        console.error('[extract-pdf] AI extraction error:', err)
+      }
+    }
+
+    // Create listing in database (with extracted data if available, empty if not)
     const { data: listing, error } = await supabase
       .from('listings')
       .insert({
         source:            'auction',
         status:            'draft',
-        model_name:        extracted.title as string ?? 'Unknown Vehicle',
-        model_year:        extracted.model_year as number ?? null,
-        grade:             extracted.grade as string ?? null,
-        chassis_code:      extracted.chassis_code as string ?? null,
-        mileage_km:        extracted.mileage as number ?? null,
-        body_colour:       extracted.body_color as string ?? null,
-        transmission:      extracted.transmission as string ?? null,
-        displacement_cc:   extracted.displacement as number ?? null,
-        drive:             extracted.drive as string ?? null,
-        inspection_score:  extracted.inspection_score as string ?? null,
-        bid_no:            extracted.bid_no as string ?? null,
-        auction_count:     extracted.auction_session as string ?? null,
-        start_price_jpy:   extracted.start_price_jpy as number ?? null,
-        has_nav:           extracted.has_navigation as boolean ?? false,
-        has_leather:       extracted.has_leather_seat as boolean ?? false,
-        has_sunroof:       extracted.has_sunroof as boolean ?? false,
-        has_alloys:        extracted.has_aluminum_wheels as boolean ?? false,
-        has_power_steering: extracted.has_power_steering as boolean ?? false,
-        has_power_windows: extracted.has_power_windows as boolean ?? false,
-        has_rear_ac:       extracted.has_rear_ac as boolean ?? false,
+        model_name:        (extracted.title as string) ?? 'Unknown Vehicle',
+        model_year:        (extracted.model_year as number) ?? null,
+        grade:             (extracted.grade as string) ?? null,
+        chassis_code:      (extracted.chassis_code as string) ?? null,
+        mileage_km:        (extracted.mileage as number) ?? null,
+        body_colour:       (extracted.body_color as string) ?? null,
+        transmission:      (extracted.transmission as string) ?? null,
+        displacement_cc:   (extracted.displacement as number) ?? null,
+        drive:             (extracted.drive as string) ?? null,
+        inspection_score:  (extracted.inspection_score as string) ?? null,
+        bid_no:            (extracted.bid_no as string) ?? null,
+        auction_count:     (extracted.auction_session as string) ?? null,
+        start_price_jpy:   (extracted.start_price_jpy as number) ?? null,
+        has_nav:           (extracted.has_navigation as boolean) ?? false,
+        has_leather:       (extracted.has_leather_seat as boolean) ?? false,
+        has_sunroof:       (extracted.has_sunroof as boolean) ?? false,
+        has_alloys:        (extracted.has_aluminum_wheels as boolean) ?? false,
+        has_power_steering: (extracted.has_power_steering as boolean) ?? false,
+        has_power_windows: (extracted.has_power_windows as boolean) ?? false,
+        has_rear_ac:       (extracted.has_rear_ac as boolean) ?? false,
         engine:            (() => {
           const cc = extracted.displacement as number | null
           if (cc === 2800) return 'diesel'
           if (cc === 2700 || cc === 2000) return 'petrol'
           return null
         })(),
-        kaijo_code:        extracted.auction_site as string ?? null,
+        kaijo_code:        (extracted.auction_site as string) ?? null,
         auction_time:      extracted.auction_date_time ? new Date((extracted.auction_date_time as string) + ':00+09:00').toISOString() : null,
         auction_result:    'pending',
-        condition_notes:   extracted.condition_notes as string ?? null,
-        interior_dimensions: extracted.interior_dimensions as string ?? null,
+        condition_notes:   (extracted.condition_notes as string) ?? null,
+        interior_dimensions: (extracted.interior_dimensions as string) ?? null,
         contact_phone:     null,
         inspection_sheet:  inspectionSheetUrl,
         photos:            [],
-        description:       extracted.condition_notes as string ?? null,
+        description:       (extracted.condition_notes as string) ?? null,
       })
       .select('id')
       .single()
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-    return NextResponse.json({ id: listing.id, extracted })
+    return NextResponse.json({
+      id: listing.id,
+      extracted,
+      ai_available: aiAvailable,
+      message: aiAvailable ? undefined : 'AI extraction unavailable \u2014 please fill in fields manually. Use CoWork to assist.',
+    })
   } catch (err) {
     console.error('PDF extraction error:', err)
     return NextResponse.json({ error: String(err) }, { status: 500 })
