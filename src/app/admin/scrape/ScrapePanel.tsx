@@ -75,7 +75,7 @@ export default function ScrapePanel({ secret }: { secret: string }) {
   return (
     <div className="max-w-3xl">
       <div className="mb-6">
-        <h1 className="font-display text-3xl text-forest-900">Full Auto-Scrape</h1>
+        <h1 className="text-3xl text-charcoal">Full Auto-Scrape</h1>
         <p className="text-gray-500 text-sm mt-1">
           Logs into NINJA, searches for HIACE VAN &amp; REGIUS ACE VAN listings, and imports them to the database.
         </p>
@@ -100,7 +100,7 @@ export default function ScrapePanel({ secret }: { secret: string }) {
               type="checkbox"
               checked={dryRun}
               onChange={e => setDryRun(e.target.checked)}
-              className="w-4 h-4 accent-forest-600"
+              className="w-4 h-4 accent-ocean"
             />
             <span className="text-sm font-medium text-gray-700">
               Dry run <span className="text-gray-400 font-normal">(parse only, no DB writes)</span>
@@ -115,7 +115,7 @@ export default function ScrapePanel({ secret }: { secret: string }) {
               onChange={e => setMax(e.target.value)}
               placeholder="all"
               min={1}
-              className="w-20 px-2 py-1 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-forest-500"
+              className="w-20 px-2 py-1 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ocean"
             />
             <span className="text-gray-400 text-xs">useful for testing</span>
           </label>
@@ -124,7 +124,7 @@ export default function ScrapePanel({ secret }: { secret: string }) {
         <button
           onClick={handleRun}
           disabled={running}
-          className="w-full py-3 bg-forest-600 text-white font-semibold rounded-xl hover:bg-forest-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="w-full py-3 bg-ocean text-white font-semibold rounded-xl hover:bg-ocean disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {running ? '⏳ Scraping...' : '🤖 Run Full Scrape'}
         </button>
@@ -138,7 +138,7 @@ export default function ScrapePanel({ secret }: { secret: string }) {
               {line || '\u00a0'}
             </div>
           ))}
-          {running && <div className="text-forest-400 animate-pulse">▋</div>}
+          {running && <div className="text-ocean animate-pulse">▋</div>}
         </div>
       )}
 
@@ -165,7 +165,7 @@ export default function ScrapePanel({ secret }: { secret: string }) {
           </div>
           {!dryRun && result.newInserts > 0 && (
             <div className="mt-4 text-center">
-              <a href="/admin/listings" className="text-forest-600 text-sm font-semibold underline">
+              <a href="/admin/listings" className="text-ocean text-sm font-semibold underline">
                 → View listings
               </a>
             </div>

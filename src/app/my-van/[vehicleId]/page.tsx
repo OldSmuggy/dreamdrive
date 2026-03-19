@@ -3,7 +3,7 @@ import { createAdminClient } from '@/lib/supabase'
 import { createSupabaseServer } from '@/lib/supabase-server'
 import MyVanClient from './MyVanClient'
 
-export const metadata = { title: 'Your Dream Drive' }
+export const metadata = { title: 'Your Bare Camper' }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type R = Record<string, any>

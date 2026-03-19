@@ -82,13 +82,13 @@ export default async function VanDetailPage({ params }: { params: { id: string }
 
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
-          <Link href="/browse" className="text-forest-600 text-sm font-medium hover:underline">
+          <Link href="/browse" className="text-ocean text-sm font-medium hover:underline">
             ← Back to Browse
           </Link>
           {isAdmin && (
             <Link
               href={`/admin/listings`}
-              className="text-xs px-3 py-1.5 bg-forest-600 text-white rounded-lg hover:bg-forest-700 font-semibold"
+              className="text-xs px-3 py-1.5 bg-ocean text-white rounded-lg hover:bg-ocean font-semibold"
             >
               ✏ Edit in Admin
             </Link>
@@ -150,7 +150,7 @@ export default async function VanDetailPage({ params }: { params: { id: string }
                 <SaveVanButton listingId={listing.id} userId={user?.id ?? null} initialSaved={isSaved} />
               </div>
             </div>
-            <h1 className="font-display text-3xl text-forest-900 mb-2">{listing.model_name}</h1>
+            <h1 className="text-3xl text-charcoal mb-2">{listing.model_name}</h1>
 
             {/* Location + fit-out level */}
             <div className="flex flex-wrap items-center gap-2 mb-3">
@@ -170,14 +170,14 @@ export default async function VanDetailPage({ params }: { params: { id: string }
               </p>
             )}
             {listing.source === 'au_stock' && listing.eta_date && (
-              <p className="text-forest-600 font-medium text-sm mb-4">
+              <p className="text-ocean font-medium text-sm mb-4">
                 ETA in Australia: ~{new Date(listing.eta_date).toLocaleDateString('en-AU', { month: 'long', year: 'numeric' })}
               </p>
             )}
 
             <div className="mb-6">
               <div className="flex items-baseline gap-2">
-                <div className="text-3xl font-display text-forest-700">{displayPrice}</div>
+                <div className="text-3xl text-ocean">{displayPrice}</div>
                 {isEstimate && priceCents && (
                   <span className="text-sm text-gray-400">est.</span>
                 )}
@@ -227,7 +227,7 @@ export default async function VanDetailPage({ params }: { params: { id: string }
                 userId={user?.id ?? null}
               />
               <Link href="/quiz"
-                className="text-forest-600 font-semibold hover:underline text-sm text-center block">
+                className="text-ocean font-semibold hover:underline text-sm text-center block">
                 Not sure? Take the Van Match Quiz →
               </Link>
             </div>
@@ -235,8 +235,8 @@ export default async function VanDetailPage({ params }: { params: { id: string }
         </div>
 
         {listing.description && (
-          <div className="mt-10 bg-sand-50 rounded-2xl p-6">
-            <h2 className="font-display text-xl mb-2">About this van</h2>
+          <div className="mt-10 bg-cream rounded-2xl p-6">
+            <h2 className="text-xl mb-2">About this van</h2>
             <p className="text-gray-600 leading-relaxed">{listing.description}</p>
           </div>
         )}
@@ -249,7 +249,7 @@ export default async function VanDetailPage({ params }: { params: { id: string }
 
         {listing.has_fitout && listing.show_interior_gallery && (listing.internal_photos ?? []).length > 0 && (
           <div className="mt-10">
-            <h2 className="font-display text-xl text-forest-900 mb-4">Campervan Interior &amp; Features</h2>
+            <h2 className="text-xl text-charcoal mb-4">Campervan Interior &amp; Features</h2>
             <PhotoGallery
               photos={listing.internal_photos ?? []}
               modelName={`${listing.model_name} — Interior`}
@@ -262,5 +262,5 @@ export default async function VanDetailPage({ params }: { params: { id: string }
 }
 
 function Chip({ children }: { children: React.ReactNode }) {
-  return <span className="bg-forest-50 text-forest-700 border border-forest-200 text-xs font-medium px-3 py-1 rounded-full">{children}</span>
+  return <span className="bg-cream text-ocean border border-ocean-light text-xs font-medium px-3 py-1 rounded-full">{children}</span>
 }

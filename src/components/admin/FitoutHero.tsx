@@ -19,7 +19,7 @@ export default function FitoutHero({
   const hasVideo = !!heroVideo
 
   return (
-    <section className="relative bg-forest-950 overflow-hidden">
+    <section className="relative bg-charcoal overflow-hidden">
       <div className="absolute inset-0">
         {hasVideo ? (
           <video

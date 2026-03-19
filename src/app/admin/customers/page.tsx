@@ -20,7 +20,7 @@ export default async function CustomersPage() {
     return (
       <div>
         <div className="flex items-center justify-between mb-6">
-          <h1 className="font-display text-2xl text-forest-900">Customers</h1>
+          <h1 className="text-2xl text-charcoal">Customers</h1>
           <Link href="/admin/customers/add" className="btn-primary text-sm px-4 py-2">
             + Add Customer
           </Link>
@@ -37,7 +37,7 @@ export default async function CustomersPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="font-display text-2xl text-forest-900">
+        <h1 className="text-2xl text-charcoal">
           Customers{' '}
           <span className="text-gray-400 font-sans text-lg font-normal">
             ({customers?.filter(c => c.status !== 'archived').length ?? 0})

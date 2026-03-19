@@ -24,8 +24,8 @@ export default function PopTopClient({ content: initial }: { content: Record<str
 
       {/* Hero */}
       <FitoutHero fallbackImage={content.hero_image || STATIC_HERO} heroImage={content.hero_image} heroVideo={content.hero_video}>
-        <p className="text-sand-400 text-xs font-semibold tracking-[0.25em] uppercase mb-3">DIY RV Solutions</p>
-        <h1 className="font-display text-5xl md:text-7xl text-white leading-tight mb-3">
+        <p className="text-sand text-xs font-semibold tracking-[0.25em] uppercase mb-3">DIY RV Solutions</p>
+        <h1 className="text-5xl md:text-7xl text-white leading-tight mb-3">
           Pop Top Roof Conversion
         </h1>
         <p className="text-white/80 text-xl md:text-2xl font-light mb-2">
@@ -38,18 +38,18 @@ export default function PopTopClient({ content: initial }: { content: Record<str
 
       {/* Pricing & Booking */}
       <section className="max-w-6xl mx-auto px-6 py-20">
-        <p className="text-sand-500 text-xs font-semibold tracking-widest uppercase mb-10">The numbers</p>
+        <p className="text-driftwood text-xs font-semibold tracking-widest uppercase mb-10">The numbers</p>
         <div className="grid md:grid-cols-3 gap-8 text-center">
           <div className="border border-gray-200 rounded-2xl p-10 hover:shadow-md transition-shadow">
-            <p className="font-display text-5xl text-forest-700 mb-3">$13,090</p>
+            <p className="text-5xl text-ocean mb-3">$13,090</p>
             <p className="text-gray-500 text-sm font-medium">incl. GST</p>
           </div>
           <div className="border border-gray-200 rounded-2xl p-10 hover:shadow-md transition-shadow">
-            <p className="font-display text-5xl text-forest-700 mb-3">$4,000</p>
+            <p className="text-5xl text-ocean mb-3">$4,000</p>
             <p className="text-gray-500 text-sm font-medium">deposit to schedule your build slot</p>
           </div>
           <div className="border border-gray-200 rounded-2xl p-10 hover:shadow-md transition-shadow">
-            <p className="font-display text-5xl text-forest-700 mb-3">10 days</p>
+            <p className="text-5xl text-ocean mb-3">10 days</p>
             <p className="text-gray-500 text-sm font-medium">turnaround from when we receive your van</p>
           </div>
         </div>
@@ -68,15 +68,15 @@ export default function PopTopClient({ content: initial }: { content: Record<str
       )}
 
       {/* What's Included */}
-      <section className="bg-sand-50 py-20">
+      <section className="bg-cream py-20">
         <div className="max-w-6xl mx-auto px-6">
-          <p className="text-sand-500 text-xs font-semibold tracking-widest uppercase mb-3">No surprises</p>
-          <h2 className="font-display text-4xl text-forest-900 mb-10">What&apos;s Included in Your Conversion</h2>
+          <p className="text-driftwood text-xs font-semibold tracking-widest uppercase mb-3">No surprises</p>
+          <h2 className="text-4xl text-charcoal mb-10">What&apos;s Included in Your Conversion</h2>
           <div className="divide-y divide-gray-200 border border-gray-200 rounded-2xl overflow-hidden bg-white">
             {POPTOP_INCLUSIONS.map(item => (
               <div key={item.label} className="px-6 py-5">
                 <div className="flex flex-col sm:flex-row sm:gap-8">
-                  <p className="font-semibold text-forest-900 text-sm sm:w-52 shrink-0 mb-1 sm:mb-0">{item.label}</p>
+                  <p className="font-semibold text-charcoal text-sm sm:w-52 shrink-0 mb-1 sm:mb-0">{item.label}</p>
                   <p className="text-gray-500 text-sm leading-relaxed">{item.detail}</p>
                 </div>
               </div>
@@ -87,12 +87,12 @@ export default function PopTopClient({ content: initial }: { content: Record<str
 
       {/* Benefits */}
       <section className="max-w-6xl mx-auto px-6 py-20">
-        <p className="text-sand-500 text-xs font-semibold tracking-widest uppercase mb-3">Why pop top?</p>
-        <h2 className="font-display text-4xl text-forest-900 mb-10">Benefits of a Pop Top</h2>
+        <p className="text-driftwood text-xs font-semibold tracking-widest uppercase mb-3">Why pop top?</p>
+        <h2 className="text-4xl text-charcoal mb-10">Benefits of a Pop Top</h2>
         <div className="grid sm:grid-cols-2 gap-6">
           {POPTOP_BENEFITS.map(b => (
             <div key={b.title} className="border border-gray-200 rounded-2xl p-8 hover:shadow-md transition-shadow">
-              <h3 className="font-display text-xl text-forest-900 mb-3">{b.title}</h3>
+              <h3 className="text-xl text-charcoal mb-3">{b.title}</h3>
               <p className="text-gray-500 text-sm leading-relaxed">{b.body}</p>
             </div>
           ))}
@@ -100,15 +100,15 @@ export default function PopTopClient({ content: initial }: { content: Record<str
       </section>
 
       {/* Add-On Options */}
-      <section className="bg-sand-50 py-20">
+      <section className="bg-cream py-20">
         <div className="max-w-6xl mx-auto px-6">
-          <p className="text-sand-500 text-xs font-semibold tracking-widest uppercase mb-3">Go further</p>
-          <h2 className="font-display text-4xl text-forest-900 mb-10">Add-On Options</h2>
+          <p className="text-driftwood text-xs font-semibold tracking-widest uppercase mb-3">Go further</p>
+          <h2 className="text-4xl text-charcoal mb-10">Add-On Options</h2>
           <div className="divide-y divide-gray-100 border border-gray-200 rounded-2xl overflow-hidden bg-white">
             {POPTOP_ADDONS.map(opt => (
-              <div key={opt.name} className="flex items-start justify-between gap-4 px-6 py-5 hover:bg-sand-50 transition-colors">
-                <p className="font-semibold text-forest-900 text-sm">{opt.name}</p>
-                <p className="font-display text-forest-700 text-lg shrink-0">{opt.price}</p>
+              <div key={opt.name} className="flex items-start justify-between gap-4 px-6 py-5 hover:bg-cream transition-colors">
+                <p className="font-semibold text-charcoal text-sm">{opt.name}</p>
+                <p className="text-ocean text-lg shrink-0">{opt.price}</p>
               </div>
             ))}
           </div>
@@ -117,8 +117,8 @@ export default function PopTopClient({ content: initial }: { content: Record<str
 
       {/* Compatible Vehicles */}
       <section className="max-w-6xl mx-auto px-6 py-20">
-        <p className="text-sand-500 text-xs font-semibold tracking-widest uppercase mb-3">Compatibility</p>
-        <h2 className="font-display text-4xl text-forest-900 mb-4">Compatible Vehicles</h2>
+        <p className="text-driftwood text-xs font-semibold tracking-widest uppercase mb-3">Compatibility</p>
+        <h2 className="text-4xl text-charcoal mb-4">Compatible Vehicles</h2>
         <p className="text-gray-500 text-sm mb-8 max-w-2xl">
           We have 4 different moulds which we can fit onto various different size vehicles.
         </p>
@@ -132,10 +132,10 @@ export default function PopTopClient({ content: initial }: { content: Record<str
       </section>
 
       {/* CTA */}
-      <section className="bg-forest-900 text-white py-20 text-center">
+      <section className="bg-charcoal text-white py-20 text-center">
         <div className="max-w-2xl mx-auto px-6">
-          <p className="text-sand-400 text-xs font-semibold tracking-widest uppercase mb-4">Ready to go</p>
-          <h2 className="font-display text-4xl md:text-5xl mb-4">Book Your Build Slot</h2>
+          <p className="text-sand text-xs font-semibold tracking-widest uppercase mb-4">Ready to go</p>
+          <h2 className="text-4xl md:text-5xl mb-4">Book Your Build Slot</h2>
           <p className="text-gray-300 text-lg mb-10 leading-relaxed">
             Get in touch to secure your spot. $4,000 deposit locks in your 10-business-day turnaround.
           </p>
@@ -154,9 +154,9 @@ export default function PopTopClient({ content: initial }: { content: Record<str
             <p>
               Jared Campion
               {' · '}
-              <a href="tel:0432182892" className="text-sand-400 hover:text-sand-300">0432 182 892</a>
+              <a href="tel:0432182892" className="text-sand hover:text-sand">0432 182 892</a>
               {' · '}
-              <a href="mailto:poptops@diyrvsolutions.com.au" className="text-sand-400 hover:text-sand-300">poptops@diyrvsolutions.com.au</a>
+              <a href="mailto:poptops@diyrvsolutions.com.au" className="text-sand hover:text-sand">poptops@diyrvsolutions.com.au</a>
             </p>
             <p>1/10 Jones Road, Capalaba, QLD 4157</p>
           </div>

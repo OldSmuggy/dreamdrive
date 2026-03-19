@@ -46,7 +46,7 @@ export default function ImageCarousel({ images, alt }: { images: string[]; alt: 
             <button
               key={i}
               onClick={() => setIndex(i)}
-              className={`w-2 h-2 rounded-full transition-colors ${i === index ? 'bg-forest-600' : 'bg-gray-300'}`}
+              className={`w-2 h-2 rounded-full transition-colors ${i === index ? 'bg-ocean' : 'bg-gray-300'}`}
               aria-label={`Go to image ${i + 1}`}
             />
           ))}
@@ -64,7 +64,7 @@ export default function ImageCarousel({ images, alt }: { images: string[]; alt: 
               alt=""
               onClick={() => setIndex(i)}
               className={`w-20 h-14 object-cover rounded-lg cursor-pointer shrink-0 transition-opacity ${
-                i === index ? 'ring-2 ring-forest-600 opacity-100' : 'opacity-60 hover:opacity-90'
+                i === index ? 'ring-2 ring-ocean opacity-100' : 'opacity-60 hover:opacity-90'
               }`}
             />
           ))}

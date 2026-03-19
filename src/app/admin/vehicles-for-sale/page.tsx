@@ -31,7 +31,7 @@ export default async function VehiclesForSalePage() {
   if (error) {
     return (
       <div>
-        <h1 className="font-display text-2xl text-forest-900 mb-4">Vehicles For Sale</h1>
+        <h1 className="text-2xl text-charcoal mb-4">Vehicles For Sale</h1>
         <p className="text-sm text-gray-400">No vehicles listed for sale yet, or tables not set up.</p>
       </div>
     )
@@ -46,7 +46,7 @@ export default async function VehiclesForSalePage() {
 
   return (
     <div>
-      <h1 className="font-display text-2xl text-forest-900 mb-6">Vehicles For Sale ({normalised.length})</h1>
+      <h1 className="text-2xl text-charcoal mb-6">Vehicles For Sale ({normalised.length})</h1>
       <VehiclesForSaleClient
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         vehicles={normalised as any}

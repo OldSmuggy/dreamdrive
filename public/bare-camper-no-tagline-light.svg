@@ -1,0 +1,16 @@
+<svg viewBox="0 0 680 80" xmlns="http://www.w3.org/2000/svg">
+<!-- Bare Camper — Full inline logo without tagline — Light variant -->
+<path fill="#2C2C2A" fill-rule="evenodd" d="M24 10 L58 10 Q76 10 76 26 Q76 36 64 40 Q78 44 78 56 Q78 70 58 70 L24 70 Z M38 22 L56 22 Q64 22 64 29 Q64 36 56 36 L38 36 Z M38 46 L58 46 Q68 46 68 55 Q68 62 58 62 L38 62 Z"/>
+<path fill="#2C2C2A" d="M92 70 L122 10 L152 70 Z"/>
+<line x1="122" y1="22" x2="122" y2="30" stroke="#F5F3ED" stroke-width="2" stroke-linecap="round"/>
+<line x1="122" y1="38" x2="122" y2="50" stroke="#F5F3ED" stroke-width="3.5" stroke-linecap="round"/>
+<line x1="122" y1="58" x2="122" y2="66" stroke="#F5F3ED" stroke-width="5" stroke-linecap="round"/>
+<path fill="#2C2C2A" fill-rule="evenodd" d="M164 10 L164 70 L178 70 L178 48 L190 48 L204 70 L220 70 L204 46 Q216 40 216 28 Q216 10 194 10 Z M178 22 L192 22 Q204 22 204 30 Q204 38 192 38 L178 38 Z"/>
+<path fill="#2C2C2A" d="M232 10 L232 70 L282 70 L282 58 L246 58 L246 46 L276 46 L276 36 L246 36 L246 22 L282 22 L282 10 Z"/>
+<path fill="#2C2C2A" d="M326 10 Q306 10 306 40 Q306 70 326 70 L340 70 L340 58 L328 58 Q320 58 320 40 Q320 22 328 22 L340 22 L340 10 Z"/>
+<path fill="#2C2C2A" fill-rule="evenodd" d="M352 70 L378 10 L404 70 Z M370 70 L378 48 L386 70 Z"/>
+<path fill="#2C2C2A" d="M416 70 L416 10 L434 10 L446 38 L458 10 L476 10 L476 70 L462 70 L462 32 L450 60 L442 60 L430 32 L430 70 Z"/>
+<path fill="#2C2C2A" fill-rule="evenodd" d="M488 10 L488 70 L502 70 L502 46 L514 46 Q532 46 532 28 Q532 10 514 10 Z M502 22 L512 22 Q520 22 520 28 Q520 36 512 36 L502 36 Z"/>
+<path fill="#2C2C2A" d="M544 10 L544 70 L594 70 L594 58 L558 58 L558 46 L588 46 L588 36 L558 36 L558 22 L594 22 L594 10 Z"/>
+<path fill="#2C2C2A" fill-rule="evenodd" d="M606 10 L606 70 L620 70 L620 48 L632 48 L646 70 L662 70 L646 46 Q658 40 658 28 Q658 10 636 10 Z M620 22 L634 22 Q646 22 646 30 Q646 38 634 38 L620 38 Z"/>
+</svg>

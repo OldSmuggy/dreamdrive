@@ -4,39 +4,37 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        forest: {
-          50:  '#f0f7f0',
-          100: '#dceddc',
-          200: '#b9dab9',
-          300: '#8cc08c',
-          400: '#5fa05f',
-          500: '#3d823d',
-          600: '#2d682d',
-          700: '#245224',
-          800: '#1d421d',
-          900: '#163516',
-          950: '#0a1f0a',
+        ocean: {
+          DEFAULT: '#3D6B73',
+          light:   '#4d7d85',
+          dark:    '#2d5158',
+        },
+        driftwood: {
+          DEFAULT: '#8B7355',
         },
         sand: {
-          50:  '#faf8f3',
-          100: '#f3ede0',
-          200: '#e8d9bc',
-          300: '#d9c090',
-          400: '#caa668',
-          500: '#be8f4a',
-          600: '#a8773c',
-          700: '#8b5f31',
-          800: '#704d2b',
-          900: '#5c4026',
+          DEFAULT: '#E8CFA0',
+          light:   '#f0dbb5',
+        },
+        dirt: {
+          DEFAULT: '#B5573A',
+          light:   '#c46a4f',
+          dark:    '#9a4830',
+        },
+        cream: {
+          DEFAULT: '#F5F3ED',
+        },
+        charcoal: {
+          DEFAULT: '#2C2C2A',
+          light:   '#3a3a38',
         },
         slate: {
           950: '#0a0e13',
         }
       },
       fontFamily: {
-        display: ['var(--font-display)', 'sans-serif'],
-        body:    ['var(--font-body)',    'sans-serif'],
-        mono:    ['var(--font-mono)',    'monospace'],
+        body: ['var(--font-body)', 'sans-serif'],
+        mono: ['var(--font-mono)', 'monospace'],
       },
       animation: {
         'fade-up':   'fadeUp 0.6s ease forwards',

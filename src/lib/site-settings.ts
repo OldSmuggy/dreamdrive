@@ -11,7 +11,7 @@ const DEFAULTS: SiteSettings = {
   logo_url: '',
   hero_video_url: '',
   hero_video_poster: '',
-  site_name: 'Dream Drive',
+  site_name: 'Bare Camper',
 }
 
 export async function getSiteSettings(): Promise<SiteSettings> {

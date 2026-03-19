@@ -57,7 +57,7 @@ export default function UploadAuctionPdfPage() {
       <div className="flex items-center gap-3 mb-6">
         <Link href="/admin/listings" className="text-gray-400 hover:text-gray-600 text-sm">← Listings</Link>
         <span className="text-gray-300">/</span>
-        <h1 className="font-display text-xl text-forest-900">Upload Auction PDF</h1>
+        <h1 className="text-xl text-charcoal">Upload Auction PDF</h1>
       </div>
 
       <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-5">
@@ -72,8 +72,8 @@ export default function UploadAuctionPdfPage() {
           onDrop={handleDrop}
           onClick={() => fileRef.current?.click()}
           className={`border-2 border-dashed rounded-xl px-6 py-10 text-center cursor-pointer transition-colors ${
-            dragging ? 'border-forest-500 bg-forest-50' :
-            file     ? 'border-forest-400 bg-forest-50/50' :
+            dragging ? 'border-ocean bg-cream' :
+            file     ? 'border-ocean bg-cream/50' :
                        'border-gray-300 hover:border-gray-400 hover:bg-gray-50'
           }`}
         >
@@ -89,7 +89,7 @@ export default function UploadAuctionPdfPage() {
               <p className="text-3xl mb-2">📄</p>
               <p className="text-sm font-semibold text-gray-900">{file.name}</p>
               <p className="text-xs text-gray-400 mt-0.5">{(file.size / 1024).toFixed(0)} KB</p>
-              <p className="text-xs text-forest-600 mt-2">Click to change file</p>
+              <p className="text-xs text-ocean mt-2">Click to change file</p>
             </div>
           ) : (
             <div>

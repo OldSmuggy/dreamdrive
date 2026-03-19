@@ -31,10 +31,10 @@ export default function FinanceCalculator() {
   )
 
   return (
-    <section id="calculator" className="py-16 bg-sand-50">
+    <section id="calculator" className="py-16 bg-cream">
       <div className="max-w-4xl mx-auto px-4">
         <div className="text-center mb-10">
-          <h2 className="font-display text-4xl text-forest-900 mb-3">Repayment Calculator</h2>
+          <h2 className="text-4xl text-charcoal mb-3">Repayment Calculator</h2>
           <p className="text-gray-500">Indicative estimates — actual rate depends on your credit profile and lender.</p>
         </div>
 
@@ -44,12 +44,12 @@ export default function FinanceCalculator() {
             <div>
               <div className="flex justify-between items-baseline mb-2">
                 <label className="text-sm font-semibold text-gray-700">Loan Amount</label>
-                <span className="text-sm font-bold text-forest-700">{formatAUD(amount)}</span>
+                <span className="text-sm font-bold text-ocean">{formatAUD(amount)}</span>
               </div>
               <input
                 type="range" min={30000} max={200000} step={5000} value={amount}
                 onChange={e => setAmount(Number(e.target.value))}
-                className="w-full accent-forest-600 cursor-pointer"
+                className="w-full accent-ocean cursor-pointer"
               />
               <div className="flex justify-between text-xs text-gray-400 mt-1.5">
                 <span>$30k</span><span>$200k</span>
@@ -60,12 +60,12 @@ export default function FinanceCalculator() {
             <div>
               <div className="flex justify-between items-baseline mb-2">
                 <label className="text-sm font-semibold text-gray-700">Loan Term</label>
-                <span className="text-sm font-bold text-forest-700">{years} {years === 1 ? 'year' : 'years'}</span>
+                <span className="text-sm font-bold text-ocean">{years} {years === 1 ? 'year' : 'years'}</span>
               </div>
               <input
                 type="range" min={1} max={7} step={1} value={years}
                 onChange={e => setYears(Number(e.target.value))}
-                className="w-full accent-forest-600 cursor-pointer"
+                className="w-full accent-ocean cursor-pointer"
               />
               <div className="flex justify-between text-xs text-gray-400 mt-1.5">
                 <span>1 yr</span><span>7 yrs</span>
@@ -76,12 +76,12 @@ export default function FinanceCalculator() {
             <div>
               <div className="flex justify-between items-baseline mb-2">
                 <label className="text-sm font-semibold text-gray-700">Interest Rate</label>
-                <span className="text-sm font-bold text-forest-700">{rate.toFixed(1)}% p.a.</span>
+                <span className="text-sm font-bold text-ocean">{rate.toFixed(1)}% p.a.</span>
               </div>
               <input
                 type="range" min={5} max={15} step={0.1} value={rate}
                 onChange={e => setRate(Number(e.target.value))}
-                className="w-full accent-forest-600 cursor-pointer"
+                className="w-full accent-ocean cursor-pointer"
               />
               <div className="flex justify-between text-xs text-gray-400 mt-1.5">
                 <span>5%</span><span>15%</span>
@@ -90,18 +90,18 @@ export default function FinanceCalculator() {
           </div>
 
           {/* Results */}
-          <div className="grid grid-cols-3 bg-forest-950 rounded-xl overflow-hidden text-white text-center">
+          <div className="grid grid-cols-3 bg-charcoal rounded-xl overflow-hidden text-white text-center">
             <div className="px-4 py-6">
               <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2">Weekly</p>
-              <p className="font-display text-2xl md:text-3xl text-sand-400">{formatAUD(weekly)}</p>
+              <p className="text-2xl md:text-3xl text-sand">{formatAUD(weekly)}</p>
             </div>
             <div className="px-4 py-6 border-x border-white/10">
               <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2">Monthly</p>
-              <p className="font-display text-2xl md:text-3xl">{formatAUD(monthly)}</p>
+              <p className="text-2xl md:text-3xl">{formatAUD(monthly)}</p>
             </div>
             <div className="px-4 py-6">
               <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2">Total Repayable</p>
-              <p className="font-display text-2xl md:text-3xl">{formatAUD(total)}</p>
+              <p className="text-2xl md:text-3xl">{formatAUD(total)}</p>
             </div>
           </div>
 

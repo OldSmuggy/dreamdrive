@@ -65,12 +65,12 @@ export default function LeadForm() {
   if (status === 'success') {
     return (
       <div className="py-10 text-center">
-        <div className="w-14 h-14 rounded-full bg-forest-100 flex items-center justify-center mx-auto mb-5">
-          <svg className="w-7 h-7 text-forest-600" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+        <div className="w-14 h-14 rounded-full bg-cream flex items-center justify-center mx-auto mb-5">
+          <svg className="w-7 h-7 text-ocean" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h3 className="font-display text-3xl text-forest-900 mb-2">Enquiry received!</h3>
+        <h3 className="text-3xl text-charcoal mb-2">Enquiry received!</h3>
         <p className="text-gray-500 max-w-sm mx-auto">
           We'll be in touch within 24 hours with finance options tailored to your situation.
         </p>
@@ -79,7 +79,7 @@ export default function LeadForm() {
   }
 
   const inputClass =
-    'w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-forest-600 focus:border-transparent'
+    'w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ocean focus:border-transparent'
 
   return (
     <form onSubmit={handleSubmit} className="grid md:grid-cols-2 gap-5">

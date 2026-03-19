@@ -54,8 +54,8 @@ export default function TamaProductClient({ conversionAud, low, high, jpyRate, c
       {/* Hero */}
       <FitoutHero fallbackImage="" heroImage={content.hero_image} heroVideo={content.hero_video}>
         <div className="pt-16">
-          <p className="text-sand-400 text-xs font-semibold tracking-[0.25em] uppercase mb-3">Dream Drive</p>
-          <h1 className="font-display text-7xl md:text-9xl text-white leading-none mb-3">TAMA</h1>
+          <p className="text-sand text-xs font-semibold tracking-[0.25em] uppercase mb-3">Dream Drive</p>
+          <h1 className="text-7xl md:text-9xl text-white leading-none mb-3">TAMA</h1>
           <p className="text-white/80 text-xl md:text-2xl font-light mb-2">The Family Adventure Van</p>
           <p className="text-white/60 text-base md:text-lg max-w-xl">6-seat people mover by day. Fully equipped campervan by night.</p>
         </div>
@@ -71,23 +71,23 @@ export default function TamaProductClient({ conversionAud, low, high, jpyRate, c
 
       {/* Pricing */}
       <section className="max-w-6xl mx-auto px-6 py-20">
-        <p className="text-sand-500 text-xs font-semibold tracking-widest uppercase mb-3">Pricing</p>
-        <h2 className="font-display text-4xl text-forest-900 mb-4">What Does a TAMA Cost?</h2>
+        <p className="text-driftwood text-xs font-semibold tracking-widest uppercase mb-3">Pricing</p>
+        <h2 className="text-4xl text-charcoal mb-4">What Does a TAMA Cost?</h2>
         <p className="text-gray-500 max-w-2xl mb-10 leading-relaxed">The van and conversion are priced separately — because every Japan-sourced Hiace is unique. You choose the van; we do the conversion.</p>
         <div className="grid md:grid-cols-3 gap-6 mb-10">
           <div className="border border-gray-200 rounded-2xl p-8 hover:shadow-md transition-shadow">
-            <p className="text-xs font-semibold tracking-widest text-sand-500 uppercase mb-2">Conversion Fee</p>
-            <p className="font-display text-3xl text-forest-700 mb-1">{formatAud(conversionAud)}</p>
+            <p className="text-xs font-semibold tracking-widest text-driftwood uppercase mb-2">Conversion Fee</p>
+            <p className="text-3xl text-ocean mb-1">{formatAud(conversionAud)}</p>
             <p className="text-gray-400 text-sm">¥4,800,000 at today&apos;s rate</p>
           </div>
           <div className="border border-gray-200 rounded-2xl p-8 hover:shadow-md transition-shadow">
-            <p className="text-xs font-semibold tracking-widest text-sand-500 uppercase mb-2">Base Vehicle + Import</p>
-            <p className="font-display text-3xl text-forest-700 mb-1">$25,000 – $50,000</p>
+            <p className="text-xs font-semibold tracking-widest text-driftwood uppercase mb-2">Base Vehicle + Import</p>
+            <p className="text-3xl text-ocean mb-1">$25,000 – $50,000</p>
             <p className="text-gray-400 text-sm">Hiace from Japan auction or dealer</p>
           </div>
-          <div className="border border-gray-200 rounded-2xl p-8 bg-forest-50 border-forest-200 hover:shadow-md transition-shadow">
-            <p className="text-xs font-semibold tracking-widest text-forest-600 uppercase mb-2">Total Estimate</p>
-            <p className="font-display text-3xl text-forest-700 mb-1">~{formatAud(low)} – {formatAud(high)}</p>
+          <div className="border border-gray-200 rounded-2xl p-8 bg-cream border-ocean-light hover:shadow-md transition-shadow">
+            <p className="text-xs font-semibold tracking-widest text-ocean uppercase mb-2">Total Estimate</p>
+            <p className="text-3xl text-ocean mb-1">~{formatAud(low)} – {formatAud(high)}</p>
             <p className="text-gray-500 text-sm">+ $13,090 for pop top (optional)</p>
           </div>
         </div>
@@ -95,14 +95,14 @@ export default function TamaProductClient({ conversionAud, low, high, jpyRate, c
       </section>
 
       {/* Included */}
-      <section className="bg-sand-50 py-20">
+      <section className="bg-cream py-20">
         <div className="max-w-6xl mx-auto px-6">
-          <p className="text-sand-500 text-xs font-semibold tracking-widest uppercase mb-3">Everything in the box</p>
-          <h2 className="font-display text-4xl text-forest-900 mb-12">Included Standard</h2>
+          <p className="text-driftwood text-xs font-semibold tracking-widest uppercase mb-3">Everything in the box</p>
+          <h2 className="text-4xl text-charcoal mb-12">Included Standard</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-4">
             {TAMA_INCLUSIONS.map(item => (
               <div key={item} className="flex items-start gap-3 py-2 border-b border-gray-200/60">
-                <span className="text-forest-600 mt-0.5 shrink-0"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg></span>
+                <span className="text-ocean mt-0.5 shrink-0"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg></span>
                 <span className="text-gray-700 text-sm leading-snug">{item}</span>
               </div>
             ))}
@@ -112,14 +112,14 @@ export default function TamaProductClient({ conversionAud, low, high, jpyRate, c
 
       {/* Layouts */}
       <section className="max-w-6xl mx-auto px-6 py-20">
-        <p className="text-sand-500 text-xs font-semibold tracking-widest uppercase mb-3">Tailored for you</p>
-        <h2 className="font-display text-4xl text-forest-900 mb-10">Choice of Layout</h2>
+        <p className="text-driftwood text-xs font-semibold tracking-widest uppercase mb-3">Tailored for you</p>
+        <h2 className="text-4xl text-charcoal mb-10">Choice of Layout</h2>
         <div className="grid md:grid-cols-2 gap-8">
           {TAMA_LAYOUTS.map(opt => (
             <div key={opt.name} className="border border-gray-200 rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
               <EditableImage src={content[opt.key + '_image'] || null} alt={opt.name} className="h-52" placeholderText={`${opt.name} photo coming soon`} />
               <div className="p-6">
-                <p className="text-xs font-semibold tracking-widest text-sand-500 uppercase mb-2">{opt.name}</p>
+                <p className="text-xs font-semibold tracking-widest text-driftwood uppercase mb-2">{opt.name}</p>
                 <p className="text-gray-600 text-sm leading-relaxed">{opt.desc}</p>
               </div>
             </div>
@@ -128,16 +128,16 @@ export default function TamaProductClient({ conversionAud, low, high, jpyRate, c
       </section>
 
       {/* Beds */}
-      <section className="bg-sand-50 py-20">
+      <section className="bg-cream py-20">
         <div className="max-w-6xl mx-auto px-6">
-          <p className="text-sand-500 text-xs font-semibold tracking-widest uppercase mb-3">Sleep the way you want</p>
-          <h2 className="font-display text-4xl text-forest-900 mb-10">Choice of Bed</h2>
+          <p className="text-driftwood text-xs font-semibold tracking-widest uppercase mb-3">Sleep the way you want</p>
+          <h2 className="text-4xl text-charcoal mb-10">Choice of Bed</h2>
           <div className="grid md:grid-cols-2 gap-8">
             {TAMA_BEDS.map(opt => (
               <div key={opt.name} className="border border-gray-200 rounded-2xl overflow-hidden hover:shadow-md transition-shadow bg-white">
                 <EditableImage src={content[opt.key + '_image'] || null} alt={opt.name} className="h-52" placeholderText={`${opt.name} photo coming soon`} />
                 <div className="p-6">
-                  <p className="text-xs font-semibold tracking-widest text-sand-500 uppercase mb-2">{opt.name}</p>
+                  <p className="text-xs font-semibold tracking-widest text-driftwood uppercase mb-2">{opt.name}</p>
                   <p className="text-gray-600 text-sm leading-relaxed">{opt.desc}</p>
                 </div>
               </div>
@@ -148,34 +148,34 @@ export default function TamaProductClient({ conversionAud, low, high, jpyRate, c
 
       {/* Options */}
       <section className="max-w-6xl mx-auto px-6 py-20">
-        <p className="text-sand-500 text-xs font-semibold tracking-widest uppercase mb-3">Make it yours</p>
-        <h2 className="font-display text-4xl text-forest-900 mb-10">Select Options</h2>
+        <p className="text-driftwood text-xs font-semibold tracking-widest uppercase mb-3">Make it yours</p>
+        <h2 className="text-4xl text-charcoal mb-10">Select Options</h2>
         <div className="divide-y divide-gray-100 border border-gray-200 rounded-2xl overflow-hidden">
           {TAMA_OPTIONS.map(opt => (
-            <div key={opt.name} className="flex items-start justify-between gap-4 px-6 py-5 hover:bg-sand-50 transition-colors">
+            <div key={opt.name} className="flex items-start justify-between gap-4 px-6 py-5 hover:bg-cream transition-colors">
               <div>
-                <p className="font-semibold text-forest-900 text-sm">{opt.name}</p>
+                <p className="font-semibold text-charcoal text-sm">{opt.name}</p>
                 {opt.detail && <p className="text-gray-500 text-xs mt-0.5">{opt.detail}</p>}
               </div>
-              <p className="font-display text-forest-700 text-lg shrink-0">{opt.price}</p>
+              <p className="text-ocean text-lg shrink-0">{opt.price}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* CTA */}
-      <section className="bg-forest-900 text-white py-20 text-center">
+      <section className="bg-charcoal text-white py-20 text-center">
         <div className="max-w-2xl mx-auto px-6">
-          <p className="text-sand-400 text-xs font-semibold tracking-widest uppercase mb-4">Get started</p>
-          <h2 className="font-display text-4xl md:text-5xl mb-4">Ready to build your TAMA?</h2>
+          <p className="text-sand text-xs font-semibold tracking-widest uppercase mb-4">Get started</p>
+          <h2 className="text-4xl md:text-5xl mb-4">Ready to build your TAMA?</h2>
           <p className="text-gray-300 text-lg mb-10 leading-relaxed">Browse available vans, start your build, or talk to us about what&apos;s right for your family.</p>
           <div className="flex flex-wrap gap-4 justify-center">
             <Link href="/configurator?fitout=tama" className="btn-primary text-base px-8 py-4">Start My TAMA Build</Link>
             <LeadFormModal trigger="Book a Free Consultation" source="product_page_tama" className="btn-ghost text-base px-8 py-4" />
           </div>
           <p className="mt-10 text-gray-400 text-sm">
-            <a href="mailto:jared@dreamdrive.life" className="text-sand-400 hover:text-sand-300">jared@dreamdrive.life</a>
-            {' · '}<a href="tel:0432182892" className="text-sand-400 hover:text-sand-300">0432 182 892</a>
+            <a href="mailto:jared@dreamdrive.life" className="text-sand hover:text-sand">jared@dreamdrive.life</a>
+            {' · '}<a href="tel:0432182892" className="text-sand hover:text-sand">0432 182 892</a>
           </p>
         </div>
       </section>

@@ -1,13 +1,13 @@
-export const metadata = { title: 'About Dream Drive' }
+export const metadata = { title: 'About Bare Camper' }
 
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-3xl mx-auto px-4 py-16">
-        <h1 className="font-display text-4xl text-forest-900 mb-4">About Dream Drive</h1>
+        <h1 className="text-4xl text-charcoal mb-4">About Bare Camper</h1>
         <div className="prose prose-gray max-w-none space-y-4 text-gray-700">
           <p className="text-lg">
-            Dream Drive is an Australian van-life company that sources premium Toyota HiAce H200 vans directly from Japanese auctions and dealers.
+            Bare Camper is an Australian van-life company that sources premium Toyota HiAce H200 vans directly from Japanese auctions and dealers.
           </p>
           <p>
             We handle every step of the import process — bidding, payment, shipping, quarantine, compliance, and registration — so you can focus on planning your next adventure.
@@ -17,7 +17,7 @@ export default function AboutPage() {
           </p>
           <p>
             Based in Brisbane, Queensland. Contact us at{' '}
-            <a href="mailto:hello@dreamdrive.life" className="text-forest-600 hover:underline">hello@dreamdrive.life</a>
+            <a href="mailto:hello@dreamdrive.life" className="text-ocean hover:underline">hello@dreamdrive.life</a>
           </p>
         </div>
       </div>

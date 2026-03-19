@@ -47,9 +47,9 @@ export default function ImportCalculator() {
                 step={500}
                 value={vanAud}
                 onChange={e => setVanAud(Number(e.target.value))}
-                className="flex-1 accent-forest-600"
+                className="flex-1 accent-ocean"
               />
-              <span className="font-display text-forest-700 text-lg w-28 text-right">{fmt(vanAud)}</span>
+              <span className="text-ocean text-lg w-28 text-right">{fmt(vanAud)}</span>
             </div>
             <div className="flex justify-between text-xs text-gray-400 mt-1">
               <span>$8,000</span><span>$60,000</span>
@@ -63,7 +63,7 @@ export default function ImportCalculator() {
                   key={s}
                   onClick={() => setSize(s)}
                   className={`flex-1 py-2.5 rounded-xl border-2 text-sm font-semibold transition-colors ${
-                    size === s ? 'border-forest-600 bg-forest-50 text-forest-800' : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                    size === s ? 'border-ocean bg-cream text-charcoal' : 'border-gray-200 text-gray-500 hover:border-gray-300'
                   }`}
                 >
                   {s}
@@ -91,13 +91,13 @@ export default function ImportCalculator() {
       </div>
 
       {/* Total */}
-      <div className="px-6 py-4 bg-forest-950 text-white flex items-center justify-between">
+      <div className="px-6 py-4 bg-charcoal text-white flex items-center justify-between">
         <div>
-          <p className="font-display text-lg">Estimated Total on Australian Roads</p>
+          <p className="text-lg">Estimated Total on Australian Roads</p>
           <p className="text-white/60 text-xs mt-0.5">Excluding fit-out. Registration at lower estimate.</p>
         </div>
         <div className="text-right">
-          <p className="font-display text-2xl text-sand-400">
+          <p className="text-2xl text-sand">
             {fmt(totalMin)} – {fmt(totalMax)}
           </p>
           <p className="text-white/50 text-xs mt-0.5">AUD estimate</p>

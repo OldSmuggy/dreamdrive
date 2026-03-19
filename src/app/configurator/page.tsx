@@ -4,7 +4,7 @@ import AuctionBanner from '@/components/ui/AuctionBanner'
 import ConfiguratorV2 from '@/components/configurator/ConfiguratorV2'
 import type { Listing, Product } from '@/types'
 
-export const metadata = { title: 'Design Your Build — Dream Drive' }
+export const metadata = { title: 'Design Your Build — Bare Camper' }
 
 type FitoutSlug = 'tama' | 'mana' | 'grid' | null
 

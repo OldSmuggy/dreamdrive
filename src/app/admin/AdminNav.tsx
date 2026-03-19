@@ -25,7 +25,7 @@ export default function AdminNav() {
   const navContent = (
     <>
       <div className="px-5 py-6 border-b border-white/10">
-        <Link href="/" className="text-sand-400 font-display text-lg" onClick={() => setOpen(false)}>
+        <Link href="/" className="text-sand text-lg" onClick={() => setOpen(false)}>
           Dream Drive
         </Link>
         <p className="text-white/50 text-xs mt-0.5">Admin</p>
@@ -58,7 +58,7 @@ export default function AdminNav() {
     <>
       {/* Mobile hamburger button */}
       <button
-        className="md:hidden fixed top-4 left-4 z-50 bg-forest-950 text-white p-2.5 rounded-lg shadow-lg"
+        className="md:hidden fixed top-4 left-4 z-50 bg-charcoal text-white p-2.5 rounded-lg shadow-lg"
         onClick={() => setOpen(v => !v)}
         aria-label="Toggle menu"
       >
@@ -78,7 +78,7 @@ export default function AdminNav() {
       {/* Sidebar — fixed on mobile (slides in), static on desktop */}
       <nav
         className={`
-          fixed md:static top-0 left-0 h-full z-40 w-56 bg-forest-950 text-white flex flex-col shrink-0
+          fixed md:static top-0 left-0 h-full z-40 w-56 bg-charcoal text-white flex flex-col shrink-0
           transform transition-transform duration-200 ease-in-out
           ${open ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
         `}

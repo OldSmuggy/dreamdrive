@@ -4,47 +4,45 @@
 
 @layer base {
   :root {
-    --forest-600: #2d682d;
-    --sand-400: #caa668;
+    --ocean: #3D6B73;
+    --sand: #E8CFA0;
   }
 
   html { scroll-behavior: smooth; }
 
-  h1, h2, h3, h4 { font-family: var(--font-display); }
-
   ::selection {
-    background-color: #b9dab9;
-    color: #0a1f0a;
+    background-color: #E8CFA0;
+    color: #2C2C2A;
   }
 }
 
 @layer components {
   /* Countdown digits */
   .countdown-digit {
-    @apply tabular-nums font-display text-4xl leading-none;
+    @apply tabular-nums font-bold text-4xl leading-none;
   }
 
   /* Source badges */
   .badge-auction   { @apply bg-amber-500 text-white text-xs font-bold px-2 py-0.5 rounded; }
   .badge-dealer    { @apply bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded; }
-  .badge-au-stock  { @apply bg-forest-600 text-white text-xs font-bold px-2 py-0.5 rounded; }
+  .badge-au-stock  { @apply bg-ocean text-white text-xs font-bold px-2 py-0.5 rounded; }
 
   /* Score badges */
-  .score-green { @apply bg-forest-100 text-forest-800 border border-forest-300; }
+  .score-green { @apply bg-cream text-charcoal border border-ocean; }
   .score-amber { @apply bg-amber-100 text-amber-800 border border-amber-300; }
   .score-red   { @apply bg-red-100 text-red-800 border border-red-300; }
   .score-gray  { @apply bg-gray-100 text-gray-600 border border-gray-200; }
 
-  /* Buttons — primary: solid green / secondary: outline / ghost: white pill (use on dark bg) / danger: red */
+  /* Buttons — primary: solid ocean / secondary: outline / ghost: white pill (use on dark bg) / danger: red */
   .btn-primary {
-    @apply bg-forest-600 hover:bg-forest-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors duration-150;
+    @apply bg-ocean hover:bg-ocean-dark text-white font-semibold px-6 py-3 rounded-xl transition-colors duration-150;
   }
   .btn-secondary {
-    @apply bg-transparent hover:bg-forest-50 text-forest-900 font-semibold px-6 py-3 rounded-xl border-2 border-forest-900 transition-colors duration-150;
+    @apply bg-transparent hover:bg-cream text-charcoal font-semibold px-6 py-3 rounded-xl border-2 border-charcoal transition-colors duration-150;
   }
-  /* Use btn-ghost for CTAs on dark/forest backgrounds — white pill with green text */
+  /* Use btn-ghost for CTAs on dark backgrounds — white pill with charcoal text */
   .btn-ghost {
-    @apply bg-white hover:bg-gray-50 text-forest-900 font-semibold px-6 py-3 rounded-xl border border-gray-200 transition-colors duration-150;
+    @apply bg-white hover:bg-gray-50 text-charcoal font-semibold px-6 py-3 rounded-xl border border-gray-200 transition-colors duration-150;
   }
   .btn-danger {
     @apply bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors duration-150;
@@ -55,7 +53,7 @@
 
   /* Form inputs */
   .input-field {
-    @apply w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-forest-500 focus:border-transparent transition-shadow;
+    @apply w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-ocean focus:border-transparent transition-shadow;
   }
 }
 

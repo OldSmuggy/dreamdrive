@@ -52,7 +52,7 @@ export default function VanGallery({ photos, modelName, focalPoint }: Props) {
               alt=""
               onClick={() => setActiveIndex(i)}
               className={`rounded-lg object-cover cursor-pointer shrink-0 transition-opacity ${
-                i === activeIndex ? 'ring-2 ring-forest-600 opacity-100' : 'opacity-75 hover:opacity-100'
+                i === activeIndex ? 'ring-2 ring-ocean opacity-100' : 'opacity-75 hover:opacity-100'
               }`}
               style={{ width: 80, height: 60, minWidth: 80 }}
             />

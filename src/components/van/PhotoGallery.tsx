@@ -91,12 +91,12 @@ export default function PhotoGallery({ photos, modelName, focalPoint, isAuction,
             style={{ background: 'rgba(15, 40, 25, 0.65)', backdropFilter: 'blur(4px)' }}
           >
             <div className="text-4xl mb-3">🔒</div>
-            <p className="text-white font-display text-xl mb-1">Create a free account to view all photos</p>
+            <p className="text-white text-xl mb-1">Create a free account to view all photos</p>
             <p className="text-white/70 text-sm mb-4">Takes 30 seconds — no credit card needed</p>
             {contactPhone && (
               <a
                 href={`tel:${contactPhone.replace(/\s/g, '')}`}
-                className="text-sand-400 font-medium mb-4 hover:text-sand-300 transition-colors block"
+                className="text-sand font-medium mb-4 hover:text-sand transition-colors block"
                 style={{ fontSize: '1.5rem' }}
                 onClick={e => e.stopPropagation()}
               >
@@ -105,7 +105,7 @@ export default function PhotoGallery({ photos, modelName, focalPoint, isAuction,
             )}
             <a
               href={loginUrl}
-              className="bg-forest-600 text-white font-semibold px-6 py-2.5 rounded-full text-sm hover:bg-forest-700 transition-colors"
+              className="bg-ocean text-white font-semibold px-6 py-2.5 rounded-full text-sm hover:bg-ocean transition-colors"
               onClick={e => e.stopPropagation()}
             >
               Sign Up Free
@@ -154,7 +154,7 @@ export default function PhotoGallery({ photos, modelName, focalPoint, isAuction,
               style={{
                 height: 80,
                 opacity: i === activeIndex ? 1 : 0.65,
-                outline: i === activeIndex ? '2px solid #1a3a2a' : '2px solid transparent',
+                outline: i === activeIndex ? '2px solid #2C2C2A' : '2px solid transparent',
                 outlineOffset: 2,
               }}
             />
@@ -169,14 +169,14 @@ export default function PhotoGallery({ photos, modelName, focalPoint, isAuction,
               // eslint-disable-next-line @next/next/no-img-element
               <div key={i} className="relative rounded-lg overflow-hidden" style={{ height: 80 }}>
                 <img src={p} alt="" className="w-full h-full object-cover blur-md scale-110" />
-                <div className="absolute inset-0 bg-forest-900/50 flex items-center justify-center">
+                <div className="absolute inset-0 bg-charcoal/50 flex items-center justify-center">
                   <span className="text-white/80 text-lg">🔒</span>
                 </div>
               </div>
             ))}
           </div>
           <div className="mt-2 text-center">
-            <a href={loginUrl} className="text-sm text-forest-600 hover:underline font-medium">
+            <a href={loginUrl} className="text-sm text-ocean hover:underline font-medium">
               {photos.length} photos — sign up to view
             </a>
           </div>

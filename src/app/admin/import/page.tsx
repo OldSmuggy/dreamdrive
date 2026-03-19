@@ -129,7 +129,7 @@ export default function AdminImportPage() {
   return (
     <div className="max-w-3xl">
       <div className="mb-6">
-        <h1 className="font-display text-3xl text-forest-900">Import Vehicle</h1>
+        <h1 className="text-3xl text-charcoal">Import Vehicle</h1>
         <p className="text-gray-500 text-sm mt-1">
           Import vehicles from Japan auction or dealer sites directly into your database.
         </p>
@@ -141,7 +141,7 @@ export default function AdminImportPage() {
           onClick={() => setTab('ninja')}
           className={`px-5 py-2 rounded-lg text-sm font-semibold transition-colors ${
             tab === 'ninja'
-              ? 'bg-white text-forest-900 shadow-sm'
+              ? 'bg-white text-charcoal shadow-sm'
               : 'text-gray-500 hover:text-gray-700'
           }`}
         >
@@ -151,7 +151,7 @@ export default function AdminImportPage() {
           onClick={() => setTab('dealer')}
           className={`px-5 py-2 rounded-lg text-sm font-semibold transition-colors ${
             tab === 'dealer'
-              ? 'bg-white text-forest-900 shadow-sm'
+              ? 'bg-white text-charcoal shadow-sm'
               : 'text-gray-500 hover:text-gray-700'
           }`}
         >
@@ -165,7 +165,7 @@ export default function AdminImportPage() {
           {/* Step 1 — Cookie */}
           <div className="bg-white border border-gray-200 rounded-xl p-6 mb-5">
             <div className="flex items-start gap-3 mb-4">
-              <div className="w-7 h-7 rounded-full bg-forest-600 text-white text-sm font-bold flex items-center justify-center shrink-0">1</div>
+              <div className="w-7 h-7 rounded-full bg-ocean text-white text-sm font-bold flex items-center justify-center shrink-0">1</div>
               <div>
                 <h2 className="font-semibold text-gray-900">Paste your NINJA session cookie</h2>
                 <p className="text-sm text-gray-500 mt-0.5">This lets the import tool log in as you. You only need to do this once per browser session.</p>
@@ -187,7 +187,7 @@ export default function AdminImportPage() {
             </div>
 
             <div className="flex gap-2 mb-2">
-              <button onClick={handleLoadCookie} className="text-xs text-forest-600 underline">
+              <button onClick={handleLoadCookie} className="text-xs text-ocean underline">
                 Load saved cookie
               </button>
             </div>
@@ -196,12 +196,12 @@ export default function AdminImportPage() {
               value={sessionCookie}
               onChange={e => setSessionCookie(e.target.value)}
               placeholder="JSESSIONID=abc123; NINJA_SESSION=xyz789; ..."
-              className="w-full h-20 text-xs font-mono border border-gray-300 rounded-lg p-3 resize-none focus:outline-none focus:ring-2 focus:ring-forest-500"
+              className="w-full h-20 text-xs font-mono border border-gray-300 rounded-lg p-3 resize-none focus:outline-none focus:ring-2 focus:ring-ocean"
             />
             <div className="flex justify-end mt-2">
               <button
                 onClick={handleSaveCookie}
-                className="text-sm px-4 py-1.5 bg-forest-600 text-white rounded-lg hover:bg-forest-700"
+                className="text-sm px-4 py-1.5 bg-ocean text-white rounded-lg hover:bg-ocean"
               >
                 {cookieSaved ? '✓ Saved' : 'Save cookie for later'}
               </button>
@@ -211,7 +211,7 @@ export default function AdminImportPage() {
           {/* Step 2 — URLs */}
           <div className="bg-white border border-gray-200 rounded-xl p-6 mb-5">
             <div className="flex items-start gap-3 mb-4">
-              <div className="w-7 h-7 rounded-full bg-forest-600 text-white text-sm font-bold flex items-center justify-center shrink-0">2</div>
+              <div className="w-7 h-7 rounded-full bg-ocean text-white text-sm font-bold flex items-center justify-center shrink-0">2</div>
               <div>
                 <h2 className="font-semibold text-gray-900">Paste vehicle URLs</h2>
                 <p className="text-sm text-gray-500 mt-0.5">One URL per line. Copy the URL from the browser address bar when viewing a vehicle detail page.</p>
@@ -226,7 +226,7 @@ export default function AdminImportPage() {
               value={ninjaUrls}
               onChange={e => setNinjaUrls(e.target.value)}
               placeholder={"Paste URLs here, one per line...\nhttps://www.ninja-cartrade.jp/ninja/cardetail.action?KaijoCode=TK&..."}
-              className="w-full h-36 text-sm font-mono border border-gray-300 rounded-lg p-3 resize-none focus:outline-none focus:ring-2 focus:ring-forest-500"
+              className="w-full h-36 text-sm font-mono border border-gray-300 rounded-lg p-3 resize-none focus:outline-none focus:ring-2 focus:ring-ocean"
             />
             <p className="text-xs text-gray-400 mt-1">
               {ninjaUrls.split('\n').filter(u => u.includes('ninja-cartrade.jp')).length} valid URLs detected
@@ -236,7 +236,7 @@ export default function AdminImportPage() {
           {/* Step 3 — Import */}
           <div className="bg-white border border-gray-200 rounded-xl p-6 mb-6">
             <div className="flex items-start gap-3 mb-4">
-              <div className="w-7 h-7 rounded-full bg-forest-600 text-white text-sm font-bold flex items-center justify-center shrink-0">3</div>
+              <div className="w-7 h-7 rounded-full bg-ocean text-white text-sm font-bold flex items-center justify-center shrink-0">3</div>
               <div>
                 <h2 className="font-semibold text-gray-900">Import</h2>
                 <p className="text-sm text-gray-500 mt-0.5">Fetches each vehicle page and saves it to your database.</p>
@@ -246,7 +246,7 @@ export default function AdminImportPage() {
             <button
               onClick={handleNinjaImport}
               disabled={ninjaLoading}
-              className="w-full py-3 bg-forest-600 text-white font-semibold rounded-xl hover:bg-forest-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full py-3 bg-ocean text-white font-semibold rounded-xl hover:bg-ocean disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {ninjaLoading ? '⏳ Importing...' : '🚐 Import Listings'}
             </button>
@@ -270,7 +270,7 @@ export default function AdminImportPage() {
           {/* Step 1 — URLs */}
           <div className="bg-white border border-gray-200 rounded-xl p-6 mb-5">
             <div className="flex items-start gap-3 mb-4">
-              <div className="w-7 h-7 rounded-full bg-forest-600 text-white text-sm font-bold flex items-center justify-center shrink-0">1</div>
+              <div className="w-7 h-7 rounded-full bg-ocean text-white text-sm font-bold flex items-center justify-center shrink-0">1</div>
               <div>
                 <h2 className="font-semibold text-gray-900">Paste listing URLs</h2>
                 <p className="text-sm text-gray-500 mt-0.5">One URL per line. Accepts goo-net.com and carsensor.net listing pages.</p>
@@ -290,7 +290,7 @@ export default function AdminImportPage() {
               value={dealerUrls}
               onChange={e => setDealerUrls(e.target.value)}
               placeholder={"Paste URLs here, one per line...\nhttps://www.goo-net.com/usedcar/spread/goo/..."}
-              className="w-full h-36 text-sm font-mono border border-gray-300 rounded-lg p-3 resize-none focus:outline-none focus:ring-2 focus:ring-forest-500"
+              className="w-full h-36 text-sm font-mono border border-gray-300 rounded-lg p-3 resize-none focus:outline-none focus:ring-2 focus:ring-ocean"
             />
             <p className="text-xs text-gray-400 mt-1">
               {validDealerCount} valid URL{validDealerCount !== 1 ? 's' : ''} detected
@@ -300,7 +300,7 @@ export default function AdminImportPage() {
           {/* Step 2 — Import */}
           <div className="bg-white border border-gray-200 rounded-xl p-6 mb-6">
             <div className="flex items-start gap-3 mb-4">
-              <div className="w-7 h-7 rounded-full bg-forest-600 text-white text-sm font-bold flex items-center justify-center shrink-0">2</div>
+              <div className="w-7 h-7 rounded-full bg-ocean text-white text-sm font-bold flex items-center justify-center shrink-0">2</div>
               <div>
                 <h2 className="font-semibold text-gray-900">Import</h2>
                 <p className="text-sm text-gray-500 mt-0.5">Fetches each listing page and saves it to your database as a dealer listing.</p>
@@ -310,7 +310,7 @@ export default function AdminImportPage() {
             <button
               onClick={handleDealerImport}
               disabled={dealerLoading}
-              className="w-full py-3 bg-forest-600 text-white font-semibold rounded-xl hover:bg-forest-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full py-3 bg-ocean text-white font-semibold rounded-xl hover:bg-ocean disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {dealerLoading ? '⏳ Importing...' : '🚐 Import Dealer Listings'}
             </button>
@@ -390,7 +390,7 @@ function ResultsList({
 
       {results.every(r => r.success) && (
         <div className="text-center pt-2">
-          <a href="/admin/listings" className="text-forest-600 text-sm font-semibold underline">
+          <a href="/admin/listings" className="text-ocean text-sm font-semibold underline">
             → View all listings
           </a>
         </div>

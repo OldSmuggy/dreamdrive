@@ -188,19 +188,19 @@ export default function SiteSettingsClient({ logoUrl: initLogoUrl, heroVideoUrl:
 
       {/* ---- Logo ---- */}
       <section className="bg-white border border-gray-200 rounded-2xl p-6">
-        <h2 className="font-display text-xl text-forest-900 mb-1">Logo</h2>
+        <h2 className="text-xl text-charcoal mb-1">Logo</h2>
         <p className="text-gray-500 text-sm mb-5">Upload your site logo. Accepted: PNG, SVG, JPG, WEBP — max 2MB. If no logo is set, the site name text is used.</p>
 
         {/* Preview */}
         {logoUrl && (
-          <div className="mb-4 p-4 bg-forest-950 rounded-xl inline-block">
+          <div className="mb-4 p-4 bg-charcoal rounded-xl inline-block">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={logoUrl} alt="Logo preview" style={{ maxWidth: 200, height: 40, objectFit: 'contain' }} />
           </div>
         )}
         {!logoUrl && (
-          <div className="mb-4 p-4 bg-forest-950 rounded-xl inline-block">
-            <span className="font-display text-xl text-sand-400">Dream Drive</span>
+          <div className="mb-4 p-4 bg-charcoal rounded-xl inline-block">
+            <span className="text-xl text-sand">Bare Camper</span>
             <p className="text-white/40 text-xs mt-1">Fallback text (no logo set)</p>
           </div>
         )}
@@ -211,7 +211,7 @@ export default function SiteSettingsClient({ logoUrl: initLogoUrl, heroVideoUrl:
         )}
 
         {logoError && <p className="text-red-600 text-sm mb-3">{logoError}</p>}
-        {logoSaved && <p className="text-forest-700 text-sm font-medium mb-3">✓ Logo updated</p>}
+        {logoSaved && <p className="text-ocean text-sm font-medium mb-3">✓ Logo updated</p>}
 
         <div className="flex flex-wrap gap-3">
           <input
@@ -224,7 +224,7 @@ export default function SiteSettingsClient({ logoUrl: initLogoUrl, heroVideoUrl:
           <button
             onClick={() => logoInputRef.current?.click()}
             disabled={logoUploading}
-            className="text-sm px-4 py-2 bg-forest-600 text-white rounded-lg hover:bg-forest-700 disabled:opacity-50 font-semibold"
+            className="text-sm px-4 py-2 bg-ocean text-white rounded-lg hover:bg-ocean disabled:opacity-50 font-semibold"
           >
             {logoUploading ? 'Uploading…' : logoUrl ? 'Replace Logo' : 'Upload Logo'}
           </button>
@@ -241,9 +241,9 @@ export default function SiteSettingsClient({ logoUrl: initLogoUrl, heroVideoUrl:
 
       {/* ---- Hero Video ---- */}
       <section className="bg-white border border-gray-200 rounded-2xl p-6">
-        <h2 className="font-display text-xl text-forest-900 mb-1">Hero Video</h2>
+        <h2 className="text-xl text-charcoal mb-1">Hero Video</h2>
         <p className="text-gray-500 text-sm mb-5">
-          Background video for the homepage hero. If no video is set, the static forest-green background is used.
+          Background video for the homepage hero. If no video is set, the static background is used.
         </p>
 
         <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-800 mb-5">
@@ -257,7 +257,7 @@ export default function SiteSettingsClient({ logoUrl: initLogoUrl, heroVideoUrl:
         </div>
 
         {videoError && <p className="text-red-600 text-sm mb-3">{videoError}</p>}
-        {videoSaved && <p className="text-forest-700 text-sm font-medium mb-3">✓ Saved</p>}
+        {videoSaved && <p className="text-ocean text-sm font-medium mb-3">✓ Saved</p>}
 
         {/* Paste URL */}
         <div className="mb-5">
@@ -273,7 +273,7 @@ export default function SiteSettingsClient({ logoUrl: initLogoUrl, heroVideoUrl:
             />
             <button
               onClick={handleVideoUrlSave}
-              className="text-sm px-4 py-2 bg-forest-600 text-white rounded-lg hover:bg-forest-700 font-semibold shrink-0"
+              className="text-sm px-4 py-2 bg-ocean text-white rounded-lg hover:bg-ocean font-semibold shrink-0"
             >
               Save URL
             </button>
@@ -291,7 +291,7 @@ export default function SiteSettingsClient({ logoUrl: initLogoUrl, heroVideoUrl:
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div
-                  className="bg-forest-600 h-2 rounded-full transition-all"
+                  className="bg-ocean h-2 rounded-full transition-all"
                   style={{ width: `${videoProgress}%` }}
                 />
               </div>
@@ -364,7 +364,7 @@ export default function SiteSettingsClient({ logoUrl: initLogoUrl, heroVideoUrl:
 
       {/* ---- Site Name ---- */}
       <section className="bg-white border border-gray-200 rounded-2xl p-6">
-        <h2 className="font-display text-xl text-forest-900 mb-1">Site Name</h2>
+        <h2 className="text-xl text-charcoal mb-1">Site Name</h2>
         <p className="text-gray-500 text-sm mb-5">Used in page titles and as fallback text when no logo is set.</p>
         <div className="flex gap-2 max-w-sm">
           <input
@@ -372,12 +372,12 @@ export default function SiteSettingsClient({ logoUrl: initLogoUrl, heroVideoUrl:
             value={siteName}
             onChange={e => setSiteName(e.target.value)}
             className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm"
-            placeholder="Dream Drive"
+            placeholder="Bare Camper"
           />
           <button
             onClick={handleSiteNameSave}
             disabled={siteNameSaving}
-            className="text-sm px-4 py-2 bg-forest-600 text-white rounded-lg hover:bg-forest-700 disabled:opacity-50 font-semibold shrink-0"
+            className="text-sm px-4 py-2 bg-ocean text-white rounded-lg hover:bg-ocean disabled:opacity-50 font-semibold shrink-0"
           >
             {siteNameSaving ? 'Saving…' : siteNameSaved ? '✓ Saved' : 'Save'}
           </button>

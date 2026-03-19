@@ -28,12 +28,12 @@ export default function AuctionBanner({ nextAuctionTime, auctionCount }: Props =
 
   return (
     <Link href="/browse?source=auction"
-      className="block bg-forest-700 hover:bg-forest-800 text-white text-center py-2.5 px-4 text-sm font-medium transition-colors">
+      className="block bg-ocean hover:bg-charcoal text-white text-center py-2.5 px-4 text-sm font-medium transition-colors">
       <span className="opacity-80">{countLabel}</span>
       <span className="font-bold tabular-nums">
         {countdown.days}d {String(countdown.hours).padStart(2,'0')}h {String(countdown.minutes).padStart(2,'0')}m {String(countdown.seconds).padStart(2,'0')}s
       </span>
-      <span className="ml-3 text-sand-300 font-semibold">View listings &rarr;</span>
+      <span className="ml-3 text-sand font-semibold">View listings &rarr;</span>
     </Link>
   )
 }

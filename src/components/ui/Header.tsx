@@ -72,21 +72,17 @@ export default function Header({ logoUrl }: { logoUrl?: string }) {
       {/* Dropdown fade-in keyframe */}
       <style>{`@keyframes dd-fade{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}.dd-enter{animation:dd-fade .12s ease-out}`}</style>
 
-      <header className="bg-forest-950 text-white sticky top-0 z-50">
+      <header className="bg-charcoal text-white sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
           {/* Logo */}
           <Link href="/" className="shrink-0 flex items-center">
-            {logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={logoUrl}
-                alt="Dream Drive"
-                className="w-auto object-contain"
-                style={{ height: 40 }}
-              />
-            ) : (
-              <span className="font-display text-xl text-sand-400 hover:text-sand-300">Dream Drive</span>
-            )}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/bare-camper-no-tagline-dark.svg"
+              alt="Bare Camper"
+              className="w-auto object-contain"
+              style={{ height: 40 }}
+            />
           </Link>
 
           {/* Desktop nav */}
@@ -115,7 +111,7 @@ export default function Header({ logoUrl }: { logoUrl?: string }) {
                           key={sub.href}
                           href={sub.href}
                           onClick={() => setOpenDropdown(null)}
-                          className="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:text-forest-700 hover:bg-forest-50 transition-colors min-h-[40px]"
+                          className="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:text-ocean hover:bg-cream transition-colors min-h-[40px]"
                         >
                           {sub.label}
                         </Link>
@@ -152,7 +148,7 @@ export default function Header({ logoUrl }: { logoUrl?: string }) {
                 </button>
               </>
             ) : (
-              <Link href="/login" className="bg-sand-400 text-forest-950 font-semibold px-4 py-2 rounded-lg hover:bg-sand-300 transition-colors text-sm">
+              <Link href="/login" className="bg-dirt text-white font-semibold px-4 py-2 rounded-lg hover:bg-dirt-light transition-colors text-sm">
                 Sign In
               </Link>
             )}
@@ -178,7 +174,7 @@ export default function Header({ logoUrl }: { logoUrl?: string }) {
 
         {/* Mobile menu */}
         {menuOpen && (
-          <div className="lg:hidden bg-forest-900 border-t border-white/10 overflow-y-auto max-h-[80vh]">
+          <div className="lg:hidden bg-charcoal-light border-t border-white/10 overflow-y-auto max-h-[80vh]">
             {NAV.map(item =>
               item.dropdown ? (
                 <div key={item.label}>
@@ -228,7 +224,7 @@ export default function Header({ logoUrl }: { logoUrl?: string }) {
                   <button onClick={handleSignOut} className="flex items-center py-3 text-sm text-white/50 hover:text-white min-h-[44px] w-full text-left">Sign Out</button>
                 </>
               ) : (
-                <Link href="/login" onClick={() => setMenuOpen(false)} className="flex items-center py-3 text-sand-400 font-semibold text-sm min-h-[44px]">Sign In</Link>
+                <Link href="/login" onClick={() => setMenuOpen(false)} className="flex items-center py-3 text-sand font-semibold text-sm min-h-[44px]">Sign In</Link>
               )}
             </div>
           </div>

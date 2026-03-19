@@ -50,8 +50,8 @@ export default function ManaProductClient({ jpyRate, content: initial }: Props) 
 
       <FitoutHero fallbackImage="" heroImage={content.hero_image} heroVideo={content.hero_video}>
         <div className="pt-16">
-          <p className="text-sand-400 text-xs font-semibold tracking-[0.25em] uppercase mb-3">Dream Drive</p>
-          <h1 className="font-display text-7xl md:text-9xl text-white leading-none mb-3">MANA</h1>
+          <p className="text-sand text-xs font-semibold tracking-[0.25em] uppercase mb-3">Dream Drive</p>
+          <h1 className="text-7xl md:text-9xl text-white leading-none mb-3">MANA</h1>
           <p className="text-white/80 text-xl md:text-2xl font-light mb-2">Liveable Compact Campervan</p>
           <p className="text-white/60 text-base md:text-lg max-w-xl">Built for two. Designed for the long road.</p>
         </div>
@@ -67,8 +67,8 @@ export default function ManaProductClient({ jpyRate, content: initial }: Props) 
 
       {/* Overview */}
       <section className="max-w-6xl mx-auto px-6 py-20">
-        <p className="text-sand-500 text-xs font-semibold tracking-widest uppercase mb-3">Overview</p>
-        <h2 className="font-display text-4xl text-forest-900 mb-6">Built for the long haul</h2>
+        <p className="text-driftwood text-xs font-semibold tracking-widest uppercase mb-3">Overview</p>
+        <h2 className="text-4xl text-charcoal mb-6">Built for the long haul</h2>
         <p className="text-gray-500 max-w-3xl mb-8 leading-relaxed text-lg">
           The MANA Campervan is the ultimate vehicle for reliable, long-term adventures on the road.
           Built on the globally trusted, easy-to-maintain Toyota Hiace H200 platform. Designed in Australia
@@ -80,27 +80,27 @@ export default function ManaProductClient({ jpyRate, content: initial }: Props) 
       </section>
 
       {/* Pricing */}
-      <section className="bg-sand-50 py-20">
+      <section className="bg-cream py-20">
         <div className="max-w-6xl mx-auto px-6">
-          <p className="text-sand-500 text-xs font-semibold tracking-widest uppercase mb-3">Pricing</p>
-          <h2 className="font-display text-4xl text-forest-900 mb-4">What Does a MANA Cost?</h2>
+          <p className="text-driftwood text-xs font-semibold tracking-widest uppercase mb-3">Pricing</p>
+          <h2 className="text-4xl text-charcoal mb-4">What Does a MANA Cost?</h2>
           <p className="text-gray-500 max-w-2xl mb-10 leading-relaxed">Choose whether your MANA is built in Japan or Australia — each has a different conversion fee and timeline. The van is priced separately.</p>
           <div className="grid md:grid-cols-2 gap-8 mb-6">
             <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-              <div className="bg-forest-950 text-white px-6 py-4"><p className="text-xs font-semibold tracking-wider text-sand-400 uppercase mb-1">Japan Build</p><p className="font-display text-2xl">MANA — Tokyo Facility</p></div>
+              <div className="bg-charcoal text-white px-6 py-4"><p className="text-xs font-semibold tracking-wider text-sand uppercase mb-1">Japan Build</p><p className="text-2xl">MANA — Tokyo Facility</p></div>
               <div className="p-6 space-y-3">
                 <div className="flex justify-between text-sm"><span className="text-gray-600">Conversion fee</span><span className="font-semibold text-gray-900">~{formatAud(jpConversionAud)} <span className="text-xs text-gray-400">(¥4,500,000)</span></span></div>
                 <div className="flex justify-between text-sm"><span className="text-gray-600">Van + import</span><span className="font-semibold text-gray-900">$25,000 – $50,000</span></div>
-                <div className="flex justify-between text-sm border-t border-gray-100 pt-3"><span className="font-semibold text-gray-800">Total estimate</span><span className="font-display text-forest-700 text-lg">~{formatAud(jpRange.low)} – {formatAud(jpRange.high)}</span></div>
+                <div className="flex justify-between text-sm border-t border-gray-100 pt-3"><span className="font-semibold text-gray-800">Total estimate</span><span className="text-ocean text-lg">~{formatAud(jpRange.low)} – {formatAud(jpRange.high)}</span></div>
                 <p className="text-xs text-gray-400">Pop top included. Van arrives fully converted.</p>
               </div>
             </div>
             <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-              <div className="bg-blue-800 text-white px-6 py-4"><p className="text-xs font-semibold tracking-wider text-blue-200 uppercase mb-1">Australia Build</p><p className="font-display text-2xl">MANA — Brisbane Workshop</p></div>
+              <div className="bg-blue-800 text-white px-6 py-4"><p className="text-xs font-semibold tracking-wider text-blue-200 uppercase mb-1">Australia Build</p><p className="text-2xl">MANA — Brisbane Workshop</p></div>
               <div className="p-6 space-y-3">
                 <div className="flex justify-between text-sm"><span className="text-gray-600">Conversion fee</span><span className="font-semibold text-gray-900">{formatAud(auConversionAud)}</span></div>
                 <div className="flex justify-between text-sm"><span className="text-gray-600">Van + import</span><span className="font-semibold text-gray-900">$25,000 – $50,000 <span className="text-xs text-gray-400">or BYO</span></span></div>
-                <div className="flex justify-between text-sm border-t border-gray-100 pt-3"><span className="font-semibold text-gray-800">Total estimate</span><span className="font-display text-blue-700 text-lg">{formatAud(auRange.low)} – {formatAud(auRange.high)}</span></div>
+                <div className="flex justify-between text-sm border-t border-gray-100 pt-3"><span className="font-semibold text-gray-800">Total estimate</span><span className="text-blue-700 text-lg">{formatAud(auRange.low)} – {formatAud(auRange.high)}</span></div>
                 <p className="text-xs text-gray-400">BYO Hiace: conversion only {formatAud(auConversionAud)}. Pop top included.</p>
               </div>
             </div>
@@ -111,12 +111,12 @@ export default function ManaProductClient({ jpyRate, content: initial }: Props) 
 
       {/* Included */}
       <section className="max-w-6xl mx-auto px-6 py-20">
-        <p className="text-sand-500 text-xs font-semibold tracking-widest uppercase mb-3">Everything in the box</p>
-        <h2 className="font-display text-4xl text-forest-900 mb-12">Included Standard</h2>
+        <p className="text-driftwood text-xs font-semibold tracking-widest uppercase mb-3">Everything in the box</p>
+        <h2 className="text-4xl text-charcoal mb-12">Included Standard</h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-4">
           {MANA_INCLUSIONS.map(item => (
             <div key={item} className="flex items-start gap-3 py-2 border-b border-gray-200/60">
-              <span className="text-forest-600 mt-0.5 shrink-0"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg></span>
+              <span className="text-ocean mt-0.5 shrink-0"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg></span>
               <span className="text-gray-700 text-sm leading-snug">{item}</span>
             </div>
           ))}
@@ -124,15 +124,15 @@ export default function ManaProductClient({ jpyRate, content: initial }: Props) 
       </section>
 
       {/* Options */}
-      <section className="bg-sand-50 py-20">
+      <section className="bg-cream py-20">
         <div className="max-w-6xl mx-auto px-6">
-          <p className="text-sand-500 text-xs font-semibold tracking-widest uppercase mb-3">Make it yours</p>
-          <h2 className="font-display text-4xl text-forest-900 mb-10">Select Options</h2>
+          <p className="text-driftwood text-xs font-semibold tracking-widest uppercase mb-3">Make it yours</p>
+          <h2 className="text-4xl text-charcoal mb-10">Select Options</h2>
           <div className="divide-y divide-gray-100 border border-gray-200 rounded-2xl overflow-hidden bg-white">
             {MANA_OPTIONS.map(opt => (
-              <div key={opt.name} className="flex items-start justify-between gap-4 px-6 py-5 hover:bg-sand-50 transition-colors">
-                <div><p className="font-semibold text-forest-900 text-sm">{opt.name}</p>{opt.detail && <p className="text-gray-500 text-xs mt-0.5">{opt.detail}</p>}</div>
-                <p className="font-display text-forest-700 text-lg shrink-0">{opt.price}</p>
+              <div key={opt.name} className="flex items-start justify-between gap-4 px-6 py-5 hover:bg-cream transition-colors">
+                <div><p className="font-semibold text-charcoal text-sm">{opt.name}</p>{opt.detail && <p className="text-gray-500 text-xs mt-0.5">{opt.detail}</p>}</div>
+                <p className="text-ocean text-lg shrink-0">{opt.price}</p>
               </div>
             ))}
           </div>
@@ -141,12 +141,12 @@ export default function ManaProductClient({ jpyRate, content: initial }: Props) 
 
       {/* Quality */}
       <section className="max-w-6xl mx-auto px-6 py-20">
-        <p className="text-sand-500 text-xs font-semibold tracking-widest uppercase mb-3">Built to last</p>
-        <h2 className="font-display text-4xl text-forest-900 mb-10">Quality You Can Feel</h2>
+        <p className="text-driftwood text-xs font-semibold tracking-widest uppercase mb-3">Built to last</p>
+        <h2 className="text-4xl text-charcoal mb-10">Quality You Can Feel</h2>
         <div className="grid sm:grid-cols-2 gap-6">
           {MANA_QUALITY.map(card => (
             <div key={card.title} className="border border-gray-200 rounded-2xl p-8 hover:shadow-md transition-shadow">
-              <h3 className="font-display text-xl text-forest-900 mb-3">{card.title}</h3>
+              <h3 className="text-xl text-charcoal mb-3">{card.title}</h3>
               <p className="text-gray-500 text-sm leading-relaxed">{card.body}</p>
             </div>
           ))}
@@ -154,18 +154,18 @@ export default function ManaProductClient({ jpyRate, content: initial }: Props) 
       </section>
 
       {/* CTA */}
-      <section className="bg-forest-900 text-white py-20 text-center">
+      <section className="bg-charcoal text-white py-20 text-center">
         <div className="max-w-2xl mx-auto px-6">
-          <p className="text-sand-400 text-xs font-semibold tracking-widest uppercase mb-4">Get started</p>
-          <h2 className="font-display text-4xl md:text-5xl mb-4">Ready to build your MANA?</h2>
+          <p className="text-sand text-xs font-semibold tracking-widest uppercase mb-4">Get started</p>
+          <h2 className="text-4xl md:text-5xl mb-4">Ready to build your MANA?</h2>
           <p className="text-gray-300 text-lg mb-10 leading-relaxed">Browse available vans, start your build, or get in touch to discuss your needs.</p>
           <div className="flex flex-wrap gap-4 justify-center">
             <Link href="/configurator?fitout=mana" className="btn-primary text-base px-8 py-4">Start My MANA Build</Link>
             <LeadFormModal trigger="Book a Free Consultation" source="product_page_mana" className="btn-ghost text-base px-8 py-4" />
           </div>
           <p className="mt-10 text-gray-400 text-sm">
-            <a href="mailto:jared@dreamdrive.life" className="text-sand-400 hover:text-sand-300">jared@dreamdrive.life</a>
-            {' · '}<a href="tel:0432182892" className="text-sand-400 hover:text-sand-300">0432 182 892</a>
+            <a href="mailto:jared@dreamdrive.life" className="text-sand hover:text-sand">jared@dreamdrive.life</a>
+            {' · '}<a href="tel:0432182892" className="text-sand hover:text-sand">0432 182 892</a>
           </p>
         </div>
       </section>
