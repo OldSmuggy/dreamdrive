@@ -6,6 +6,7 @@ import { GoogleAnalytics } from '@/components/GoogleAnalytics'
 import { MetaPixel } from '@/components/MetaPixel'
 import WhatsAppButton from '@/components/ui/WhatsAppButton'
 import { getSiteSettings } from '@/lib/site-settings'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 
 const body = DM_Sans({
   weight: ['400', '500', '700'],
@@ -41,6 +42,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <Header logoUrl={logo_url} />
         {children}
         <WhatsAppButton />
+        <SpeedInsights />
       </body>
     </html>
   )
