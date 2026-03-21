@@ -10,7 +10,9 @@ import AuctionCountdownBanner from '@/components/van/AuctionCountdownBanner'
 import PhotoGallery from '@/components/van/PhotoGallery'
 import ConversionDetails from '@/components/van/ConversionDetails'
 import SaveVanButton from '@/components/ui/SaveVanButton'
+import ShareButtons from '@/components/ui/ShareButtons'
 import DepositHoldButton from '@/components/ui/DepositHoldButton'
+import ViewContentTracker from '@/components/van/ViewContentTracker'
 import type { Listing } from '@/types'
 
 export async function generateMetadata({ params }: { params: { id: string } }) {
@@ -109,6 +111,12 @@ export default async function VanDetailPage({ params }: { params: { id: string }
 
   return (
     <div className="min-h-screen">
+      <ViewContentTracker
+        id={listing.id}
+        model_name={listing.model_name}
+        model_year={listing.model_year}
+        price_cents={priceCents}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(vehicleJsonLd) }}
@@ -181,7 +189,8 @@ export default async function VanDetailPage({ params }: { params: { id: string }
                   🏕 Campervan Build{listing.fitout_grade ? ` · ${listing.fitout_grade}` : ''}
                 </div>
               )}
-              <div className="ml-auto">
+              <div className="ml-auto flex items-center gap-3">
+                <ShareButtons url={`/van/${listing.id}`} title={`${listing.model_year} ${listing.model_name} — Bare Camper`} />
                 <SaveVanButton listingId={listing.id} userId={user?.id ?? null} initialSaved={isSaved} />
               </div>
             </div>
