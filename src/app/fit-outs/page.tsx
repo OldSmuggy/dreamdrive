@@ -3,7 +3,7 @@ import { generateMeta } from '@/lib/seo'
 import FitOutsClient from './FitOutsClient'
 
 export const metadata = generateMeta({
-  title: 'Dream Drive Campervan Fit-Outs — TAMA, MANA & KUMA',
+  title: 'Bare Camper Fit-Outs — TAMA, MANA & KUMA',
   description: 'Handcrafted campervan conversions built on the Toyota Hiace H200. Choose from TAMA, MANA, or KUMA fit-outs, all built in our Tokyo facility.',
   url: '/fit-outs',
 })

@@ -5,7 +5,7 @@ import TamaProductClient from './TamaProductClient'
 
 export const dynamic = 'force-dynamic'
 export const metadata = {
-  title: 'TAMA — 6-Seat Family Campervan | Dream Drive',
+  title: 'TAMA — 6-Seat Family Campervan | Bare Camper',
   description: 'The TAMA converts your Toyota Hiace into a 6-seat people mover with ISOFIX, galley kitchen, walnut countertops, and full electrical. From $106,000.',
 }
 

@@ -3,12 +3,13 @@ import { createSupabaseServer } from '@/lib/supabase-server'
 import { centsToAud } from '@/lib/utils'
 import { getSiteSettings } from '@/lib/site-settings'
 import { generateMeta } from '@/lib/seo'
+import type { Metadata } from 'next'
 import AuctionBanner from '@/components/ui/AuctionBanner'
 import type { Listing } from '@/types'
 
 export const metadata = generateMeta({
   title: 'Import a Toyota Hiace from Japan — Build Your Campervan',
-  description: "Browse Japan auction and dealer Hiace vans, configure your Dream Drive campervan conversion, and get a transparent all-in price. Australia's van life platform.",
+  description: "Browse Japan auction and dealer Hiace vans, configure your Bare Camper campervan conversion, and get a transparent all-in price. Australia's van life platform.",
   url: '/',
 })
 
@@ -34,12 +35,13 @@ export default async function HomePage() {
     // Supabase unreachable — render page without listings
   }
 
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://barecamper.com'
   const orgJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'AutoDealer',
-    name: 'Dream Drive',
+    name: 'Bare Camper',
     description: 'Import Toyota Hiace vans from Japan and build your campervan conversion',
-    url: 'https://dreamdrive-zeta.vercel.app',
+    url: baseUrl,
     telephone: '0432182892',
     address: {
       '@type': 'PostalAddress',

@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
   if (!data) return { title: 'Van Detail' }
   return generateMeta({
     title: `${data.model_year} ${data.model_name}`,
-    description: data.description || `${data.model_year} ${data.model_name} — imported from Japan by Dream Drive. View photos, specs and pricing.`,
+    description: data.description || `${data.model_year} ${data.model_name} — imported from Japan by Bare Camper. View photos, specs and pricing.`,
     image: data.photos?.[0],
     url: `/van/${params.id}`,
   })

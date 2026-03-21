@@ -6,7 +6,7 @@ import ManaClient from './ManaClient'
 
 export const metadata = generateMeta({
   title: 'MANA Campervan — Couples Pop Top Conversion from $105,000',
-  description: 'The Dream Drive MANA is a compact pop top campervan for couples. Full kitchen, toilet, shower and 200AH electrical system. From $105,000 driveaway.',
+  description: 'The Bare Camper MANA is a compact pop top campervan for couples. Full kitchen, toilet, shower and 200AH electrical system. From $105,000 driveaway.',
   url: '/fit-outs/mana',
 })
 export const dynamic = 'force-dynamic'

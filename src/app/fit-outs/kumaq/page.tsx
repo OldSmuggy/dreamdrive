@@ -3,7 +3,7 @@ import { getJpyRate } from '@/lib/settings'
 import { createAdminClient } from '@/lib/supabase'
 import KumaqClient from './KumaqClient'
 
-export const metadata = { title: 'KUMAQ | Dream Drive Fit-Outs' }
+export const metadata = { title: 'KUMAQ | Bare Camper Fit-Outs' }
 export const dynamic = 'force-dynamic'
 
 const FITOUT_AUD = 55000
