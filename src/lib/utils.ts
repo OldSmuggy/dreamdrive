@@ -101,7 +101,7 @@ export function locationBadgeInfo(listing: { location_status?: string | null; so
   if (ls === 'in_brisbane' || listing.source === 'au_stock')
                             return { label: 'IN BRISBANE',  bg: 'bg-green-600',  sub: 'Ready for test drive · All fees paid' }
   // default: in_japan (auction / dealer)
-  return                           { label: 'IN JAPAN',     bg: 'bg-red-600',    sub: 'Import fees apply · 16–20 week wait' }
+  return                           { label: 'IN JAPAN',     bg: 'bg-red-600',    sub: 'Import fees apply · 6–10 week delivery' }
 }
 
 // ---- Fit-out level badges ----
@@ -111,7 +111,7 @@ export function fitOutLevelInfo(level: string | null | undefined): {
   if (!level) return null
   const map: Record<string, { label: string; desc: string; cls: string }> = {
     empty:   { label: 'Empty Van',      desc: 'Standard cargo or passenger configuration',                                         cls: 'bg-gray-100 text-gray-600 border-gray-200' },
-    partial: { label: 'Head Start',     desc: 'Existing mods — bed platform, lining, or basic cabinetry. Ready for Dream Drive fit-out.', cls: 'bg-blue-50 text-blue-700 border-blue-200' },
+    partial: { label: 'Head Start',     desc: 'Existing mods — bed platform, lining, or basic cabinetry. Ready for Bare Camper fit-out.', cls: 'bg-blue-50 text-blue-700 border-blue-200' },
     full:    { label: 'Full Campervan', desc: 'Fully converted camper — ready to travel',                                         cls: 'bg-cream text-ocean border-ocean-light' },
   }
   return map[level] ?? null

@@ -36,6 +36,16 @@ export default function PopTopClient({ content: initial }: { content: Record<str
         </p>
       </FitoutHero>
 
+      {/* BYO Hiace */}
+      <section className="bg-ocean/5 py-8">
+        <div className="max-w-6xl mx-auto px-6 text-center">
+          <p className="text-lg text-charcoal font-semibold mb-2">Own a Hiace already? Bring it in.</p>
+          <p className="text-gray-500 text-sm max-w-xl mx-auto">
+            We fit pop tops to Japan-import H200s and Australian-delivered 300 Series. $4,000 deposit locks your 10-day build slot.
+          </p>
+        </div>
+      </section>
+
       {/* Pricing & Booking */}
       <section className="max-w-6xl mx-auto px-6 py-20">
         <p className="text-driftwood text-xs font-semibold tracking-widest uppercase mb-10">The numbers</p>

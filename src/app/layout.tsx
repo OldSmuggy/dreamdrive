@@ -16,8 +16,8 @@ const body = DM_Sans({
 })
 
 export const metadata: Metadata = {
-  title: { default: 'Bare Camper — Handcrafted Campervans from Japan', template: '%s | Bare Camper' },
-  description: 'Import a Toyota Hiace from Japan and build your campervan. Featuring Bare Camper\'s TAMA, MANA, and pop top conversions.',
+  title: { default: 'Bare Camper — Toyota Hiace Campervans, Australia', template: '%s | Bare Camper' },
+  description: "Australia's complete Toyota Hiace campervan platform. Source from Japan or convert your own. Pop tops, TAMA & MANA fitouts, DIY kits. Brisbane workshop.",
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://barecamper.com'),
   openGraph: {
     siteName: 'Bare Camper',

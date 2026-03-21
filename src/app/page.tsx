@@ -9,8 +9,8 @@ import Footer from '@/components/ui/Footer'
 import type { Listing } from '@/types'
 
 export const metadata = generateMeta({
-  title: 'Import a Toyota Hiace from Japan — Build Your Campervan',
-  description: "Browse Japan auction and dealer Hiace vans, configure your Bare Camper campervan conversion, and get a transparent all-in price. Australia's van life platform.",
+  title: 'Toyota Hiace Campervans from $70k | Find it. Build it. Drive it.',
+  description: "Australia's complete Toyota Hiace campervan platform. Source from Japan or convert your own. Pop tops, TAMA & MANA fitouts, DIY kits. Brisbane workshop. From $70k delivered.",
   url: '/',
 })
 
@@ -41,7 +41,7 @@ export default async function HomePage() {
     '@context': 'https://schema.org',
     '@type': 'AutoDealer',
     name: 'Bare Camper',
-    description: 'Import Toyota Hiace vans from Japan and build your campervan conversion',
+    description: "Australia's complete Toyota Hiace campervan platform. Source from Japan or convert your own.",
     url: baseUrl,
     telephone: '0432182892',
     address: {
@@ -97,16 +97,11 @@ export default async function HomePage() {
             className={`text-lg md:text-xl max-w-xl mb-10 leading-relaxed ${hero_video_url ? '' : 'text-gray-300'}`}
             style={hero_video_url ? { color: 'rgba(255,255,255,0.85)', textShadow: '0 1px 3px rgba(0,0,0,0.5)' } : undefined}
           >
-            Source a Toyota Hiace direct from Japan, then build your dream conversion
-            with Australia&apos;s most complete van fit-out range.
+            Australia&apos;s complete Toyota Hiace campervan platform. Source your van from Japan or convert one here — we handle everything from auction to driveway.
           </p>
           <div className="flex flex-wrap gap-4">
-            <Link href="/browse" className="btn-ghost text-base px-8 py-4">
-              Browse Vans
-            </Link>
-            <Link href="/build" className="btn-primary text-base px-8 py-4">
-              Build My Van
-            </Link>
+            <Link href="/browse" className="btn-ghost text-base px-8 py-4">Browse Vans</Link>
+            <a href="https://wa.me/61432182892?text=Hi!%20I'm%20interested%20in%20a%20campervan%20from%20Bare%20Camper." className="btn-primary text-base px-8 py-4" target="_blank" rel="noopener noreferrer">Talk to Us → WhatsApp</a>
           </div>
         </div>
       </section>
@@ -114,17 +109,18 @@ export default async function HomePage() {
       {/* ─── 2. THREE PATHS ───────────────────────────────── */}
       <section className="max-w-6xl mx-auto px-4 py-20">
         <div className="text-center mb-12">
-          <h2 className="text-4xl text-charcoal mb-3 font-bold">Three ways to van life</h2>
-          <p className="text-gray-500 max-w-lg mx-auto">Whether you want a turn-key camper, a premium fit-out on your own van, or a DIY project — we&apos;ve got the path for you.</p>
+          <h2 className="text-4xl text-charcoal mb-3 font-bold">Three paths to your campervan</h2>
         </div>
         <div className="grid md:grid-cols-3 gap-8">
           {PATHS.map(path => (
             <Link
               key={path.href}
               href={path.href}
-              className="group border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow flex flex-col"
+              className={`group border rounded-2xl overflow-hidden hover:shadow-lg transition-shadow flex flex-col relative ${path.highlight ? 'border-ocean border-2' : 'border-gray-200'}`}
             >
-              {/* Gray placeholder image box */}
+              {path.highlight && (
+                <span className="absolute top-3 right-3 bg-ocean text-white text-xs font-bold px-2.5 py-1 rounded-full z-10">Most popular</span>
+              )}
               <div className="h-48 bg-gray-200 flex items-center justify-center text-gray-400 text-5xl">
                 {path.icon}
               </div>
@@ -132,6 +128,7 @@ export default async function HomePage() {
                 <span className="text-xs font-semibold tracking-widest text-driftwood uppercase mb-2">{path.tag}</span>
                 <h3 className="text-2xl text-charcoal mb-2 font-bold">{path.name}</h3>
                 <p className="text-gray-500 text-sm leading-relaxed flex-1">{path.desc}</p>
+                <p className="text-xs text-gray-400 mt-3">{path.tags}</p>
                 <span className="mt-4 text-ocean font-semibold text-sm group-hover:underline">{path.cta} →</span>
               </div>
             </Link>
@@ -157,7 +154,29 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* ─── 4. PRODUCT SHOWCASE ──────────────────────────── */}
+      {/* ─── PACKAGE EXAMPLES ───────────────────────────── */}
+      <section className="max-w-6xl mx-auto px-4 py-16">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl text-charcoal mb-3 font-bold">Ready-to-go packages</h2>
+        </div>
+        <div className="grid md:grid-cols-3 gap-8">
+          {PACKAGES.map(pkg => (
+            <div key={pkg.name} className="border border-gray-200 rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
+              <div className="h-48 bg-gray-200 flex items-center justify-center text-gray-400 text-5xl">🚐</div>
+              <div className="p-6">
+                <h3 className="text-xl text-charcoal mb-2 font-bold">{pkg.name}</h3>
+                <p className="text-gray-500 text-sm leading-relaxed mb-4">{pkg.desc}</p>
+                <p className="text-ocean text-2xl font-bold">{pkg.price}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <p className="text-center text-gray-400 text-xs mt-8 max-w-2xl mx-auto">
+          Prices are estimates based on recent builds and current exchange rates. Your final price depends on the specific van, configuration, and options. No surprises — we confirm your total before you commit.
+        </p>
+      </section>
+
+      {/* ─── 5. PRODUCT SHOWCASE ──────────────────────────── */}
       <section className="max-w-6xl mx-auto px-4 py-16">
         <div className="text-center mb-12">
           <h2 className="text-4xl text-charcoal mb-3 font-bold">Build Yours, Your Way</h2>
@@ -184,7 +203,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ─── 5. HOW IT WORKS ──────────────────────────────── */}
+      {/* ─── 6. HOW IT WORKS ──────────────────────────────── */}
       <section className="bg-charcoal text-white py-16">
         <div className="max-w-6xl mx-auto px-4">
           <h2 className="text-4xl text-center mb-12 font-bold">How It Works</h2>
@@ -200,7 +219,54 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ─── 6. TRUST BAR ─────────────────────────────────── */}
+      {/* ─── WHY BARE CAMPER ───────────────────────────── */}
+      <section className="bg-cream py-16">
+        <div className="max-w-6xl mx-auto px-4">
+          <h2 className="text-4xl text-charcoal text-center mb-12 font-bold">Why Bare Camper</h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {WHY_US.map(item => (
+              <div key={item.title} className="flex gap-4">
+                <span className="text-ocean text-xl mt-0.5 shrink-0">✓</span>
+                <div>
+                  <h3 className="text-charcoal font-bold mb-1">{item.title}</h3>
+                  <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── ABOUT ─────────────────────────────────────── */}
+      <section className="max-w-6xl mx-auto px-4 py-16">
+        <h2 className="text-4xl text-charcoal mb-8 font-bold">The team behind Bare Camper</h2>
+        <div className="prose prose-lg max-w-3xl text-gray-500 leading-relaxed space-y-4">
+          <p>
+            We&apos;ve been building campervans on Toyota Hiace platforms for over a decade, working across Japan and Australia. What started as a passion for Japanese vehicles and van life grew into Dream Drive — a company that&apos;s now delivered 50+ campervans to customers across the country.
+          </p>
+          <p>
+            Our team in Tokyo hand-builds every TAMA and MANA fitout at our dedicated conversion facility, using top-quality materials and Japanese craftsmanship. In Brisbane, our workshop at Capalaba handles pop top roof conversions, local builds, and vehicle preparation.
+          </p>
+          <p>
+            We built Bare Camper because we kept seeing people make expensive mistakes — buying the wrong base vehicle, getting stuck in compliance nightmares, or paying too much for a conversion that didn&apos;t suit their needs. This platform gives you a place to see exactly what&apos;s available, configure what you want, know what it costs, and trust that a team who&apos;s done this hundreds of times is handling every detail.
+          </p>
+          <p>
+            Whether you want a bare van to convert yourself, a full turnkey campervan, or just a pop top on the Hiace you already own — we&apos;re here to help you build it.
+          </p>
+        </div>
+        <div className="mt-8 flex flex-wrap gap-6 text-sm">
+          <a href="tel:0432182892" className="text-ocean font-semibold hover:underline">0432 182 892</a>
+          <a href="mailto:hello@barecamper.com" className="text-ocean font-semibold hover:underline">hello@barecamper.com</a>
+        </div>
+        {/* Placeholder for team/workshop photos */}
+        <div className="grid md:grid-cols-3 gap-4 mt-8">
+          <div className="h-48 bg-gray-200 rounded-xl flex items-center justify-center text-gray-400 text-sm">Van delivery photo</div>
+          <div className="h-48 bg-gray-200 rounded-xl flex items-center justify-center text-gray-400 text-sm">Japan workshop photo</div>
+          <div className="h-48 bg-gray-200 rounded-xl flex items-center justify-center text-gray-400 text-sm">Brisbane pop top facility photo</div>
+        </div>
+      </section>
+
+      {/* ─── TRUST BAR ─────────────────────────────────── */}
       <section className="border-y border-gray-100 py-10">
         <div className="max-w-5xl mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
@@ -214,7 +280,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ─── 7. CTA FOOTER ────────────────────────────────── */}
+      {/* ─── CTA FOOTER ────────────────────────────────── */}
       <section className="bg-charcoal text-white py-20 text-center">
         <div className="max-w-2xl mx-auto px-4">
           <h2 className="text-4xl md:text-5xl mb-4 font-bold">Ready to start?</h2>
@@ -227,7 +293,7 @@ export default async function HomePage() {
           </div>
           <p className="mt-10 text-gray-400 text-sm">
             Questions?{' '}
-            <a href="mailto:jared@dreamdrive.life" className="text-sand hover:text-sand-light">jared@dreamdrive.life</a>
+            <a href="mailto:hello@barecamper.com" className="text-sand hover:text-sand-light">hello@barecamper.com</a>
             {' · '}
             <a href="tel:0432182892" className="text-sand hover:text-sand-light">0432 182 892</a>
           </p>
@@ -281,50 +347,81 @@ function FeaturedVanCard({ listing }: { listing: Listing }) {
 }
 
 // ── Static data ───────────────────────────────────────────────────────────────
-const PATHS = [
+const PATHS: { icon: string; tag: string; name: string; desc: string; tags: string; href: string; cta: string; highlight?: boolean }[] = [
   {
     icon: '🚐',
-    tag: 'Full build',
-    name: 'Complete Campervan',
-    desc: 'We source the van from Japan, handle compliance and shipping, and install your chosen fit-out. Drive away in a finished camper.',
-    href: '/build',
-    cta: 'Build mine',
+    tag: 'I need a vehicle',
+    name: 'Source your van',
+    desc: "Browse 20+ Toyota Hiace vans from Japanese auctions and dealers, or let us find one locally through our Australian network. Our team knows which models, specs, and seat configurations actually work for conversions — and which ones will cause you headaches. We handle import, compliance, and shipping.",
+    tags: 'From ~$25k base vehicle | Japan: 6–10 weeks | Local: ready now',
+    href: '/browse',
+    cta: 'Browse stock',
   },
   {
     icon: '🪑',
-    tag: 'Fit-out only',
-    name: 'Fit-Out My Own Van',
-    desc: 'Already have a Hiace? Choose a TAMA or MANA fit-out, pop top, or electrical system and we install it at our workshop.',
+    tag: 'I already have a van',
+    name: 'Convert your van',
+    desc: "Bring your Hiace — H200 or 300 Series — to our Brisbane workshop. Pop top roof conversion, TAMA family fitout, MANA couples fitout, or all of the above. Our team will assess your vehicle first and tell you honestly what's possible.",
+    tags: 'Pop top from $11,900 inc GST | 10-day turnaround',
     href: '/tama',
-    cta: 'See fit-outs',
+    cta: 'See conversion options',
+    highlight: true,
   },
   {
     icon: '⚡',
-    tag: 'DIY',
-    name: 'DIY Kits',
-    desc: 'Modular electrical kits, grid bed frames, and accessory bundles. Build at your own pace with our step-by-step guides.',
+    tag: 'I want to DIY',
+    name: 'Parts & kits',
+    desc: "Pop top conversions, modular bed kits, standalone electrical cabinets, and parts sourced from Japan. We do the hard stuff — you make it yours. Expert support so you don't learn the hard lessons the expensive way.",
+    tags: 'Kits from $2,000 | Step-by-step guides',
     href: '/diy',
     cta: 'Shop kits',
   },
 ]
 
+const PACKAGES = [
+  {
+    name: 'The Weekender',
+    desc: '2019 Hiace 2WD + TAMA family fitout. Weekend trips and school holidays sorted. 6 seats by day, full camper by night.',
+    price: 'From ~$70,000',
+  },
+  {
+    name: 'The Explorer',
+    desc: '2020 Hiace 4WD + MANA fitout + pop top. Full standing room, toilet, 200AH lithium. Go anywhere, stay anywhere.',
+    price: 'From ~$95,000',
+  },
+  {
+    name: 'The Off-Grid Pro',
+    desc: '2022 Hiace 4WD + MANA fitout + pop top + solar + hot water + FF heater. The ultimate self-contained tourer.',
+    price: 'From ~$105,000',
+  },
+]
+
 const PRODUCTS = [
-  { slug: 'tama',   icon: '🪑', name: 'TAMA',        desc: '6-seater family conversion. Rear seat folds to bed, galley kitchen, sink & fridge.',       href: '/tama' },
-  { slug: 'mana',   icon: '🏕️', name: 'MANA',        desc: 'Liveable 2-person campervan. Full standing room, toilet, 55L water, 200AH lithium.',        href: '/mana' },
-  { slug: 'poptop', icon: '🏠', name: 'Pop Top Roof', desc: 'Fiberglass pop top. Adds 600mm height, park anywhere when lowered. $11,900 ex GST.',        href: '/pop-top' },
-  { slug: 'elec',   icon: '⚡', name: 'DIY Kits',     desc: 'Electrical kits, bed frames, accessories. Starter to Off-Grid Pro. Build at your pace.',    href: '/diy' },
+  { slug: 'tama', icon: '🪑', name: 'TAMA', desc: '6-seat family conversion. Rear seat folds to bed, galley kitchen, sink & fridge. Fits Japan-import H200 or Australian 300 Series. From $45,600 conversion', href: '/tama' },
+  { slug: 'mana', icon: '🏕️', name: 'MANA', desc: 'Liveable 2-person campervan. Full standing room, toilet, 55L water, 200AH lithium. Pop top included. Built in Japan or Brisbane. From $42,800 conversion (Japan) | $45,000 (Brisbane)', href: '/mana' },
+  { slug: 'poptop', icon: '🏠', name: 'Pop Top Roof', desc: 'Fibreglass pop top roof. Adds 600mm standing height. Park anywhere when lowered. Fits H200 and 300 Series Hiace. $13,090 inc GST | 10-day turnaround at our Brisbane factory', href: '/pop-top' },
+  { slug: 'diy', icon: '⚡', name: 'DIY Kits', desc: 'Electrical kits, modular bed frames, parts from Japan. Build at your pace with expert support. From $2,000', href: '/diy' },
 ]
 
 const STEPS = [
-  { title: 'Choose Your Van',     desc: 'Browse Japan auction listings updated every Monday, Japanese dealer buy-now vans, or our AU stock.' },
-  { title: 'Build Your Config',   desc: 'Add a TAMA or MANA fit-out, pop top, electrical system. See your total price instantly.' },
-  { title: 'Hold with $500',      desc: 'Place a refundable deposit hold. We bid Thursday, confirm by Friday.' },
-  { title: 'Drive Away',          desc: `We handle import, compliance, shipping. Pop top and fit-out booked in parallel so you're on the road faster.` },
+  { title: 'Find It', desc: 'Pick from 20+ Hiace vans updated weekly — Japan auction, Japan dealer, or ready-now Brisbane stock. Or bring your own.' },
+  { title: 'Build It', desc: 'Add a fitout, pop top, options. See your total price instantly. No surprises, no hidden fees.' },
+  { title: 'Hold for $500', desc: 'Fully refundable. We bid at auction Thursday, confirm Friday. Zero risk to you.' },
+  { title: 'Drive It', desc: "We handle import (6–10 weeks), compliance, conversion, and delivery. Pop top and fitout run in parallel so you're on the road faster. Converting in Japan? Allow extra time for the build." },
 ]
 
 const TRUST = [
-  { value: '50+',    label: 'Vans imported' },
+  { value: '100+',   label: 'Vans delivered' },
   { value: '3',      label: 'Fit-out models' },
   { value: '$500',   label: 'Refundable hold' },
   { value: '100%',   label: 'Aus compliance' },
+]
+
+const WHY_US = [
+  { title: 'Save money', desc: 'vs factory-built campervans — same quality, Toyota reliability, fraction of the price.' },
+  { title: 'Built on Toyota Hiace', desc: 'Parts at any dealer, serviced anywhere in Australia.' },
+  { title: 'One team, start to finish', desc: 'No juggling importers, converters, and compliance shops.' },
+  { title: '100+ vans delivered', desc: 'The Dream Drive team has been building campervans between Japan and Australia for over a decade.' },
+  { title: 'We find the RIGHT vehicle', desc: "Don't waste money on a Hiace that won't convert properly." },
+  { title: '100% Australian compliant', desc: 'Fully registered and road-legal on delivery.' },
 ]
