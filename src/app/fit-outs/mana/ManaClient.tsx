@@ -5,7 +5,7 @@ import Link from 'next/link'
 import PageEditToolbar from '@/components/admin/PageEditToolbar'
 import FitoutHero from '@/components/admin/FitoutHero'
 
-const STATIC_HERO = 'https://images.squarespace-cdn.com/content/v1/6452ed7189507b42ec70bffd/d6b9a9af-7080-46b6-9d0c-03a76d5bf323/IMG_3103.jpeg'
+const STATIC_HERO = '/images/package-explorer.jpg'
 const FITOUT_AUD = 47000
 
 export default function ManaClient({ jpyApprox, content: initial }: { jpyApprox: number; content: Record<string, string> }) {

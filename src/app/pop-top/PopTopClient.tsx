@@ -6,7 +6,7 @@ import PageEditToolbar from '@/components/admin/PageEditToolbar'
 import FitoutHero from '@/components/admin/FitoutHero'
 import LeadFormModal from '@/components/leads/LeadFormModal'
 
-const STATIC_HERO = '' // No hero image in original — uses solid bg
+const STATIC_HERO = '/images/diy-poptop.jpg'
 
 export default function PopTopClient({ content: initial }: { content: Record<string, string> }) {
   const [content, setContent] = useState(initial)

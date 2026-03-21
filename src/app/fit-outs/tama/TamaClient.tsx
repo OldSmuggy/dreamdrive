@@ -5,7 +5,7 @@ import Link from 'next/link'
 import PageEditToolbar, { EditableImage } from '@/components/admin/PageEditToolbar'
 import FitoutHero from '@/components/admin/FitoutHero'
 
-const STATIC_HERO = 'https://images.squarespace-cdn.com/content/v1/6452ed7189507b42ec70bffd/e33c93ae-b139-4367-b43c-2cd96fa2c5ec/IMG_0908.jpg'
+const STATIC_HERO = '/images/tama-family-seat.jpg'
 const FITOUT_AUD = 47000
 
 export default function TamaClient({ jpyApprox, content: initial }: { jpyApprox: number; content: Record<string, string> }) {
@@ -160,15 +160,15 @@ export default function TamaClient({ jpyApprox, content: initial }: { jpyApprox:
           <p className="text-gray-500 mb-10">4 layouts to suit your lifestyle.</p>
           <div className="grid sm:grid-cols-2 gap-6">
             {[
-              { num: '01', title: 'Bed & Galley Kitchen', desc: 'Classic Tama setup — 70cm single bed extending to 110cm double. 40L Engel fridge with walnut countertop, sink, shower attachment. Storage under the bed platform.', imgKey: 'bed_tama_image' },
-              { num: '02', title: 'Extra Seat or Toilet Layout', desc: 'Forward-facing seat with 3 seatbelts for passengers, converts to lounge or extra bed. Or choose the vanlife layout with bench seat, slide-out table, hidden toilet and extra storage.', imgKey: null },
-              { num: '03', title: 'Hotel on Wheels Layout', desc: 'Fixed full-size double bed with two large slide-out storage drawers. Internal slider for fridge or toilet.', imgKey: null },
-              { num: '04', title: 'NICO Kitchen/Dining', desc: 'Inside/outside accessible sink, fresh & grey water tanks, bench seat and dining table for two.', imgKey: 'bed_nico_image' },
+              { num: '01', title: 'Bed & Galley Kitchen', desc: 'Classic Tama setup — 70cm single bed extending to 110cm double. 40L Engel fridge with walnut countertop, sink, shower attachment. Storage under the bed platform.', imgKey: 'bed_tama_image', fallback: '/images/tama-bed.jpg' },
+              { num: '02', title: 'Extra Seat or Toilet Layout', desc: 'Forward-facing seat with 3 seatbelts for passengers, converts to lounge or extra bed. Or choose the vanlife layout with bench seat, slide-out table, hidden toilet and extra storage.', imgKey: null, fallback: '/images/tama-vanlife.jpg' },
+              { num: '03', title: 'Hotel on Wheels Layout', desc: 'Fixed full-size double bed with two large slide-out storage drawers. Internal slider for fridge or toilet.', imgKey: null, fallback: null },
+              { num: '04', title: 'NICO Kitchen/Dining', desc: 'Inside/outside accessible sink, fresh & grey water tanks, bench seat and dining table for two.', imgKey: 'bed_nico_image', fallback: '/images/tama-nico.jpg' },
             ].map(l => (
               <div key={l.num} className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-                {l.imgKey && (
+                {(l.imgKey || l.fallback) && (
                   <EditableImage
-                    src={content[l.imgKey] || null}
+                    src={(l.imgKey ? content[l.imgKey] : null) || l.fallback || null}
                     alt={l.title}
                     className="h-48 w-full"
                     placeholderText={`${l.title} photo coming soon`}

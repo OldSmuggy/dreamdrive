@@ -5,7 +5,7 @@ import Link from 'next/link'
 import PageEditToolbar from '@/components/admin/PageEditToolbar'
 import FitoutHero from '@/components/admin/FitoutHero'
 
-const STATIC_HERO = 'https://images.squarespace-cdn.com/content/v1/6452ed7189507b42ec70bffd/1683156338722-2KFOTMHKJGX47F9YGRQD/DSC06470.jpg'
+const STATIC_HERO = '/images/package-offgrid.jpg'
 
 const UPGRADES = [
   { label: 'Fiamma Awning', price: '$2,300' },

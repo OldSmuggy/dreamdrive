@@ -80,7 +80,7 @@ export default async function HomePage() {
         ) : (
           <>
             <div className="absolute inset-0 opacity-20"
-              style={{ backgroundImage: 'url(/hero-van.jpg)', backgroundSize: 'cover', backgroundPosition: 'center' }} />
+              style={{ backgroundImage: 'url(/images/og-image.jpg)', backgroundSize: 'cover', backgroundPosition: 'center' }} />
             <div className="absolute inset-0 bg-gradient-to-b from-charcoal/60 via-charcoal/40 to-charcoal" />
           </>
         )}
@@ -121,8 +121,9 @@ export default async function HomePage() {
               {path.highlight && (
                 <span className="absolute top-3 right-3 bg-ocean text-white text-xs font-bold px-2.5 py-1 rounded-full z-10">Most popular</span>
               )}
-              <div className="h-48 bg-gray-200 flex items-center justify-center text-gray-400 text-5xl">
-                {path.icon}
+              <div className="h-48 overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={path.image} alt={path.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
               </div>
               <div className="p-6 flex flex-col flex-1">
                 <span className="text-xs font-semibold tracking-widest text-driftwood uppercase mb-2">{path.tag}</span>
@@ -162,7 +163,8 @@ export default async function HomePage() {
         <div className="grid md:grid-cols-3 gap-8">
           {PACKAGES.map(pkg => (
             <div key={pkg.name} className="border border-gray-200 rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
-              <div className="h-48 bg-gray-200 flex items-center justify-center text-gray-400 text-5xl">🚐</div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={pkg.image} alt={pkg.name} className="h-48 w-full object-cover" />
               <div className="p-6">
                 <h3 className="text-xl text-charcoal mb-2 font-bold">{pkg.name}</h3>
                 <p className="text-gray-500 text-sm leading-relaxed mb-4">{pkg.desc}</p>
@@ -258,11 +260,13 @@ export default async function HomePage() {
           <a href="tel:0432182892" className="text-ocean font-semibold hover:underline">0432 182 892</a>
           <a href="mailto:hello@barecamper.com" className="text-ocean font-semibold hover:underline">hello@barecamper.com</a>
         </div>
-        {/* Placeholder for team/workshop photos */}
         <div className="grid md:grid-cols-3 gap-4 mt-8">
-          <div className="h-48 bg-gray-200 rounded-xl flex items-center justify-center text-gray-400 text-sm">Van delivery photo</div>
-          <div className="h-48 bg-gray-200 rounded-xl flex items-center justify-center text-gray-400 text-sm">Japan workshop photo</div>
-          <div className="h-48 bg-gray-200 rounded-xl flex items-center justify-center text-gray-400 text-sm">Brisbane pop top facility photo</div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/images/about-delivery.jpg" alt="Van delivery" className="h-48 w-full object-cover rounded-xl" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/images/about-japan-workshop.jpg" alt="Japan workshop" className="h-48 w-full object-cover rounded-xl" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/images/about-brisbane.jpg" alt="Brisbane pop top facility" className="h-48 w-full object-cover rounded-xl" />
         </div>
       </section>
 
@@ -347,9 +351,9 @@ function FeaturedVanCard({ listing }: { listing: Listing }) {
 }
 
 // ── Static data ───────────────────────────────────────────────────────────────
-const PATHS: { icon: string; tag: string; name: string; desc: string; tags: string; href: string; cta: string; highlight?: boolean }[] = [
+const PATHS: { image: string; tag: string; name: string; desc: string; tags: string; href: string; cta: string; highlight?: boolean }[] = [
   {
-    icon: '🚐',
+    image: '/images/path-source.jpg',
     tag: 'I need a vehicle',
     name: 'Source your van',
     desc: "Browse 20+ Toyota Hiace vans from Japanese auctions and dealers, or let us find one locally through our Australian network. Our team knows which models, specs, and seat configurations actually work for conversions — and which ones will cause you headaches. We handle import, compliance, and shipping.",
@@ -358,7 +362,7 @@ const PATHS: { icon: string; tag: string; name: string; desc: string; tags: stri
     cta: 'Browse stock',
   },
   {
-    icon: '🪑',
+    image: '/images/path-convert.jpg',
     tag: 'I already have a van',
     name: 'Convert your van',
     desc: "Bring your Hiace — H200 or 300 Series — to our Brisbane workshop. Pop top roof conversion, TAMA family fitout, MANA couples fitout, or all of the above. Our team will assess your vehicle first and tell you honestly what's possible.",
@@ -368,7 +372,7 @@ const PATHS: { icon: string; tag: string; name: string; desc: string; tags: stri
     highlight: true,
   },
   {
-    icon: '⚡',
+    image: '/images/path-diy.jpg',
     tag: 'I want to DIY',
     name: 'Parts & kits',
     desc: "Pop top conversions, modular bed kits, standalone electrical cabinets, and parts sourced from Japan. We do the hard stuff — you make it yours. Expert support so you don't learn the hard lessons the expensive way.",
@@ -383,16 +387,19 @@ const PACKAGES = [
     name: 'The Weekender',
     desc: '2019 Hiace 2WD + TAMA family fitout. Weekend trips and school holidays sorted. 6 seats by day, full camper by night.',
     price: 'From ~$70,000',
+    image: '/images/package-weekender.jpg',
   },
   {
     name: 'The Explorer',
     desc: '2020 Hiace 4WD + MANA fitout + pop top. Full standing room, toilet, 200AH lithium. Go anywhere, stay anywhere.',
     price: 'From ~$95,000',
+    image: '/images/package-explorer.jpg',
   },
   {
     name: 'The Off-Grid Pro',
     desc: '2022 Hiace 4WD + MANA fitout + pop top + solar + hot water + FF heater. The ultimate self-contained tourer.',
     price: 'From ~$105,000',
+    image: '/images/package-offgrid.jpg',
   },
 ]
 

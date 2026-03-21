@@ -11,21 +11,21 @@ const FITOUTS = [
     name: 'TAMA Pop Top',
     price: 'From $109,000 driveaway',
     desc: 'The perfect family campervan — 6 seats, sleeps 4, full galley kitchen.',
-    image: 'https://images.squarespace-cdn.com/content/v1/6452ed7189507b42ec70bffd/e33c93ae-b139-4367-b43c-2cd96fa2c5ec/IMG_0908.jpg',
+    image: '/images/tama-family-seat.jpg',
   },
   {
     slug: 'mana',
     name: 'MANA Pop Top',
     price: 'From $107,000 driveaway',
     desc: 'Built for couples and solo adventurers — sleeps 2, full kitchen, toilet and shower.',
-    image: 'https://images.squarespace-cdn.com/content/v1/6452ed7189507b42ec70bffd/d6b9a9af-7080-46b6-9d0c-03a76d5bf323/IMG_3103.jpeg',
+    image: '/images/package-explorer.jpg',
   },
   {
     slug: 'kumaq',
     name: 'KUMAQ',
     price: 'Enquire for pricing',
     desc: 'The ultimate adventure van — Super Long Wheelbase, sleeps 4, full off-road capability.',
-    image: 'https://images.squarespace-cdn.com/content/v1/6452ed7189507b42ec70bffd/1683156338722-2KFOTMHKJGX47F9YGRQD/DSC06470.jpg',
+    image: '/images/package-offgrid.jpg',
   },
 ]
 

@@ -21,7 +21,7 @@ export default function DiyClient({ content: initial }: { content: Record<string
     <div className="min-h-screen bg-white">
       <PageEditToolbar pageSlug="diy" pageName="DIY Page" content={content} onContentChange={setContent} extraImages={EXTRA_IMAGES} />
 
-      <FitoutHero fallbackImage="" heroImage={content.hero_image} heroVideo={content.hero_video}>
+      <FitoutHero fallbackImage="/images/diy-poptop.jpg" heroImage={content.hero_image} heroVideo={content.hero_video}>
         <div className="pt-16">
           <p className="text-sand text-xs font-semibold tracking-[0.25em] uppercase mb-3">Bare Camper</p>
           <h1 className="text-7xl md:text-9xl text-white leading-none mb-3">DIY</h1>
@@ -55,7 +55,7 @@ export default function DiyClient({ content: initial }: { content: Record<string
             </div>
             <Link href="/pop-top" className="btn-primary inline-block px-6 py-3 text-sm">See Full Pop Top Details →</Link>
           </div>
-          <EditableImage src={content.poptop_image || null} alt="Pop Top" className="h-72 rounded-2xl overflow-hidden" placeholderText="Pop Top photo coming soon" />
+          <EditableImage src={content.poptop_image || '/images/diy-poptop.jpg'} alt="Pop Top" className="h-72 rounded-2xl overflow-hidden" placeholderText="Pop Top photo coming soon" />
         </div>
       </section>
 
@@ -63,7 +63,7 @@ export default function DiyClient({ content: initial }: { content: Record<string
       <section className="bg-cream py-20">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid md:grid-cols-2 gap-12 items-center">
-            <EditableImage src={content.bare_camper_image || null} alt="Bare Camper" className="h-72 rounded-2xl overflow-hidden md:order-first order-last" placeholderText="Bare Camper photo coming soon" />
+            <EditableImage src={content.bare_camper_image || '/images/diy-barecamper.jpg'} alt="Bare Camper" className="h-72 rounded-2xl overflow-hidden md:order-first order-last" placeholderText="Bare Camper photo coming soon" />
             <div>
               <p className="text-driftwood text-xs font-semibold tracking-widest uppercase mb-3">Step 2</p>
               <h2 className="text-4xl text-charcoal mb-4">Bare Camper by Skybridge</h2>
@@ -92,7 +92,7 @@ export default function DiyClient({ content: initial }: { content: Record<string
             </p>
             <Link href="/browse" className="btn-primary inline-block px-6 py-3 text-sm">Browse Vans →</Link>
           </div>
-          <EditableImage src={content.base_van_image || null} alt="Base Van" className="h-72 rounded-2xl overflow-hidden" placeholderText="Van photo coming soon" />
+          <EditableImage src={content.base_van_image || '/images/diy-basevan.jpg'} alt="Base Van" className="h-72 rounded-2xl overflow-hidden" placeholderText="Van photo coming soon" />
         </div>
       </section>
 
@@ -100,7 +100,7 @@ export default function DiyClient({ content: initial }: { content: Record<string
       <section className="bg-cream py-20">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid md:grid-cols-2 gap-12 items-center">
-            <EditableImage src={content.electrical_image || null} alt="Electrical Cabinet" className="h-72 rounded-2xl overflow-hidden md:order-first order-last" placeholderText="Electrical cabinet photo coming soon" />
+            <EditableImage src={content.electrical_image || '/images/diy-electrical.jpg'} alt="Electrical Cabinet" className="h-72 rounded-2xl overflow-hidden md:order-first order-last" placeholderText="Electrical cabinet photo coming soon" />
             <div>
               <p className="text-driftwood text-xs font-semibold tracking-widest uppercase mb-3">Optional add-on</p>
               <h2 className="text-4xl text-charcoal mb-4">Standalone Electrical Cabinet</h2>
