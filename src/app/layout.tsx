@@ -4,6 +4,7 @@ import './globals.css'
 import Header from '@/components/ui/Header'
 import { GoogleAnalytics } from '@/components/GoogleAnalytics'
 import { MetaPixel } from '@/components/MetaPixel'
+import WhatsAppButton from '@/components/ui/WhatsAppButton'
 import { getSiteSettings } from '@/lib/site-settings'
 
 const body = DM_Sans({
@@ -39,6 +40,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <MetaPixel />
         <Header logoUrl={logo_url} />
         {children}
+        <WhatsAppButton />
       </body>
     </html>
   )

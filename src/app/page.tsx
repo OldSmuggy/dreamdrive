@@ -5,6 +5,7 @@ import { getSiteSettings } from '@/lib/site-settings'
 import { generateMeta } from '@/lib/seo'
 import type { Metadata } from 'next'
 import AuctionBanner from '@/components/ui/AuctionBanner'
+import Footer from '@/components/ui/Footer'
 import type { Listing } from '@/types'
 
 export const metadata = generateMeta({
@@ -233,9 +234,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <footer className="border-t border-gray-100 py-6 text-center text-gray-400 text-xs">
-        <p>Bare Camper (AU) &middot; DIY RV Solutions (AU) &middot; Japan Import Service</p>
-      </footer>
+      <Footer />
     </div>
   )
 }

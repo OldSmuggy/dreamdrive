@@ -10,7 +10,9 @@ import AuctionCountdownBanner from '@/components/van/AuctionCountdownBanner'
 import PhotoGallery from '@/components/van/PhotoGallery'
 import ConversionDetails from '@/components/van/ConversionDetails'
 import SaveVanButton from '@/components/ui/SaveVanButton'
+import ShareButtons from '@/components/ui/ShareButtons'
 import DepositHoldButton from '@/components/ui/DepositHoldButton'
+import ViewContentTracker from '@/components/van/ViewContentTracker'
 import type { Listing } from '@/types'
 
 export async function generateMetadata({ params }: { params: { id: string } }) {
@@ -51,6 +53,12 @@ export default async function VanDetailPage({ params }: { params: { id: string }
     isSaved = !!saved
     isAdmin = !!profile?.is_admin || !!user.email?.endsWith('@dreamdrive.life')
   }
+
+  const sourceUrl = (listing.raw_data as Record<string, string> | null)?.url ?? null
+  const sourceLabel = listing.source === 'dealer_carsensor' ? 'Car Sensor'
+    : listing.source === 'dealer_goonet' ? 'Goo-net'
+    : listing.source === 'auction' ? 'Japan auction house'
+    : null
 
   const isJapanListing = listing.source !== 'au_stock'
   const { priceCents, isEstimate } = listingDisplayPrice(listing, jpyRate)
@@ -109,6 +117,12 @@ export default async function VanDetailPage({ params }: { params: { id: string }
 
   return (
     <div className="min-h-screen">
+      <ViewContentTracker
+        id={listing.id}
+        model_name={listing.model_name}
+        model_year={listing.model_year}
+        price_cents={priceCents}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(vehicleJsonLd) }}
@@ -181,7 +195,8 @@ export default async function VanDetailPage({ params }: { params: { id: string }
                   🏕 Campervan Build{listing.fitout_grade ? ` · ${listing.fitout_grade}` : ''}
                 </div>
               )}
-              <div className="ml-auto">
+              <div className="ml-auto flex items-center gap-3">
+                <ShareButtons url={`/van/${listing.id}`} title={`${listing.model_year} ${listing.model_name} — Bare Camper`} />
                 <SaveVanButton listingId={listing.id} userId={user?.id ?? null} initialSaved={isSaved} />
               </div>
             </div>
@@ -249,6 +264,21 @@ export default async function VanDetailPage({ params }: { params: { id: string }
                 {listing.has_sunroof  && <Chip>Sunroof</Chip>}
                 {listing.has_alloys   && <Chip>Alloy Wheels</Chip>}
               </div>
+            )}
+
+            {/* Source verification */}
+            {sourceUrl && (
+              <a
+                href={sourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-sm text-gray-500 hover:text-ocean mb-4 transition-colors"
+              >
+                <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+                Verify source listing on {sourceLabel}
+              </a>
             )}
 
             {/* CTAs */}

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { trackInitiateCheckout } from '@/lib/pixel-events'
 import type { Listing } from '@/types'
 
 interface Props {
@@ -40,6 +41,7 @@ export default function DepositHoldButton({ listing, userId }: Props) {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Request failed')
+      trackInitiateCheckout(listing)
       setSuccess(true)
     } catch (e) {
       setError(String(e))
