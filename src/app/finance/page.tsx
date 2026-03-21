@@ -4,7 +4,7 @@ import { generateMeta } from '@/lib/seo'
 
 export const metadata = generateMeta({
   title: 'Finance Your Campervan Import — Personal & Business Loans',
-  description: 'Calculate your repayments and enquire about finance for your Japan import van and Dream Drive conversion. Personal and chattel mortgage options available.',
+  description: 'Calculate your repayments and enquire about finance for your Japan import van and Bare Camper conversion. Personal and chattel mortgage options available.',
   url: '/finance',
 })
 

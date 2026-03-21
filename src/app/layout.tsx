@@ -14,13 +14,19 @@ const body = DM_Sans({
 })
 
 export const metadata: Metadata = {
-  title: { default: 'Dream Drive — Handcrafted Campervans from Japan', template: '%s | Dream Drive' },
-  description: 'Import a Toyota Hiace from Japan and build your dream campervan. Featuring Dream Drive\'s TAMA, MANA, and pop top conversions.',
+  title: { default: 'Bare Camper — Handcrafted Campervans from Japan', template: '%s | Bare Camper' },
+  description: 'Import a Toyota Hiace from Japan and build your campervan. Featuring Bare Camper\'s TAMA, MANA, and pop top conversions.',
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://barecamper.com'),
   openGraph: {
-    siteName: 'Dream Drive',
+    siteName: 'Bare Camper',
     type: 'website',
     locale: 'en_AU',
   },
+  ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION && {
+    verification: {
+      google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+    },
+  }),
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

@@ -5,7 +5,7 @@ import ManaProductClient from './ManaProductClient'
 
 export const dynamic = 'force-dynamic'
 export const metadata = {
-  title: 'MANA — Liveable Compact Campervan | Dream Drive',
+  title: 'MANA — Liveable Compact Campervan | Bare Camper',
   description: 'The MANA is built for two on the long road. Pop top, 75L fridge, toilet, external shower, 200AH lithium. From $105,000.',
 }
 

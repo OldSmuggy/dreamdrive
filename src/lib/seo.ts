@@ -11,10 +11,10 @@ export function generateMeta({
   url?: string
   type?: string
 }) {
-  const siteName = 'Dream Drive'
-  const defaultImage = 'https://dreamdrive-zeta.vercel.app/og-image.jpg'
+  const siteName = 'Bare Camper'
+  const defaultImage = `${process.env.NEXT_PUBLIC_APP_URL || 'https://barecamper.com'}/og-image.jpg`
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ||
-    'https://dreamdrive-zeta.vercel.app'
+    'https://barecamper.com'
 
   return {
     title,

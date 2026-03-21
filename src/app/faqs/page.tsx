@@ -2,7 +2,7 @@ import { generateMeta } from '@/lib/seo'
 
 export const metadata = generateMeta({
   title: 'Frequently Asked Questions — Importing a Hiace to Australia',
-  description: 'Everything you need to know about importing a Toyota Hiace from Japan, campervan conversions, compliance, and the Dream Drive build process.',
+  description: 'Everything you need to know about importing a Toyota Hiace from Japan, campervan conversions, compliance, and the Bare Camper build process.',
   url: '/faqs',
 })
 
