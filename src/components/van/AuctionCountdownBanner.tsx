@@ -135,7 +135,7 @@ export default function AuctionCountdownBanner({ auctionTime, auctionResult, sol
         href="#deposit"
         className="inline-block mt-3 bg-white text-ocean font-semibold text-sm px-5 py-2.5 rounded-lg hover:bg-cream"
       >
-        Hold This Van — $500 Deposit
+        Hold This Van — $3,000 Deposit
       </Link>
     </div>
   )

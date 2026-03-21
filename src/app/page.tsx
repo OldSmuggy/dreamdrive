@@ -386,7 +386,7 @@ const PACKAGES = [
   {
     name: 'The Weekender',
     desc: '2019 Hiace 2WD + TAMA family fitout. Weekend trips and school holidays sorted. 6 seats by day, full camper by night.',
-    price: 'From ~$70,000',
+    price: 'From ~$88,000',
     image: '/images/package-weekender.jpg',
   },
   {
@@ -397,7 +397,7 @@ const PACKAGES = [
   },
   {
     name: 'The Off-Grid Pro',
-    desc: '2022 Hiace 4WD + MANA fitout + pop top + solar + hot water + FF heater. The ultimate self-contained tourer.',
+    desc: '2022 Hiace 4WD + MANA fitout + solar + hot water + FF heater. The ultimate self-contained tourer.',
     price: 'From ~$105,000',
     image: '/images/package-offgrid.jpg',
   },
@@ -413,14 +413,14 @@ const PRODUCTS = [
 const STEPS = [
   { title: 'Find It', desc: 'Pick from 20+ Hiace vans updated weekly — Japan auction, Japan dealer, or ready-now Brisbane stock. Or bring your own.' },
   { title: 'Build It', desc: 'Add a fitout, pop top, options. See your total price instantly. No surprises, no hidden fees.' },
-  { title: 'Hold for $500', desc: 'Fully refundable. We bid at auction Thursday, confirm Friday. Zero risk to you.' },
+  { title: 'Hold for $3,000', desc: 'Fully refundable. We bid at auction Thursday, confirm Friday. Zero risk to you.' },
   { title: 'Drive It', desc: "We handle import (6–10 weeks), compliance, conversion, and delivery. Pop top and fitout run in parallel so you're on the road faster. Converting in Japan? Allow extra time for the build." },
 ]
 
 const TRUST = [
   { value: '100+',   label: 'Vans delivered' },
   { value: '3',      label: 'Fit-out models' },
-  { value: '$500',   label: 'Refundable hold' },
+  { value: '$3,000', label: 'Refundable hold' },
   { value: '100%',   label: 'Aus compliance' },
 ]
 

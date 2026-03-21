@@ -106,7 +106,7 @@ export const emailTemplates = {
         <p><strong>Phone:</strong> ${customerPhone || 'Not provided'}</p>
         <p><strong>Van:</strong> ${vanTitle}</p>
         <p><strong>Hold ID:</strong> ${holdId}</p>
-        <p><strong>Amount:</strong> $500 AUD</p>
+        <p><strong>Amount:</strong> $3,000 AUD</p>
         <hr style="border: none; border-top: 1px solid #eee; margin: 1rem 0;">
         <a href="https://barecamper.com/admin/leads" style="color: #3D6B73;">View in admin</a>
       </div>

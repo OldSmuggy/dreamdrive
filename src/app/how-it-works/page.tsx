@@ -18,8 +18,8 @@ export default function HowItWorksPage() {
             <p>Select your fit-out package, electrical system, and pop top. We'll give you a total landed cost estimate.</p>
           </div>
           <div className="bg-white rounded-2xl p-6 border border-gray-200">
-            <div className="text-2xl text-ocean mb-2">3. Place a $500 Hold</div>
-            <p>Secure your van with a refundable $500 deposit while we finalise the details and paperwork.</p>
+            <div className="text-2xl text-ocean mb-2">3. Place a $3,000 Hold</div>
+            <p>Secure your van with a refundable $3,000 deposit while we finalise the details and paperwork.</p>
           </div>
           <div className="bg-white rounded-2xl p-6 border border-gray-200">
             <div className="text-2xl text-ocean mb-2">4. We Handle the Import</div>

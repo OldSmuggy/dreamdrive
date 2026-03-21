@@ -18,8 +18,8 @@ export default function DepositHoldButton({ listing, userId }: Props) {
   const router = useRouter()
 
   const ctaLabel =
-    listing.source === 'auction' ? 'Hold This Van — $500 Deposit'
-    : listing.source === 'au_stock' ? 'Reserve Now — $500 Deposit'
+    listing.source === 'auction' ? 'Hold This Van — $3,000 Deposit'
+    : listing.source === 'au_stock' ? 'Reserve Now — $3,000 Deposit'
     : 'Express Interest — Book a Call'
 
   const handleClick = () => {
@@ -75,7 +75,7 @@ export default function DepositHoldButton({ listing, userId }: Props) {
                 </div>
                 <h3 className="text-xl text-charcoal mb-2">Deposit Hold Requested</h3>
                 <p className="text-gray-500 text-sm mb-6">
-                  We&apos;ll be in touch within 1 business day to process your $500 deposit payment and confirm your hold.
+                  We&apos;ll be in touch within 1 business day to process your $3,000 deposit payment and confirm your hold.
                 </p>
                 <button onClick={() => setShowModal(false)} className="btn-primary px-8 py-2.5">Done</button>
               </div>
@@ -85,7 +85,7 @@ export default function DepositHoldButton({ listing, userId }: Props) {
                 <p className="text-gray-400 text-sm mb-5">{listing.model_name}{listing.model_year ? ` · ${listing.model_year}` : ''}</p>
 
                 <div className="bg-cream rounded-xl p-4 mb-5 space-y-2 text-sm text-gray-700">
-                  <p>✓ &nbsp;$500 deposit holds this van for up to 7 days</p>
+                  <p>✓ &nbsp;$3,000 deposit holds this van for up to 7 days</p>
                   <p>✓ &nbsp;Fully refundable if you decide not to proceed</p>
                   <p>✓ &nbsp;We&apos;ll contact you within 1 business day to process payment</p>
                   <p>✓ &nbsp;Deposit goes toward your final purchase price</p>
