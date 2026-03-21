@@ -3,6 +3,7 @@ import { DM_Sans } from 'next/font/google'
 import './globals.css'
 import Header from '@/components/ui/Header'
 import { GoogleAnalytics } from '@/components/GoogleAnalytics'
+import { MetaPixel } from '@/components/MetaPixel'
 import { getSiteSettings } from '@/lib/site-settings'
 
 const body = DM_Sans({
@@ -35,6 +36,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="en" className={body.variable}>
       <body className="font-body bg-white text-gray-900 antialiased">
         <GoogleAnalytics />
+        <MetaPixel />
         <Header logoUrl={logo_url} />
         {children}
       </body>
