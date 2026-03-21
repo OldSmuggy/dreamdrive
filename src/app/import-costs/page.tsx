@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import ImportCalculator from './ImportCalculator'
+import Footer from '@/components/ui/Footer'
 import { generateMeta } from '@/lib/seo'
 
 export const metadata = generateMeta({
@@ -149,15 +150,7 @@ export default function ImportCostsPage() {
         </div>
       </section>
 
-      {/* ---- Footer ---- */}
-      <footer className="border-t border-gray-100 py-8 text-center text-gray-400 text-sm">
-        <p>Dream Drive (AU) • DIY RV Solutions (AU) • Japan Import Service</p>
-        <p className="mt-1">
-          <a href="mailto:jared@dreamdrive.life" className="hover:text-ocean">jared@dreamdrive.life</a>
-          {' · '}
-          <a href="tel:0432182892" className="hover:text-ocean">0432 182 892</a>
-        </p>
-      </footer>
+      <Footer />
     </div>
   )
 }

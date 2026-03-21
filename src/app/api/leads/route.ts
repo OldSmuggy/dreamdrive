@@ -3,11 +3,16 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
 import { sendEmail, emailTemplates } from '@/lib/email'
+import { rateLimit } from '@/lib/rate-limit'
 
 // Columns that require a DB migration — strip and retry if missing
 const OPTIONAL_LEAD_COLS = ['state', 'build_slug', 'lead_type']
 
 export async function POST(req: NextRequest) {
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0] ?? 'unknown'
+  const { ok } = rateLimit(ip)
+  if (!ok) return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 })
+
   try {
     const body = await req.json()
     console.log('[leads] POST type=%s email=%s source=%s', body.type, body.email, body.source)
