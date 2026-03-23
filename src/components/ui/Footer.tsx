@@ -3,7 +3,7 @@ import Link from 'next/link'
 export default function Footer() {
   return (
     <footer className="border-t border-gray-100 py-6 text-center text-gray-400 text-xs space-y-1">
-      <p>Bare Camper &middot; Built by Dream Drive &middot; Brisbane &amp; Tokyo</p>
+      <p>Bare Camper &middot; Brisbane &amp; Tokyo</p>
       <p>
         <a href="mailto:hello@barecamper.com" className="hover:text-gray-600">hello@barecamper.com</a>
         {' · '}

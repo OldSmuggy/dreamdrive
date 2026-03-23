@@ -26,7 +26,7 @@ export default function AdminNav() {
     <>
       <div className="px-5 py-6 border-b border-white/10">
         <Link href="/" className="text-sand text-lg" onClick={() => setOpen(false)}>
-          Dream Drive
+          Bare Camper
         </Link>
         <p className="text-white/50 text-xs mt-0.5">Admin</p>
       </div>

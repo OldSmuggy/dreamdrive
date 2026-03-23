@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import PageEditToolbar from '@/components/admin/PageEditToolbar'
 import FitoutHero from '@/components/admin/FitoutHero'
 import LeadFormModal from '@/components/leads/LeadFormModal'
@@ -70,8 +71,9 @@ export default function PopTopClient({ content: initial }: { content: Record<str
         <section className="max-w-6xl mx-auto px-6 py-12">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {gallery.map((url, i) => (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img key={i} src={url} alt={`Pop Top gallery ${i + 1}`} className="w-full h-48 object-cover rounded-xl" />
+              <div key={i} className="relative h-48 rounded-xl overflow-hidden">
+                <Image src={url} alt={`Pop Top gallery ${i + 1}`} fill className="object-cover" sizes="(max-width: 768px) 50vw, 25vw" />
+              </div>
             ))}
           </div>
         </section>

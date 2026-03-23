@@ -12,7 +12,7 @@ const FAQS = [
   { q: 'What does compliance cost?', a: 'Compliance typically costs around $2,200 and includes a roadworthy inspection, any required modifications, and an Australian compliance plate.' },
   { q: 'Can I inspect the van before buying?', a: 'Japanese auction vans come with a graded inspection sheet (grade 3–5). We can also arrange independent inspections at the auction yard for a fee.' },
   { q: 'Do you handle registration?', a: 'Yes — we handle Queensland registration as part of our standard service. Interstate rego can be arranged at additional cost.' },
-  { q: 'What warranty is included?', a: 'Imported vehicles don\'t come with manufacturer warranty. We provide a 1-month warranty on compliance work and all Dream Drive fit-outs come with a 12-month warranty.' },
+  { q: 'What warranty is included?', a: 'Imported vehicles don\'t come with manufacturer warranty. We provide a 1-month warranty on compliance work and all Bare Camper fit-outs come with a 12-month warranty.' },
 ]
 
 export default function FaqsPage() {

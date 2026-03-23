@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { createSupabaseServer } from '@/lib/supabase-server'
 import { centsToAud } from '@/lib/utils'
 import { getSiteSettings } from '@/lib/site-settings'
@@ -66,37 +67,22 @@ export default async function HomePage() {
 
       {/* ─── 1. HERO ─────────────────────────────────────── */}
       <section className="relative bg-charcoal text-white overflow-hidden">
-        {hero_video_url ? (
-          <>
-            <video
-              autoPlay muted loop playsInline
-              poster={hero_video_poster || undefined}
-              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 }}
-            >
-              <source src={hero_video_url} type="video/mp4" />
-            </video>
-            <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.45)', zIndex: 1 }} />
-          </>
-        ) : (
-          <>
-            <div className="absolute inset-0 opacity-20"
-              style={{ backgroundImage: 'url(/images/og-image.jpg)', backgroundSize: 'cover', backgroundPosition: 'center' }} />
-            <div className="absolute inset-0 bg-gradient-to-b from-charcoal/60 via-charcoal/40 to-charcoal" />
-          </>
-        )}
+        <Image
+          src="/images/og-image.jpg"
+          alt="Bare Camper — Toyota Hiace campervans"
+          fill
+          priority
+          className="object-cover"
+          sizes="100vw"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-charcoal/70 via-charcoal/50 to-charcoal/80" />
 
-        <div className="relative max-w-6xl mx-auto px-4 py-28 md:py-40" style={{ zIndex: 2 }}>
+        <div className="relative max-w-6xl mx-auto px-4 py-28 md:py-40 z-10">
           <p className="text-sand text-sm font-semibold tracking-widest uppercase mb-4">Bare Camper</p>
-          <h1
-            className="text-5xl md:text-7xl leading-tight mb-6 text-white font-bold"
-            style={hero_video_url ? { textShadow: '0 1px 3px rgba(0,0,0,0.5)' } : undefined}
-          >
+          <h1 className="text-5xl md:text-7xl leading-tight mb-6 text-white font-bold" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
             Find it.<br />Build it.<br />Drive it.
           </h1>
-          <p
-            className={`text-lg md:text-xl max-w-xl mb-10 leading-relaxed ${hero_video_url ? '' : 'text-gray-300'}`}
-            style={hero_video_url ? { color: 'rgba(255,255,255,0.85)', textShadow: '0 1px 3px rgba(0,0,0,0.5)' } : undefined}
-          >
+          <p className="text-lg md:text-xl max-w-xl mb-10 leading-relaxed" style={{ color: 'rgba(255,255,255,0.85)', textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
             Australia&apos;s complete Toyota Hiace campervan platform. Source your van from Japan or convert one here — we handle everything from auction to driveway.
           </p>
           <div className="flex flex-wrap gap-4">
@@ -121,9 +107,8 @@ export default async function HomePage() {
               {path.highlight && (
                 <span className="absolute top-3 right-3 bg-ocean text-white text-xs font-bold px-2.5 py-1 rounded-full z-10">Most popular</span>
               )}
-              <div className="h-48 overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={path.image} alt={path.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+              <div className="relative h-48 overflow-hidden">
+                <Image src={path.image} alt={path.name} fill className="object-cover group-hover:scale-105 transition-transform duration-300" sizes="(max-width: 768px) 100vw, 33vw" />
               </div>
               <div className="p-6 flex flex-col flex-1">
                 <span className="text-xs font-semibold tracking-widest text-driftwood uppercase mb-2">{path.tag}</span>
@@ -163,8 +148,9 @@ export default async function HomePage() {
         <div className="grid md:grid-cols-3 gap-8">
           {PACKAGES.map(pkg => (
             <div key={pkg.name} className="border border-gray-200 rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={pkg.image} alt={pkg.name} className="h-48 w-full object-cover" />
+              <div className="relative h-48">
+                <Image src={pkg.image} alt={pkg.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" />
+              </div>
               <div className="p-6">
                 <h3 className="text-xl text-charcoal mb-2 font-bold">{pkg.name}</h3>
                 <p className="text-gray-500 text-sm leading-relaxed mb-4">{pkg.desc}</p>
@@ -244,7 +230,7 @@ export default async function HomePage() {
         <h2 className="text-4xl text-charcoal mb-8 font-bold">The team behind Bare Camper</h2>
         <div className="prose prose-lg max-w-3xl text-gray-500 leading-relaxed space-y-4">
           <p>
-            We&apos;ve been building campervans on Toyota Hiace platforms for over a decade, working across Japan and Australia. What started as a passion for Japanese vehicles and van life grew into Dream Drive — a company that&apos;s now delivered 50+ campervans to customers across the country.
+            We&apos;ve been building campervans on Toyota Hiace platforms for over a decade, working across Japan and Australia. What started as a passion for Japanese vehicles and van life grew into Bare Camper — a team that&apos;s now delivered 50+ campervans to customers across the country.
           </p>
           <p>
             Our team in Tokyo hand-builds every TAMA and MANA fitout at our dedicated conversion facility, using top-quality materials and Japanese craftsmanship. In Brisbane, our workshop at Capalaba handles pop top roof conversions, local builds, and vehicle preparation.
@@ -261,12 +247,15 @@ export default async function HomePage() {
           <a href="mailto:hello@barecamper.com" className="text-ocean font-semibold hover:underline">hello@barecamper.com</a>
         </div>
         <div className="grid md:grid-cols-3 gap-4 mt-8">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/about-delivery.jpg" alt="Van delivery" className="h-48 w-full object-cover rounded-xl" />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/about-japan-workshop.jpg" alt="Japan workshop" className="h-48 w-full object-cover rounded-xl" />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/about-brisbane.jpg" alt="Brisbane pop top facility" className="h-48 w-full object-cover rounded-xl" />
+          <div className="relative h-48 rounded-xl overflow-hidden">
+            <Image src="/images/about-delivery.jpg" alt="Van delivery" fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" />
+          </div>
+          <div className="relative h-48 rounded-xl overflow-hidden">
+            <Image src="/images/about-japan-workshop.jpg" alt="Japan workshop" fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" />
+          </div>
+          <div className="relative h-48 rounded-xl overflow-hidden">
+            <Image src="/images/about-brisbane.jpg" alt="Brisbane pop top facility" fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" />
+          </div>
         </div>
       </section>
 
@@ -323,8 +312,7 @@ function FeaturedVanCard({ listing }: { listing: Listing }) {
     >
       <div className="relative md:w-1/2 h-56 md:h-auto bg-gray-100 shrink-0">
         {photo ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={photo} alt={listing.model_name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+          <Image src={photo} alt={listing.model_name} fill className="object-cover group-hover:scale-105 transition-transform duration-300" sizes="(max-width: 768px) 100vw, 50vw" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-300 text-6xl">🚐</div>
         )}
@@ -428,7 +416,7 @@ const WHY_US = [
   { title: 'Save money', desc: 'vs factory-built campervans — same quality, Toyota reliability, fraction of the price.' },
   { title: 'Built on Toyota Hiace', desc: 'Parts at any dealer, serviced anywhere in Australia.' },
   { title: 'One team, start to finish', desc: 'No juggling importers, converters, and compliance shops.' },
-  { title: '100+ vans delivered', desc: 'The Dream Drive team has been building campervans between Japan and Australia for over a decade.' },
+  { title: '100+ vans delivered', desc: 'The Bare Camper team has been building campervans between Japan and Australia for over a decade.' },
   { title: 'We find the RIGHT vehicle', desc: "Don't waste money on a Hiace that won't convert properly." },
   { title: '100% Australian compliant', desc: 'Fully registered and road-legal on delivery.' },
 ]

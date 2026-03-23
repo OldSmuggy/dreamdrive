@@ -5,6 +5,7 @@ const nextConfig = {
       { protocol: 'https', hostname: 'www.ninja-cartrade.jp' },
       { protocol: 'https', hostname: '*.r2.cloudflarestorage.com' },
       { protocol: 'https', hostname: 'pub-*.r2.dev' },
+      { protocol: 'https', hostname: '*.supabase.co' },
     ],
   },
   // Prevent webpack from bundling Playwright and Chromium — they are
@@ -17,6 +18,12 @@ const nextConfig = {
   },
   async headers() {
     return [
+      {
+        source: '/images/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
       {
         source: '/(.*)',
         headers: [

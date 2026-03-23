@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import LeadFormModal from '@/components/leads/LeadFormModal'
 import PageEditToolbar from '@/components/admin/PageEditToolbar'
 import FitoutHero from '@/components/admin/FitoutHero'
@@ -50,7 +51,7 @@ export default function ManaProductClient({ jpyRate, content: initial }: Props) 
 
       <FitoutHero fallbackImage="" heroImage={content.hero_image} heroVideo={content.hero_video}>
         <div className="pt-16">
-          <p className="text-sand text-xs font-semibold tracking-[0.25em] uppercase mb-3">Dream Drive</p>
+          <p className="text-sand text-xs font-semibold tracking-[0.25em] uppercase mb-3">Bare Camper</p>
           <h1 className="text-7xl md:text-9xl text-white leading-none mb-3">MANA</h1>
           <p className="text-white/80 text-xl md:text-2xl font-light mb-2">Liveable Compact Campervan</p>
           <p className="text-white/60 text-base md:text-lg max-w-xl">Built for two. Designed for the long road.</p>
@@ -60,7 +61,7 @@ export default function ManaProductClient({ jpyRate, content: initial }: Props) 
       {gallery.length > 0 && (
         <section className="max-w-6xl mx-auto px-6 py-12">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {gallery.map((url, i) => <img key={i} src={url} alt="" className="w-full h-48 object-cover rounded-xl" />)}
+            {gallery.map((url, i) => <div key={i} className="relative h-48 rounded-xl overflow-hidden"><Image src={url} alt="" fill className="object-cover" sizes="(max-width: 768px) 50vw, 25vw" /></div>)}
           </div>
         </section>
       )}

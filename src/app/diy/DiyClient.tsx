@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import LeadFormModal from '@/components/leads/LeadFormModal'
 import PageEditToolbar, { EditableImage } from '@/components/admin/PageEditToolbar'
 import FitoutHero from '@/components/admin/FitoutHero'
@@ -33,7 +34,7 @@ export default function DiyClient({ content: initial }: { content: Record<string
       {gallery.length > 0 && (
         <section className="max-w-6xl mx-auto px-6 py-12">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {gallery.map((url, i) => <img key={i} src={url} alt="" className="w-full h-48 object-cover rounded-xl" />)}
+            {gallery.map((url, i) => <div key={i} className="relative h-48 rounded-xl overflow-hidden"><Image src={url} alt="" fill className="object-cover" sizes="(max-width: 768px) 50vw, 25vw" /></div>)}
           </div>
         </section>
       )}

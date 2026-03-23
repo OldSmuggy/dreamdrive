@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import LeadFormModal from '@/components/leads/LeadFormModal'
 import PageEditToolbar, { EditableImage } from '@/components/admin/PageEditToolbar'
 import FitoutHero from '@/components/admin/FitoutHero'
@@ -54,7 +55,7 @@ export default function TamaProductClient({ conversionAud, low, high, jpyRate, c
       {/* Hero */}
       <FitoutHero fallbackImage="" heroImage={content.hero_image} heroVideo={content.hero_video}>
         <div className="pt-16">
-          <p className="text-sand text-xs font-semibold tracking-[0.25em] uppercase mb-3">Dream Drive</p>
+          <p className="text-sand text-xs font-semibold tracking-[0.25em] uppercase mb-3">Bare Camper</p>
           <h1 className="text-7xl md:text-9xl text-white leading-none mb-3">TAMA</h1>
           <p className="text-white/80 text-xl md:text-2xl font-light mb-2">The Family Adventure Van</p>
           <p className="text-white/60 text-base md:text-lg max-w-xl">6-seat people mover by day. Fully equipped campervan by night.</p>
@@ -64,7 +65,7 @@ export default function TamaProductClient({ conversionAud, low, high, jpyRate, c
       {gallery.length > 0 && (
         <section className="max-w-6xl mx-auto px-6 py-12">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {gallery.map((url, i) => <img key={i} src={url} alt="" className="w-full h-48 object-cover rounded-xl" />)}
+            {gallery.map((url, i) => <div key={i} className="relative h-48 rounded-xl overflow-hidden"><Image src={url} alt="" fill className="object-cover" sizes="(max-width: 768px) 50vw, 25vw" /></div>)}
           </div>
         </section>
       )}

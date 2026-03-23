@@ -1,6 +1,7 @@
 'use client'
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { centsToAud, scoreColor, scoreLabel, auctionUrgency, locationBadgeInfo, fitOutLevelInfo } from '@/lib/utils'
 import { listingDisplayPrice } from '@/lib/pricing'
@@ -544,8 +545,7 @@ function ForSaleCard({ vehicle }: { vehicle: ForSaleVehicle }) {
       {/* Photo */}
       <div className="relative h-[220px] overflow-hidden">
         {photo ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={photo} alt={label} className="absolute inset-0 w-full h-full object-cover" />
+          <Image src={photo} alt={label} fill className="object-cover" sizes="(max-width: 768px) 100vw, 50vw" />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center bg-amber-50 text-amber-300 text-5xl">🚐</div>
         )}

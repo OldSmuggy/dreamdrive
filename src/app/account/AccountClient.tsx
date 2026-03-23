@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { centsToAud, scoreLabel, scoreColor, sourceBadgeColor, sourceLabel } from '@/lib/utils'
 import type { Listing, Product } from '@/types'
 
@@ -206,9 +207,9 @@ export default function AccountClient({
                 if (!l) return null
                 return (
                   <div key={sv.id} className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-                    <div className="relative h-44">
+                    <div className="relative h-44 overflow-hidden">
                       {l.photos?.[0]
-                        ? <img src={l.photos[0]} alt={l.model_name} className="w-full h-full object-cover" /> // eslint-disable-line @next/next/no-img-element
+                        ? <Image src={l.photos[0]} alt={l.model_name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 50vw" />
                         : <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-300 text-4xl">🚐</div>}
                     </div>
                     <div className="p-4">
@@ -247,9 +248,9 @@ export default function AccountClient({
                   <div key={b.id} className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
                     <div className="p-6">
                       <div className="flex items-start gap-4 mb-5">
-                        <div className="w-20 h-14 rounded-xl overflow-hidden bg-gray-100 shrink-0">
+                        <div className="relative w-20 h-14 rounded-xl overflow-hidden bg-gray-100 shrink-0">
                           {l?.photos?.[0]
-                            ? <img src={l.photos[0]} alt="" className="w-full h-full object-cover" /> // eslint-disable-line @next/next/no-img-element
+                            ? <Image src={l.photos[0]} alt="" fill className="object-cover" sizes="80px" />
                             : <div className="w-full h-full flex items-center justify-center text-gray-300 text-2xl">🚐</div>}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -317,7 +318,7 @@ export default function AccountClient({
                 <div key={d.id} className="bg-white border border-gray-200 rounded-2xl p-5">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-center gap-3">
-                      {d.listing?.photos?.[0] && <img src={d.listing.photos[0]} alt="" className="w-16 h-12 object-cover rounded-lg shrink-0" />} {/* eslint-disable-line @next/next/no-img-element */}
+                      {d.listing?.photos?.[0] && <Image src={d.listing.photos[0]} alt="" width={64} height={48} className="object-cover rounded-lg shrink-0" />}
                       <div>
                         <p className="font-semibold text-gray-900 text-sm">{d.listing ? `${d.listing.model_year ?? ''} ${d.listing.model_name}` : d.listing_id}</p>
                         <p className="text-xs text-gray-500 mt-0.5">${(d.amount_aud / 100).toLocaleString()} AUD · {new Date(d.created_at).toLocaleDateString('en-AU')}</p>
@@ -428,13 +429,13 @@ export default function AccountClient({
                         {/* Stage notes from admin */}
                         {order.stage_notes?.[order.current_stage] && (
                           <div className="mt-3 bg-cream border border-sand rounded-xl px-4 py-3 text-xs text-gray-700">
-                            <span className="font-semibold">Note from Dream Drive: </span>
+                            <span className="font-semibold">Note from Bare Camper: </span>
                             {order.stage_notes[order.current_stage]}
                           </div>
                         )}
                         {order.admin_notes && !order.stage_notes && (
                           <div className="mt-3 bg-cream border border-sand rounded-xl px-4 py-3 text-sm text-gray-700">
-                            <span className="font-semibold text-gray-800">Message from Dream Drive: </span>{order.admin_notes}
+                            <span className="font-semibold text-gray-800">Message from Bare Camper: </span>{order.admin_notes}
                           </div>
                         )}
 
@@ -442,8 +443,7 @@ export default function AccountClient({
                         {(order.progress_photos ?? []).length > 0 && (
                           <div className="mt-4 flex gap-2 flex-wrap">
                             {(order.progress_photos ?? []).map((ph, pi) => (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img key={pi} src={ph} alt={`Progress ${pi + 1}`} className="w-20 h-14 object-cover rounded-lg border border-gray-200" />
+                              <Image key={pi} src={ph} alt={`Progress ${pi + 1}`} width={80} height={56} className="object-cover rounded-lg border border-gray-200" />
                             ))}
                           </div>
                         )}

@@ -17,7 +17,7 @@ export async function POST() {
 
   const result = await sendEmail({
     to: 'jared@dreamdrive.life',
-    subject: 'Dream Drive \u2014 Email test',
+    subject: 'Bare Camper \u2014 Email test',
     html: `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: #2C2C2A; padding: 2rem; text-align: center;">

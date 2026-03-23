@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { createSupabaseBrowser } from '@/lib/supabase'
 
@@ -168,7 +169,7 @@ export default function PhotoGallery({ photos, modelName, focalPoint, isAuction,
             {photos.slice(0, 4).map((p, i) => (
               // eslint-disable-next-line @next/next/no-img-element
               <div key={i} className="relative rounded-lg overflow-hidden" style={{ height: 80 }}>
-                <img src={p} alt="" className="w-full h-full object-cover blur-md scale-110" />
+                <Image src={p} alt="" fill className="object-cover blur-md scale-110" sizes="25vw" />
                 <div className="absolute inset-0 bg-charcoal/50 flex items-center justify-center">
                   <span className="text-white/80 text-lg">🔒</span>
                 </div>

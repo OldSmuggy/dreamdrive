@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -217,12 +218,11 @@ export default function MyVanClient({ customer, vehicle, listing, stages, build,
       <header className="relative overflow-hidden">
         {heroPhoto ? (
           <div className="relative h-[340px] md:h-[420px]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={heroPhoto} alt={vanLabel} className="w-full h-full object-cover" />
+            <Image src={heroPhoto} alt={vanLabel} fill className="object-cover" sizes="100vw" priority />
             <div className="absolute inset-0 bg-gradient-to-t from-charcoal/90 via-charcoal/40 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 px-6 pb-8 md:px-12">
               <Link href="/" className="inline-flex items-center gap-2 text-white/70 text-sm mb-4 hover:text-white">
-                Dream Drive
+                Bare Camper
               </Link>
               <h1 className="text-3xl md:text-4xl text-white leading-tight">
                 Your Bare Camper
@@ -237,7 +237,7 @@ export default function MyVanClient({ customer, vehicle, listing, stages, build,
         ) : (
           <div className="bg-charcoal px-6 md:px-12 py-12 md:py-16">
             <Link href="/" className="inline-flex items-center gap-2 text-white/70 text-sm mb-6 hover:text-white">
-              Dream Drive
+              Bare Camper
             </Link>
             <h1 className="text-3xl md:text-4xl text-white leading-tight">
               Your Bare Camper
