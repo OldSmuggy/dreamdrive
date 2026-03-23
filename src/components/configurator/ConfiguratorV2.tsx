@@ -1262,8 +1262,8 @@ function SummaryStep({
                 </button>
                 <p className="text-center text-xs text-gray-400">
                   Or email{' '}
-                  <a href="mailto:hello@barecamper.com.au" className="text-ocean hover:underline">
-                    hello@barecamper.com.au
+                  <a href="mailto:jared@dreamdrive.life" className="text-ocean hover:underline">
+                    jared@dreamdrive.life
                   </a>
                 </p>
               </form>

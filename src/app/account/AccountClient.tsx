@@ -327,7 +327,7 @@ export default function AccountClient({
                     <span className={`text-xs font-semibold px-2.5 py-1 rounded-full shrink-0 capitalize ${depositStatusStyle[d.status] ?? 'bg-gray-100 text-gray-600'}`}>{d.status}</span>
                   </div>
                   {(d.status === 'active' || d.status === 'pending') && (
-                    <p className="mt-3 text-xs text-gray-500">To request a refund, email <a href="mailto:hello@barecamper.com.au" className="text-ocean hover:underline">hello@barecamper.com.au</a></p>
+                    <p className="mt-3 text-xs text-gray-500">To request a refund, email <a href="mailto:jared@dreamdrive.life" className="text-ocean hover:underline">jared@dreamdrive.life</a></p>
                   )}
                 </div>
               ))}
@@ -339,7 +339,7 @@ export default function AccountClient({
         {tab === 'imports' && (
           importOrders.length === 0 ? (
             <EmptyState icon="🚢" title="No active orders" desc="Contact us to begin your van import journey.">
-              <a href="mailto:hello@barecamper.com.au" className="btn-primary inline-block mt-4">Contact Us</a>
+              <a href="mailto:jared@dreamdrive.life" className="btn-primary inline-block mt-4">Contact Us</a>
             </EmptyState>
           ) : (
             <div className="space-y-8">
@@ -488,7 +488,7 @@ export default function AccountClient({
                                   <div className="flex items-center gap-3 shrink-0">
                                     <span className="font-semibold text-gray-900 text-sm">${(inv.amount_aud / 100).toLocaleString()} AUD</span>
                                     <span className={`text-xs font-bold px-2 py-0.5 rounded-full uppercase ${invoiceStatusStyle[inv.status] ?? 'bg-gray-100 text-gray-600'}`}>{inv.status}</span>
-                                    <button onClick={() => alert('For invoice copy, contact hello@barecamper.com.au')} className="text-xs text-ocean hover:underline">Download</button>
+                                    <button onClick={() => alert('For invoice copy, contact jared@dreamdrive.life')} className="text-xs text-ocean hover:underline">Download</button>
                                   </div>
                                 </div>
                               ))}

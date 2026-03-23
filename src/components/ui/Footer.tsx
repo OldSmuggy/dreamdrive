@@ -5,7 +5,7 @@ export default function Footer() {
     <footer className="border-t border-gray-100 py-6 text-center text-gray-400 text-xs space-y-1">
       <p>Bare Camper &middot; Brisbane &amp; Tokyo</p>
       <p>
-        <a href="mailto:hello@barecamper.com.au" className="hover:text-gray-600">hello@barecamper.com.au</a>
+        <a href="mailto:jared@dreamdrive.life" className="hover:text-gray-600">jared@dreamdrive.life</a>
         {' · '}
         <a href="tel:0432182892" className="hover:text-gray-600">0432 182 892</a>
       </p>

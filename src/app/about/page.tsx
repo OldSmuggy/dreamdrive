@@ -35,7 +35,7 @@ export default function AboutPage() {
           </p>
 
           <p className="mt-8">
-            <a href="mailto:hello@barecamper.com.au" className="text-ocean hover:underline">hello@barecamper.com.au</a>
+            <a href="mailto:jared@dreamdrive.life" className="text-ocean hover:underline">jared@dreamdrive.life</a>
             {' · '}
             <a href="tel:0432182892" className="text-ocean hover:underline">0432 182 892</a>
             <br />

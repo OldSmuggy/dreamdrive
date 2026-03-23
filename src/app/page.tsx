@@ -231,7 +231,7 @@ export default async function HomePage() {
             <a href="https://wa.me/61432182892?text=Hi!%20I'm%20interested%20in%20a%20campervan%20from%20Bare%20Camper." className="btn-primary text-base px-8 py-4" target="_blank" rel="noopener noreferrer">Book a Free Chat</a>
           </div>
           <p className="mt-10 text-gray-400 text-sm">
-            <a href="mailto:hello@barecamper.com.au" className="text-sand hover:text-sand-light">hello@barecamper.com.au</a>
+            <a href="mailto:jared@dreamdrive.life" className="text-sand hover:text-sand-light">jared@dreamdrive.life</a>
             {' · '}
             <a href="tel:0432182892" className="text-sand hover:text-sand-light">0432 182 892</a>
           </p>

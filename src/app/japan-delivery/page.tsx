@@ -16,7 +16,7 @@ export default function JapanDeliveryPage() {
         </p>
         <div className="bg-white rounded-2xl p-8 border border-gray-200 text-center">
           <p className="text-gray-500 mb-4">Full details coming soon. Contact us to express interest.</p>
-          <a href="mailto:hello@barecamper.com.au" className="btn-primary inline-block">Get in Touch →</a>
+          <a href="mailto:jared@dreamdrive.life" className="btn-primary inline-block">Get in Touch →</a>
         </div>
       </div>
     </div>
