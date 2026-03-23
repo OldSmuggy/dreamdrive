@@ -175,7 +175,7 @@ export default function TamaProductClient({ conversionAud, low, high, jpyRate, c
             <LeadFormModal trigger="Book a Free Consultation" source="product_page_tama" className="btn-ghost text-base px-8 py-4" />
           </div>
           <p className="mt-10 text-gray-400 text-sm">
-            <a href="mailto:jared@dreamdrive.life" className="text-sand hover:text-sand">jared@dreamdrive.life</a>
+            <a href="mailto:hello@barecamper.com.au" className="text-sand hover:text-sand">hello@barecamper.com.au</a>
             {' · '}<a href="tel:0432182892" className="text-sand hover:text-sand">0432 182 892</a>
           </p>
         </div>

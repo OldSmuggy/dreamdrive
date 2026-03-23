@@ -58,7 +58,7 @@ export default function LeadForm() {
       setStatus('success')
     } catch {
       setStatus('error')
-      setErrorMsg('Something went wrong. Please try emailing jared@dreamdrive.life directly.')
+      setErrorMsg('Something went wrong. Please try emailing hello@barecamper.com.au directly.')
     }
   }
 

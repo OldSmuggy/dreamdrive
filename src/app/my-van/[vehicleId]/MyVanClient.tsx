@@ -496,7 +496,7 @@ export default function MyVanClient({ customer, vehicle, listing, stages, build,
                 )}
                 <p className="text-sm text-amber-800 font-medium">Interested? Get in touch:</p>
                 <div className="mt-2 space-y-1">
-                  <a href="mailto:jared@dreamdrive.life" className="text-sm text-ocean hover:underline block">jared@dreamdrive.life</a>
+                  <a href="mailto:hello@barecamper.com.au" className="text-sm text-ocean hover:underline block">hello@barecamper.com.au</a>
                   <a href="tel:0432182892" className="text-sm text-ocean hover:underline block">0432 182 892</a>
                 </div>
               </div>
@@ -510,7 +510,7 @@ export default function MyVanClient({ customer, vehicle, listing, stages, build,
           <p className="text-white/60 text-sm mb-4">We&apos;re always happy to help.</p>
           <div className="space-y-1.5 text-sm text-white/80">
             <p>Questions? Call Jared: <a href="tel:0432182892" className="hover:text-white font-medium">0432 182 892</a></p>
-            <p>Email: <a href="mailto:jared@dreamdrive.life" className="hover:text-white font-medium">jared@dreamdrive.life</a></p>
+            <p>Email: <a href="mailto:hello@barecamper.com.au" className="hover:text-white font-medium">hello@barecamper.com.au</a></p>
           </div>
           <div className="mt-6 pt-4 border-t border-white/10">
             <Link href="/" className="text-sand text-lg hover:text-sand">Bare Camper</Link>

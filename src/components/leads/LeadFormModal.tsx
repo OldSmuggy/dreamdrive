@@ -165,8 +165,8 @@ export default function LeadFormModal({
 
                   <p className="text-xs text-center text-gray-400">
                     Or email directly:{' '}
-                    <a href="mailto:jared@dreamdrive.life" className="text-ocean hover:underline">
-                      jared@dreamdrive.life
+                    <a href="mailto:hello@barecamper.com.au" className="text-ocean hover:underline">
+                      hello@barecamper.com.au
                     </a>
                   </p>
                 </form>

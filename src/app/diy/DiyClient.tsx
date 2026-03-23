@@ -110,7 +110,7 @@ export default function DiyClient({ content: initial }: { content: Record<string
                 wall-mount or under-bed electrical cabinet comes fully wired and ready to install —
                 lithium battery, inverter, charger, outlets, and more.
               </p>
-              <a href="mailto:jared@dreamdrive.life?subject=Electrical%20Cabinet%20Enquiry" className="btn-primary inline-block px-6 py-3 text-sm">Enquire About Electrical →</a>
+              <a href="mailto:hello@barecamper.com.au?subject=Electrical%20Cabinet%20Enquiry" className="btn-primary inline-block px-6 py-3 text-sm">Enquire About Electrical →</a>
             </div>
           </div>
         </div>
@@ -127,7 +127,7 @@ export default function DiyClient({ content: initial }: { content: Record<string
             <LeadFormModal trigger="Book a Consultation" source="product_page_diy" className="btn-ghost text-base px-8 py-4" />
           </div>
           <p className="mt-10 text-gray-400 text-sm">
-            <a href="mailto:jared@dreamdrive.life" className="text-sand hover:text-sand">jared@dreamdrive.life</a>
+            <a href="mailto:hello@barecamper.com.au" className="text-sand hover:text-sand">hello@barecamper.com.au</a>
             {' · '}<a href="tel:0432182892" className="text-sand hover:text-sand">0432 182 892</a>
           </p>
         </div>
