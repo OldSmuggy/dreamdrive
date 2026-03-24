@@ -2,9 +2,9 @@ import { createAdminClient } from '@/lib/supabase'
 import PopTopClient from './PopTopClient'
 
 export const metadata = {
-  title: 'Pop Top Roof Conversion — From $11,900 | DIY RV Solutions',
+  title: 'Standing Room — Pop Top & Hi-Top Roof Conversions | Bare Camper',
   description:
-    'Professional fiberglass pop top conversion for Toyota Hiace and more. Standing room in 15 seconds. Fits in your garage. Brisbane factory. 10 business day turnaround.',
+    'Professional fiberglass pop top and hi-top roof conversions for Toyota Hiace H200 and 300 Series. $13,090 installed. 10 business day turnaround. Brisbane factory.',
 }
 export const dynamic = 'force-dynamic'
 

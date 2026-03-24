@@ -14,7 +14,7 @@ const NAV: NavItem[] = [
   { label: 'Browse Vans', href: '/browse' },
   { label: 'TAMA', href: '/tama' },
   { label: 'MANA', href: '/mana' },
-  { label: 'Pop Top', href: '/pop-top' },
+  { label: 'Standing Room', href: '/pop-top' },
   { label: 'DIY', href: '/diy' },
   { label: 'Finance', href: '/finance' },
 ]
