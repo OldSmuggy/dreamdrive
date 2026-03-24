@@ -6,7 +6,7 @@ export async function sendEmail({
   to,
   subject,
   html,
-  from = 'Bare Camper <noreply@dreamdrive.life>',
+  from = 'Bare Camper <hello@barecamper.com.au>',
 }: {
   to: string | string[]
   subject: string
@@ -51,14 +51,14 @@ export const emailTemplates = {
           <p style="color: #444; line-height: 1.6;">
             Your Bare Camper account is ready. You can now browse Japan auction vans, save your favourites, and build your perfect campervan.
           </p>
-          <a href="https://barecamper.com/browse"
+          <a href="https://barecamper.com.au/browse"
              style="display: inline-block; background: #3D6B73; color: white; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; margin-top: 1rem;">
             Browse Vans
           </a>
           <hr style="border: none; border-top: 1px solid #eee; margin: 2rem 0;">
           <p style="color: #888; font-size: 0.875rem;">
             Questions? Call Jared: 0432 182 892<br>
-            jared@dreamdrive.life
+            hello@barecamper.com.au
           </p>
         </div>
       </div>
@@ -89,7 +89,7 @@ export const emailTemplates = {
           <hr style="border: none; border-top: 1px solid #eee; margin: 2rem 0;">
           <p style="color: #888; font-size: 0.875rem;">
             Questions? Call Jared: 0432 182 892<br>
-            jared@dreamdrive.life
+            hello@barecamper.com.au
           </p>
         </div>
       </div>
@@ -108,7 +108,7 @@ export const emailTemplates = {
         <p><strong>Hold ID:</strong> ${holdId}</p>
         <p><strong>Amount:</strong> $3,000 AUD</p>
         <hr style="border: none; border-top: 1px solid #eee; margin: 1rem 0;">
-        <a href="https://barecamper.com/admin/leads" style="color: #3D6B73;">View in admin</a>
+        <a href="https://barecamper.com.au/admin/leads" style="color: #3D6B73;">View in admin</a>
       </div>
     `,
   }),
@@ -123,7 +123,7 @@ export const emailTemplates = {
         <p><strong>Phone:</strong> ${phone || '—'}</p>
         <p><strong>Details:</strong> ${details || '—'}</p>
         <hr style="border: none; border-top: 1px solid #eee; margin: 1rem 0;">
-        <a href="https://barecamper.com/admin/leads" style="color: #3D6B73;">View in admin</a>
+        <a href="https://barecamper.com.au/admin/leads" style="color: #3D6B73;">View in admin</a>
       </div>
     `,
   }),
