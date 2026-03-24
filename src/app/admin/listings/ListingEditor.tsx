@@ -274,6 +274,7 @@ function ListingRow({
               </p>
               <p className="text-xs text-gray-400 mt-0.5">
                 {[l.model_year, l.mileage_km ? `${l.mileage_km.toLocaleString()} km` : null].filter(Boolean).join(' · ')}
+                {l.created_at && <span className="ml-2">· {new Date(l.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>}
               </p>
             </div>
           </div>

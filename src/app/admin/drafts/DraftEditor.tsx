@@ -298,10 +298,15 @@ export default function DraftEditor({ initial }: { initial: Listing[] }) {
                 </div>
                 <p className="font-semibold text-gray-900">{l.model_name}</p>
                 <p className="text-sm text-gray-500 mt-0.5">
-                  {l.model_year} \u00B7 {l.mileage_km?.toLocaleString()} km \u00B7 {l.transmission} \u00B7 {l.drive}
-                  {l.grade && ` \u00B7 ${l.grade}`}
-                  {l.body_colour && ` \u00B7 ${l.body_colour}`}
+                  {l.model_year} · {l.mileage_km?.toLocaleString()} km · {l.transmission} · {l.drive}
+                  {l.grade && ` · ${l.grade}`}
+                  {l.body_colour && ` · ${l.body_colour}`}
                 </p>
+                {l.created_at && (
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    Uploaded {new Date(l.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                )}
                 {hasDescription && (
                   <p className="text-sm text-gray-600 mt-1 italic">
                     &ldquo;{(l as unknown as { description: string }).description}&rdquo;
