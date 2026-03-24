@@ -14,6 +14,18 @@ const EXTRA_IMAGES = [
   { key: 'electrical_image', label: 'Electrical Cabinet Photo' },
 ]
 
+const DIY_OPTIONS = [
+  { name: 'Recommended Package', detail: 'Black-out curtains, insect screens, insect net rear door, side-window rain cover, MAXXFAN', price: '$3,800', image: '/images/products/curtains.jpg' },
+  { name: 'Starter Pack — 12V Electrical', detail: '200AH lithium battery, solar-ready, 12V system. No shore power needed.', price: '$5,000', image: null },
+  { name: 'Off-Grid Pro — Power Boss', detail: 'Full electrical system, professionally installed by electrician.', price: 'Get a Quote', image: null },
+  { name: 'Solar Package', detail: 'Solar system 175W', price: '$2,000', image: '/images/products/solar-panel.jpg' },
+  { name: 'FF Heater Package', detail: 'Thermal wool insulation + Webasto FF heater', price: '$5,500', image: '/images/products/heater.jpg' },
+  { name: 'Side Awning', detail: 'Fiamma 3.5M', price: '$2,300', image: '/images/products/awning.jpg' },
+  { name: 'Off-Road Tires', detail: null, price: '$2,300', image: '/images/products/offroad-wheels.jpg' },
+  { name: 'Half Wrap', detail: null, price: '$3,300', image: '/images/products/half-wrap.jpg' },
+  { name: 'Rhino Rack Roof Platform', detail: null, price: '$2,500', image: '/images/products/rhino-rack.jpg' },
+]
+
 export default function DiyClient({ content: initial }: { content: Record<string, string> }) {
   const [content, setContent] = useState(initial)
   const gallery: string[] = (() => { try { return JSON.parse(content.gallery_images || '[]') } catch { return [] } })()
@@ -67,7 +79,7 @@ export default function DiyClient({ content: initial }: { content: Record<string
             <EditableImage src={content.bare_camper_image || '/images/diy-barecamper.jpg'} alt="Bare Camper" className="h-72 rounded-2xl overflow-hidden md:order-first order-last" placeholderText="Bare Camper photo coming soon" />
             <div>
               <p className="text-driftwood text-xs font-semibold tracking-widest uppercase mb-3">Step 2</p>
-              <h2 className="text-4xl text-charcoal mb-4">Bare Camper by Skybridge</h2>
+              <h2 className="text-4xl text-charcoal mb-4">Bare Camper Bed System — Coming Soon</h2>
               <p className="text-gray-500 leading-relaxed mb-6">
                 A modular bed system designed for the Toyota Hiace H200. Simple to install, easy to
                 reconfigure. The perfect foundation for a DIY interior — add your own mattress, panels,
@@ -110,9 +122,32 @@ export default function DiyClient({ content: initial }: { content: Record<string
                 wall-mount or under-bed electrical cabinet comes fully wired and ready to install —
                 lithium battery, inverter, charger, outlets, and more.
               </p>
-              <a href="mailto:jared@dreamdrive.life?subject=Electrical%20Cabinet%20Enquiry" className="btn-primary inline-block px-6 py-3 text-sm">Enquire About Electrical →</a>
+              <a href="mailto:hello@barecamper.com.au?subject=Electrical%20Cabinet%20Enquiry" className="btn-primary inline-block px-6 py-3 text-sm">Enquire About Electrical →</a>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Options */}
+      <section className="max-w-6xl mx-auto px-6 py-20">
+        <p className="text-driftwood text-xs font-semibold tracking-widest uppercase mb-3">Make it yours</p>
+        <h2 className="text-4xl text-charcoal mb-4">Add-On Options</h2>
+        <p className="text-gray-500 max-w-2xl mb-10 leading-relaxed">These options can be added to any van — whether you&apos;re doing a full DIY build or just want the essentials sorted by a pro.</p>
+        <div className="divide-y divide-gray-100 border border-gray-200 rounded-2xl overflow-hidden">
+          {DIY_OPTIONS.map(opt => (
+            <div key={opt.name} className="flex items-center gap-4 px-6 py-5 hover:bg-cream transition-colors">
+              {opt.image && (
+                <div className="relative w-16 h-16 rounded-lg overflow-hidden shrink-0">
+                  <Image src={opt.image} alt={opt.name} fill className="object-cover" sizes="64px" />
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-charcoal text-sm">{opt.name}</p>
+                {opt.detail && <p className="text-gray-500 text-xs mt-0.5">{opt.detail}</p>}
+              </div>
+              <p className="text-ocean text-lg shrink-0">{opt.price}</p>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -127,7 +162,7 @@ export default function DiyClient({ content: initial }: { content: Record<string
             <LeadFormModal trigger="Book a Consultation" source="product_page_diy" className="btn-ghost text-base px-8 py-4" />
           </div>
           <p className="mt-10 text-gray-400 text-sm">
-            <a href="mailto:jared@dreamdrive.life" className="text-sand hover:text-sand">jared@dreamdrive.life</a>
+            <a href="mailto:hello@barecamper.com.au" className="text-sand hover:text-sand">hello@barecamper.com.au</a>
             {' · '}<a href="tel:0432182892" className="text-sand hover:text-sand">0432 182 892</a>
           </p>
         </div>
