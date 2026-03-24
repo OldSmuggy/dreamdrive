@@ -6,6 +6,8 @@ import { usePathname } from 'next/navigation'
 
 const NAV = [
   { href: '/agent', label: 'Dashboard' },
+  { href: '/agent/add-listing', label: '➕ Add Listing' },
+  { href: '/agent/bulk-import', label: '📄 Bulk PDF Import' },
 ]
 
 export default function AgentLayout({ children }: { children: React.ReactNode }) {
