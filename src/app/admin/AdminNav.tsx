@@ -9,6 +9,7 @@ const NAV = [
   { href: '/admin/listings',    label: '🚐 Listings' },
   { href: '/admin/drafts',      label: '📝 Draft Listings' },
   { href: '/admin/add-listing', label: '➕ Add Listing' },
+  { href: '/admin/bulk-import', label: '📄 Bulk PDF Import' },
   { href: '/admin/import',      label: '📥 Import Vehicle' },
   { href: '/admin/scrape',      label: '🤖 Full Auto-Scrape' },
   { href: '/admin/leads',           label: '📋 Leads' },
