@@ -46,7 +46,12 @@ export default function AgentDashboard() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-charcoal mb-6">Assigned Vehicles</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-charcoal">Assigned Vehicles</h1>
+        <Link href="/agent/add-listing" className="px-4 py-2 bg-green-800 text-white text-sm font-semibold rounded-lg hover:bg-green-700 transition-colors">
+          + Add Vehicle
+        </Link>
+      </div>
 
       {vehicles.length === 0 && (
         <p className="text-gray-400 text-center py-12">No vehicles assigned yet.</p>
