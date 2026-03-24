@@ -23,9 +23,9 @@ export async function GET() {
   const admin = createAdminClient()
 
   // Check role
-  const { data: profile } = await admin.from('user_profiles').select('role, is_admin').eq('id', user.id).single()
+  const { data: profile } = await admin.from('user_profiles').select('role').eq('id', user.id).single()
   const isAgent = profile?.role === 'buyer_agent'
-  const isAdmin = profile?.is_admin || user.email?.endsWith('@dreamdrive.life')
+  const isAdmin = profile?.role === 'admin' || user.email?.endsWith('@dreamdrive.life')
 
   if (!isAgent && !isAdmin) {
     return NextResponse.json({ error: 'Not authorized as agent' }, { status: 403 })
