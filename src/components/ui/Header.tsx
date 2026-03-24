@@ -22,6 +22,7 @@ const NAV: NavItem[] = [
 export default function Header({ logoUrl }: { logoUrl?: string }) {
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [isAgent, setIsAgent] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
   const [openMobileDropdown, setOpenMobileDropdown] = useState<string | null>(null)
@@ -40,10 +41,11 @@ export default function Header({ logoUrl }: { logoUrl?: string }) {
       }
       const { data: profile } = await supabase
         .from('profiles')
-        .select('is_admin')
+        .select('is_admin, role')
         .eq('id', u.id)
         .single()
       if (profile?.is_admin) setIsAdmin(true)
+      if (profile?.role === 'buyer_agent') setIsAgent(true)
     })
     const { data: listener } = supabase.auth.onAuthStateChange((_e, session) => {
       setUser(session?.user ?? null)
@@ -58,7 +60,7 @@ export default function Header({ logoUrl }: { logoUrl?: string }) {
     setOpenMobileDropdown(null)
   }, [pathname])
 
-  if (pathname.startsWith('/admin')) return null
+  if (pathname.startsWith('/admin') || pathname.startsWith('/agent')) return null
 
   const handleSignOut = async () => {
     const supabase = createSupabaseBrowser()
@@ -140,6 +142,11 @@ export default function Header({ logoUrl }: { logoUrl?: string }) {
                     Admin
                   </Link>
                 )}
+                {isAgent && (
+                  <Link href="/agent" className="px-3 py-2 text-white/70 hover:text-white rounded-lg hover:bg-white/10 transition-colors text-sm">
+                    Agent
+                  </Link>
+                )}
                 <Link href="/account" className="px-3 py-2 text-white/70 hover:text-white rounded-lg hover:bg-white/10 transition-colors text-sm">
                   My Account
                 </Link>
@@ -219,6 +226,9 @@ export default function Header({ logoUrl }: { logoUrl?: string }) {
                 <>
                   {isAdmin && (
                     <Link href="/admin" onClick={() => setMenuOpen(false)} className="flex items-center py-3 text-sm text-white/70 hover:text-white min-h-[44px]">Admin</Link>
+                  )}
+                  {isAgent && (
+                    <Link href="/agent" onClick={() => setMenuOpen(false)} className="flex items-center py-3 text-sm text-white/70 hover:text-white min-h-[44px]">Agent Dashboard</Link>
                   )}
                   <Link href="/account" onClick={() => setMenuOpen(false)} className="flex items-center py-3 text-sm text-white/70 hover:text-white min-h-[44px]">My Account</Link>
                   <button onClick={handleSignOut} className="flex items-center py-3 text-sm text-white/50 hover:text-white min-h-[44px] w-full text-left">Sign Out</button>

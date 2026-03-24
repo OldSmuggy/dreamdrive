@@ -38,8 +38,9 @@ export async function middleware(request: NextRequest) {
   const isAdmin   = request.nextUrl.pathname.startsWith('/admin')
   const isAccount = request.nextUrl.pathname.startsWith('/account')
   const isMyVan   = request.nextUrl.pathname.startsWith('/my-van')
+  const isAgent   = request.nextUrl.pathname.startsWith('/agent')
 
-  if ((isAdmin || isAccount || isMyVan) && !user) {
+  if ((isAdmin || isAccount || isMyVan || isAgent) && !user) {
     const dest = encodeURIComponent(request.nextUrl.pathname)
     return NextResponse.redirect(new URL(`/login?next=${dest}`, request.url))
   }
@@ -47,4 +48,4 @@ export async function middleware(request: NextRequest) {
   return response
 }
 
-export const config = { matcher: ['/admin/:path*', '/account/:path*', '/my-van/:path*'] }
+export const config = { matcher: ['/admin/:path*', '/account/:path*', '/my-van/:path*', '/agent/:path*'] }

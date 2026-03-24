@@ -5,21 +5,10 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const NAV = [
-  { href: '/admin/products',    label: '💰 Products & Pricing' },
-  { href: '/admin/listings',    label: '🚐 Listings' },
-  { href: '/admin/drafts',      label: '📝 Draft Listings' },
-  { href: '/admin/add-listing', label: '➕ Add Listing' },
-  { href: '/admin/import',      label: '📥 Import Vehicle' },
-  { href: '/admin/scrape',      label: '🤖 Full Auto-Scrape' },
-  { href: '/admin/leads',           label: '📋 Leads' },
-  { href: '/admin/customers',       label: '👥 Customers' },
-  { href: '/admin/customers/add',   label: '➕ Add Customer' },
-  { href: '/admin/auctions',          label: '🏴 Auctions' },
-  { href: '/admin/vehicles-for-sale', label: '🏷️ For Sale' },
-  { href: '/admin/settings',    label: '⚙️ Settings' },
+  { href: '/agent', label: 'Dashboard' },
 ]
 
-export default function AdminNav() {
+export default function AgentLayout({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false)
   const pathname = usePathname()
 
@@ -29,7 +18,7 @@ export default function AdminNav() {
         <Link href="/" className="text-sand text-lg" onClick={() => setOpen(false)}>
           Bare Camper
         </Link>
-        <p className="text-white/50 text-xs mt-0.5">Admin</p>
+        <p className="text-white/50 text-xs mt-0.5">Agent Dashboard</p>
       </div>
       <div className="flex-1 py-4 space-y-1 px-3">
         {NAV.map(n => (
@@ -38,7 +27,7 @@ export default function AdminNav() {
             href={n.href}
             onClick={() => setOpen(false)}
             className={`block px-3 py-2.5 rounded-lg text-sm transition-colors ${
-              pathname.startsWith(n.href)
+              pathname === n.href
                 ? 'bg-white/15 text-white font-semibold'
                 : 'text-white/80 hover:bg-white/10 hover:text-white'
             }`}
@@ -56,8 +45,7 @@ export default function AdminNav() {
   )
 
   return (
-    <>
-      {/* Mobile hamburger button */}
+    <div className="min-h-screen flex">
       <button
         className="md:hidden fixed top-4 left-4 z-50 bg-charcoal text-white p-2.5 rounded-lg shadow-lg"
         onClick={() => setOpen(v => !v)}
@@ -67,25 +55,15 @@ export default function AdminNav() {
         <span className="block w-5 h-0.5 bg-white mb-1" />
         <span className="block w-5 h-0.5 bg-white" />
       </button>
-
-      {/* Mobile overlay */}
-      {open && (
-        <div
-          className="md:hidden fixed inset-0 bg-black/50 z-40"
-          onClick={() => setOpen(false)}
-        />
-      )}
-
-      {/* Sidebar — fixed on mobile (slides in), static on desktop */}
-      <nav
-        className={`
-          fixed md:static top-0 left-0 h-full z-40 w-56 bg-charcoal text-white flex flex-col shrink-0
-          transform transition-transform duration-200 ease-in-out
-          ${open ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-        `}
-      >
+      {open && <div className="md:hidden fixed inset-0 bg-black/50 z-40" onClick={() => setOpen(false)} />}
+      <nav className={`fixed md:static top-0 left-0 h-full z-40 w-56 bg-charcoal text-white flex flex-col shrink-0 transform transition-transform duration-200 ease-in-out ${open ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
         {navContent}
       </nav>
-    </>
+      <main className="flex-1 bg-gray-50 overflow-auto min-w-0">
+        <div className="max-w-5xl mx-auto px-4 md:px-6 py-8 pt-16 md:pt-8">
+          {children}
+        </div>
+      </main>
+    </div>
   )
 }

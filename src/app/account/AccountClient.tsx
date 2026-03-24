@@ -1,11 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { centsToAud, scoreLabel, scoreColor, sourceBadgeColor, sourceLabel } from '@/lib/utils'
 import type { Listing, Product } from '@/types'
 import OptionsList from '@/components/options/OptionsList'
+import AuctionCountdown from '@/components/ui/AuctionCountdown'
+import ChatThread from '@/components/ui/ChatThread'
 
 // ── Stage definitions ─────────────────────────────────────────────────────────
 
@@ -83,7 +85,7 @@ function getMainStageIdx(stageKey: string): number {
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type Tab = 'saved' | 'builds' | 'deposits' | 'imports' | 'upgrade'
+type Tab = 'saved' | 'builds' | 'deposits' | 'imports' | 'upgrade' | 'auctions'
 
 interface SavedVanRow { id: string; listing_id: string; created_at: string; listing: Listing | null }
 
@@ -174,6 +176,7 @@ export default function AccountClient({
     { key: 'deposits', label: 'Deposit Holds',  count: depositHolds.length },
     { key: 'imports',  label: 'Track My Order', count: importOrders.length },
     { key: 'upgrade',  label: 'Upgrade Your Van' },
+    { key: 'auctions', label: 'Auctions' },
   ]
 
   return (
@@ -548,6 +551,9 @@ export default function AccountClient({
             <OptionsList source="account_upgrade" />
           </div>
         )}
+
+        {/* ── AUCTIONS ── */}
+        {tab === 'auctions' && <AuctionsTab />}
       </div>
     </div>
   )
@@ -634,6 +640,84 @@ function EmptyState({ icon, title, desc, children }: { icon: string | React.Reac
       <h3 className="text-xl text-gray-700 mb-2">{title}</h3>
       <p className="text-gray-500 text-sm max-w-xs mx-auto">{desc}</p>
       {children}
+    </div>
+  )
+}
+
+function AuctionsTab() {
+  const [vehicles, setVehicles] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [expandedId, setExpandedId] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch('/api/account/auctions')
+      .then(r => r.json())
+      .then(d => setVehicles(d.vehicles ?? []))
+      .finally(() => setLoading(false))
+  }, [])
+
+  if (loading) return <p className="text-gray-400 text-center py-12">Loading...</p>
+
+  if (vehicles.length === 0) {
+    return (
+      <EmptyState icon="🏴" title="No auction vehicles" desc="When you're interested in a vehicle at auction, your agent will appear here with live updates and chat.">
+        <Link href="/browse" className="btn-primary btn-sm inline-block mt-4">Browse Vans</Link>
+      </EmptyState>
+    )
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="mb-6">
+        <h2 className="text-2xl text-charcoal mb-2">Your Auctions</h2>
+        <p className="text-gray-500 text-sm">Track your vehicles at auction. Chat directly with your agent in Japan.</p>
+      </div>
+      {vehicles.map((v: any) => (
+        <div key={v.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <button
+            onClick={() => setExpandedId(expandedId === v.id ? null : v.id)}
+            className="w-full text-left p-5 hover:bg-gray-50 transition-colors"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex gap-4">
+                {v.listing?.photos?.[0] && (
+                  <div className="relative w-20 h-16 rounded-lg overflow-hidden shrink-0">
+                    <Image src={v.listing.photos[0]} alt={v.listing?.model_name ?? 'Vehicle'} fill className="object-cover" sizes="80px" />
+                  </div>
+                )}
+                <div>
+                  <h3 className="font-semibold text-charcoal">
+                    {v.listing?.model_year} {v.listing?.model_name} {v.listing?.grade ?? ''}
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    Agent: {v.agent ? `${v.agent.first_name ?? ''} ${v.agent.last_name ?? ''}`.trim() : 'Being assigned'}
+                  </p>
+                </div>
+              </div>
+              <AuctionCountdown auctionTime={v.listing?.auction_time ?? null} auctionStatus={v.auction_status} showTimezone={false} />
+            </div>
+          </button>
+
+          {expandedId === v.id && (
+            <div className="border-t border-gray-200 p-5 space-y-4">
+              <div className="grid sm:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-gray-500">Estimated AUD: <span className="text-charcoal font-medium">${v.listing?.aud_estimate?.toLocaleString() ?? 'TBD'}</span></p>
+                  {v.max_bid_jpy && <p className="text-gray-500">Your max bid: <span className="text-ocean font-semibold">¥{v.max_bid_jpy.toLocaleString()}</span></p>}
+                </div>
+                <div>
+                  <AuctionCountdown auctionTime={v.listing?.auction_time ?? null} auctionStatus={v.auction_status} />
+                </div>
+              </div>
+
+              {/* Chat with agent */}
+              <div className="border border-gray-200 rounded-xl overflow-hidden">
+                <ChatThread customerVehicleId={v.id} currentUserRole="customer" />
+              </div>
+            </div>
+          )}
+        </div>
+      ))}
     </div>
   )
 }
