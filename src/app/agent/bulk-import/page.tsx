@@ -39,48 +39,53 @@ export default function BulkImportPage() {
   const handleUpload = async (files: FileList) => {
     setUploadError('')
     setUploading(true)
-    try {
-      const formData = new FormData()
-      for (const file of Array.from(files)) {
-        if (file.type === 'application/pdf') {
-          formData.append('file', file)
-        }
+    const pdfFiles = Array.from(files).filter(f => f.type === 'application/pdf')
+    let errorCount = 0
+
+    for (const file of pdfFiles) {
+      try {
+        const formData = new FormData()
+        formData.append('file', file)
+
+        const res = await fetch('/api/listings/extract-pdf', { method: 'POST', body: formData })
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error || 'Upload failed')
+
+        const newDrafts: DraftListing[] = data.listings.map((l: { id: string; filename: string; pdfUrl: string }) => ({
+          id: l.id,
+          filename: l.filename,
+          pdfUrl: l.pdfUrl,
+          model_name: '',
+          grade: '',
+          chassis_code: '',
+          model_year: '',
+          body_colour: '',
+          mileage_km: '',
+          transmission: '',
+          drive: '',
+          displacement_cc: '',
+          inspection_score: '',
+          start_price_jpy: '',
+          bid_no: '',
+          kaijo_code: '',
+          auction_date: '',
+          saving: false,
+          saved: false,
+          error: '',
+        }))
+
+        setDrafts(prev => [...prev, ...newDrafts])
+      } catch (e) {
+        console.error(`Failed to upload ${file.name}:`, e)
+        errorCount++
       }
-
-      const res = await fetch('/api/listings/extract-pdf', { method: 'POST', body: formData })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Upload failed')
-
-      const newDrafts: DraftListing[] = data.listings.map((l: { id: string; filename: string; pdfUrl: string }) => ({
-        id: l.id,
-        filename: l.filename,
-        pdfUrl: l.pdfUrl,
-        model_name: '',
-        grade: '',
-        chassis_code: '',
-        model_year: '',
-        body_colour: '',
-        mileage_km: '',
-        transmission: '',
-        drive: '',
-        displacement_cc: '',
-        inspection_score: '',
-        start_price_jpy: '',
-        bid_no: '',
-        kaijo_code: '',
-        auction_date: '',
-        saving: false,
-        saved: false,
-        error: '',
-      }))
-
-      setDrafts(prev => [...prev, ...newDrafts])
-    } catch (e) {
-      setUploadError(String(e))
-    } finally {
-      setUploading(false)
-      if (fileInputRef.current) fileInputRef.current.value = ''
     }
+
+    if (errorCount > 0) {
+      setUploadError(`${errorCount} of ${pdfFiles.length} files failed to upload.`)
+    }
+    setUploading(false)
+    if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
   const updateDraft = useCallback((id: string, field: string, value: string) => {
