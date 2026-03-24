@@ -6,6 +6,7 @@ import Image from 'next/image'
 import LeadFormModal from '@/components/leads/LeadFormModal'
 import PageEditToolbar, { EditableImage } from '@/components/admin/PageEditToolbar'
 import FitoutHero from '@/components/admin/FitoutHero'
+import OptionsList from '@/components/options/OptionsList'
 
 const EXTRA_IMAGES = [
   { key: 'poptop_image', label: 'Pop Top Section Photo' },
@@ -14,17 +15,6 @@ const EXTRA_IMAGES = [
   { key: 'electrical_image', label: 'Electrical Cabinet Photo' },
 ]
 
-const DIY_OPTIONS = [
-  { name: 'Recommended Package', detail: 'Black-out curtains, insect screens, insect net rear door, side-window rain cover, MAXXFAN', price: '$3,800', image: '/images/products/curtains.jpg' },
-  { name: 'Starter Pack — 12V Electrical', detail: '200AH lithium battery, solar-ready, 12V system. No shore power needed.', price: '$5,000', image: null },
-  { name: 'Off-Grid Pro — Power Boss', detail: 'Full electrical system, professionally installed by electrician.', price: 'Get a Quote', image: null },
-  { name: 'Solar Package', detail: 'Solar system 175W', price: '$2,000', image: '/images/products/solar-panel.jpg' },
-  { name: 'FF Heater Package', detail: 'Thermal wool insulation + Webasto FF heater', price: '$5,500', image: '/images/products/heater.jpg' },
-  { name: 'Side Awning', detail: 'Fiamma 3.5M', price: '$2,300', image: '/images/products/awning.jpg' },
-  { name: 'Off-Road Tires', detail: null, price: '$2,300', image: '/images/products/offroad-wheels.jpg' },
-  { name: 'Half Wrap', detail: null, price: '$3,300', image: '/images/products/half-wrap.jpg' },
-  { name: 'Rhino Rack Roof Platform', detail: null, price: '$2,500', image: '/images/products/rhino-rack.jpg' },
-]
 
 export default function DiyClient({ content: initial }: { content: Record<string, string> }) {
   const [content, setContent] = useState(initial)
@@ -133,22 +123,7 @@ export default function DiyClient({ content: initial }: { content: Record<string
         <p className="text-driftwood text-xs font-semibold tracking-widest uppercase mb-3">Make it yours</p>
         <h2 className="text-4xl text-charcoal mb-4">Add-On Options</h2>
         <p className="text-gray-500 max-w-2xl mb-10 leading-relaxed">These options can be added to any van — whether you&apos;re doing a full DIY build or just want the essentials sorted by a pro.</p>
-        <div className="divide-y divide-gray-100 border border-gray-200 rounded-2xl overflow-hidden">
-          {DIY_OPTIONS.map(opt => (
-            <div key={opt.name} className="flex items-center gap-4 px-6 py-5 hover:bg-cream transition-colors">
-              {opt.image && (
-                <div className="relative w-16 h-16 rounded-lg overflow-hidden shrink-0">
-                  <Image src={opt.image} alt={opt.name} fill className="object-cover" sizes="64px" />
-                </div>
-              )}
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-charcoal text-sm">{opt.name}</p>
-                {opt.detail && <p className="text-gray-500 text-xs mt-0.5">{opt.detail}</p>}
-              </div>
-              <p className="text-ocean text-lg shrink-0">{opt.price}</p>
-            </div>
-          ))}
-        </div>
+        <OptionsList source="diy" />
       </section>
 
       {/* CTA */}

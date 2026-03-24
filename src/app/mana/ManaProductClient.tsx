@@ -7,6 +7,7 @@ import LeadFormModal from '@/components/leads/LeadFormModal'
 import PageEditToolbar from '@/components/admin/PageEditToolbar'
 import FitoutHero from '@/components/admin/FitoutHero'
 import { manaJpConversionAud, manaAuConversionAud, conversionPriceRange, formatAud } from '@/lib/pricing'
+import OptionsList, { UNIVERSAL_OPTIONS } from '@/components/options/OptionsList'
 
 interface Props { jpyRate: number; content: Record<string, string> }
 
@@ -19,17 +20,6 @@ const MANA_INCLUSIONS = [
   '10cm thick trifold mattress', '12L grey tank',
 ]
 
-const MANA_OPTIONS = [
-  { name: 'Recommended Package', detail: 'Black-out curtains, insect screens, insect net rear door, side-window rain cover, fan', price: '$3,800', image: '/images/products/curtains.jpg' },
-  { name: 'Starter Pack — 12V Electrical', detail: '200AH lithium battery, solar-ready, 12V system. No shore power needed.', price: '$5,000', image: null },
-  { name: 'Off-Grid Pro — Power Boss', detail: 'Full electrical system, professionally installed by electrician.', price: 'Get a Quote', image: null },
-  { name: 'Solar Package', detail: 'Solar system 200W', price: '$2,000', image: '/images/products/solar-panel.jpg' },
-  { name: 'Hot Water Package', detail: 'Duoletto 12V/240V water system with 10L additional water storage', price: '$2,000', image: null },
-  { name: 'Side Awning', detail: 'Fiamma 3.5M', price: '$2,300', image: '/images/products/awning.jpg' },
-  { name: 'Shower Awning', detail: null, price: '$800', image: null },
-  { name: 'Off-Road Tires', detail: null, price: '$2,000', image: '/images/products/offroad-wheels.jpg' },
-  { name: 'Half Wrap', detail: null, price: '$3,300', image: '/images/products/half-wrap.jpg' },
-]
 
 const MANA_QUALITY = [
   { title: 'Furniture & Hardware', body: 'Carefully finished furniture made using top quality wood and ply, free of harmful VOC and chemical adhesives. Hand crafted by Japanese craftsmen at our Tokyo facility. Walnut kitchen countertops. Quality hinges and hardware sourced from Japan and Europe.' },
@@ -141,19 +131,7 @@ export default function ManaProductClient({ jpyRate, content: initial }: Props) 
         <div className="max-w-6xl mx-auto px-6">
           <p className="text-driftwood text-xs font-semibold tracking-widest uppercase mb-3">Make it yours</p>
           <h2 className="text-4xl text-charcoal mb-10">Select Options</h2>
-          <div className="divide-y divide-gray-100 border border-gray-200 rounded-2xl overflow-hidden bg-white">
-            {MANA_OPTIONS.map(opt => (
-              <div key={opt.name} className="flex items-center gap-4 px-6 py-5 hover:bg-cream transition-colors">
-                {opt.image && (
-                  <div className="relative w-16 h-16 rounded-lg overflow-hidden shrink-0">
-                    <Image src={opt.image} alt={opt.name} fill className="object-cover" sizes="64px" />
-                  </div>
-                )}
-                <div className="flex-1 min-w-0"><p className="font-semibold text-charcoal text-sm">{opt.name}</p>{opt.detail && <p className="text-gray-500 text-xs mt-0.5">{opt.detail}</p>}</div>
-                <p className="text-ocean text-lg shrink-0">{opt.price}</p>
-              </div>
-            ))}
-          </div>
+          <OptionsList source="mana" />
         </div>
       </section>
 

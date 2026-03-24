@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { centsToAud, scoreLabel, scoreColor, sourceBadgeColor, sourceLabel } from '@/lib/utils'
 import type { Listing, Product } from '@/types'
+import OptionsList from '@/components/options/OptionsList'
 
 // ── Stage definitions ─────────────────────────────────────────────────────────
 
@@ -82,7 +83,7 @@ function getMainStageIdx(stageKey: string): number {
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type Tab = 'saved' | 'builds' | 'deposits' | 'imports'
+type Tab = 'saved' | 'builds' | 'deposits' | 'imports' | 'upgrade'
 
 interface SavedVanRow { id: string; listing_id: string; created_at: string; listing: Listing | null }
 
@@ -172,6 +173,7 @@ export default function AccountClient({
     { key: 'builds',   label: 'My Builds',      count: builds.length },
     { key: 'deposits', label: 'Deposit Holds',  count: depositHolds.length },
     { key: 'imports',  label: 'Track My Order', count: importOrders.length },
+    { key: 'upgrade',  label: 'Upgrade Your Van' },
   ]
 
   return (
@@ -532,6 +534,19 @@ export default function AccountClient({
               })}
             </div>
           )
+        )}
+
+        {/* ── UPGRADE YOUR VAN ── */}
+        {tab === 'upgrade' && (
+          <div>
+            <div className="mb-8">
+              <h2 className="text-2xl text-charcoal mb-2">Upgrade Your Van</h2>
+              <p className="text-gray-500 text-sm leading-relaxed max-w-2xl">
+                These options can be added to any van at any time. Click on an option to learn more and enquire.
+              </p>
+            </div>
+            <OptionsList source="account_upgrade" />
+          </div>
         )}
       </div>
     </div>
