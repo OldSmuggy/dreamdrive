@@ -61,16 +61,22 @@ export async function POST(req: NextRequest) {
     const buffer = await file.arrayBuffer()
     const base64 = Buffer.from(buffer).toString('base64')
 
-    // Upload the PDF to storage as the inspection sheet
+    // Upload the PDF to auction-sheets bucket (private — auth required to view)
     const supabase = createAdminClient()
-    const storagePath = `inspection-sheets/${Date.now()}-${file.name}`
+    const storagePath = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`
+    await supabase.storage
+      .from('auction-sheets')
+      .upload(storagePath, buffer, { contentType: 'application/pdf', upsert: false })
+
+    // Also upload to public bucket as fallback for inspection sheet display
+    const publicPath = `inspection-sheets/${storagePath}`
     await supabase.storage
       .from('customer-documents')
-      .upload(storagePath, buffer, { contentType: 'application/pdf', upsert: false })
+      .upload(publicPath, buffer, { contentType: 'application/pdf', upsert: false })
 
     const { data: urlData } = supabase.storage
       .from('customer-documents')
-      .getPublicUrl(storagePath)
+      .getPublicUrl(publicPath)
 
     const inspectionSheetUrl = urlData?.publicUrl ?? null
 
@@ -158,6 +164,7 @@ export async function POST(req: NextRequest) {
         interior_dimensions: (extracted.interior_dimensions as string) ?? null,
         contact_phone:     null,
         inspection_sheet:  inspectionSheetUrl,
+        auction_sheet_url: inspectionSheetUrl,
         photos:            [],
         description:       (extracted.condition_notes as string) ?? null,
       })

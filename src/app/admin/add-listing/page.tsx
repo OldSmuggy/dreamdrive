@@ -52,6 +52,13 @@ export default function AddListingPage() {
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
 
+  // PDF import state
+  const [pdfImporting, setPdfImporting] = useState(false)
+  const [pdfError, setPdfError] = useState('')
+  const [pdfSuccess, setPdfSuccess] = useState('')
+  const [auctionSheetUrl, setAuctionSheetUrl] = useState('')
+  const pdfInputRef = useRef<HTMLInputElement>(null)
+
   // Photo upload state
   const [photoUrls, setPhotoUrls] = useState<string[]>([])
   const [photoUploading, setPhotoUploading] = useState(false)
@@ -91,6 +98,60 @@ export default function AddListingPage() {
 
   const set = (field: string, value: string | boolean) =>
     setForm(prev => ({ ...prev, [field]: value }))
+
+  const handlePdfImport = async (file: File) => {
+    setPdfError('')
+    setPdfSuccess('')
+    setPdfImporting(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      const res = await fetch('/api/listings/extract-pdf', { method: 'POST', body: formData })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'PDF import failed')
+
+      // Auto-fill form with extracted data
+      const ext = data.extracted || {}
+      setForm(prev => ({
+        ...prev,
+        source: 'auction',
+        model_name: ext.title || prev.model_name,
+        grade: ext.grade || prev.grade,
+        chassis_code: ext.chassis_code || prev.chassis_code,
+        model_year: ext.model_year ? String(ext.model_year) : prev.model_year,
+        body_colour: ext.body_color || prev.body_colour,
+        transmission: ext.transmission || prev.transmission,
+        drive: ext.drive || prev.drive,
+        displacement_cc: ext.displacement ? String(ext.displacement) : prev.displacement_cc,
+        mileage_km: ext.mileage ? String(ext.mileage) : prev.mileage_km,
+        inspection_score: ext.inspection_score || prev.inspection_score,
+        bid_no: ext.bid_no || prev.bid_no,
+        auction_count: ext.auction_session || prev.auction_count,
+        kaijo_code: ext.auction_site || prev.kaijo_code,
+        start_price_jpy: ext.start_price_jpy ? String(ext.start_price_jpy) : prev.start_price_jpy,
+        description: ext.condition_notes || prev.description,
+        has_nav: ext.has_navigation ?? prev.has_nav,
+        has_leather: ext.has_leather_seat ?? prev.has_leather,
+        has_sunroof: ext.has_sunroof ?? prev.has_sunroof,
+        has_alloys: ext.has_aluminum_wheels ?? prev.has_alloys,
+        auction_date: ext.auction_date_time ? ext.auction_date_time.split('T')[0] : prev.auction_date,
+      }))
+
+      // Note: the extract-pdf route already created a draft listing —
+      // we'll redirect to edit it instead of creating a new one
+      if (data.id) {
+        setPdfSuccess(data.ai_available
+          ? 'Auction sheet imported and data extracted! Redirecting to edit...'
+          : 'Auction sheet uploaded. AI extraction unavailable — please fill in fields manually. Redirecting...')
+        setTimeout(() => router.push(`/admin/listings`), 2000)
+      }
+    } catch (e) {
+      setPdfError(String(e))
+    } finally {
+      setPdfImporting(false)
+      if (pdfInputRef.current) pdfInputRef.current.value = ''
+    }
+  }
 
   // Combine uploaded URLs + manually typed URLs into one list for submission
   const getAllPhotos = () => {
@@ -174,6 +235,40 @@ export default function AddListingPage() {
       )}
 
       <div className="space-y-8">
+
+        {/* PDF IMPORT */}
+        <Section title="Quick Import — Auction Sheet PDF">
+          <p className="text-sm text-gray-500 mb-3">
+            Upload a NINJA/USS auction sheet PDF to auto-fill all vehicle details.
+          </p>
+          <input
+            ref={pdfInputRef}
+            type="file"
+            accept="application/pdf"
+            className="hidden"
+            onChange={e => { if (e.target.files?.[0]) handlePdfImport(e.target.files[0]) }}
+          />
+          <button
+            type="button"
+            onClick={() => pdfInputRef.current?.click()}
+            disabled={pdfImporting}
+            className="px-6 py-3 bg-ocean text-white font-semibold rounded-lg hover:bg-ocean/90 disabled:opacity-50 transition-colors"
+          >
+            {pdfImporting ? 'Importing…' : '📄 Upload Auction Sheet PDF'}
+          </button>
+          {pdfError && <p className="text-red-600 text-sm mt-2">❌ {pdfError}</p>}
+          {pdfSuccess && <p className="text-green-700 text-sm mt-2">✅ {pdfSuccess}</p>}
+          {auctionSheetUrl && (
+            <a href={auctionSheetUrl} target="_blank" rel="noopener noreferrer" className="block text-sm text-ocean underline mt-2">
+              View uploaded auction sheet
+            </a>
+          )}
+        </Section>
+
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200" /></div>
+          <div className="relative flex justify-center"><span className="bg-white px-4 text-sm text-gray-400">or fill in manually</span></div>
+        </div>
 
         {/* SOURCE */}
         <Section title="Source">
