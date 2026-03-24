@@ -197,7 +197,7 @@ export default function BulkImportPage() {
               {/* PDF viewer */}
               <div className="lg:w-1/2 h-full bg-gray-100 border-r">
                 <iframe
-                  src={`${draft.pdfUrl}#toolbar=0&navpanes=0`}
+                  src={`https://docs.google.com/gview?url=${encodeURIComponent(draft.pdfUrl)}&embedded=true`}
                   className="w-full h-full"
                   title={`Auction sheet: ${draft.filename}`}
                 />

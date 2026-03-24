@@ -354,7 +354,7 @@ export default function DraftEditor({ initial }: { initial: Listing[] }) {
                           </a>
                         </div>
                         <iframe
-                          src={pdfUrl}
+                          src={`https://docs.google.com/gview?url=${encodeURIComponent(pdfUrl)}&embedded=true`}
                           className="w-full rounded-xl border border-gray-200 bg-white"
                           style={{ height: 700 }}
                           title="Auction sheet PDF"
