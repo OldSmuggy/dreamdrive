@@ -200,13 +200,44 @@ export type ImportStage =
   | 'compliance'
   | 'delivered'
 
+export type UserRole = 'customer' | 'buyer_agent' | 'admin'
+export type AuctionStatus = 'watching' | 'deposit_paid' | 'bidding' | 'won' | 'lost'
+
 export interface Profile {
   id: string
   first_name: string | null
   last_name: string | null
   phone: string | null
   is_admin: boolean
+  role: UserRole
   created_at: string
+}
+
+export interface AuctionMessage {
+  id: string
+  customer_vehicle_id: string
+  user_id: string
+  sender_role: 'customer' | 'buyer_agent' | 'admin'
+  message: string
+  created_at: string
+  // joined
+  sender_name?: string
+}
+
+export interface AuctionVehicle {
+  id: string
+  customer_id: string
+  listing_id: string
+  agent_id: string | null
+  max_bid_jpy: number | null
+  auction_status: AuctionStatus
+  vehicle_status: string | null
+  // joined
+  listing?: Listing
+  customer?: { id: string; first_name: string; last_name: string; email: string; phone: string | null }
+  agent?: { id: string; first_name: string | null; last_name: string | null }
+  messages?: AuctionMessage[]
+  message_count?: number
 }
 
 export interface SavedVan {
