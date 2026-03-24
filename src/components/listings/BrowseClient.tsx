@@ -51,6 +51,25 @@ const LOCATION_FILTERS = [
   { value: 'in_japan',    label: 'In Japan' },
 ]
 
+const SOURCE_FILTERS = [
+  { value: '',                label: 'All Sources' },
+  { value: 'auction',        label: 'Auction' },
+  { value: 'dealer',         label: 'Dealer' },
+  { value: 'au_stock',       label: 'AU Stock' },
+]
+
+const SIZE_FILTERS = [
+  { value: '',     label: 'All Sizes' },
+  { value: 'SLWB', label: 'Super Long (SLWB)' },
+  { value: 'LWB',  label: 'Long (LWB)' },
+]
+
+const DRIVE_FILTERS = [
+  { value: '',    label: 'All' },
+  { value: '4WD', label: '4WD' },
+  { value: '2WD', label: '2WD' },
+]
+
 const TYPE_FILTERS = [
   { value: '',       label: 'All Types' },
   { value: 'empty',  label: 'Empty Van' },
@@ -96,6 +115,9 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
 
   // ── Read initial filter state from URL params ──
   const [locationFilter, setLocationFilter] = useState(() => searchParams.get('location') ?? '')
+  const [sourceFilter, setSourceFilter] = useState(() => searchParams.get('source') ?? '')
+  const [sizeFilter, setSizeFilter] = useState(() => searchParams.get('size') ?? '')
+  const [driveFilterSingle, setDriveFilterSingle] = useState(() => searchParams.get('driveType') ?? '')
   const [typeFilter, setTypeFilter] = useState(() => searchParams.get('type') ?? '')
   const [modelFilter, setModelFilter] = useState(() => searchParams.get('model') ?? '')
   const [driveFilter, setDriveFilter] = useState<string[]>(() => {
@@ -127,6 +149,9 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
   const syncUrl = useCallback((overrides?: Record<string, string | string[] | undefined>) => {
     const state: Record<string, string | string[] | undefined> = {
       location: locationFilter || undefined,
+      source: sourceFilter || undefined,
+      size: sizeFilter || undefined,
+      driveType: driveFilterSingle || undefined,
       type: typeFilter || undefined,
       model: modelFilter || undefined,
       drive: driveFilter.length ? driveFilter.join(',') : undefined,
@@ -145,18 +170,27 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
     }
     const qs = params.toString()
     router.replace(qs ? `/browse?${qs}` : '/browse', { scroll: false })
-  }, [locationFilter, typeFilter, modelFilter, driveFilter, yearMin, mileageMax, sortBy, engineFilter, colourFilter, minPrice, maxPrice, router])
+  }, [locationFilter, sourceFilter, sizeFilter, driveFilterSingle, typeFilter, modelFilter, driveFilter, yearMin, mileageMax, sortBy, engineFilter, colourFilter, minPrice, maxPrice, router])
 
   // Sync URL whenever any filter changes
   useEffect(() => {
     syncUrl()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [locationFilter, typeFilter, modelFilter, driveFilter, yearMin, mileageMax, sortBy, engineFilter, colourFilter, minPrice, maxPrice])
+  }, [locationFilter, sourceFilter, sizeFilter, driveFilterSingle, typeFilter, modelFilter, driveFilter, yearMin, mileageMax, sortBy, engineFilter, colourFilter, minPrice, maxPrice])
 
   // ── Filtering ──
   const filtered = useMemo(() => {
     let list = [...initialListings]
     if (locationFilter) list = list.filter(l => effectiveLocation(l) === locationFilter)
+    if (sourceFilter) {
+      if (sourceFilter === 'dealer') {
+        list = list.filter(l => l.source === 'dealer_goonet' || l.source === 'dealer_carsensor')
+      } else {
+        list = list.filter(l => l.source === sourceFilter)
+      }
+    }
+    if (sizeFilter)     list = list.filter(l => l.size === sizeFilter)
+    if (driveFilterSingle) list = list.filter(l => l.drive === driveFilterSingle)
     if (typeFilter)     list = list.filter(l => (l.fit_out_level ?? 'empty') === typeFilter)
     if (modelFilter)    list = list.filter(l => (l.vehicle_model ?? 'hiace_h200') === modelFilter)
     if (driveFilter.length) list = list.filter(l => l.drive && driveFilter.includes(l.drive))
@@ -191,11 +225,14 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
     if (sortBy === 'year_desc')   list.sort((a,b) => (b.model_year ?? 0)     - (a.model_year ?? 0))
     if (sortBy === 'mileage_asc') list.sort((a,b) => (a.mileage_km ?? 9e9)  - (b.mileage_km ?? 9e9))
     return list
-  }, [initialListings, locationFilter, typeFilter, modelFilter, driveFilter, yearMin, mileageMax, sortBy, engineFilter, colourFilter, minPrice, maxPrice])
+  }, [initialListings, locationFilter, sourceFilter, sizeFilter, driveFilterSingle, typeFilter, modelFilter, driveFilter, yearMin, mileageMax, sortBy, engineFilter, colourFilter, minPrice, maxPrice])
 
   // ── Active filter count ──
   const activeFilterCount = [
     locationFilter,
+    sourceFilter,
+    sizeFilter,
+    driveFilterSingle,
     typeFilter,
     modelFilter,
     driveFilter.length > 0 ? 'yes' : '',
@@ -210,7 +247,8 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
   const hasActiveFilters = activeFilterCount > 0
 
   function clearAll() {
-    setLocationFilter(''); setTypeFilter(''); setModelFilter('')
+    setLocationFilter(''); setSourceFilter(''); setSizeFilter(''); setDriveFilterSingle('')
+    setTypeFilter(''); setModelFilter('')
     setDriveFilter([]); setYearMin(''); setMileageMax('')
     setEngineFilter(''); setColourFilter([]); setMinPrice(''); setMaxPrice('')
     setSortBy('default')
@@ -246,7 +284,58 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
         </div>
       </div>
 
-      {/* Row 2 — Type */}
+      {/* Row 2 — Source */}
+      <div className="flex flex-wrap gap-2 items-center">
+        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider w-20 shrink-0">Source</span>
+        <div className="flex flex-wrap gap-1.5">
+          {SOURCE_FILTERS.map(f => (
+            <button key={f.value} onClick={() => setSourceFilter(f.value)}
+              className={`px-4 py-1.5 text-sm font-medium rounded-full border transition-colors ${
+                sourceFilter === f.value
+                  ? 'bg-charcoal text-white border-charcoal'
+                  : 'bg-white text-charcoal border-charcoal hover:bg-cream'
+              }`}>
+              {f.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Row 3 — Drive + Size */}
+      <div className="flex flex-wrap gap-6 items-center">
+        <div className="flex flex-wrap gap-2 items-center">
+          <span className="text-xs font-bold text-gray-400 uppercase tracking-wider w-20 shrink-0">Drive</span>
+          <div className="flex flex-wrap gap-1.5">
+            {DRIVE_FILTERS.map(f => (
+              <button key={f.value} onClick={() => setDriveFilterSingle(f.value)}
+                className={`px-4 py-1.5 text-sm font-medium rounded-full border transition-colors ${
+                  driveFilterSingle === f.value
+                    ? 'bg-charcoal text-white border-charcoal'
+                    : 'bg-white text-charcoal border-charcoal hover:bg-cream'
+                }`}>
+                {f.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2 items-center">
+          <span className="text-xs font-bold text-gray-400 uppercase tracking-wider w-12 shrink-0">Size</span>
+          <div className="flex flex-wrap gap-1.5">
+            {SIZE_FILTERS.map(f => (
+              <button key={f.value} onClick={() => setSizeFilter(f.value)}
+                className={`px-4 py-1.5 text-sm font-medium rounded-full border transition-colors ${
+                  sizeFilter === f.value
+                    ? 'bg-charcoal text-white border-charcoal'
+                    : 'bg-white text-charcoal border-charcoal hover:bg-cream'
+                }`}>
+                {f.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Row 4 — Type */}
       <div className="flex flex-wrap gap-2 items-center">
         <span className="text-xs font-bold text-gray-400 uppercase tracking-wider w-20 shrink-0">Type</span>
         <div className="flex flex-wrap gap-1.5">
