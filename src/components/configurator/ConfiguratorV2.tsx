@@ -44,11 +44,9 @@ const ADDON_CATALOG: AddonItem[] = [
   { slug: 'shower-awning',       name: 'Shower Awning',           detail: null,                                                                     priceCents:  80000, fitouts: ['mana'] },
   { slug: 'off-road-tires',      name: 'Off-Road Tires',          detail: 'All-terrain tire upgrade',                                               priceCents: 230000, fitouts: ['tama', 'mana', 'grid', 'any'] },
   { slug: 'half-wrap',           name: 'Half Wrap',               detail: 'Colour wrap on lower half of van',                                       priceCents: 330000, fitouts: ['tama', 'mana', 'grid', 'any'] },
-  { slug: 'lift-kit',            name: 'Lift Kit 2" Ironman 4×4', detail: '2-inch suspension lift by Ironman 4×4',                                 priceCents: 258000, fitouts: ['tama', 'mana'] },
 ]
 
 const GRID_SLUG    = 'grid-bed-kit'
-const CABINET_SLUG = 'elec-cabinet'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function getBuildLocation(fitout: FitoutSlug, manaLoc: ManaLocation): BuildLocation {
@@ -94,9 +92,7 @@ export default function ConfiguratorV2({
   }, [fitoutSlug, products])
 
   const electricals = products.filter(p => p.category === 'electrical')
-  const allowedElectricals = isGrid
-    ? electricals.filter(e => e.slug === CABINET_SLUG || e.slug.includes('cabinet'))
-    : electricals
+  const allowedElectricals = electricals
   const poptopProduct = products.find(p => p.category === 'poptop') ?? null
 
   // ── Add-ons for current fitout ─────────────────────────────────────────────
@@ -492,7 +488,7 @@ export default function ConfiguratorV2({
               return (
                 <BuildOption
                   title="Bare Camper"
-                  subtitle="Modular Bed System by Skybridge"
+                  subtitle="Modular Bed System — Coming Soon"
                   detail="Installed in Australia. Compatible with Toyota Hiace H200 LWB — or bring your own."
                   fromPrice={gridProduct ? `From ${centsToAud(effectivePrice(gridProduct))}` : 'Contact for price'}
                   badge="AU Build"

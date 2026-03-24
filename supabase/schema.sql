@@ -400,10 +400,8 @@ insert into products (slug, name, category, rrp_aud, description, sort_order) va
   ('mana',              'MANA Fit-Out',           'fitout',     0, '2-seater adventure campervan: modular bed, full kitchen, toilet, 55L water, 200AH lithium', 2),
   ('grid-bed-kit',      'Grid Bed Kit',           'fitout',     0, 'Modular bed system by Grid (Skybridge). Compatible with cabinet-level electrical only.', 3),
   ('poptop-only',       'Pop Top Conversion Only','fitout',     0, 'Fiberglass roof conversion with no interior fit-out package', 4),
-  ('elec-cabinet',      'Electrical Cabinet',     'electrical', 0, 'Wall-mount or under-bed electrical cabinet, wired and ready', 1),
-  ('elec-starter',      'Starter Electrical',     'electrical', 0, '100Ah lithium, 200W solar, MPPT, 12V + USB outlets', 2),
-  ('elec-mid',          'Mid Electrical',         'electrical', 0, '200Ah lithium, 400W solar, MPPT, 2000W inverter, shore power, battery monitor', 3),
-  ('elec-offgrid-pro',  'Off-Grid Pro',           'electrical', 0, '300Ah+ lithium, 600W+ solar, smart BMS, dual MPPT, large inverter, full monitoring', 4),
+  ('elec-starter',      'Starter Pack',           'electrical', 500000, '12V system, 200AH lithium battery, solar-ready. No shore power — no need to encase the battery.', 1),
+  ('elec-offgrid-pro',  'Off-Grid Pro',           'electrical', 0, 'Power Boss system, professionally installed by electrician. Price by consultation.', 2),
   ('poptop',            'Pop Top Roof Conversion','poptop',  1190000, 'Fiberglass pop top. $11,900 ex GST. 10 business days. $4,000 deposit to book.', 1)
 on conflict (slug) do nothing;
 
