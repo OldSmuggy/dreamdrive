@@ -269,7 +269,7 @@ export default function PopTopClient({ content: initial }: { content: Record<str
             <LeadFormModal
               trigger="Get in Touch"
               source="product_page_standing_room"
-              leadType="roof_conversion_booking"
+              leadType="pop_top_booking"
               className="btn-primary text-base px-8 py-4"
             />
             <Link href="/vans" className="btn-ghost text-base px-8 py-4">
