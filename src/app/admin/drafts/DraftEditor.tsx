@@ -353,12 +353,20 @@ export default function DraftEditor({ initial }: { initial: Listing[] }) {
                             Open in new tab
                           </a>
                         </div>
-                        <iframe
-                          src={`https://docs.google.com/gview?url=${encodeURIComponent(pdfUrl)}&embedded=true`}
+                        <object
+                          data={pdfUrl}
+                          type="application/pdf"
                           className="w-full rounded-xl border border-gray-200 bg-white"
                           style={{ height: 700 }}
-                          title="Auction sheet PDF"
-                        />
+                        >
+                          <div className="flex flex-col items-center justify-center h-full gap-3">
+                            <p className="text-sm text-gray-500">PDF preview not supported.</p>
+                            <a href={pdfUrl} target="_blank" rel="noopener noreferrer"
+                              className="px-4 py-2 bg-ocean text-white text-sm rounded-lg">
+                              Open PDF in new tab
+                            </a>
+                          </div>
+                        </object>
                       </div>
                     ) : (
                       <div className="flex items-center justify-center h-full bg-gray-100 rounded-xl border border-gray-200 text-gray-400 text-sm p-10 text-center">

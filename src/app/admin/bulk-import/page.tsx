@@ -196,11 +196,19 @@ export default function BulkImportPage() {
             <div className="flex flex-col lg:flex-row" style={{ height: '600px' }}>
               {/* PDF viewer */}
               <div className="lg:w-1/2 h-full bg-gray-100 border-r">
-                <iframe
-                  src={`https://docs.google.com/gview?url=${encodeURIComponent(draft.pdfUrl)}&embedded=true`}
+                <object
+                  data={draft.pdfUrl}
+                  type="application/pdf"
                   className="w-full h-full"
-                  title={`Auction sheet: ${draft.filename}`}
-                />
+                >
+                  <div className="flex flex-col items-center justify-center h-full gap-3 p-4">
+                    <p className="text-sm text-gray-500">PDF preview not supported in this browser.</p>
+                    <a href={draft.pdfUrl} target="_blank" rel="noopener noreferrer"
+                      className="px-4 py-2 bg-ocean text-white text-sm rounded-lg hover:bg-ocean/90">
+                      Open PDF in new tab
+                    </a>
+                  </div>
+                </object>
               </div>
 
               {/* Form fields */}
