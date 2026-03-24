@@ -20,13 +20,15 @@ const MANA_INCLUSIONS = [
 ]
 
 const MANA_OPTIONS = [
-  { name: 'Recommended Package', detail: 'Black-out curtains, insect screens, insect net rear door, side-window rain cover, fan', price: '$3,800' },
-  { name: 'Solar Package', detail: 'Solar system 200W', price: '$2,000' },
-  { name: 'Hot Water Package', detail: 'Duoletto 12V/240V water system with 10L additional water storage', price: '$2,000' },
-  { name: 'Side Awning', detail: 'Fiamma 3.5M', price: '$2,300' },
-  { name: 'Shower Awning', detail: null, price: '$800' },
-  { name: 'Off-Road Tires', detail: null, price: '$2,000' },
-  { name: 'Half Wrap', detail: null, price: '$3,300' },
+  { name: 'Recommended Package', detail: 'Black-out curtains, insect screens, insect net rear door, side-window rain cover, fan', price: '$3,800', image: '/images/products/curtains.jpg' },
+  { name: 'Starter Pack — 12V Electrical', detail: '200AH lithium battery, solar-ready, 12V system. No shore power needed.', price: '$5,000', image: null },
+  { name: 'Off-Grid Pro — Power Boss', detail: 'Full electrical system, professionally installed by electrician.', price: 'Get a Quote', image: null },
+  { name: 'Solar Package', detail: 'Solar system 200W', price: '$2,000', image: '/images/products/solar-panel.jpg' },
+  { name: 'Hot Water Package', detail: 'Duoletto 12V/240V water system with 10L additional water storage', price: '$2,000', image: null },
+  { name: 'Side Awning', detail: 'Fiamma 3.5M', price: '$2,300', image: '/images/products/awning.jpg' },
+  { name: 'Shower Awning', detail: null, price: '$800', image: null },
+  { name: 'Off-Road Tires', detail: null, price: '$2,000', image: '/images/products/offroad-wheels.jpg' },
+  { name: 'Half Wrap', detail: null, price: '$3,300', image: '/images/products/half-wrap.jpg' },
 ]
 
 const MANA_QUALITY = [
@@ -49,7 +51,7 @@ export default function ManaProductClient({ jpyRate, content: initial }: Props) 
     <div className="min-h-screen bg-white">
       <PageEditToolbar pageSlug="mana-product" pageName="MANA Product" content={content} onContentChange={setContent} />
 
-      <FitoutHero fallbackImage="" heroImage={content.hero_image} heroVideo={content.hero_video}>
+      <FitoutHero fallbackImage="/images/mana/hero-interior.jpg" heroImage={content.hero_image} heroVideo={content.hero_video}>
         <div className="pt-16">
           <p className="text-sand text-xs font-semibold tracking-[0.25em] uppercase mb-3">Bare Camper</p>
           <h1 className="text-7xl md:text-9xl text-white leading-none mb-3">MANA</h1>
@@ -58,13 +60,23 @@ export default function ManaProductClient({ jpyRate, content: initial }: Props) 
         </div>
       </FitoutHero>
 
-      {gallery.length > 0 && (
-        <section className="max-w-6xl mx-auto px-6 py-12">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {gallery.map((url, i) => <div key={i} className="relative h-48 rounded-xl overflow-hidden"><Image src={url} alt="" fill className="object-cover" sizes="(max-width: 768px) 50vw, 25vw" /></div>)}
-          </div>
-        </section>
-      )}
+      {/* Photo Gallery */}
+      <section className="max-w-6xl mx-auto px-6 py-12">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          {[
+            { src: '/images/mana/interior-full.jpg', alt: 'MANA interior with pop top, fridge and bed' },
+            { src: '/images/mana/kitchen-forward.jpg', alt: 'MANA kitchen and table looking forward' },
+            { src: '/images/mana/seating-toilet.jpg', alt: 'MANA seating area with toilet compartment' },
+            { src: '/images/mana/storage-open.jpg', alt: 'MANA under-bench storage' },
+            { src: '/images/mana/rear-platform.jpg', alt: 'MANA rear platform and bed area' },
+            { src: '/images/mana/walnut-poptop.jpg', alt: 'MANA walnut trim with pop top' },
+          ].map((img, i) => (
+            <div key={i} className="relative h-48 md:h-64 rounded-xl overflow-hidden">
+              <Image src={img.src} alt={img.alt} fill className="object-cover" sizes="(max-width: 768px) 50vw, 33vw" />
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* Overview */}
       <section className="max-w-6xl mx-auto px-6 py-20">
@@ -131,8 +143,13 @@ export default function ManaProductClient({ jpyRate, content: initial }: Props) 
           <h2 className="text-4xl text-charcoal mb-10">Select Options</h2>
           <div className="divide-y divide-gray-100 border border-gray-200 rounded-2xl overflow-hidden bg-white">
             {MANA_OPTIONS.map(opt => (
-              <div key={opt.name} className="flex items-start justify-between gap-4 px-6 py-5 hover:bg-cream transition-colors">
-                <div><p className="font-semibold text-charcoal text-sm">{opt.name}</p>{opt.detail && <p className="text-gray-500 text-xs mt-0.5">{opt.detail}</p>}</div>
+              <div key={opt.name} className="flex items-center gap-4 px-6 py-5 hover:bg-cream transition-colors">
+                {opt.image && (
+                  <div className="relative w-16 h-16 rounded-lg overflow-hidden shrink-0">
+                    <Image src={opt.image} alt={opt.name} fill className="object-cover" sizes="64px" />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0"><p className="font-semibold text-charcoal text-sm">{opt.name}</p>{opt.detail && <p className="text-gray-500 text-xs mt-0.5">{opt.detail}</p>}</div>
                 <p className="text-ocean text-lg shrink-0">{opt.price}</p>
               </div>
             ))}
@@ -165,7 +182,7 @@ export default function ManaProductClient({ jpyRate, content: initial }: Props) 
             <LeadFormModal trigger="Book a Free Consultation" source="product_page_mana" className="btn-ghost text-base px-8 py-4" />
           </div>
           <p className="mt-10 text-gray-400 text-sm">
-            <a href="mailto:jared@dreamdrive.life" className="text-sand hover:text-sand">jared@dreamdrive.life</a>
+            <a href="mailto:hello@barecamper.com.au" className="text-sand hover:text-sand">hello@barecamper.com.au</a>
             {' · '}<a href="tel:0432182892" className="text-sand hover:text-sand">0432 182 892</a>
           </p>
         </div>

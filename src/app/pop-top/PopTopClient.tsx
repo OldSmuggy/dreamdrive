@@ -7,7 +7,7 @@ import PageEditToolbar from '@/components/admin/PageEditToolbar'
 import FitoutHero from '@/components/admin/FitoutHero'
 import LeadFormModal from '@/components/leads/LeadFormModal'
 
-const STATIC_HERO = '/images/diy-poptop.jpg'
+const STATIC_HERO = '/images/poptop/hero-golden.jpg'
 
 export default function PopTopClient({ content: initial }: { content: Record<string, string> }) {
   const [content, setContent] = useState(initial)
@@ -42,7 +42,7 @@ export default function PopTopClient({ content: initial }: { content: Record<str
         <div className="max-w-6xl mx-auto px-6 text-center">
           <p className="text-lg text-charcoal font-semibold mb-2">Own a Hiace already? Bring it in.</p>
           <p className="text-gray-500 text-sm max-w-xl mx-auto">
-            We fit pop tops to Japan-import H200s and Australian-delivered 300 Series. $4,000 deposit locks your 10-day build slot.
+            We fit pop tops to Japan-import H200s and Australian-delivered 300 Series. $3,000 deposit locks your 10-day build slot.
           </p>
         </div>
       </section>
@@ -56,7 +56,7 @@ export default function PopTopClient({ content: initial }: { content: Record<str
             <p className="text-gray-500 text-sm font-medium">incl. GST</p>
           </div>
           <div className="border border-gray-200 rounded-2xl p-10 hover:shadow-md transition-shadow">
-            <p className="text-5xl text-ocean mb-3">$4,000</p>
+            <p className="text-5xl text-ocean mb-3">$3,000</p>
             <p className="text-gray-500 text-sm font-medium">deposit to schedule your build slot</p>
           </div>
           <div className="border border-gray-200 rounded-2xl p-10 hover:shadow-md transition-shadow">
@@ -66,18 +66,23 @@ export default function PopTopClient({ content: initial }: { content: Record<str
         </div>
       </section>
 
-      {/* Gallery (if images uploaded) */}
-      {gallery.length > 0 && (
-        <section className="max-w-6xl mx-auto px-6 py-12">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {gallery.map((url, i) => (
-              <div key={i} className="relative h-48 rounded-xl overflow-hidden">
-                <Image src={url} alt={`Pop Top gallery ${i + 1}`} fill className="object-cover" sizes="(max-width: 768px) 50vw, 25vw" />
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+      {/* Photo Gallery */}
+      <section className="max-w-6xl mx-auto px-6 py-12">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          {[
+            { src: '/images/poptop/three-quarter-up.jpg', alt: 'Pop top raised, three-quarter view' },
+            { src: '/images/poptop/side-closed.jpg', alt: 'Pop top lowered, side profile' },
+            { src: '/images/poptop/interior-standing.jpg', alt: 'Interior with pop top up showing standing room' },
+            { src: '/images/poptop/sunset-window.jpg', alt: 'Sunset through canvas window' },
+            { src: '/images/poptop/rear-sunset.jpg', alt: 'Rear view at golden hour' },
+            { src: '/images/poptop/seal-detail.jpg', alt: 'Fiberglass seal detail showing quality' },
+          ].map((img, i) => (
+            <div key={i} className="relative h-48 md:h-64 rounded-xl overflow-hidden">
+              <Image src={img.src} alt={img.alt} fill className="object-cover" sizes="(max-width: 768px) 50vw, 33vw" />
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* What's Included */}
       <section className="bg-cream py-20">
@@ -149,7 +154,7 @@ export default function PopTopClient({ content: initial }: { content: Record<str
           <p className="text-sand text-xs font-semibold tracking-widest uppercase mb-4">Ready to go</p>
           <h2 className="text-4xl md:text-5xl mb-4">Book Your Build Slot</h2>
           <p className="text-gray-300 text-lg mb-10 leading-relaxed">
-            Get in touch to secure your spot. $4,000 deposit locks in your 10-business-day turnaround.
+            Get in touch to secure your spot. $3,000 deposit locks in your 10-business-day turnaround.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
             <LeadFormModal
