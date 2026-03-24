@@ -33,7 +33,7 @@ export default function FitoutHero({
             className="w-full h-full object-cover opacity-30"
           />
         ) : bgImage ? (
-          <Image src={bgImage} alt="" fill className="object-cover opacity-30" sizes="100vw" />
+          <Image src={bgImage} alt="" fill className="object-cover opacity-60" sizes="100vw" priority />
         ) : null}
       </div>
       <div className="relative max-w-6xl mx-auto px-4 py-20 md:py-28">
