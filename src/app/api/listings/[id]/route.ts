@@ -21,13 +21,14 @@ export async function PATCH(
     const body = await req.json()
     const supabase = createAdminClient()
 
-    const doUpdate = async (payload: Record<string, unknown>) =>
-      supabase
+    const doUpdate = async (payload: Record<string, unknown>) => {
+      const { data, error } = await supabase
         .from('listings')
         .update({ ...payload, updated_at: new Date().toISOString() })
         .eq('id', params.id)
         .select()
-        .single()
+      return { data: data?.[0] ?? null, error }
+    }
 
     let { data, error } = await doUpdate(body)
 
