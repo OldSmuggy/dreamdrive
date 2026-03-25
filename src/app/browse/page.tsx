@@ -4,6 +4,7 @@ import { getJpyRate } from '@/lib/settings'
 import { generateMeta } from '@/lib/seo'
 import AuctionBanner from '@/components/ui/AuctionBanner'
 import BrowseClient from '@/components/listings/BrowseClient'
+import BrowseGuide from '@/components/listings/BrowseGuide'
 import type { Listing } from '@/types'
 
 export const metadata = generateMeta({
@@ -138,6 +139,7 @@ export default async function BrowsePage({ searchParams }: Props) {
         forSaleVehicles={forSaleVehicles}
         colourCounts={colourCounts}
       />
+      <BrowseGuide />
     </div>
   )
 }
