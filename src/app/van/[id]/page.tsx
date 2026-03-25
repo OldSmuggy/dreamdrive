@@ -281,6 +281,43 @@ export default async function VanDetailPage({ params }: { params: { id: string }
               </a>
             )}
 
+            {/* Auction Sheet PDF — signed-in users only */}
+            {user && listing.inspection_sheet && (
+              <div className="mb-6 border border-gray-200 rounded-xl overflow-hidden">
+                <div className="flex items-center justify-between px-4 py-2 bg-gray-50 border-b">
+                  <p className="text-sm font-semibold text-gray-600">Auction Sheet</p>
+                  <a href={listing.inspection_sheet} target="_blank" rel="noopener noreferrer"
+                    className="text-xs text-ocean hover:underline">
+                    Open in new tab ↗
+                  </a>
+                </div>
+                <object
+                  data={listing.inspection_sheet}
+                  type="application/pdf"
+                  className="w-full"
+                  style={{ height: 500 }}
+                >
+                  <div className="flex flex-col items-center justify-center py-8 gap-3">
+                    <p className="text-sm text-gray-500">PDF preview not available.</p>
+                    <a href={listing.inspection_sheet} target="_blank" rel="noopener noreferrer"
+                      className="px-4 py-2 bg-ocean text-white text-sm rounded-lg hover:bg-ocean/90">
+                      View Auction Sheet
+                    </a>
+                  </div>
+                </object>
+              </div>
+            )}
+
+            {/* Prompt to sign in to see auction sheet */}
+            {!user && listing.inspection_sheet && (
+              <div className="mb-6 p-4 bg-cream rounded-xl text-center">
+                <p className="text-sm text-gray-600 mb-2">Sign in to view the full auction inspection sheet for this vehicle.</p>
+                <Link href="/login" className="text-ocean font-semibold text-sm hover:underline">
+                  Sign in →
+                </Link>
+              </div>
+            )}
+
             {/* CTAs */}
             <div className="space-y-3">
               <Link href={`/configurator?van=${listing.id}`}

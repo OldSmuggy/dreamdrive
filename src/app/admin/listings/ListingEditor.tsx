@@ -357,6 +357,29 @@ function ListingRow({
             </div>
           )}
 
+          {/* Auction Sheet PDF */}
+          {l.inspection_sheet && (
+            <div className="mb-5 border border-gray-200 rounded-xl overflow-hidden">
+              <div className="flex items-center justify-between px-4 py-2 bg-white border-b">
+                <p className="text-xs font-semibold text-gray-600">Auction Sheet</p>
+                <a href={l.inspection_sheet} target="_blank" rel="noopener noreferrer"
+                  className="text-xs text-ocean hover:underline">Open in new tab ↗</a>
+              </div>
+              <object
+                data={l.inspection_sheet}
+                type="application/pdf"
+                className="w-full bg-gray-100"
+                style={{ height: 500 }}
+              >
+                <div className="flex flex-col items-center justify-center py-8 gap-3">
+                  <p className="text-sm text-gray-500">PDF preview not available.</p>
+                  <a href={l.inspection_sheet} target="_blank" rel="noopener noreferrer"
+                    className="px-4 py-2 bg-ocean text-white text-sm rounded-lg">View PDF</a>
+                </div>
+              </object>
+            </div>
+          )}
+
           <div className="grid md:grid-cols-3 gap-4 mb-5">
 
             {/* Left — main fields */}
