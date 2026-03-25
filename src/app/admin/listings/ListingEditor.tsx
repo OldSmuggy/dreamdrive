@@ -114,6 +114,137 @@ function toEditState(l: Listing): EditState {
 const inputClass =
   'w-full px-3 py-2 border border-gray-300 rounded-lg text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-ocean bg-white'
 
+// ---- Notify Interested Customers Button ----
+function NotifyButton({ listingId }: { listingId: string }) {
+  const [open, setOpen] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [matches, setMatches] = useState<{ id: string; email: string; name: string | null; source: string }[]>([])
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [sending, setSending] = useState(false)
+  const [sent, setSent] = useState(false)
+  const [error, setError] = useState('')
+
+  const findMatches = async () => {
+    setOpen(true)
+    setLoading(true)
+    setError('')
+    try {
+      const res = await fetch(`/api/listings/${listingId}/notify`)
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      setMatches(data.matches ?? [])
+      setSelected(new Set((data.matches ?? []).map((m: { email: string }) => m.email)))
+    } catch (e) {
+      setError(String(e))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const sendNotifications = async () => {
+    setSending(true)
+    setError('')
+    try {
+      const res = await fetch(`/api/listings/${listingId}/notify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ emails: Array.from(selected) }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      setSent(true)
+    } catch (e) {
+      setError(String(e))
+    } finally {
+      setSending(false)
+    }
+  }
+
+  const toggleEmail = (email: string) => {
+    setSelected(prev => {
+      const next = new Set(prev)
+      next.has(email) ? next.delete(email) : next.add(email)
+      return next
+    })
+  }
+
+  return (
+    <>
+      <button
+        onClick={findMatches}
+        className="text-sm px-3 py-1.5 rounded-lg border border-amber-200 text-amber-700 hover:bg-amber-50"
+      >
+        📣 Notify Customers
+      </button>
+
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setOpen(false)}>
+          <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full mx-4 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="p-5 border-b">
+              <h3 className="text-lg font-bold text-charcoal">Notify Interested Customers</h3>
+              <p className="text-sm text-gray-500 mt-1">Send an email alert about this van to customers who might be interested.</p>
+            </div>
+
+            <div className="p-5">
+              {loading && <p className="text-sm text-gray-500">Finding matching customers...</p>}
+              {error && <p className="text-sm text-red-600">{error}</p>}
+              {sent && (
+                <div className="text-center py-4">
+                  <p className="text-green-700 font-semibold">✅ Notifications sent to {selected.size} customer{selected.size !== 1 ? 's' : ''}!</p>
+                </div>
+              )}
+
+              {!loading && !sent && matches.length === 0 && (
+                <p className="text-sm text-gray-500 py-4">No matching customers found. As customers save vans and submit scout requests, matches will appear here.</p>
+              )}
+
+              {!loading && !sent && matches.length > 0 && (
+                <>
+                  <p className="text-sm text-gray-600 mb-3">{matches.length} customer{matches.length !== 1 ? 's' : ''} matched:</p>
+                  <div className="space-y-2 mb-4">
+                    {matches.map(m => (
+                      <label key={m.email} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={selected.has(m.email)}
+                          onChange={() => toggleEmail(m.email)}
+                          className="w-4 h-4 rounded accent-ocean"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-charcoal truncate">{m.name || m.email}</p>
+                          {m.name && <p className="text-xs text-gray-400 truncate">{m.email}</p>}
+                        </div>
+                        <span className="text-xs text-gray-400 shrink-0">
+                          {m.source === 'saved_van' ? '❤️ Saved similar' : '🔍 Scout request'}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+
+            <div className="p-5 border-t flex gap-3 justify-end">
+              <button onClick={() => { setOpen(false); setSent(false) }} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800">
+                {sent ? 'Close' : 'Cancel'}
+              </button>
+              {!sent && matches.length > 0 && (
+                <button
+                  onClick={sendNotifications}
+                  disabled={sending || selected.size === 0}
+                  className="px-5 py-2 bg-ocean text-white text-sm font-semibold rounded-lg hover:bg-ocean/90 disabled:opacity-50"
+                >
+                  {sending ? 'Sending…' : `Send to ${selected.size} customer${selected.size !== 1 ? 's' : ''}`}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
+
 // Try to upgrade a Goo-net / Car Sensor thumbnail URL to the largest available version
 function upgradeImageUrl(url: string): string {
   try {
@@ -821,6 +952,7 @@ function ListingRow({
             >
               {isTranslating ? 'Translating…' : '🌐 Re-translate with AI'}
             </button>
+            <NotifyButton listingId={l.id} />
           </div>
         </div>
       )}
