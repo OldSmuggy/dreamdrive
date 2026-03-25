@@ -126,7 +126,8 @@ const VAN_TYPES = [
     engine: 'Diesel 2.8L or Petrol 2.7L',
     drive: '2WD or 4WD',
     priceRange: 'From ~$25,000',
-    image: '/images/path-source.jpg',
+    image: '/images/vans/h200-lwb.jpg',
+    bareCamperImage: '/images/vans/h200-lwb-poptop.jpg',
     browseFilter: '?model=hiace_h200&size=LWB',
     highlights: ['Easier to park & drive daily', 'Fits in standard garage', 'Great for weekenders'],
   },
@@ -139,7 +140,8 @@ const VAN_TYPES = [
     engine: 'Diesel 2.8L or Petrol 2.7L',
     drive: '2WD or 4WD',
     priceRange: 'From ~$30,000',
-    image: '/images/path-source.jpg',
+    image: '/images/vans/h200-slwb.jpg',
+    bareCamperImage: '/images/vans/h200-slwb-poptop.jpg',
     browseFilter: '?model=hiace_h200&size=SLWB',
     highlights: ['Most popular for camper builds', 'Extra 540mm of living space', 'Room for kitchen + bed + storage'],
   },
@@ -152,7 +154,8 @@ const VAN_TYPES = [
     engine: 'Diesel 2.8L',
     drive: '2WD or 4WD',
     priceRange: 'From ~$35,000',
-    image: '/images/path-source.jpg',
+    image: '/images/vans/300-lwb.jpg',
+    bareCamperImage: null,
     browseFilter: '?model=hiace_300&size=LWB',
     highlights: ['Newest platform (2019+)', 'Better safety & ride comfort', 'Semi-bonneted design'],
   },
@@ -165,7 +168,8 @@ const VAN_TYPES = [
     engine: 'Diesel 2.8L',
     drive: '2WD or 4WD',
     priceRange: 'From ~$40,000',
-    image: '/images/path-source.jpg',
+    image: '/images/vans/300-slwb.jpg',
+    bareCamperImage: null,
     browseFilter: '?model=hiace_300&size=SLWB',
     highlights: ['Maximum interior space', 'Most room for a full build', 'Newest safety features'],
   },
@@ -251,8 +255,22 @@ export default function BrowseGuide() {
                           {van.highlights.map(h => <li key={h}>✓ {h}</li>)}
                         </ul>
                       </div>
+
+                      {/* Before / After — Bare Camper with standing room */}
+                      {van.bareCamperImage && (
+                        <div>
+                          <p className="text-xs font-bold text-gray-400 uppercase mb-1.5">As a Bare Camper</p>
+                          <div className="relative h-36 rounded-lg overflow-hidden">
+                            <Image src={van.bareCamperImage} alt={`${van.name} with pop top`} fill className="object-cover" />
+                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2">
+                              <p className="text-white text-xs font-semibold">With standing room installed</p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
                       <div>
-                        <p className="text-xs font-bold text-gray-400 uppercase mb-1.5">As a Bare Camper</p>
+                        <p className="text-xs font-bold text-gray-400 uppercase mb-1.5">Build your Bare Camper</p>
                         <div className="text-sm text-gray-600 space-y-1">
                           <p>+ Standing room: <span className="font-medium">$13,090</span></p>
                           <p>+ Starter electrical: <span className="font-medium">$5,000</span></p>
