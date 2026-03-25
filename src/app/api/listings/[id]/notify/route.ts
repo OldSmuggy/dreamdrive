@@ -51,7 +51,7 @@ export async function GET(
     const matchingUsers: { id: string; email: string; name: string | null; source: string }[] = []
 
     if (matchingUserIds.size > 0) {
-      for (const uid of matchingUserIds) {
+      for (const uid of Array.from(matchingUserIds)) {
         try {
           const { data: { user } } = await supabase.auth.admin.getUserById(uid)
           if (!user?.email) continue
