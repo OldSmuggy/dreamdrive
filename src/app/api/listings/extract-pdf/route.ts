@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
         .insert({
           source: 'auction',
           status: 'draft',
-          model_name: 'New Upload — Fill Details',
+          model_name: file.name.replace(/\.pdf$/i, '').replace(/[_-]/g, ' ').trim() || 'New Upload — Fill Details',
           inspection_sheet: pdfUrl,
           auction_sheet_url: pdfUrl,
           auction_result: 'pending',

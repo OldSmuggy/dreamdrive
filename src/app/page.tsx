@@ -24,13 +24,26 @@ export default async function HomePage() {
 
   try {
     const supabase = createSupabaseServer()
-    const { data } = await supabase
+    // Prefer featured vans, fall back to most recent with photos
+    let { data } = await supabase
       .from('listings')
       .select('*')
       .eq('status', 'available')
-      .order('created_at', { ascending: false })
+      .eq('featured', true)
       .limit(1)
       .single()
+    // If no featured van, get most recent non-auction van with photos
+    if (!data) {
+      const fallback = await supabase
+        .from('listings')
+        .select('*')
+        .eq('status', 'available')
+        .neq('source', 'auction')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single()
+      data = fallback.data
+    }
     if (data) featuredVan = data as Listing
   } catch {
     // Supabase unreachable — render page without listings
