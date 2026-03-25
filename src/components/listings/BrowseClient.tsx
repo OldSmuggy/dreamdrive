@@ -88,7 +88,7 @@ const MODEL_OPTIONS = [
 const ENGINE_FILTERS = [
   { value: '',       label: 'All' },
   { value: 'diesel', label: 'Diesel 2.8L' },
-  { value: 'petrol', label: 'Petrol 2.7L' },
+  { value: 'petrol', label: 'Petrol 2.0L' },
 ]
 
 const COLOUR_DOT_MAP: Record<string, string> = {
@@ -313,7 +313,7 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
         <select value={engineFilter} onChange={e => setEngineFilter(e.target.value)} className={selectCls}>
           <option value="">All Engines</option>
           <option value="diesel">Diesel 2.8L</option>
-          <option value="petrol">Petrol 2.7L</option>
+          <option value="petrol">Petrol 2.0L</option>
         </select>
         <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className={selectCls}>
           {TYPE_FILTERS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
