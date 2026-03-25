@@ -169,6 +169,8 @@ interface RowProps {
   onMovePhoto: (from: number, to: number) => void
   onClearPhotos: () => void
   onUploadPhoto: (url: string) => void
+  onUploadingChange: (uploading: boolean) => void
+  photoUploading: boolean
   newInteriorPhotoUrl: string
   onSetNewInteriorPhotoUrl: (v: string) => void
   onAddInteriorPhoto: () => void
@@ -179,7 +181,7 @@ interface RowProps {
 function ListingRow({
   listing: l, isEditing, isSaved, isSelected, isTranslating, editState, saving, error,
   newPhotoUrl, onToggleSelect, onStartEdit, onCancelEdit, onSave, onDelete, onRetranslate, onSet,
-  onSetNewPhotoUrl, onAddPhoto, onRemovePhoto, onMovePhoto, onClearPhotos, onUploadPhoto,
+  onSetNewPhotoUrl, onAddPhoto, onRemovePhoto, onMovePhoto, onClearPhotos, onUploadPhoto, onUploadingChange, photoUploading,
   newInteriorPhotoUrl, onSetNewInteriorPhotoUrl, onAddInteriorPhoto, onRemoveInteriorPhoto, onUploadInteriorPhoto,
 }: RowProps) {
   const price = l.source === 'au_stock' && l.au_price_aud
@@ -756,7 +758,7 @@ function ListingRow({
               <button onClick={onAddPhoto} className="px-4 py-2 bg-ocean text-white text-sm rounded-lg hover:bg-ocean shrink-0">
                 Add URL
               </button>
-              <PhotoUploadButton onUploaded={onUploadPhoto} />
+              <PhotoUploadButton onUploaded={onUploadPhoto} onUploadingChange={onUploadingChange} />
             </div>
           </div>
 
@@ -808,8 +810,8 @@ function ListingRow({
 
           {/* Desktop buttons */}
           <div className="hidden md:flex gap-3">
-            <button onClick={onSave} disabled={saving} className="btn-primary btn-sm disabled:opacity-50">
-              {saving ? 'Saving…' : 'Save Changes'}
+            <button onClick={onSave} disabled={saving || photoUploading} className="btn-primary btn-sm disabled:opacity-50">
+              {saving ? 'Saving…' : photoUploading ? '⏳ Photos uploading…' : 'Save Changes'}
             </button>
             <button onClick={onCancelEdit} className="btn-secondary btn-sm">Cancel</button>
             <button
@@ -835,7 +837,7 @@ function ListingRow({
           <div className="flex gap-2">
             <button
               onClick={onSave}
-              disabled={saving}
+              disabled={saving || photoUploading}
               className="flex-1 py-3 bg-green-800 text-white font-semibold rounded-xl disabled:opacity-50 flex items-center justify-center gap-2 text-base"
             >
               {saving ? (
@@ -843,7 +845,7 @@ function ListingRow({
                   <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin shrink-0" />
                   Saving…
                 </>
-              ) : 'Save Changes'}
+              ) : photoUploading ? '⏳ Photos uploading…' : 'Save Changes'}
             </button>
             <button
               onClick={onCancelEdit}
@@ -871,6 +873,7 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [bulkWorking, setBulkWorking] = useState(false)
   const [translatingId, setTranslatingId] = useState<string | null>(null)
+  const [photoUploading, setPhotoUploading] = useState(false)
 
   const allSelected = listings.length > 0 && listings.every(l => selected.has(l.id))
   const toggleAll = () =>
@@ -1108,6 +1111,8 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
               onMovePhoto={movePhoto}
               onClearPhotos={clearPhotos}
               onUploadPhoto={uploadPhoto}
+              onUploadingChange={setPhotoUploading}
+              photoUploading={photoUploading}
               newInteriorPhotoUrl={newInteriorPhotoUrl}
               onSetNewInteriorPhotoUrl={setNewInteriorPhotoUrl}
               onAddInteriorPhoto={addInteriorPhoto}

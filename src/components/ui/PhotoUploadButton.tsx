@@ -39,9 +39,11 @@ function uploadWithProgress(
 
 export default function PhotoUploadButton({
   onUploaded,
+  onUploadingChange,
   label = '📁 Upload',
 }: {
   onUploaded: (url: string) => void
+  onUploadingChange?: (uploading: boolean) => void
   label?: string
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -51,6 +53,7 @@ export default function PhotoUploadButton({
     const files = Array.from(e.target.files ?? [])
     if (!files.length) return
 
+    onUploadingChange?.(true)
     for (const file of files) {
       setProgress(0)
       try {
@@ -62,6 +65,7 @@ export default function PhotoUploadButton({
     }
 
     setProgress(null)
+    onUploadingChange?.(false)
     e.target.value = ''
   }
 
