@@ -7,6 +7,8 @@ export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData()
     const files = formData.getAll('file') as File[]
+    const addedBy = formData.get('added_by') as string | null
+    const addedByRole = formData.get('added_by_role') as string | null
 
     if (!files.length) return NextResponse.json({ error: 'No files provided' }, { status: 400 })
 
@@ -51,6 +53,8 @@ export async function POST(req: NextRequest) {
           auction_sheet_url: pdfUrl,
           auction_result: 'pending',
           photos: [],
+          ...(addedBy && { added_by: addedBy }),
+          ...(addedByRole && { added_by_role: addedByRole }),
         })
         .select('id')
         .single()

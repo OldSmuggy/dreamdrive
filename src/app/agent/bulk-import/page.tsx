@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { createSupabaseBrowser } from '@/lib/supabase'
 
 interface DraftListing {
   id: string
@@ -35,6 +36,11 @@ export default function BulkImportPage() {
   const [uploadError, setUploadError] = useState('')
   const [drafts, setDrafts] = useState<DraftListing[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [userId, setUserId] = useState<string | null>(null)
+
+  useEffect(() => {
+    createSupabaseBrowser().auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null))
+  }, [])
 
   const handleUpload = async (files: FileList) => {
     setUploadError('')
@@ -46,6 +52,8 @@ export default function BulkImportPage() {
       try {
         const formData = new FormData()
         formData.append('file', file)
+        if (userId) formData.append('added_by', userId)
+        formData.append('added_by_role', 'buyer_agent')
 
         const res = await fetch('/api/listings/extract-pdf', { method: 'POST', body: formData })
         const data = await res.json()
