@@ -51,34 +51,25 @@ export async function GET(
     const matchingUsers: { id: string; email: string; name: string | null; source: string }[] = []
 
     if (matchingUserIds.size > 0) {
-      const { data: users } = await supabase
-        .from('auth_user_emails')
-        .select('id, email')
-
-      // Fallback: query auth.users directly via admin
-      const { data: authUsers } = await supabase.rpc('get_user_emails', {
-        user_ids: Array.from(matchingUserIds),
-      }).catch(() => ({ data: null }))
-
-      // If RPC not available, get from auth.users table
-      if (!authUsers) {
-        for (const uid of matchingUserIds) {
+      for (const uid of matchingUserIds) {
+        try {
           const { data: { user } } = await supabase.auth.admin.getUserById(uid)
-          if (user?.email) {
-            // Don't include admins/agents
-            const { data: profile } = await supabase
-              .from('user_profiles')
-              .select('role, name')
-              .eq('id', uid)
-              .maybeSingle()
-            if (profile?.role === 'admin' || profile?.role === 'buyer_agent') continue
-            matchingUsers.push({
-              id: uid,
-              email: user.email,
-              name: profile?.name ?? null,
-              source: 'saved_van',
-            })
-          }
+          if (!user?.email) continue
+          // Don't include admins/agents
+          const { data: profile } = await supabase
+            .from('user_profiles')
+            .select('role, name')
+            .eq('id', uid)
+            .maybeSingle()
+          if (profile?.role === 'admin' || profile?.role === 'buyer_agent') continue
+          matchingUsers.push({
+            id: uid,
+            email: user.email,
+            name: profile?.name ?? null,
+            source: 'saved_van',
+          })
+        } catch {
+          // Skip users we can't look up
         }
       }
     }
