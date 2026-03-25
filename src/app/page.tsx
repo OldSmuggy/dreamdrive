@@ -176,7 +176,7 @@ export default async function HomePage() {
             <p className="text-sand text-sm font-semibold tracking-widest uppercase mb-4">The Team Behind It</p>
             <h2 className="text-4xl mb-4 font-bold">Two blokes. Two businesses. One platform.</h2>
             <p className="text-gray-400 text-lg max-w-2xl mx-auto leading-relaxed">
-              Bare Camper exists because two Aussie businesses kept running into the same problem from different angles — people overpaying, getting bad advice, or making expensive mistakes building campervans.
+              Australia has a campervan supply problem. Great vans exist — they&apos;re just in Japan. And the best fiberglass work in the country has been happening in one Brisbane factory for 25 years. Bare Camper brings both together to get more vans on the road and solve the supply issue.
             </p>
           </div>
           <div className="grid md:grid-cols-2 gap-12 mt-12">
@@ -244,7 +244,7 @@ export default async function HomePage() {
             <a href="https://wa.me/61432182892?text=Hi!%20I'm%20interested%20in%20a%20campervan%20from%20Bare%20Camper." className="btn-primary text-base px-8 py-4" target="_blank" rel="noopener noreferrer">Book a Free Chat</a>
           </div>
           <p className="mt-10 text-gray-400 text-sm">
-            <a href="mailto:jared@dreamdrive.life" className="text-sand hover:text-sand-light">jared@dreamdrive.life</a>
+            <a href="mailto:hello@barecamper.com.au" className="text-sand hover:text-sand-light">hello@barecamper.com.au</a>
             {' · '}
             <a href="tel:0432182892" className="text-sand hover:text-sand-light">0432 182 892</a>
           </p>
@@ -312,9 +312,9 @@ const PATHS: { image: string; tag: string; name: string; desc: string; tags: str
     tag: 'Just give me standing room.',
     name: 'The Van + The Roof',
     desc: "You've got the skills and the vision — you just need the fiberglass done right. We cut the roof, fit a professional pop top or hi-top, and hand it back ready for your build. No compromise on the shell. What you do inside is up to you — and if you want our DIY kits at a bundle price, they're there when you need them.",
-    tags: 'Pop top from $11,900 inc GST | 10-day turnaround | DIY kits at bundle pricing',
+    tags: 'From $13,090 inc GST | 10-day turnaround | Pop top or hi-top',
     href: '/pop-top',
-    cta: 'See roof options',
+    cta: 'See roof conversions',
     highlight: true,
   },
   {
