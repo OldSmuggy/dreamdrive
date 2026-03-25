@@ -23,6 +23,7 @@ interface DraftListing {
   bid_no: string
   kaijo_code: string
   auction_date: string
+  auction_time: string
   saving: boolean
   saved: boolean
   error: string
@@ -77,6 +78,7 @@ export default function BulkImportPage() {
           bid_no: '',
           kaijo_code: '',
           auction_date: '',
+          auction_time: '',
           saving: false,
           saved: false,
           error: '',
@@ -120,6 +122,9 @@ export default function BulkImportPage() {
       if (draft.bid_no) payload.bid_no = draft.bid_no
       if (draft.kaijo_code) payload.kaijo_code = draft.kaijo_code
       if (draft.auction_date) payload.auction_date = draft.auction_date
+      if (draft.auction_date && draft.auction_time) {
+        payload.auction_time = new Date(`${draft.auction_date}T${draft.auction_time}:00+09:00`).toISOString()
+      }
 
       const res = await fetch(`/api/listings/${draft.id}`, {
         method: 'PATCH',
@@ -227,72 +232,65 @@ export default function BulkImportPage() {
               {/* Form fields */}
               <div className="lg:w-1/2 h-full overflow-y-auto p-4 space-y-3">
                 <div className="grid grid-cols-2 gap-3">
+
+                  {/* ── Auction Info (top — fill first) ── */}
+                  <div className="col-span-2 bg-amber-50 rounded-lg p-3 -mx-0.5">
+                    <p className="text-xs font-bold text-amber-700 uppercase tracking-wider mb-2">Auction Info</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <FormField label="Bid / Lot No.">
+                        <input className={inputCls} value={draft.bid_no}
+                          onChange={e => updateDraft(draft.id, 'bid_no', e.target.value)} placeholder="Y3502K01" />
+                      </FormField>
+                      <FormField label="Auction Site">
+                        <input className={inputCls} value={draft.kaijo_code}
+                          onChange={e => updateDraft(draft.id, 'kaijo_code', e.target.value)} placeholder="e.g. Tokyo" />
+                      </FormField>
+                      <FormField label="Auction Date">
+                        <input className={inputCls} type="date" value={draft.auction_date}
+                          onChange={e => updateDraft(draft.id, 'auction_date', e.target.value)} />
+                      </FormField>
+                      <FormField label="Auction Time (JST)">
+                        <input className={inputCls} type="time" value={draft.auction_time}
+                          onChange={e => updateDraft(draft.id, 'auction_time', e.target.value)} />
+                      </FormField>
+                    </div>
+                  </div>
+
+                  {/* ── Vehicle Details ── */}
                   <FormField label="Model Name" colSpan={2}>
-                    <input
-                      className={inputCls}
-                      value={draft.model_name}
-                      onChange={e => updateDraft(draft.id, 'model_name', e.target.value)}
-                      placeholder="e.g. TOYOTA HIACE VAN 5D 4WD DX"
-                    />
+                    <input className={inputCls} value={draft.model_name}
+                      onChange={e => updateDraft(draft.id, 'model_name', e.target.value)} placeholder="e.g. TOYOTA HIACE VAN 5D 4WD DX" />
                   </FormField>
                   <FormField label="Grade">
-                    <input
-                      className={inputCls}
-                      value={draft.grade}
-                      onChange={e => updateDraft(draft.id, 'grade', e.target.value)}
-                      placeholder="e.g. DX GL Package"
-                    />
+                    <input className={inputCls} value={draft.grade}
+                      onChange={e => updateDraft(draft.id, 'grade', e.target.value)} placeholder="e.g. DX GL Package" />
                   </FormField>
                   <FormField label="Chassis Code">
-                    <input
-                      className={inputCls}
-                      value={draft.chassis_code}
-                      onChange={e => updateDraft(draft.id, 'chassis_code', e.target.value)}
-                      placeholder="e.g. GDH206V"
-                    />
+                    <input className={inputCls} value={draft.chassis_code}
+                      onChange={e => updateDraft(draft.id, 'chassis_code', e.target.value)} placeholder="e.g. GDH206V" />
                   </FormField>
                   <FormField label="Year">
-                    <input
-                      className={inputCls}
-                      type="number"
-                      value={draft.model_year}
-                      onChange={e => updateDraft(draft.id, 'model_year', e.target.value)}
-                      placeholder="2023"
-                    />
+                    <input className={inputCls} type="number" value={draft.model_year}
+                      onChange={e => updateDraft(draft.id, 'model_year', e.target.value)} placeholder="2023" />
                   </FormField>
                   <FormField label="Mileage (km)">
-                    <input
-                      className={inputCls}
-                      type="number"
-                      value={draft.mileage_km}
-                      onChange={e => updateDraft(draft.id, 'mileage_km', e.target.value)}
-                      placeholder="16000"
-                    />
+                    <input className={inputCls} type="number" value={draft.mileage_km}
+                      onChange={e => updateDraft(draft.id, 'mileage_km', e.target.value)} placeholder="16000" />
                   </FormField>
                   <FormField label="Colour">
-                    <input
-                      className={inputCls}
-                      value={draft.body_colour}
-                      onChange={e => updateDraft(draft.id, 'body_colour', e.target.value)}
-                      placeholder="White"
-                    />
+                    <input className={inputCls} value={draft.body_colour}
+                      onChange={e => updateDraft(draft.id, 'body_colour', e.target.value)} placeholder="White" />
                   </FormField>
                   <FormField label="Inspection">
-                    <select
-                      className={inputCls}
-                      value={draft.inspection_score}
-                      onChange={e => updateDraft(draft.id, 'inspection_score', e.target.value)}
-                    >
+                    <select className={inputCls} value={draft.inspection_score}
+                      onChange={e => updateDraft(draft.id, 'inspection_score', e.target.value)}>
                       <option value="">--</option>
                       {INSPECTION_SCORES.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                   </FormField>
                   <FormField label="Transmission">
-                    <select
-                      className={inputCls}
-                      value={draft.transmission}
-                      onChange={e => updateDraft(draft.id, 'transmission', e.target.value)}
-                    >
+                    <select className={inputCls} value={draft.transmission}
+                      onChange={e => updateDraft(draft.id, 'transmission', e.target.value)}>
                       <option value="">--</option>
                       <option value="IA">IA (CVT)</option>
                       <option value="AT">AT (Auto)</option>
@@ -300,57 +298,20 @@ export default function BulkImportPage() {
                     </select>
                   </FormField>
                   <FormField label="Drive">
-                    <select
-                      className={inputCls}
-                      value={draft.drive}
-                      onChange={e => updateDraft(draft.id, 'drive', e.target.value)}
-                    >
+                    <select className={inputCls} value={draft.drive}
+                      onChange={e => updateDraft(draft.id, 'drive', e.target.value)}>
                       <option value="">--</option>
                       <option value="2WD">2WD</option>
                       <option value="4WD">4WD</option>
                     </select>
                   </FormField>
                   <FormField label="Engine (cc)">
-                    <input
-                      className={inputCls}
-                      type="number"
-                      value={draft.displacement_cc}
-                      onChange={e => updateDraft(draft.id, 'displacement_cc', e.target.value)}
-                      placeholder="2800"
-                    />
+                    <input className={inputCls} type="number" value={draft.displacement_cc}
+                      onChange={e => updateDraft(draft.id, 'displacement_cc', e.target.value)} placeholder="2800" />
                   </FormField>
                   <FormField label="Start Price (¥)">
-                    <input
-                      className={inputCls}
-                      type="number"
-                      value={draft.start_price_jpy}
-                      onChange={e => updateDraft(draft.id, 'start_price_jpy', e.target.value)}
-                      placeholder="2800000"
-                    />
-                  </FormField>
-                  <FormField label="Bid No.">
-                    <input
-                      className={inputCls}
-                      value={draft.bid_no}
-                      onChange={e => updateDraft(draft.id, 'bid_no', e.target.value)}
-                      placeholder="Y3502K01"
-                    />
-                  </FormField>
-                  <FormField label="Auction Site">
-                    <input
-                      className={inputCls}
-                      value={draft.kaijo_code}
-                      onChange={e => updateDraft(draft.id, 'kaijo_code', e.target.value)}
-                      placeholder="e.g. Tokyo"
-                    />
-                  </FormField>
-                  <FormField label="Auction Date">
-                    <input
-                      className={inputCls}
-                      type="date"
-                      value={draft.auction_date}
-                      onChange={e => updateDraft(draft.id, 'auction_date', e.target.value)}
-                    />
+                    <input className={inputCls} type="number" value={draft.start_price_jpy}
+                      onChange={e => updateDraft(draft.id, 'start_price_jpy', e.target.value)} placeholder="2800000" />
                   </FormField>
                 </div>
 
