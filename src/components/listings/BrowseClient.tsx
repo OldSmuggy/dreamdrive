@@ -265,108 +265,69 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
   // ── Shared filter panel content ──
   const colourEntries = Object.entries(colourCounts).sort((a, b) => b[1] - a[1])
 
+  const pillCls = (active: boolean) =>
+    `px-3 py-1.5 text-sm font-medium rounded-full border transition-colors ${
+      active ? 'bg-charcoal text-white border-charcoal' : 'bg-white text-charcoal border-gray-300 hover:border-charcoal'
+    }`
+
+  const selectCls = 'border border-gray-300 rounded-full px-3 py-1.5 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-ocean'
+
   const filterPanelContent = (
     <>
-      {/* Row 1 — Location */}
-      <div className="flex flex-wrap gap-2 items-center">
-        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider w-20 shrink-0">Location</span>
-        <div className="flex flex-wrap gap-1.5">
-          {LOCATION_FILTERS.map(f => (
-            <button key={f.value} onClick={() => setLocationFilter(f.value)}
-              className={`px-4 py-1.5 text-sm font-medium rounded-full border transition-colors ${
-                locationFilter === f.value
-                  ? 'bg-charcoal text-white border-charcoal'
-                  : 'bg-white text-charcoal border-charcoal hover:bg-cream'
-              }`}>
-              {f.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Row 2 — Source */}
-      <div className="flex flex-wrap gap-2 items-center">
-        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider w-20 shrink-0">Source</span>
-        <div className="flex flex-wrap gap-1.5">
+      {/* Row 1 — Source · Drive · Size pills */}
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+        {/* Source */}
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs font-bold text-gray-400 uppercase tracking-wider mr-1">Source</span>
           {SOURCE_FILTERS.map(f => (
-            <button key={f.value} onClick={() => setSourceFilter(f.value)}
-              className={`px-4 py-1.5 text-sm font-medium rounded-full border transition-colors ${
-                sourceFilter === f.value
-                  ? 'bg-charcoal text-white border-charcoal'
-                  : 'bg-white text-charcoal border-charcoal hover:bg-cream'
-              }`}>
+            <button key={f.value} onClick={() => setSourceFilter(f.value)} className={pillCls(sourceFilter === f.value)}>
+              {f.label}
+            </button>
+          ))}
+        </div>
+        {/* Drive */}
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs font-bold text-gray-400 uppercase tracking-wider mr-1">Drive</span>
+          {DRIVE_FILTERS.map(f => (
+            <button key={f.value} onClick={() => setDriveFilterSingle(f.value)} className={pillCls(driveFilterSingle === f.value)}>
+              {f.label}
+            </button>
+          ))}
+        </div>
+        {/* Size */}
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs font-bold text-gray-400 uppercase tracking-wider mr-1">Size</span>
+          {SIZE_FILTERS.map(f => (
+            <button key={f.value} onClick={() => setSizeFilter(f.value)} className={pillCls(sizeFilter === f.value)}>
               {f.label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Row 3 — Drive + Size */}
-      <div className="flex flex-wrap gap-6 items-center">
-        <div className="flex flex-wrap gap-2 items-center">
-          <span className="text-xs font-bold text-gray-400 uppercase tracking-wider w-20 shrink-0">Drive</span>
-          <div className="flex flex-wrap gap-1.5">
-            {DRIVE_FILTERS.map(f => (
-              <button key={f.value} onClick={() => setDriveFilterSingle(f.value)}
-                className={`px-4 py-1.5 text-sm font-medium rounded-full border transition-colors ${
-                  driveFilterSingle === f.value
-                    ? 'bg-charcoal text-white border-charcoal'
-                    : 'bg-white text-charcoal border-charcoal hover:bg-cream'
-                }`}>
-                {f.label}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-2 items-center">
-          <span className="text-xs font-bold text-gray-400 uppercase tracking-wider w-12 shrink-0">Size</span>
-          <div className="flex flex-wrap gap-1.5">
-            {SIZE_FILTERS.map(f => (
-              <button key={f.value} onClick={() => setSizeFilter(f.value)}
-                className={`px-4 py-1.5 text-sm font-medium rounded-full border transition-colors ${
-                  sizeFilter === f.value
-                    ? 'bg-charcoal text-white border-charcoal'
-                    : 'bg-white text-charcoal border-charcoal hover:bg-cream'
-                }`}>
-                {f.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Row 4 — Type */}
-      <div className="flex flex-wrap gap-2 items-center">
-        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider w-20 shrink-0">Type</span>
-        <div className="flex flex-wrap gap-1.5">
-          {TYPE_FILTERS.map(f => (
-            <button key={f.value} onClick={() => setTypeFilter(f.value)}
-              className={`px-4 py-1.5 text-sm font-medium rounded-full border transition-colors ${
-                typeFilter === f.value
-                  ? 'bg-charcoal text-white border-charcoal'
-                  : 'bg-white text-charcoal border-charcoal hover:bg-cream'
-              }`}>
-              {f.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Row 3 — Model + sort + more filters toggle */}
-      <div className="flex flex-wrap gap-2 items-center">
-        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider w-20 shrink-0">Model</span>
-        <select value={modelFilter} onChange={e => setModelFilter(e.target.value)}
-          className="border border-charcoal text-charcoal rounded-full px-4 py-1.5 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-ocean">
+      {/* Row 2 — Dropdowns + More + Sort */}
+      <div className="flex flex-wrap items-center gap-2">
+        <select value={modelFilter} onChange={e => setModelFilter(e.target.value)} className={selectCls}>
           {MODEL_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </select>
+        <select value={engineFilter} onChange={e => setEngineFilter(e.target.value)} className={selectCls}>
+          <option value="">All Engines</option>
+          <option value="diesel">Diesel 2.8L</option>
+          <option value="petrol">Petrol 2.7L</option>
+        </select>
+        <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className={selectCls}>
+          {TYPE_FILTERS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </select>
+        <select value={locationFilter} onChange={e => setLocationFilter(e.target.value)} className={selectCls}>
+          {LOCATION_FILTERS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
 
         <div className="ml-auto flex items-center gap-2">
           <button onClick={() => setShowMore(v => !v)}
             className="text-xs text-gray-500 hover:text-gray-800 font-medium underline-offset-2 hover:underline">
-            {showMore ? 'Hide filters' : 'More filters'}
+            {showMore ? 'Less ▲' : 'More ▼'}
           </button>
-          <select value={sortBy} onChange={e => setSortBy(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm bg-white text-gray-700">
+          <select value={sortBy} onChange={e => setSortBy(e.target.value)} className={selectCls}>
             <option value="default">Sort: Default</option>
             <option value="price_asc">Price: Low → High</option>
             <option value="price_desc">Price: High → Low</option>
@@ -376,109 +337,55 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
         </div>
       </div>
 
-      {/* Row 4 — Engine Type */}
-      <div className="flex flex-wrap gap-2 items-center">
-        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider w-20 shrink-0">Engine</span>
-        <div className="flex flex-wrap gap-1.5">
-          {ENGINE_FILTERS.map(f => (
-            <button key={f.value} onClick={() => setEngineFilter(f.value)}
-              className={`px-4 py-1.5 text-sm font-medium rounded-full border transition-colors ${
-                engineFilter === f.value
-                  ? 'bg-charcoal text-white border-charcoal'
-                  : 'bg-white text-charcoal border-charcoal hover:bg-cream'
-              }`}>
-              {f.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* More filters (collapsible) */}
+      {/* Expandable — Year, Mileage, Price, Colour */}
       {showMore && (
-        <div className="border-t border-gray-100 pt-3 mt-1 space-y-4">
-          <div className="flex flex-wrap gap-6">
-            {/* Drive */}
-            <div>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Drive</p>
-              <div className="flex gap-2">
-                {['2WD', '4WD'].map(d => (
-                  <button key={d} onClick={() => toggleDrive(d)}
-                    className={`px-3 py-1 text-sm rounded-full border transition-colors ${
-                      driveFilter.includes(d) ? 'bg-charcoal text-white border-charcoal' : 'bg-white text-charcoal border-charcoal hover:bg-cream'
-                    }`}>
-                    {d}
-                  </button>
-                ))}
-              </div>
-            </div>
-            {/* Year */}
-            <div>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Year from</p>
-              <input type="number" placeholder="e.g. 2020" value={yearMin}
-                onChange={e => setYearMin(e.target.value)}
-                className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm w-28" />
-            </div>
-            {/* Mileage */}
-            <div>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Max mileage (km)</p>
-              <input type="number" placeholder="e.g. 80000" value={mileageMax}
-                onChange={e => setMileageMax(e.target.value)}
-                className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm w-32" />
-            </div>
-          </div>
-
-          {/* Price Range */}
+        <div className="border-t border-gray-100 pt-3 mt-1 flex flex-wrap gap-6 items-end">
           <div>
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Price Range (AUD)</p>
-            <div className="flex items-center gap-2">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Year from</p>
+            <input type="number" placeholder="e.g. 2020" value={yearMin}
+              onChange={e => setYearMin(e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm w-24" />
+          </div>
+          <div>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Max km</p>
+            <input type="number" placeholder="e.g. 80000" value={mileageMax}
+              onChange={e => setMileageMax(e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm w-28" />
+          </div>
+          <div>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Price (AUD)</p>
+            <div className="flex items-center gap-1.5">
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs">$</span>
                 <input type="number" placeholder="Min" value={minPrice}
                   onChange={e => setMinPrice(e.target.value)}
-                  className="border border-gray-300 rounded-lg pl-7 pr-3 py-1.5 text-sm w-28" />
+                  className="border border-gray-300 rounded-lg pl-6 pr-2 py-1.5 text-sm w-24" />
               </div>
-              <span className="text-gray-400 text-sm">to</span>
+              <span className="text-gray-400 text-xs">–</span>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs">$</span>
                 <input type="number" placeholder="Max" value={maxPrice}
                   onChange={e => setMaxPrice(e.target.value)}
-                  className="border border-gray-300 rounded-lg pl-7 pr-3 py-1.5 text-sm w-28" />
+                  className="border border-gray-300 rounded-lg pl-6 pr-2 py-1.5 text-sm w-24" />
               </div>
             </div>
-            <p className="text-xs text-gray-400 mt-1">Based on current exchange rate estimate</p>
           </div>
-
           {/* Colour */}
           {colourEntries.length > 0 && (
             <div>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Colour</p>
-              <div className="flex flex-wrap gap-2">
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Colour</p>
+              <div className="flex flex-wrap gap-1.5">
                 {colourEntries.map(([colour, count]) => (
-                  <label key={colour} className="flex items-center gap-1.5 cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={colourFilter.includes(colour)}
-                      onChange={() => toggleColour(colour)}
-                      className="sr-only"
-                    />
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-3 py-1 text-sm rounded-full border transition-colors ${
-                        colourFilter.includes(colour)
-                          ? 'bg-charcoal text-white border-charcoal'
-                          : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
-                      }`}
-                    >
-                      <span
-                        className="inline-block w-3 h-3 rounded-full shrink-0"
-                        style={{
-                          backgroundColor: colourDot(colour),
-                          border: colour === 'White' || colourDot(colour) === '#ffffff' ? '1px solid #d1d5db' : 'none',
-                        }}
-                      />
-                      {colour}
-                      <span className={`text-xs ${colourFilter.includes(colour) ? 'text-white/70' : 'text-gray-400'}`}>({count})</span>
-                    </span>
-                  </label>
+                  <button key={colour} onClick={() => toggleColour(colour)}
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-full border transition-colors ${
+                      colourFilter.includes(colour)
+                        ? 'bg-charcoal text-white border-charcoal'
+                        : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
+                    }`}>
+                    <span className="inline-block w-2.5 h-2.5 rounded-full shrink-0"
+                      style={{ backgroundColor: colourDot(colour), border: colour === 'White' ? '1px solid #d1d5db' : 'none' }} />
+                    {colour} <span className="opacity-60">({count})</span>
+                  </button>
                 ))}
               </div>
             </div>
