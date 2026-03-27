@@ -4,8 +4,8 @@ import Footer from '@/components/ui/Footer'
 import { generateMeta } from '@/lib/seo'
 
 export const metadata = generateMeta({
-  title: 'How Pricing Works — Bare Camper',
-  description: 'No dealer markup. No hidden fees. Just the real cost of getting a quality Hiace to Australia. Transparent breakdown of every import cost.',
+  title: 'Toyota Hiace Import Costs Australia — What You\'ll Actually Pay | Bare Camper',
+  description: 'Full breakdown of every cost to import a Toyota Hiace from Japan to Australia. Auction price, shipping, GST, compliance — no surprises. Includes interactive cost calculator.',
   url: '/import-costs',
 })
 

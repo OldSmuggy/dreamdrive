@@ -12,8 +12,8 @@ import VehicleSelector from '@/components/ui/VehicleSelector'
 import type { Listing } from '@/types'
 
 export const metadata = generateMeta({
-  title: 'Bare Camper — Just What You Need | Toyota Hiace Campervans',
-  description: "A quality Hiace from Japan. Professional fiberglass when you're ready. A full build if you want it. Nothing you don't. Australia's campervan platform by Dream Drive & DIY RV Solutions.",
+  title: 'Import Japanese Hiace Vans to Australia | Bare Camper',
+  description: "Australia's only end-to-end Hiace import service. Source direct from Japanese auction, shipped and complied to your door, then convert it — pop top, hi-top or full turnkey. By Dream Drive & DIY RV Solutions.",
   url: '/',
 })
 

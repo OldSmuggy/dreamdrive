@@ -21,7 +21,13 @@ const NAV: NavItem[] = [
   },
   { label: 'Roof Conversions', href: '/pop-top' },
   { label: 'DIY', href: '/diy' },
-  { label: 'Pricing', href: '/import-costs' },
+  {
+    label: 'Pricing',
+    dropdown: [
+      { label: 'How Pricing Works', href: '/import-costs' },
+      { label: 'Import Guide', href: '/import-hiace-australia' },
+    ],
+  },
   { label: 'About', href: '/about' },
 ]
 
