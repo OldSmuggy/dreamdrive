@@ -162,7 +162,8 @@ export default function ImportHiaceGuide() {
             </div>
           </div>
           <p className="text-gray-500 text-sm mt-4">
-            For a campervan build, the <strong className="text-charcoal">H200 LWB or SLWB</strong> is the go-to. It&apos;s what our pop top and hi-top conversions are designed around and where you get the best value for a complete build.
+            For a campervan build, the <strong className="text-charcoal">H200 LWB or SLWB</strong> is the go-to. It&apos;s what our pop top and hi-top conversions are designed around and where you get the best value for a complete build.{' '}
+            <Link href="/h200-vs-h300-hiace" className="text-ocean underline">See our full H200 vs H300 comparison →</Link>
           </p>
         </section>
 
