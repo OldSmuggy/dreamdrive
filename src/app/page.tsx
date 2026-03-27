@@ -322,9 +322,9 @@ function FeaturedVanCard({ listing }: { listing: Listing }) {
 // ── Static data ───────────────────────────────────────────────────────────────
 const PATHS: { image: string; tag: string; name: string; desc: string; tags: string; href: string; cta: string; highlight?: boolean }[] = [
   {
-    image: '/images/path-source.jpg',
+    image: '/images/diy-basevan.jpg',
     tag: 'Just the van.',
-    name: 'The Van',
+    name: 'Quality Conversion Ready Van',
     desc: "A quality Toyota Hiace imported direct from Japan, or sourced locally. We handle the auction, shipping, compliance, and rego — you get a clean van delivered to your door. Drive it as a people mover, start a slow build in the garage, or just sit on it until you're ready.",
     tags: 'From ~$25k | Japan: 6–10 weeks | Local: ready now',
     href: '/browse',

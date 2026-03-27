@@ -73,7 +73,7 @@ function VanCard({ v, isHovered, isSiblingHovered, onHover, onLeave }: {
           alt={v.label}
           fill
           className="object-contain"
-          sizes="(max-width: 768px) 25vw, 260px"
+          sizes="(max-width: 768px) 44vw, 320px"
         />
       </div>
       <span
@@ -91,7 +91,7 @@ function VanCard({ v, isHovered, isSiblingHovered, onHover, onLeave }: {
   if (v.comingSoon) {
     return (
       <div
-        className="flex flex-col items-center flex-shrink-0 w-[38%] sm:w-[30%] md:w-auto md:flex-1 md:max-w-[260px] relative cursor-default snap-start"
+        className="flex flex-col items-center flex-shrink-0 w-[44%] sm:w-[36%] md:w-auto md:flex-1 md:max-w-[320px] relative cursor-default snap-start"
         style={sharedStyle}
         onMouseEnter={onHover}
         onMouseLeave={onLeave}
@@ -104,7 +104,7 @@ function VanCard({ v, isHovered, isSiblingHovered, onHover, onLeave }: {
   return (
     <Link
       href={v.href}
-      className="flex flex-col items-center flex-shrink-0 w-[38%] sm:w-[30%] md:w-auto md:flex-1 md:max-w-[260px] relative snap-start"
+      className="flex flex-col items-center flex-shrink-0 w-[44%] sm:w-[36%] md:w-auto md:flex-1 md:max-w-[320px] relative snap-start"
       style={sharedStyle}
       onMouseEnter={onHover}
       onMouseLeave={onLeave}
