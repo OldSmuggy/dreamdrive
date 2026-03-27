@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import Link from 'next/link'
 import Image from 'next/image'
 import { createSupabaseServer } from '@/lib/supabase-server'
@@ -7,6 +8,7 @@ import { generateMeta } from '@/lib/seo'
 import type { Metadata } from 'next'
 import AuctionBanner from '@/components/ui/AuctionBanner'
 import Footer from '@/components/ui/Footer'
+import VehicleSelector from '@/components/ui/VehicleSelector'
 import type { Listing } from '@/types'
 
 export const metadata = generateMeta({
@@ -77,32 +79,41 @@ export default async function HomePage() {
       />
       <AuctionBanner />
 
-      {/* ─── 1. HERO ─────────────────────────────────────── */}
-      <section className="relative bg-charcoal text-white overflow-hidden">
-        <Image
-          src="/images/og-image.jpg"
-          alt="Bare Camper — Toyota Hiace campervans"
-          fill
-          priority
-          className="object-cover"
-          sizes="100vw"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-charcoal/70 via-charcoal/50 to-charcoal/80" />
+      {/* ─── 1. HERO — VIDEO + BLACK TEXT ──────────────────── */}
+      <section className="relative bg-cream overflow-visible">
+        <div className="max-w-6xl mx-auto px-4 pt-8 md:pt-12">
+          {/* Tagline */}
+          <div className="text-center mb-6 md:mb-8">
+            <h1 className="text-4xl md:text-6xl lg:text-7xl leading-tight mb-3 text-charcoal font-bold">
+              Just what you need.
+            </h1>
+            <p className="text-base md:text-lg text-gray-500 max-w-lg mx-auto leading-relaxed">
+              Toyota Hiace campervans — sourced from Japan, built in Brisbane.
+            </p>
+          </div>
 
-        <div className="relative max-w-6xl mx-auto px-4 py-28 md:py-40 z-10">
-          <p className="text-sand text-sm font-semibold tracking-widest uppercase mb-4">Bare Camper</p>
-          <h1 className="text-5xl md:text-7xl leading-tight mb-6 text-white font-bold" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
-            Just what<br />you need.
-          </h1>
-          <p className="text-lg md:text-xl max-w-xl mb-10 leading-relaxed" style={{ color: 'rgba(255,255,255,0.85)', textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
-            A quality Hiace from Japan. Professional fiberglass when you&apos;re ready. A full build if you want it. Nothing you don&apos;t.
-          </p>
-          <div className="flex flex-wrap gap-4">
-            <Link href="/browse" className="btn-ghost text-base px-8 py-4">Browse Vans</Link>
-            <a href="https://wa.me/61432182892?text=Hi!%20I'm%20interested%20in%20a%20campervan%20from%20Bare%20Camper." className="btn-primary text-base px-8 py-4" target="_blank" rel="noopener noreferrer">Talk to Us</a>
+          {/* Video */}
+          <div className="relative w-full max-w-4xl mx-auto rounded-2xl overflow-hidden shadow-xl">
+            <video
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="w-full h-auto"
+              poster="/images/og-image.jpg"
+            >
+              <source src="/images/hero-spin.mp4" type="video/mp4" />
+            </video>
           </div>
         </div>
+
+        {/* Vehicle selector below video */}
+        <div className="relative z-20 mt-8 -mb-16 md:-mb-20">
+          <VehicleSelector />
+        </div>
       </section>
+      {/* Spacer to account for overlap */}
+      <div className="h-16 md:h-20" />
 
       {/* ─── 2. THE CONCEPT ───────────────────────────────── */}
       <section className="max-w-4xl mx-auto px-4 py-20 text-center">
