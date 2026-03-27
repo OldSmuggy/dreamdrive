@@ -54,21 +54,66 @@ export default async function HomePage() {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://barecamper.com.au'
   const orgJsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'AutoDealer',
-    name: 'Bare Camper',
-    description: "Australia's campervan platform. Source your Hiace from Japan, get professional fiberglass, or go full turnkey. By Dream Drive & DIY RV Solutions.",
-    url: baseUrl,
-    telephone: '0432182892',
-    address: {
-      '@type': 'PostalAddress',
-      streetAddress: '1/10 Jones Road',
-      addressLocality: 'Capalaba',
-      addressRegion: 'QLD',
-      postalCode: '4157',
-      addressCountry: 'AU',
-    },
-    openingHours: 'Mo-Fr 10:00-16:00',
-    priceRange: '$$',
+    '@graph': [
+      {
+        '@type': ['AutoDealer', 'LocalBusiness'],
+        '@id': `${baseUrl}/#business`,
+        name: 'Bare Camper',
+        description: "Australia's only end-to-end Hiace import service. Source direct from Japanese auction, shipped and complied to your door, then convert it — pop top, hi-top or full turnkey. By Dream Drive & DIY RV Solutions.",
+        url: baseUrl,
+        telephone: '+61432182892',
+        email: 'hello@barecamper.com.au',
+        address: {
+          '@type': 'PostalAddress',
+          streetAddress: '1/10 Jones Road',
+          addressLocality: 'Capalaba',
+          addressRegion: 'QLD',
+          postalCode: '4157',
+          addressCountry: 'AU',
+        },
+        geo: {
+          '@type': 'GeoCoordinates',
+          latitude: -27.527,
+          longitude: 153.207,
+        },
+        openingHoursSpecification: {
+          '@type': 'OpeningHoursSpecification',
+          dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+          opens: '09:00',
+          closes: '17:00',
+        },
+        areaServed: {
+          '@type': 'Country',
+          name: 'Australia',
+        },
+        priceRange: '$$$',
+        knowsAbout: [
+          'Toyota Hiace import Australia',
+          'Japanese vehicle import',
+          'Campervan conversion',
+          'RAWS compliance',
+          'Pop top conversion',
+          'Hi-top conversion',
+        ],
+        sameAs: [
+          'https://www.facebook.com/barecamper',
+          'https://www.instagram.com/barecamper',
+        ],
+      },
+      {
+        '@type': 'WebSite',
+        '@id': `${baseUrl}/#website`,
+        url: baseUrl,
+        name: 'Bare Camper',
+        description: "Australia's only end-to-end Hiace import and campervan conversion service.",
+        publisher: { '@id': `${baseUrl}/#business` },
+        potentialAction: {
+          '@type': 'SearchAction',
+          target: { '@type': 'EntryPoint', urlTemplate: `${baseUrl}/browse?q={search_term_string}` },
+          'query-input': 'required name=search_term_string',
+        },
+      },
+    ],
   }
 
   return (
