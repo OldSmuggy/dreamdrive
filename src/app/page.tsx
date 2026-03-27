@@ -88,7 +88,7 @@ export default async function HomePage() {
             Just what you need.
           </h1>
           <p className="text-sm text-gray-500">
-            Toyota Hiace campervans — sourced from Japan, built in Brisbane.
+            Auction-graded vans. Verified kms. Fixed price. Professional roof conversion. Ready for your build.
           </p>
         </div>
 
@@ -111,7 +111,7 @@ export default async function HomePage() {
               Just what you need.
             </h1>
             <p className="text-base text-gray-600 max-w-md mx-auto leading-relaxed">
-              Toyota Hiace campervans — sourced from Japan, built in Brisbane.
+              Auction-graded vans. Verified kms. Fixed price. Professional roof conversion. Ready for your build.
             </p>
           </div>
 
