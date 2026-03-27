@@ -79,41 +79,37 @@ export default async function HomePage() {
       />
       <AuctionBanner />
 
-      {/* ─── 1. HERO — VIDEO + BLACK TEXT ──────────────────── */}
+      {/* ─── 1. HERO — FULL-WIDTH VIDEO + BLACK TEXT ─────── */}
       <section className="relative bg-cream overflow-visible">
-        <div className="max-w-6xl mx-auto px-4 pt-8 md:pt-12">
-          {/* Tagline */}
-          <div className="text-center mb-6 md:mb-8">
-            <h1 className="text-4xl md:text-6xl lg:text-7xl leading-tight mb-3 text-charcoal font-bold">
-              Just what you need.
-            </h1>
-            <p className="text-base md:text-lg text-gray-500 max-w-lg mx-auto leading-relaxed">
-              Toyota Hiace campervans — sourced from Japan, built in Brisbane.
-            </p>
-          </div>
+        {/* Tagline */}
+        <div className="text-center px-4 pt-8 md:pt-12 mb-4 md:mb-6">
+          <h1 className="text-4xl md:text-6xl lg:text-7xl leading-tight mb-3 text-charcoal font-bold">
+            Just what you need.
+          </h1>
+          <p className="text-base md:text-lg text-gray-500 max-w-lg mx-auto leading-relaxed">
+            Toyota Hiace campervans — sourced from Japan, built in Brisbane.
+          </p>
+        </div>
 
-          {/* Video */}
-          <div className="relative w-full max-w-4xl mx-auto rounded-2xl overflow-hidden shadow-xl">
-            <video
-              autoPlay
-              muted
-              loop
-              playsInline
-              className="w-full h-auto"
-              poster="/images/og-image.jpg"
-            >
-              <source src="/images/hero-spin.mp4" type="video/mp4" />
-            </video>
-          </div>
+        {/* Full-width video */}
+        <div className="w-full overflow-hidden">
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="w-full h-auto"
+            poster="/images/og-image.jpg"
+          >
+            <source src="/images/hero-spin.mp4" type="video/mp4" />
+          </video>
         </div>
 
         {/* Vehicle selector below video */}
-        <div className="relative z-20 mt-8 -mb-16 md:-mb-20">
+        <div className="relative z-20 bg-charcoal py-6">
           <VehicleSelector />
         </div>
       </section>
-      {/* Spacer to account for overlap */}
-      <div className="h-16 md:h-20" />
 
       {/* ─── 2. THE CONCEPT ───────────────────────────────── */}
       <section className="max-w-4xl mx-auto px-4 py-20 text-center">
