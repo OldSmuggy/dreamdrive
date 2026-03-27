@@ -80,31 +80,49 @@ export default async function HomePage() {
       <AuctionBanner />
 
       {/* ─── 1. HERO — VIDEO WITH OVERLAID TEXT + ICONS ──── */}
-      <section className="relative w-full overflow-hidden">
-        {/* Video background */}
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="w-full h-auto block"
-          poster="/images/hero-poster.jpg"
-        >
-          <source src="/images/hero-spin.mp4" type="video/mp4" />
-        </video>
-
-        {/* Tagline overlaid top-centre */}
-        <div className="absolute top-0 left-0 right-0 z-10 text-center px-4 pt-8 md:pt-14">
-          <h1 className="text-3xl md:text-5xl lg:text-6xl leading-tight mb-2 text-charcoal font-bold">
+      {/* Mobile: stacked layout. Desktop: overlaid */}
+      <section className="relative w-full overflow-hidden bg-white">
+        {/* Mobile tagline — above video */}
+        <div className="md:hidden text-center px-4 pt-6 pb-4">
+          <h1 className="text-3xl leading-tight mb-1 text-charcoal font-bold">
             Just what you need.
           </h1>
-          <p className="text-sm md:text-base text-gray-600 max-w-md mx-auto leading-relaxed">
+          <p className="text-sm text-gray-500">
             Toyota Hiace campervans — sourced from Japan, built in Brisbane.
           </p>
         </div>
 
-        {/* Vehicle selector overlaid at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 z-10 bg-gradient-to-t from-charcoal/90 via-charcoal/60 to-transparent pt-16 pb-4">
+        {/* Video */}
+        <div className="relative w-full">
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="w-full h-auto block"
+            poster="/images/hero-poster.jpg"
+          >
+            <source src="/images/hero-spin.mp4" type="video/mp4" />
+          </video>
+
+          {/* Desktop tagline — overlaid on video */}
+          <div className="hidden md:block absolute top-0 left-0 right-0 z-10 text-center px-4 pt-14">
+            <h1 className="text-5xl lg:text-6xl leading-tight mb-2 text-charcoal font-bold">
+              Just what you need.
+            </h1>
+            <p className="text-base text-gray-600 max-w-md mx-auto leading-relaxed">
+              Toyota Hiace campervans — sourced from Japan, built in Brisbane.
+            </p>
+          </div>
+
+          {/* Desktop icons — overlaid at bottom */}
+          <div className="hidden md:block absolute bottom-0 left-0 right-0 z-10 bg-gradient-to-t from-charcoal/90 via-charcoal/60 to-transparent pt-16 pb-4">
+            <VehicleSelector />
+          </div>
+        </div>
+
+        {/* Mobile icons — below video */}
+        <div className="md:hidden bg-charcoal py-4">
           <VehicleSelector />
         </div>
       </section>
