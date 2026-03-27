@@ -79,34 +79,32 @@ export default async function HomePage() {
       />
       <AuctionBanner />
 
-      {/* ─── 1. HERO — FULL-WIDTH VIDEO + BLACK TEXT ─────── */}
-      <section className="relative bg-cream overflow-visible">
-        {/* Tagline */}
-        <div className="text-center px-4 pt-8 md:pt-12 mb-4 md:mb-6">
-          <h1 className="text-4xl md:text-6xl lg:text-7xl leading-tight mb-3 text-charcoal font-bold">
+      {/* ─── 1. HERO — VIDEO WITH OVERLAID TEXT + ICONS ──── */}
+      <section className="relative w-full overflow-hidden">
+        {/* Video background */}
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="w-full h-auto block"
+          poster="/images/hero-poster.jpg"
+        >
+          <source src="/images/hero-spin.mp4" type="video/mp4" />
+        </video>
+
+        {/* Tagline overlaid top-centre */}
+        <div className="absolute top-0 left-0 right-0 z-10 text-center px-4 pt-8 md:pt-14">
+          <h1 className="text-3xl md:text-5xl lg:text-6xl leading-tight mb-2 text-charcoal font-bold">
             Just what you need.
           </h1>
-          <p className="text-base md:text-lg text-gray-500 max-w-lg mx-auto leading-relaxed">
+          <p className="text-sm md:text-base text-gray-600 max-w-md mx-auto leading-relaxed">
             Toyota Hiace campervans — sourced from Japan, built in Brisbane.
           </p>
         </div>
 
-        {/* Full-width video */}
-        <div className="w-full overflow-hidden">
-          <video
-            autoPlay
-            muted
-            loop
-            playsInline
-            className="w-full h-auto"
-            poster="/images/og-image.jpg"
-          >
-            <source src="/images/hero-spin.mp4" type="video/mp4" />
-          </video>
-        </div>
-
-        {/* Vehicle selector below video */}
-        <div className="relative z-20 bg-charcoal py-6">
+        {/* Vehicle selector overlaid at bottom */}
+        <div className="absolute bottom-0 left-0 right-0 z-10 bg-gradient-to-t from-charcoal/90 via-charcoal/60 to-transparent pt-16 pb-4">
           <VehicleSelector />
         </div>
       </section>
