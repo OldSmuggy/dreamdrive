@@ -77,6 +77,9 @@ export default function ImportHiaceGuide() {
             <Link href="/import-costs" className="bg-white/10 hover:bg-white/20 text-white font-semibold py-2 px-5 rounded-lg transition-colors">
               Cost Calculator
             </Link>
+            <Link href="/hiace-compliance-australia" className="bg-white/10 hover:bg-white/20 text-white font-semibold py-2 px-5 rounded-lg transition-colors">
+              Compliance Guide
+            </Link>
           </div>
         </div>
       </div>
