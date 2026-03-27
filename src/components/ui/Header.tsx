@@ -21,6 +21,7 @@ const NAV: NavItem[] = [
   },
   { label: 'Roof Conversions', href: '/pop-top' },
   { label: 'DIY', href: '/diy' },
+  { label: 'Pricing', href: '/import-costs' },
   { label: 'About', href: '/about' },
 ]
 
