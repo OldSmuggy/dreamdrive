@@ -24,6 +24,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/import-costs`, priority: 0.9 },
     { url: `${baseUrl}/import-hiace-australia`, priority: 0.9 },
     { url: `${baseUrl}/h200-vs-h300-hiace`, priority: 0.9 },
+    { url: `${baseUrl}/toyota-hiace-4x4-australia`, priority: 0.9 },
     { url: `${baseUrl}/about`, priority: 0.8 },
     { url: `${baseUrl}/tama`, priority: 0.8 },
     { url: `${baseUrl}/mana`, priority: 0.8 },

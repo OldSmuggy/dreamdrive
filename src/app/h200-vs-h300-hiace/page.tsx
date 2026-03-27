@@ -214,6 +214,26 @@ export default function H200vsH300() {
           </div>
         </section>
 
+        {/* Related guides */}
+        <section className="mb-14">
+          <h2 className="text-xl font-bold text-charcoal mb-4">More guides</h2>
+          <div className="grid sm:grid-cols-3 gap-3">
+            {[
+              { label: 'Importing a factory 4x4 Hiace', href: '/toyota-hiace-4x4-australia' },
+              { label: 'Full import guide', href: '/import-hiace-australia' },
+              { label: 'Import cost calculator', href: '/import-costs' },
+            ].map(link => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="border border-gray-200 rounded-xl p-4 text-sm font-medium text-ocean hover:bg-ocean/5 transition-colors"
+              >
+                {link.label} →
+              </Link>
+            ))}
+          </div>
+        </section>
+
         {/* CTA */}
         <section className="bg-charcoal rounded-2xl p-8 text-center text-white">
           <h2 className="text-2xl font-bold mb-2">Ready to find your H200?</h2>
