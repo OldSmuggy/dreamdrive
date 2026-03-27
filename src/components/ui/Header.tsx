@@ -12,11 +12,16 @@ type NavItem =
 
 const NAV: NavItem[] = [
   { label: 'Browse Vans', href: '/browse' },
-  { label: 'TAMA', href: '/tama' },
-  { label: 'MANA', href: '/mana' },
+  {
+    label: 'Conversions',
+    dropdown: [
+      { label: 'TAMA — Family Build', href: '/tama' },
+      { label: 'MANA — Couples Build', href: '/mana' },
+    ],
+  },
   { label: 'Roof Conversions', href: '/pop-top' },
   { label: 'DIY', href: '/diy' },
-  { label: 'Finance', href: '/finance' },
+  { label: 'About', href: '/about' },
 ]
 
 export default function Header({ logoUrl }: { logoUrl?: string }) {
