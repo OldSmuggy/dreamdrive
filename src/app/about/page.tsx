@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { generateMeta } from '@/lib/seo'
 
 export const metadata = generateMeta({
@@ -20,6 +21,17 @@ export default function AboutPage() {
           </p>
         </div>
       </section>
+
+      {/* ─── Lifestyle image ─────────────────────────── */}
+      <div className="relative w-full h-72 md:h-96 overflow-hidden">
+        <Image
+          src="/images/about/beach.png"
+          alt="A Hiace campervan parked on the beach — the Bare Camper dream"
+          fill
+          className="object-cover object-center"
+          priority
+        />
+      </div>
 
       {/* ─── How It Works ────────────────────────────── */}
       <section className="py-20">
@@ -53,6 +65,15 @@ export default function AboutPage() {
             <p className="text-gray-500 text-lg max-w-2xl mx-auto leading-relaxed">
               Dream Drive isn&apos;t a broker or a reseller — we&apos;re an import operation with real infrastructure and a full-time team in Japan. That&apos;s what makes this work.
             </p>
+          </div>
+          {/* Real photo of the Japan team */}
+          <div className="relative w-full h-64 md:h-80 rounded-2xl overflow-hidden mb-12">
+            <Image
+              src="/images/about/team.jpg"
+              alt="Dream Drive team at the Komae facility, Japan — two Hiace vans ready for export"
+              fill
+              className="object-cover object-center"
+            />
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {JAPAN_INFRA.map(item => (
@@ -101,6 +122,14 @@ export default function AboutPage() {
           </div>
           <div className="grid md:grid-cols-2 gap-12">
             <div>
+              <div className="relative w-32 h-32 rounded-full overflow-hidden mb-5 border-2 border-sand">
+                <Image
+                  src="/images/about/jared.jpg"
+                  alt="Jared Campion — Dream Drive"
+                  fill
+                  className="object-cover object-top"
+                />
+              </div>
               <h3 className="text-2xl font-bold mb-3 text-sand">Jared Campion — Dream Drive</h3>
               <p className="text-gray-300 leading-relaxed mb-3">
                 Jared&apos;s been importing vehicles from Japan since 2018. His team in Tokyo sources vans from auctions and trusted dealers, and handles everything from bidding to compliance to delivery. He knows which Hiace models actually work for conversions and which ones will give you grief.
