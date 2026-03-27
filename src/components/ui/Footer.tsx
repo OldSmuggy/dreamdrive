@@ -19,6 +19,9 @@ export default function Footer() {
         <a href="tel:0432182892" className="hover:text-gray-600">0432 182 892</a>
       </p>
       <p>Workshop: 1/10 Jones Road, Capalaba QLD 4157</p>
+      <p className="text-gray-300">
+        Dream Drive Pty Ltd · ABN 13 030 224 315 · Motor Dealer Licence 4816576
+      </p>
       <div className="flex justify-center gap-4 mt-2">
         <Link href="/privacy" className="hover:text-gray-600">Privacy Policy</Link>
         <Link href="/terms" className="hover:text-gray-600">Terms of Service</Link>
