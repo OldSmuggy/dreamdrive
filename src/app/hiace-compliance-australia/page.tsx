@@ -12,7 +12,7 @@ const steps = [
   {
     n: '1',
     title: 'Vehicle Import Approval (VIA)',
-    detail: 'Before the van even leaves Japan, we apply for a Vehicle Import Approval through the Australian Border Force. This is a government permit that authorises the import. Without it, customs won\'t release the vehicle. We handle this as part of the $3,000 sourcing fee.',
+    detail: 'Before the van even leaves Japan, we apply for a Vehicle Import Approval through the Australian Border Force. This is a government permit that authorises the import. Without it, customs won\'t release the vehicle. We handle this as part of the $3,000 Bare Camper fee — which covers both the Japan-side buyer\'s agent and the Australia-side brokerage.',
     cost: 'Included in Bare Camper fee',
   },
   {

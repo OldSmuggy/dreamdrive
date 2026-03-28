@@ -28,10 +28,10 @@ const STEPS = [
   {
     number: '03',
     title: 'Secure with a $3,000 Hold',
-    desc: 'Place a fully refundable $3,000 deposit to lock in your van. This goes towards your final purchase price. We use it to start the export paperwork and Vehicle Import Approval.',
+    desc: 'Place a fully refundable $3,000 deposit to lock in your van. This goes towards your final purchase price and covers both the Japan-side buyer\'s agent and the Australia-side brokerage — we\'re the only business that handles both under one fee.',
     timeline: 'Week 1',
     icon: '🔒',
-    detail: 'Changed your mind? No worries — the hold is refundable. We won\'t bid until you\'re comfortable.',
+    detail: 'Most importers charge separately for the Japan agent and the Australian broker. Our $3,000 covers everything: bidding, inspection, purchase, export, import approval, customs, compliance coordination, and project management. Changed your mind? The hold is fully refundable.',
   },
   {
     number: '04',
@@ -171,7 +171,7 @@ export default function HowItWorksPage() {
             <div className="space-y-3">
               {[
                 { label: 'Vehicle purchase price (¥2,000,000)', value: '~$19,000' },
-                { label: 'Bare Camper sourcing fee', value: '$3,000' },
+                { label: 'Bare Camper fee (Japan agent + AU broker)', value: '$3,000' },
                 { label: 'Ocean freight (RORO)', value: '$2,500' },
                 { label: 'GST (10% on landed value)', value: '~$2,150' },
                 { label: 'Customs + quarantine', value: '$360' },

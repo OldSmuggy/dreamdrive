@@ -131,7 +131,7 @@ export default function ImportCalculator() {
       <div>
         {[
           { label: `Vehicle (${fmtJpy(jpyPrice)} @ ${exchangeRate})`, value: fmt(calc.vehicleAud), note: 'Actual auction price, converted at current rate' },
-          { label: 'Bare Camper sourcing & agent fee', value: fmt(SOURCING_FEE), note: 'Flat fee — sourcing, inspection, purchase, export, import management' },
+          { label: 'Bare Camper fee (Japan agent + AU broker)', value: fmt(SOURCING_FEE), note: 'One fee covers both sides — Japan buyer\'s agent and Australian broker. Only importer that handles both.' },
           { label: 'Shipping (Yokohama → Brisbane)', value: fmt(SHIPPING), note: 'RORO ocean freight incl. pre-clean & quarantine prep' },
           { label: 'GST (10% on landed value)', value: fmt(calc.gst), note: '10% on vehicle + shipping. 0% import duty (JEPA free trade)' },
           { label: 'Customs entry + BMSB heat treatment', value: fmt(CUSTOMS_ENTRY + BMSB), note: `Entry fee $110 + quarantine heat treatment $250` },

@@ -108,7 +108,7 @@ export default function ImportHiaceGuide() {
           </div>
           <div>
             <div className="text-2xl font-bold">$3,000</div>
-            <div className="text-sm text-white/80">Flat sourcing fee</div>
+            <div className="text-sm text-white/80">Japan agent + AU broker</div>
           </div>
           <div>
             <div className="text-2xl font-bold">$5–10k</div>
@@ -135,7 +135,7 @@ export default function ImportHiaceGuide() {
             <p className="text-sm font-semibold text-charcoal mb-2">The numbers on a typical H200 LWB Hiace (¥2,000,000 auction)</p>
             <div className="space-y-1 text-sm text-gray-600">
               <div className="flex justify-between"><span>Vehicle (at auction)</span><span>~$19,000</span></div>
-              <div className="flex justify-between"><span>Bare Camper sourcing fee</span><span>$3,000</span></div>
+              <div className="flex justify-between"><span>Bare Camper fee (Japan agent + AU broker)</span><span>$3,000</span></div>
               <div className="flex justify-between"><span>Ocean freight (Yokohama → Brisbane)</span><span>$2,500</span></div>
               <div className="flex justify-between"><span>GST (10% on landed value)</span><span>~$2,155</span></div>
               <div className="flex justify-between"><span>Customs + quarantine</span><span>$360</span></div>

@@ -46,7 +46,7 @@ const CATEGORIES = [
       },
       {
         q: 'What is the Bare Camper sourcing fee?',
-        a: 'Our flat $3,000 fee covers: Japan agent services, auction bidding or dealer negotiation, Vehicle Import Approval application, export documentation, and project management from start to finish. No hidden margins on the vehicle price — what you see at auction is what you pay.',
+        a: 'Our flat $3,000 fee covers both sides of the import — the Japan-side buyer\'s agent (auction bidding, dealer negotiation, vehicle inspection, purchase, and export logistics) AND the Australia-side brokerage (Vehicle Import Approval, customs, compliance coordination, and project management from start to finish). Most importers charge separately for the Japan agent and the Australian broker. We\'re the only business that handles both under one fee. No hidden margins on the vehicle price — what you see at auction is what you pay.',
       },
       {
         q: 'Do I pay GST on a Japanese import?',

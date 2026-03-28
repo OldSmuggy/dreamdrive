@@ -263,9 +263,9 @@ export default function ImportCostsPage() {
 
 const COSTS = [
   {
-    title: 'Bare Camper sourcing & Japan agent fee',
+    title: 'Bare Camper fee (Japan agent + AU broker)',
     cost: '$3,000 flat',
-    desc: 'Covers everything from finding your van at auction through to landing it in Australia. Sourcing, inspection, purchase coordination, Japan-side logistics, export paperwork, and import management.',
+    desc: 'One fee covers both sides: the Japan-based buyer\'s agent (auction bidding, inspection, purchase, export logistics) AND the Australia-side broker (Vehicle Import Approval, customs, compliance coordination, project management). We\'re the only importer that handles both under one roof — most charge separately for each.',
   },
   {
     title: 'Vehicle purchase price',
@@ -291,7 +291,7 @@ const COSTS = [
 
 const EXAMPLE_ROWS = [
   { item: 'Vehicle (¥2,000,000 @ ~¥105/$1)', value: '$19,048' },
-  { item: 'Bare Camper fee', value: '$3,000' },
+  { item: 'Bare Camper fee (Japan agent + AU broker)', value: '$3,000' },
   { item: 'Shipping', value: '$2,500' },
   { item: 'GST (10% on ~$21,548)', value: '$2,155' },
   { item: 'Customs entry + BMSB', value: '$360' },

@@ -94,7 +94,7 @@ const ADVANTAGES = [
   {
     icon: '💰',
     title: 'Save $5,000–$10,000 vs dealers',
-    desc: 'You pay the actual auction price plus our flat $3,000 fee. No hidden dealer margins, no inflated "market price" — just transparent pricing.',
+    desc: 'You pay the actual auction price plus our flat $3,000 fee — which covers both the Japan-side buyer\'s agent and the Australia-side broker. Most importers charge separately for each. No hidden dealer margins, no inflated "market price".',
   },
   {
     icon: '🔍',
@@ -262,7 +262,7 @@ export default function WhyBareCamperPage() {
           <p className="text-xl md:text-2xl text-gray-300 mb-2">less than the same van from a dealer</p>
           <p className="text-gray-500 max-w-lg mx-auto text-sm leading-relaxed">
             Because you pay the actual auction price, not the price a dealer decided to mark it up to.
-            Our flat $3,000 sourcing fee is the only margin. Everything else is at-cost.
+            Our flat $3,000 fee covers both the Japan buyer&apos;s agent and the Australian broker — the only business that handles both sides. Everything else is at-cost.
           </p>
         </div>
       </section>
