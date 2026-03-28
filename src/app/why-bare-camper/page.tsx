@@ -83,6 +83,12 @@ const COMPARISON_ROWS = [
     diy: '⚠️ Depends on tradie',
   },
   {
+    feature: 'Own team in Japan',
+    bareCamper: '✅ Our buyer on the ground',
+    dealer: '❌ Uses third-party agents',
+    diy: '❌ You hire a Japan agent',
+  },
+  {
     feature: 'Ongoing support',
     bareCamper: '✅ WhatsApp, email, in-person',
     dealer: '⚠️ Varies',
@@ -102,9 +108,9 @@ const ADVANTAGES = [
     desc: 'See the Japanese auction grade, interior rating, full photo set, and inspection report before we bid. You decide whether to proceed — no pressure.',
   },
   {
-    icon: '🛠️',
-    title: 'Import + conversion under one roof',
-    desc: 'We\'re the only importer in Australia that offers the van, the import, AND the professional campervan conversion as a single package with one point of contact.',
+    icon: '🌏',
+    title: 'The only campervan brand in Japan, AU & NZ',
+    desc: 'We\'re the only campervan brand with our own team on the ground in Japan, Australia, and New Zealand. Our buyer in Japan, our workshop in Brisbane, our operations in NZ. Not outsourced to third-party agents — end-to-end, under one brand.',
   },
   {
     icon: '📱',
@@ -135,9 +141,10 @@ export default function WhyBareCamperPage() {
             The smarter way to get a campervan in Australia
           </h1>
           <p className="text-gray-300 text-lg max-w-xl mb-10 leading-relaxed">
-            You&apos;ve got three options: buy from an Australian dealer (and pay the markup),
-            go fully DIY (and deal with the headaches), or let Bare Camper handle it —
-            transparent pricing, professional conversion, one point of contact.
+            We&apos;re the only campervan brand with our own team in Japan, Australia, and New Zealand —
+            not brokers hiring third-party agents, but our people on the ground at every stage.
+            That means transparent pricing, professional conversion, and one point of contact
+            from auction floor to your driveway.
           </p>
           <Link href="/browse" className="btn-primary inline-block text-base px-8 py-4">
             Browse vans →
@@ -209,7 +216,8 @@ export default function WhyBareCamperPage() {
             <h2 className="text-3xl md:text-4xl text-charcoal mb-3">What makes Bare Camper different</h2>
             <p className="text-gray-500 max-w-xl mx-auto">
               We&apos;re not a dealership and we&apos;re not just a broker. We&apos;re the only
-              team in Australia that handles the entire journey — from Japan auction to finished campervan.
+              campervan brand with our own team in Japan, Australia, and New Zealand — handling the
+              entire journey from auction floor to finished campervan.
             </p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">

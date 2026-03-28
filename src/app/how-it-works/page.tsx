@@ -68,7 +68,7 @@ const STEPS = [
 ]
 
 const TRUST_STATS = [
-  { value: '10–18 weeks', label: 'van only to full build' },
+  { value: 'JP + AU + NZ', label: 'our own teams' },
   { value: '$3,000', label: 'refundable deposit' },
   { value: '0% duty', label: 'under JAEPA free trade' },
   { value: '12-month', label: 'conversion warranty' },
@@ -86,8 +86,9 @@ export default function HowItWorksPage() {
             From Japan to your driveway — here&apos;s the full process
           </h1>
           <p className="text-gray-300 text-lg max-w-xl mb-10 leading-relaxed">
-            We handle every step of importing your Toyota Hiace from Japan and converting it
-            into the campervan you want. No dealer markup. No hidden fees. No stress.
+            We&apos;re the only campervan brand with our own team in Japan, Australia, and New Zealand.
+            That means we handle every step — from sourcing your van at auction to converting it
+            into the campervan you want. No third-party agents. No dealer markup. No stress.
           </p>
           <div className="flex flex-wrap gap-4">
             <Link href="/browse" className="btn-primary inline-block text-base px-8 py-4">

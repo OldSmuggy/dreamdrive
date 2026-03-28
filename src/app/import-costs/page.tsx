@@ -31,7 +31,7 @@ export default function ImportCostsPage() {
             <p className="text-driftwood text-sm font-semibold tracking-widest uppercase mb-4">The Case for Going Direct</p>
             <h2 className="text-4xl text-charcoal font-bold mb-5">Why direct from auction is smarter</h2>
             <p className="text-gray-500 text-lg leading-relaxed">
-              When you buy from an Australian dealer, you&apos;re paying their margin on top of an exporter&apos;s margin on top of the actual auction price. That&apos;s two sets of profit stacked on the same van. With Bare Camper you pay the actual auction price plus a single flat fee. The saving is typically $5,000–$10,000 on the same quality van — or you put those savings into a significantly better van.
+              When you buy from an Australian dealer, you&apos;re paying their margin on top of an exporter&apos;s margin on top of the actual auction price. That&apos;s two sets of profit stacked on the same van. With Bare Camper you pay the actual auction price plus a single flat fee — and because we&apos;re the only campervan brand with our own team in Japan, Australia, and NZ, there are no third-party agent fees baked in. The saving is typically $5,000–$10,000 on the same quality van.
             </p>
           </div>
 

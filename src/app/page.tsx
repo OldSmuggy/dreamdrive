@@ -490,13 +490,13 @@ const PATHS: { image: string; tag: string; name: string; desc: string; tags: str
 const TRUST = [
   { value: '100+',   label: 'Vans delivered' },
   { value: '25+',    label: 'Years of fiberglass' },
-  { value: '$3,000', label: 'Refundable hold' },
+  { value: 'JP + AU + NZ', label: 'Teams on the ground' },
   { value: '100%',   label: 'Aus compliant' },
 ]
 
 const WHY_US = [
+  { icon: '🌏', title: 'Our team in Japan, Australia & NZ', desc: "We're the only campervan brand with a physical presence in Japan, Australia, and New Zealand. Our own buyer in Japan, our own workshop in Brisbane. Not outsourced — ours." },
   { icon: '🔓', title: 'No lock-in', desc: "Buy just the van. Add the roof next month. Fit it out next year. Or get everything now. Your timeline, your call." },
-  { icon: '🇯🇵', title: 'Direct from Japan', desc: "Vans sourced from Japanese auctions and dealers. No mystery pricing, no middlemen. You see what's available and what it costs." },
   { icon: '🏭', title: '25 years of fiberglass', desc: "Our Brisbane factory has been manufacturing pop tops since before van life was a hashtag. This is what we do." },
   { icon: '🤝', title: 'Real people', desc: "You're dealing with Jared and Andrew — not a call centre. The same people who import the vans and build the roofs are the ones answering your questions." },
 ]
