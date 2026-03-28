@@ -3,7 +3,7 @@
 // ============================================================
 
 export type Source = 'auction' | 'dealer_carsensor' | 'dealer_goonet' | 'au_stock' | 'customer_upload'
-export type ListingStatus = 'available' | 'auction_ended' | 'sold' | 'reserved'
+export type ListingStatus = 'available' | 'auction_ended' | 'sold' | 'reserved' | 'draft' | 'pending_review'
 export type AuStockStatus = 'import_pending' | 'import_approved' | 'en_route' | 'on_ship' | 'at_dock' | 'in_transit_au' | 'available_now'
 export type LocationStatus = 'in_japan' | 'on_ship' | 'in_brisbane' | 'sold'
 export type FitOutLevel = 'empty' | 'partial' | 'full'

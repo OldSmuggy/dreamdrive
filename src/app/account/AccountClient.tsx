@@ -186,6 +186,16 @@ export default function AccountClient({
           <p className="text-white/50 text-sm mb-1">My Account</p>
           <h1 className="text-3xl">{name}</h1>
           <p className="text-white/60 text-sm mt-1">{user.email}</p>
+          <div className="mt-5">
+            <Link
+              href="/account/my-listings"
+              className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors border border-white/20"
+            >
+              <span>🚐</span>
+              <span>My Listings</span>
+              <span className="text-white/50">→</span>
+            </Link>
+          </div>
         </div>
       </div>
 
