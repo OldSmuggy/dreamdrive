@@ -37,6 +37,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/blog`, priority: 0.8 },
     { url: `${baseUrl}/blog/how-to-import-a-hiace-from-japan-to-australia`, priority: 0.8 },
     { url: `${baseUrl}/blog/best-toyota-hiace-for-campervan-conversion-australia`, priority: 0.8 },
+    { url: `${baseUrl}/blog/pop-top-vs-hi-top-campervan-roof-conversion`, priority: 0.8 },
+    { url: `${baseUrl}/blog/what-is-included-in-a-tama-campervan-build`, priority: 0.8 },
+    { url: `${baseUrl}/how-it-works`, priority: 0.9 },
+    { url: `${baseUrl}/why-bare-camper`, priority: 0.9 },
+    { url: `${baseUrl}/faqs`, priority: 0.8 },
+    { url: `${baseUrl}/finance`, priority: 0.8 },
   ].map(page => ({
     url: page.url,
     lastModified: new Date(),

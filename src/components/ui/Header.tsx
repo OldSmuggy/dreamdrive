@@ -32,10 +32,18 @@ const NAV: NavItem[] = [
     label: 'Pricing',
     dropdown: [
       { label: 'How Pricing Works', href: '/import-costs' },
-      { label: 'Import Guide', href: '/import-hiace-australia' },
+      { label: 'Finance (Stratton)', href: '/finance' },
     ],
   },
-  { label: 'Guides', href: '/blog' },
+  {
+    label: 'Learn',
+    dropdown: [
+      { label: '📖 Guides & Blog', href: '/blog' },
+      { label: '❓ FAQs', href: '/faqs' },
+      { label: '🚢 How It Works', href: '/how-it-works' },
+      { label: '💚 Why Bare Camper', href: '/why-bare-camper' },
+    ],
+  },
   { label: 'About', href: '/about' },
 ]
 
