@@ -2,9 +2,35 @@
 
 import { useRef, useState } from 'react'
 
-function uploadWithProgress(
+/**
+ * Size threshold above which we use the signed-URL (direct-to-storage) path.
+ * Vercel serverless functions have a hard 4.5 MB request body limit.
+ * We set 3.5 MB to leave headroom for FormData/multipart overhead.
+ */
+const SIGNED_URL_THRESHOLD = 3.5 * 1024 * 1024 // 3.5 MB
+
+/** Content types that ALWAYS bypass the proxy (go direct to Supabase) */
+const ALWAYS_DIRECT_TYPES = ['video/mp4', 'video/quicktime', 'video/webm']
+
+/**
+ * Small images (< 3.5 MB): POST to /api/upload  (proxied through Vercel)
+ * Videos & large files: get a signed URL, then PUT directly to Supabase Storage
+ */
+async function uploadFile(
   file: File,
-  onProgress: (pct: number) => void
+  onProgress: (pct: number) => void,
+): Promise<string> {
+  // Videos always go direct — even small ones — to avoid proxy body-size issues
+  if (ALWAYS_DIRECT_TYPES.includes(file.type) || file.size >= SIGNED_URL_THRESHOLD) {
+    return uploadViaSigned(file, onProgress)
+  }
+  return uploadViaProxy(file, onProgress)
+}
+
+/** Upload small files through the /api/upload serverless function */
+function uploadViaProxy(
+  file: File,
+  onProgress: (pct: number) => void,
 ): Promise<string> {
   return new Promise((resolve, reject) => {
     const form = new FormData()
@@ -37,14 +63,67 @@ function uploadWithProgress(
   })
 }
 
+/** Upload large files directly to Supabase Storage via a signed URL */
+async function uploadViaSigned(
+  file: File,
+  onProgress: (pct: number) => void,
+): Promise<string> {
+  // 1. Get signed URL from our API
+  const res = await fetch('/api/upload/signed-url', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ filename: file.name, contentType: file.type }),
+  })
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }))
+    throw new Error(err.error ?? `HTTP ${res.status}`)
+  }
+
+  const { signedUrl, token, publicUrl } = await res.json()
+
+  // 2. Upload directly to Supabase Storage using XHR for progress
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) {
+        onProgress(Math.round((e.loaded / e.total) * 100))
+      }
+    }
+
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve(publicUrl)
+      } else {
+        reject(new Error(`Upload failed: HTTP ${xhr.status}`))
+      }
+    }
+
+    xhr.onerror = () => reject(new Error('Network error during upload'))
+
+    // Supabase signed upload URL already has the token in the query string.
+    // We also pass it as a header for compatibility with newer Supabase versions.
+    xhr.open('PUT', signedUrl)
+    xhr.setRequestHeader('Content-Type', file.type)
+    xhr.setRequestHeader('x-upsert', 'false')
+    if (token) xhr.setRequestHeader('x-supabase-upload-token', token)
+    xhr.send(file)
+  })
+}
+
 export default function PhotoUploadButton({
   onUploaded,
   onUploadingChange,
   label = '📁 Upload',
+  accept = 'image/*',
+  multiple = true,
 }: {
   onUploaded: (url: string) => void
   onUploadingChange?: (uploading: boolean) => void
   label?: string
+  accept?: string
+  multiple?: boolean
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [progress, setProgress] = useState<number | null>(null)
@@ -57,7 +136,7 @@ export default function PhotoUploadButton({
     for (const file of files) {
       setProgress(0)
       try {
-        const url = await uploadWithProgress(file, setProgress)
+        const url = await uploadFile(file, setProgress)
         onUploaded(url)
       } catch (err) {
         alert(String(err))
@@ -91,8 +170,8 @@ export default function PhotoUploadButton({
       <input
         ref={inputRef}
         type="file"
-        accept="image/*"
-        multiple
+        accept={accept}
+        multiple={multiple}
         onChange={handleChange}
         className="hidden"
       />
