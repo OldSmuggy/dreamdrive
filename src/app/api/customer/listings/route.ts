@@ -11,8 +11,8 @@ export async function GET() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
-  const admin = createAdminClient()
-  const { data, error } = await admin
+  // Use the session client — RLS ensures the user only sees their own rows
+  const { data, error } = await supabase
     .from('listings')
     .select('id, model_name, model_year, body_colour, mileage_km, transmission, au_price_aud, photos, status, is_community_find, created_at, description, location_status')
     .eq('submitted_by', user.id)

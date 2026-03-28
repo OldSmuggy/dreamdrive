@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createSupabaseServer } from '@/lib/supabase-server'
@@ -13,6 +14,8 @@ import SaveVanButton from '@/components/ui/SaveVanButton'
 import ShareButtons from '@/components/ui/ShareButtons'
 import DepositHoldButton from '@/components/ui/DepositHoldButton'
 import ViewContentTracker from '@/components/van/ViewContentTracker'
+import StickyMobileCTA from '@/components/van/StickyMobileCTA'
+import AskAboutVan from '@/components/van/AskAboutVan'
 import type { Listing } from '@/types'
 
 export async function generateMetadata({ params }: { params: { id: string } }) {
@@ -123,6 +126,11 @@ export default async function VanDetailPage({ params }: { params: { id: string }
         model_year={listing.model_year}
         price_cents={priceCents}
       />
+      <StickyMobileCTA
+        listingId={listing.id}
+        price={displayPrice}
+        ctaLabel="Build This Van →"
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(vehicleJsonLd) }}
@@ -163,6 +171,7 @@ export default async function VanDetailPage({ params }: { params: { id: string }
                 {urgency === 'closing_soon' && <span className="bg-amber-400 text-amber-900 text-xs font-bold px-2 py-0.5 rounded">CLOSING SOON</span>}
                 {urgency === 'last_chance'  && <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded">LAST CHANCE</span>}
                 {listing.has_fitout && <span className="bg-purple-600 text-white text-xs font-bold px-2 py-0.5 rounded">🏕 Campervan Build</span>}
+                {listing.is_community_find && <span className="bg-driftwood text-white text-xs font-bold px-2 py-0.5 rounded">Community Find</span>}
               </div>
               {listing.power_system && listing.power_system !== 'None' && (
                 <div className="absolute top-3 right-3 bg-gray-900/80 text-white text-xs px-2 py-0.5 rounded pointer-events-none">
@@ -333,6 +342,18 @@ export default async function VanDetailPage({ params }: { params: { id: string }
                 Not sure? Take the Van Match Quiz →
               </Link>
             </div>
+
+            {/* Ask about this van — logged-in users */}
+            {user && (
+              <div className="mt-6">
+                <AskAboutVan listingId={listing.id} />
+              </div>
+            )}
+            {!user && (
+              <div className="mt-6 text-center text-sm text-gray-500">
+                <Link href="/login" className="text-ocean font-semibold hover:underline">Sign in</Link> to ask us about this van.
+              </div>
+            )}
           </div>
         </div>
 

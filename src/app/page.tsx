@@ -349,6 +349,47 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* ─── 8b. SELL A VAN / COMMUNITY ──────────────────── */}
+      <section className="py-20 bg-white">
+        <div className="max-w-5xl mx-auto px-4">
+          <div className="text-center mb-10">
+            <p className="text-driftwood text-sm font-semibold tracking-widest uppercase mb-4">Got a Van to Sell?</p>
+            <h2 className="text-3xl text-charcoal font-bold mb-3">Earn money from a van you&apos;ve spotted</h2>
+            <p className="text-gray-500 text-lg max-w-2xl mx-auto leading-relaxed">
+              Know someone selling a great Hiace? Seen one on Facebook or Gumtree? Let us know — we&apos;ll do the legwork and pay you a <strong className="text-charcoal">$200 finders fee</strong> if it sells.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-6">
+            <Link
+              href="/tip-a-van"
+              className="group flex gap-5 items-start bg-cream rounded-2xl p-6 border border-transparent hover:border-ocean/20 hover:shadow-md transition-all"
+            >
+              <div className="text-4xl shrink-0">💡</div>
+              <div>
+                <h3 className="font-bold text-charcoal text-lg mb-1 group-hover:text-ocean transition-colors">Tip a Van — Earn $200</h3>
+                <p className="text-gray-500 text-sm leading-relaxed">
+                  Spotted a van online? Drop us the link. If it sells through Bare Camper, we&apos;ll pay you $200. Takes 60 seconds.
+                </p>
+                <span className="mt-3 inline-block text-ocean text-sm font-semibold group-hover:underline">Send a tip →</span>
+              </div>
+            </Link>
+            <Link
+              href="/account/my-listings"
+              className="group flex gap-5 items-start bg-cream rounded-2xl p-6 border border-transparent hover:border-ocean/20 hover:shadow-md transition-all"
+            >
+              <div className="text-4xl shrink-0">📬</div>
+              <div>
+                <h3 className="font-bold text-charcoal text-lg mb-1 group-hover:text-ocean transition-colors">List Your Van</h3>
+                <p className="text-gray-500 text-sm leading-relaxed">
+                  Selling a van yourself? List it on Bare Camper for free. We&apos;ll show it to our buyer network and pay you a $200 fee if a customer buys it.
+                </p>
+                <span className="mt-3 inline-block text-ocean text-sm font-semibold group-hover:underline">Create a listing →</span>
+              </div>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* ─── 9. CTA FOOTER ────────────────────────────────── */}
       <section className="bg-charcoal text-white py-20 text-center">
         <div className="max-w-2xl mx-auto px-4">

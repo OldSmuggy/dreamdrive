@@ -22,12 +22,20 @@ const NAV: NavItem[] = [
   { label: 'Roof Conversions', href: '/pop-top' },
   { label: 'DIY', href: '/diy' },
   {
+    label: 'Sell a Van',
+    dropdown: [
+      { label: '📬 List Your Van', href: '/account/my-listings' },
+      { label: '💡 Tip a Van — Earn $200', href: '/tip-a-van' },
+    ],
+  },
+  {
     label: 'Pricing',
     dropdown: [
       { label: 'How Pricing Works', href: '/import-costs' },
       { label: 'Import Guide', href: '/import-hiace-australia' },
     ],
   },
+  { label: 'Guides', href: '/blog' },
   { label: 'About', href: '/about' },
 ]
 

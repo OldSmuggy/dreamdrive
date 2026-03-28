@@ -83,6 +83,11 @@ export interface Listing {
   has_power_windows: boolean
   has_rear_ac: boolean
   interior_dimensions: string | null
+  is_community_find: boolean
+  submitted_by: string | null
+  source_url: string | null
+  source_category: string | null
+  view_count: number
 }
 
 export interface Product {
