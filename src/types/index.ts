@@ -2,7 +2,7 @@
 // DREAM DRIVE — Core Types
 // ============================================================
 
-export type Source = 'auction' | 'dealer_carsensor' | 'dealer_goonet' | 'au_stock'
+export type Source = 'auction' | 'dealer_carsensor' | 'dealer_goonet' | 'au_stock' | 'customer_upload'
 export type ListingStatus = 'available' | 'auction_ended' | 'sold' | 'reserved'
 export type AuStockStatus = 'import_pending' | 'import_approved' | 'en_route' | 'on_ship' | 'at_dock' | 'in_transit_au' | 'available_now'
 export type LocationStatus = 'in_japan' | 'on_ship' | 'in_brisbane' | 'sold'
@@ -60,6 +60,7 @@ export interface Listing {
   power_system: PowerSystem | null
   image_focal_point: string | null
   internal_photos: string[]
+  spin_video: string | null
   show_interior_gallery: boolean
   inspection_sheet: string | null
   raw_data: Record<string, unknown> | null
@@ -276,6 +277,105 @@ export interface ImportOrder {
   created_at: string
   updated_at: string
   listing?: Listing
+}
+
+// ---- Deal Management ----
+export type DealStatus =
+  | 'draft'
+  | 'deposit_pending'
+  | 'deposit_received'
+  | 'bidding'
+  | 'won'
+  | 'lost'
+  | 'shipping'
+  | 'delivered'
+  | 'completed'
+  | 'cancelled'
+
+export interface Buyer {
+  id: string
+  name: string
+  email: string
+  phone: string | null
+  whatsapp_number: string | null
+  company: string | null
+  region: string | null
+  notes: string | null
+  is_active: boolean
+  created_at: string
+}
+
+export interface Deal {
+  id: string
+  listing_id: string
+  customer_id: string
+  buyer_id: string
+  customer_vehicle_id: string | null
+  status: DealStatus
+  notes: string | null
+  admin_notes: string | null
+  purchase_price_jpy: number | null
+  purchase_price_aud: number | null
+  created_at: string
+  updated_at: string
+  // joined
+  listing?: Listing
+  customer?: { id: string; first_name: string | null; last_name: string | null; email: string; phone: string | null }
+  buyer?: Buyer
+}
+
+// ---- Van Submissions (customer-uploaded vans with photos) ----
+export type VanSubmissionStatus = 'pending_review' | 'approved' | 'rejected'
+
+export interface VanSubmission {
+  id: string
+  created_at: string
+  name: string
+  email: string
+  phone: string | null
+  model_name: string
+  model_year: number | null
+  body_type: string | null
+  mileage_km: number | null
+  transmission: string | null
+  asking_price_aud: number | null
+  location: string | null
+  notes: string | null
+  photos: string[]
+  status: VanSubmissionStatus
+  listing_id: string | null
+  finders_fee_aud: number
+  fee_paid_at: string | null
+  admin_notes: string | null
+  auto_published: boolean
+}
+
+export interface TrustedSubmitter {
+  id: string
+  email: string
+  name: string | null
+  notes: string | null
+  created_at: string
+}
+
+// ---- Vehicle Tips (Finders Fee) ----
+export type VehicleTipStatus = 'pending' | 'reviewing' | 'matched' | 'paid' | 'declined'
+
+export interface VehicleTip {
+  id: string
+  created_at: string
+  name: string
+  email: string
+  phone: string | null
+  vehicle_url: string | null
+  notes: string | null
+  status: VehicleTipStatus
+  matched_listing_id: string | null
+  finders_fee_aud: number
+  paid_at: string | null
+  admin_notes: string | null
+  // joined
+  listing?: Pick<Listing, 'id' | 'model_name' | 'model_year'>
 }
 
 // ---- Auction countdown helpers ----
