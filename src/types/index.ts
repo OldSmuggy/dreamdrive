@@ -88,6 +88,7 @@ export interface Listing {
   source_url: string | null
   source_category: string | null
   view_count: number
+  market_comparison_aud: number | null
 }
 
 export interface Product {

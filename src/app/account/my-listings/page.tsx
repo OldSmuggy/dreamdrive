@@ -40,8 +40,8 @@ export default async function MyListingsPage() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-charcoal">My Listings</h1>
           <p className="text-gray-500 mt-2 leading-relaxed">
-            List a van for sale through Bare Camper. If a customer buys it, you earn a{' '}
-            <strong className="text-charcoal">$200 finders fee</strong>.
+            List a van for sale through Bare Camper. Earn a{' '}
+            <strong className="text-charcoal">$200 finders fee</strong> when a customer buys a Japanese van you&apos;ve listed, or when an Aussie-sourced van leads to a Bare Camper conversion.
           </p>
           {!!trusted && (
             <div className="mt-3 inline-flex items-center gap-2 bg-ocean/10 text-ocean text-sm px-3 py-1.5 rounded-full">

@@ -356,7 +356,7 @@ export default async function HomePage() {
             <p className="text-driftwood text-sm font-semibold tracking-widest uppercase mb-4">Got a Van to Sell?</p>
             <h2 className="text-3xl text-charcoal font-bold mb-3">Earn money from a van you&apos;ve spotted</h2>
             <p className="text-gray-500 text-lg max-w-2xl mx-auto leading-relaxed">
-              Know someone selling a great Hiace? Seen one on Facebook or Gumtree? Let us know — we&apos;ll do the legwork and pay you a <strong className="text-charcoal">$200 finders fee</strong> if it sells.
+              Know someone selling a great Hiace? Seen one on Facebook or Gumtree? Let us know — we&apos;ll do the legwork and pay you a <strong className="text-charcoal">$200 finders fee</strong> for Japanese vans bought by a customer, or Aussie vans that lead to a Bare Camper conversion.
             </p>
           </div>
           <div className="grid sm:grid-cols-2 gap-6">

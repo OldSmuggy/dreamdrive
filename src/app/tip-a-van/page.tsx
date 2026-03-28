@@ -16,7 +16,7 @@ export default function TipAVanPage() {
           <p className="text-sand text-sm font-semibold tracking-widest uppercase mb-4">Finders Fee Programme</p>
           <h1 className="text-4xl md:text-5xl font-bold mb-6">Spot a van. Earn $200.</h1>
           <p className="text-gray-300 text-lg max-w-xl mx-auto leading-relaxed">
-            If you find a Hiace van online that we then list and sell through Bare Camper, we&apos;ll pay you a <strong className="text-sand">$200 AUD finders fee</strong>. Simple as that.
+            Spotted a Hiace online? Send us the link. If we list it and a customer purchases it through Bare Camper, we&apos;ll pay you a <strong className="text-sand">$200 AUD finders fee</strong>. Simple as that.
           </p>
         </div>
       </section>
@@ -76,6 +76,9 @@ export default function TipAVanPage() {
             </p>
             <p>
               <strong className="text-charcoal">When do I get paid?</strong> Once the sale is settled and the van has been purchased by a customer through Bare Camper. We&apos;ll email you when it&apos;s matched and again when the fee is being processed.
+            </p>
+            <p>
+              <strong className="text-charcoal">Which tips qualify for the fee?</strong> We pay the finders fee for <strong>Japanese-sourced vans</strong> that are purchased by a Bare Camper customer, and for <strong>Australian-sourced vans</strong> where the buyer goes on to get a Bare Camper conversion (pop top, hi-top, or full fit-out). Basically — if your tip leads to Bare Camper business, you get paid.
             </p>
             <p>
               <strong className="text-charcoal">Is there a limit?</strong> Nope. Submit as many as you like. Every successful match earns $200.

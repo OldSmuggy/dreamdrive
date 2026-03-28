@@ -33,6 +33,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/mana`, priority: 0.8 },
     { url: `${baseUrl}/pop-top`, priority: 0.7 },
     { url: `${baseUrl}/diy`, priority: 0.7 },
+    { url: `${baseUrl}/compare`, priority: 0.5 },
     { url: `${baseUrl}/blog`, priority: 0.8 },
     { url: `${baseUrl}/blog/how-to-import-a-hiace-from-japan-to-australia`, priority: 0.8 },
     { url: `${baseUrl}/blog/best-toyota-hiace-for-campervan-conversion-australia`, priority: 0.8 },

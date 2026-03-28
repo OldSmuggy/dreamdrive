@@ -17,7 +17,7 @@ export default function SubmitAVanPage() {
           <h1 className="text-4xl md:text-5xl font-bold mb-6">Submit a van, earn $200.</h1>
           <p className="text-gray-300 text-lg max-w-xl mx-auto leading-relaxed">
             Found a great Hiace? Upload your photos, tell us about the van, and we&apos;ll list it on Bare Camper.
-            If it sells, you earn a <strong className="text-sand">$200 finders fee</strong>.
+            If a customer buys it, you earn a <strong className="text-sand">$200 finders fee</strong>.
           </p>
         </div>
       </section>
@@ -63,6 +63,9 @@ export default function SubmitAVanPage() {
           </p>
           <p>
             <strong className="text-charcoal">When do I get paid?</strong> Once the sale settles and the van has been purchased by a customer through Bare Camper. We&apos;ll email you.
+          </p>
+          <p>
+            <strong className="text-charcoal">Which listings qualify for the fee?</strong> We pay the finders fee for <strong>Japanese-sourced vans</strong> purchased by a Bare Camper customer, and for <strong>Australian-sourced vans</strong> where the buyer goes on to get a Bare Camper conversion (pop top, hi-top, or full fit-out).
           </p>
           <p>
             <strong className="text-charcoal">What if I want to buy it myself?</strong> Just say so in the notes — we&apos;ll treat it as an enquiry instead.

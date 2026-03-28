@@ -20,6 +20,7 @@ type EditState = {
   aud_estimate: string
   au_price_aud: string
   start_price_jpy: string
+  market_comparison_aud: string
   source: string
   status: string
   au_status: string
@@ -74,6 +75,7 @@ function toEditState(l: Listing): EditState {
     aud_estimate: l.aud_estimate ? (l.aud_estimate / 100).toFixed(0) : '',
     au_price_aud: l.au_price_aud ? (l.au_price_aud / 100).toFixed(0) : '',
     start_price_jpy: l.start_price_jpy?.toString() ?? '',
+    market_comparison_aud: l.market_comparison_aud ? (l.market_comparison_aud / 100).toFixed(0) : '',
     source: l.source,
     status: l.status,
     au_status: l.au_status ?? '',
@@ -244,6 +246,47 @@ function NotifyButton({ listingId }: { listingId: string }) {
         </div>
       )}
     </>
+  )
+}
+
+// ---- Notify Stock Alert Subscribers Button ----
+function NotifyStockAlertsButton({ listingId }: { listingId: string }) {
+  const [sending, setSending] = useState(false)
+  const [result, setResult] = useState<string | null>(null)
+
+  const send = async () => {
+    if (!confirm('Send stock alert emails to all matching subscribers?')) return
+    setSending(true)
+    setResult(null)
+    try {
+      const res = await fetch('/api/admin/notify-stock-matches', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ listing_id: listingId }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      setResult(`Sent to ${data.total} subscriber${data.total !== 1 ? 's' : ''}`)
+    } catch (e) {
+      setResult(`Error: ${e}`)
+    } finally {
+      setSending(false)
+    }
+  }
+
+  return (
+    <div className="relative">
+      <button
+        onClick={send}
+        disabled={sending}
+        className="text-sm px-3 py-1.5 rounded-lg border border-ocean/30 text-ocean hover:bg-ocean/5 disabled:opacity-50"
+      >
+        {sending ? 'Sending…' : '🔔 Notify Subscribers'}
+      </button>
+      {result && (
+        <span className="ml-2 text-xs text-gray-500">{result}</span>
+      )}
+    </div>
   )
 }
 
@@ -1201,6 +1244,14 @@ function ListingRow({
                 </div>
               </div>
               <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Market Comparison ($)</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-2 text-sm text-gray-400">$</span>
+                  <input type="number" value={editState.market_comparison_aud} onChange={e => onSet('market_comparison_aud', e.target.value)} className={`${inputClass} pl-6`} placeholder="Comparable local price" />
+                </div>
+                <p className="text-[10px] text-gray-400 mt-0.5">If set, shows &ldquo;$X below market&rdquo; on listing page</p>
+              </div>
+              <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-1.5">Japan Price (¥)</label>
                 <div className="relative">
                   <span className="absolute left-3 top-2 text-sm text-gray-400">¥</span>
@@ -1370,6 +1421,7 @@ function ListingRow({
               {isTranslating ? 'Translating…' : '🌐 Re-translate with AI'}
             </button>
             <NotifyButton listingId={l.id} />
+            <NotifyStockAlertsButton listingId={l.id} />
             <SendToNaoButton listingId={l.id} modelName={l.model_name || 'Unknown Van'} />
             <StartDealButton listing={l} />
           </div>
@@ -1556,6 +1608,7 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
         aud_estimate: editState.aud_estimate ? Math.round(parseFloat(editState.aud_estimate) * 100) : null,
         au_price_aud: editState.au_price_aud ? Math.round(parseFloat(editState.au_price_aud) * 100) : null,
         start_price_jpy: editState.start_price_jpy ? parseInt(editState.start_price_jpy) : null,
+        market_comparison_aud: editState.market_comparison_aud ? Math.round(parseFloat(editState.market_comparison_aud) * 100) : null,
         source: editState.source,
         status: editState.status,
         au_status: editState.au_status || null,

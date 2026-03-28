@@ -253,6 +253,12 @@ export default async function VanDetailPage({ params }: { params: { id: string }
               {!isJapanListing && priceCents && (
                 <p className="text-xs text-gray-400 mt-1">All-in price — import, compliance & GST included.</p>
               )}
+              {listing.market_comparison_aud && priceCents && listing.market_comparison_aud > priceCents && (
+                <div className="mt-3 inline-flex items-center gap-2 bg-green-50 border border-green-200 text-green-800 text-sm font-semibold px-3 py-2 rounded-lg">
+                  <span>📉</span>
+                  <span>${Math.round((listing.market_comparison_aud - priceCents) / 100).toLocaleString()} below comparable local listings</span>
+                </div>
+              )}
             </div>
 
             {/* Spec table */}

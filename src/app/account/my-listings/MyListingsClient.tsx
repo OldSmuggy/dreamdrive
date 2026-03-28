@@ -558,10 +558,14 @@ export default function MyListingsClient({
       {/* Finders fee reminder */}
       <div className="bg-white border border-gray-100 rounded-2xl p-5 text-sm text-gray-500 leading-relaxed">
         <p className="font-semibold text-charcoal mb-1">About the finders fee</p>
-        <p>
-          If a Bare Camper customer purchases a van you&apos;ve listed, you earn a <strong className="text-charcoal">$200 AUD finders fee</strong>.
-          We&apos;ll email you when it happens and arrange the bank transfer.
+        <p className="mb-2">
+          You earn a <strong className="text-charcoal">$200 AUD finders fee</strong> when:
         </p>
+        <ul className="list-disc list-inside space-y-1 ml-1">
+          <li>A <strong className="text-charcoal">Japanese-sourced van</strong> you&apos;ve listed is purchased by a Bare Camper customer</li>
+          <li>An <strong className="text-charcoal">Australian-sourced van</strong> you&apos;ve listed leads to the buyer getting a Bare Camper conversion (pop top, hi-top, or full fit-out)</li>
+        </ul>
+        <p className="mt-2">We&apos;ll email you when a sale is confirmed and arrange the bank transfer.</p>
       </div>
     </div>
   )
