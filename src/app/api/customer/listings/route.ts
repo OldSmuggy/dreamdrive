@@ -34,6 +34,7 @@ export async function POST(req: NextRequest) {
       model_name, model_year, body_type, body_colour,
       mileage_km, transmission, drive,
       au_price_aud, location, notes, photos,
+      source_url, source_category,
     } = body
 
     if (!model_name) return NextResponse.json({ error: 'Model name is required' }, { status: 400 })
@@ -71,6 +72,8 @@ export async function POST(req: NextRequest) {
         is_community_find: true,
         featured: false,
         submitted_by: user.id,
+        source_url: source_url || null,
+        source_category: source_category || null,
       })
       .select('id')
       .single()

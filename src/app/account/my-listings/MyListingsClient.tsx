@@ -4,6 +4,18 @@ import { useState, useRef } from 'react'
 import Image from 'next/image'
 import type { MyListing } from './page'
 
+// ─── Source category labels (private, admin + submitter only) ───────────────
+const SOURCE_CATEGORY_LABELS: Record<string, string> = {
+  facebook:     'Facebook Marketplace',
+  gumtree:      'Gumtree',
+  private_sale: 'Private Sale',
+  au_dealer:    'Australian Dealer',
+  goonet:       'Goo-net (Japan)',
+  carsensor:    'Car Sensor (Japan)',
+  yahoo_auctions: 'Yahoo Auctions Japan',
+  other:        'Other',
+}
+
 // ─── Photo upload slot (same pattern as submit-a-van) ───────────────────────
 const REQUIRED_SLOTS = [
   { key: 'front',     label: 'Front' },
@@ -108,6 +120,23 @@ function ListingCard({ listing, onPublish, onDelete, publishing, deleting }: {
           {listing.au_price_aud && <span className="font-semibold text-charcoal">${(listing.au_price_aud / 100).toLocaleString()}</span>}
         </div>
 
+        {/* Private source info — only the submitter sees this */}
+        {(listing.source_category || listing.source_url) && (
+          <div className="flex items-center gap-2 mb-3 text-xs text-gray-400 bg-gray-50 rounded-lg px-3 py-2">
+            <span>🔒</span>
+            <span className="font-medium text-gray-500">{SOURCE_CATEGORY_LABELS[listing.source_category ?? ''] ?? listing.source_category}</span>
+            {listing.source_url && (
+              <>
+                <span className="text-gray-300">·</span>
+                <a href={listing.source_url} target="_blank" rel="noopener noreferrer"
+                  className="text-ocean hover:underline truncate max-w-[180px]">
+                  View original →
+                </a>
+              </>
+            )}
+          </div>
+        )}
+
         <div className="flex gap-2 flex-wrap">
           {listing.status === 'draft' && (
             <>
@@ -158,6 +187,8 @@ function AddListingForm({ onCreated }: { onCreated: (listing: MyListing) => void
     drive: '2WD',
     au_price_aud: '',
     notes: '',
+    source_category: '',
+    source_url: '',
   })
 
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }))
@@ -217,11 +248,13 @@ function AddListingForm({ onCreated }: { onCreated: (listing: MyListing) => void
         is_community_find: true,
         created_at: new Date().toISOString(),
         description: form.notes || null,
+        source_url: form.source_url || null,
+        source_category: form.source_category || null,
       }
       onCreated(newListing)
       // Reset
       setOpen(false)
-      setForm({ model_name: 'Toyota Hiace', model_year: '', body_type: '', body_colour: '', mileage_km: '', transmission: '', drive: '2WD', au_price_aud: '', notes: '' })
+      setForm({ model_name: 'Toyota Hiace', model_year: '', body_type: '', body_colour: '', mileage_km: '', transmission: '', drive: '2WD', au_price_aud: '', notes: '', source_category: '', source_url: '' })
       setPhotos({}); setExtraPhotos([])
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Something went wrong.')
@@ -302,6 +335,50 @@ function AddListingForm({ onCreated }: { onCreated: (listing: MyListing) => void
       <div>
         <label className="block text-sm font-semibold text-charcoal mb-1.5">Notes</label>
         <textarea value={form.notes} onChange={e => set('notes', e.target.value)} rows={2} className={inputCls + ' resize-none'} placeholder="Condition, features, history, why it's a good buy…" />
+      </div>
+
+      {/* Source listing — private, admin + submitter only */}
+      <div className="border-t border-gray-100 pt-5">
+        <p className="text-sm font-semibold text-charcoal mb-0.5">
+          Source listing <span className="text-red-400">*</span>
+        </p>
+        <p className="text-xs text-gray-400 mb-4">
+          Where did you find this van? This is <strong>private</strong> — only visible to you and Bare Camper admin.
+        </p>
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-semibold text-charcoal mb-1.5">
+              Category <span className="text-red-400">*</span>
+            </label>
+            <select
+              value={form.source_category}
+              onChange={e => set('source_category', e.target.value)}
+              required
+              className={inputCls}
+            >
+              <option value="">Where is this van listed?</option>
+              <option value="facebook">Facebook Marketplace</option>
+              <option value="gumtree">Gumtree</option>
+              <option value="private_sale">Private Sale (no listing)</option>
+              <option value="au_dealer">Australian Dealer</option>
+              <option value="goonet">Japan Dealer — Goo-net</option>
+              <option value="carsensor">Japan Dealer — Car Sensor</option>
+              <option value="yahoo_auctions">Yahoo Auctions Japan</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-charcoal mb-1.5">Link to listing</label>
+            <input
+              type="url"
+              value={form.source_url}
+              onChange={e => set('source_url', e.target.value)}
+              className={inputCls}
+              placeholder="https://www.facebook.com/marketplace/…"
+            />
+            <p className="text-xs text-gray-400 mt-1">Paste the URL if it&apos;s listed online.</p>
+          </div>
+        </div>
       </div>
 
       {/* Photos */}

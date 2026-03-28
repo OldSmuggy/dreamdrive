@@ -17,7 +17,7 @@ export default async function MyListingsPage() {
   // Fetch this user's existing listings (all statuses)
   const { data: listings } = await admin
     .from('listings')
-    .select('id, model_name, model_year, grade, body_colour, mileage_km, transmission, au_price_aud, photos, status, is_community_find, created_at, description')
+    .select('id, model_name, model_year, grade, body_colour, mileage_km, transmission, au_price_aud, photos, status, is_community_find, created_at, description, source_url, source_category')
     .eq('submitted_by', user.id)
     .order('created_at', { ascending: false })
 
@@ -77,4 +77,6 @@ export interface MyListing {
   is_community_find: boolean
   created_at: string
   description: string | null
+  source_url: string | null
+  source_category: string | null
 }
