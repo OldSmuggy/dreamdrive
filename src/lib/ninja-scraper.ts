@@ -336,6 +336,9 @@ export async function runNinjaScraper(options: {
     const supabase = createAdminClient()
     let logId: string | null = null
 
+    // Ensure storage bucket exists for photo uploads
+    await supabase.storage.createBucket('listing-images', { public: true }).catch(() => {})
+
     const { data: log } = await supabase
       .from('scrape_logs')
       .insert({ source: 'ninja', status: 'running', listings_found: limitedRefs.length })
@@ -401,10 +404,68 @@ export async function runNinjaScraper(options: {
           continue
         }
 
+        // Download photos from NINJA (requires session cookies) and upload to Supabase storage
+        if (van.photos.length > 0) {
+          onProgress(`${label} — downloading ${van.photos.length} photos...`)
+          const uploadedPhotos: string[] = []
+          for (const ninjaUrl of van.photos) {
+            try {
+              const response = await context.request.get(ninjaUrl)
+              if (response.ok()) {
+                const buffer = await response.body()
+                const contentType = response.headers()['content-type'] || 'image/jpeg'
+                const ext = contentType.includes('png') ? 'png' : 'jpg'
+                const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+                const storagePath = `listings/${filename}`
+
+                const { error: uploadErr } = await supabase.storage
+                  .from('listing-images')
+                  .upload(storagePath, buffer, { contentType, upsert: false })
+
+                if (!uploadErr) {
+                  const { data: { publicUrl } } = supabase.storage.from('listing-images').getPublicUrl(storagePath)
+                  uploadedPhotos.push(publicUrl)
+                } else {
+                  onProgress(`${label} — photo upload error: ${uploadErr.message}`)
+                }
+              }
+            } catch (photoErr) {
+              onProgress(`${label} — photo download error: ${photoErr}`)
+            }
+          }
+          van.photos = uploadedPhotos
+          onProgress(`${label} — ${uploadedPhotos.length}/${van.photos.length || uploadedPhotos.length} photos saved`)
+        }
+
+        // Download inspection sheet if present
+        if (van.inspection_sheet) {
+          try {
+            const response = await context.request.get(van.inspection_sheet)
+            if (response.ok()) {
+              const buffer = await response.body()
+              const contentType = response.headers()['content-type'] || 'image/jpeg'
+              const ext = contentType.includes('png') ? 'png' : 'jpg'
+              const filename = `inspection-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+              const storagePath = `listings/${filename}`
+
+              const { error: uploadErr } = await supabase.storage
+                .from('listing-images')
+                .upload(storagePath, buffer, { contentType, upsert: false })
+
+              if (!uploadErr) {
+                const { data: { publicUrl } } = supabase.storage.from('listing-images').getPublicUrl(storagePath)
+                van.inspection_sheet = publicUrl
+              }
+            }
+          } catch (sheetErr) {
+            onProgress(`${label} — inspection sheet error: ${sheetErr}`)
+          }
+        }
+
         processed.push(van)
         onProgress(
           `${label} — ${van.grade || 'UNKNOWN'} ${van.model_year ?? '?'} ` +
-          `${van.mileage_km ?? '?'}km score:${van.inspection_score ?? '-'} ¥${van.start_price_jpy ?? '?'}`
+          `${van.mileage_km ?? '?'}km score:${van.inspection_score ?? '-'} ¥${van.start_price_jpy ?? '?'} [${van.photos.length} photos]`
         )
 
         // Write to Supabase
@@ -756,7 +817,7 @@ function toListingRow(van: ScrapedVan) {
     body_colour: van.body_colour,
     start_price_jpy: van.start_price_jpy,
     aud_estimate: audEstimate,
-    status: 'available',
+    status: 'draft',
     has_nav: van.has_nav,
     has_leather: van.has_leather,
     has_sunroof: van.has_sunroof,
