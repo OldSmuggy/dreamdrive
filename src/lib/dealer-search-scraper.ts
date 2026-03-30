@@ -10,9 +10,9 @@ import {
   extractPhotos,
   extractExternalId,
   translateListing,
-  FETCH_HEADERS,
   sleep,
 } from '@/lib/dealer-parsers'
+import { scrapeUrl } from '@/lib/firecrawl'
 
 // ── Filter types ──────────────────────────────────────────────────────────────
 
@@ -137,13 +137,16 @@ export async function runDealerSearch(
     onProgress({ type: 'page', message: `Fetching search page ${page}...` })
 
     try {
-      const res = await fetch(url, { headers: FETCH_HEADERS })
-      if (!res.ok) {
-        onProgress({ type: 'error', message: `Page ${page}: HTTP ${res.status}` })
+      let html: string
+      try {
+        const result = await scrapeUrl(url)
+        html = result.html
+        onProgress({ type: 'info', message: `Page ${page}: scraped via ${result.source} (${html.length} chars)` })
+      } catch (err) {
+        onProgress({ type: 'error', message: `Page ${page}: ${String(err)}` })
         break
       }
 
-      const html = await res.text()
       if (html.length < 2000) {
         onProgress({ type: 'error', message: `Page ${page}: Response too small (${html.length} chars) — may be bot-blocked` })
         break
@@ -199,16 +202,18 @@ export async function runDealerSearch(
     }
 
     try {
-      // Fetch detail page
-      const detailRes = await fetch(listingUrl, { headers: FETCH_HEADERS })
-      if (!detailRes.ok) {
+      // Fetch detail page via Firecrawl (with fetch fallback)
+      let html: string
+      try {
+        const detailResult = await scrapeUrl(listingUrl)
+        html = detailResult.html
+      } catch (err) {
         result.errors++
-        onProgress({ type: 'error', message: `[${i + 1}/${allListingUrls.length}] HTTP ${detailRes.status}: ${listingUrl}`, ...result })
+        onProgress({ type: 'error', message: `[${i + 1}/${allListingUrls.length}] ${String(err)}: ${listingUrl}`, ...result })
         await sleep(300)
         continue
       }
 
-      const html = await detailRes.text()
       if (html.length < 2000) {
         result.errors++
         onProgress({ type: 'error', message: `[${i + 1}/${allListingUrls.length}] Page too small: ${listingUrl}`, ...result })

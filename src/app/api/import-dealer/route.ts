@@ -9,8 +9,8 @@ import {
   parseCarSensor,
   extractPhotos,
   translateListing,
-  FETCH_HEADERS,
 } from '@/lib/dealer-parsers'
+import { scrapeUrl } from '@/lib/firecrawl'
 
 // ============================================================
 // POST /api/import-dealer
@@ -47,17 +47,18 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Fetch the public page
-    const pageRes = await fetch(url, { headers: FETCH_HEADERS })
-
-    if (!pageRes.ok) {
+    // Fetch the public page via Firecrawl (with fetch fallback)
+    let html: string
+    try {
+      const result = await scrapeUrl(url)
+      html = result.html
+      console.log(`[import-dealer] Scraped via ${result.source}: ${html.length} chars`)
+    } catch (err) {
       return NextResponse.json(
-        { error: `Site returned HTTP ${pageRes.status}` },
+        { error: `Failed to fetch page: ${String(err)}` },
         { status: 502 }
       )
     }
-
-    const html = await pageRes.text()
 
     // Check for JS-only / bot-blocked pages
     if (html.length < 2000 || (html.includes('<script') && !html.includes('<table') && !html.includes('<div'))) {
