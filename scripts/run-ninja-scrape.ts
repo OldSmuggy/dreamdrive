@@ -40,23 +40,25 @@ try {
   console.error('⚠️  Could not load .env.local:', e)
 }
 
-// Dynamic import so env vars are set before supabase.ts module loads
-const { runNinjaScraper } = await import('../src/lib/ninja-scraper')
+// Wrap in async main so we can dynamic-import after env vars are loaded
+async function main() {
+  // Dynamic import so env vars are set before supabase.ts module loads
+  const { runNinjaScraper } = await import('../src/lib/ninja-scraper')
 
-const args = process.argv.slice(2)
-const maxIdx = args.indexOf('--max')
-const maxListings = maxIdx >= 0 ? parseInt(args[maxIdx + 1]) : undefined
+  const args = process.argv.slice(2)
+  const maxIdx = args.indexOf('--max')
+  const maxListings = maxIdx >= 0 ? parseInt(args[maxIdx + 1]) : undefined
 
-const yearFromIdx = args.indexOf('--year-from')
-const yearFrom = yearFromIdx >= 0 ? parseInt(args[yearFromIdx + 1]) : undefined
+  const yearFromIdx = args.indexOf('--year-from')
+  const yearFrom = yearFromIdx >= 0 ? parseInt(args[yearFromIdx + 1]) : undefined
 
-const yearToIdx = args.indexOf('--year-to')
-const yearTo = yearToIdx >= 0 ? parseInt(args[yearToIdx + 1]) : undefined
+  const yearToIdx = args.indexOf('--year-to')
+  const yearTo = yearToIdx >= 0 ? parseInt(args[yearToIdx + 1]) : undefined
 
-const driveIdx = args.indexOf('--drive')
-const driveType = driveIdx >= 0 ? (args[driveIdx + 1] as '2WD' | '4WD') : undefined
+  const driveIdx = args.indexOf('--drive')
+  const driveType = driveIdx >= 0 ? (args[driveIdx + 1] as '2WD' | '4WD') : undefined
 
-console.log(`
+  console.log(`
 ╔══════════════════════════════════════════╗
 ║     NINJA Auction Scraper                ║
 ║     Bare Camper — barecamper.com.au      ║
@@ -67,16 +69,16 @@ Max listings: ${maxListings ?? 'ALL'}
 Filters:      year ${yearFrom ?? 'any'}–${yearTo ?? 'any'}, drive: ${driveType ?? 'any'}
 `)
 
-const start = Date.now()
+  const start = Date.now()
 
-runNinjaScraper({
-  maxListings,
-  filters: { yearFrom, yearTo, driveType },
-  onProgress: (msg) => console.log(msg),
-})
-  .then((result) => {
-    const elapsed = ((Date.now() - start) / 1000).toFixed(1)
-    console.log(`
+  const result = await runNinjaScraper({
+    maxListings,
+    filters: { yearFrom, yearTo, driveType },
+    onProgress: (msg) => console.log(msg),
+  })
+
+  const elapsed = ((Date.now() - start) / 1000).toFixed(1)
+  console.log(`
 ═══════════════════════════════════════════
 ✅ Scrape complete in ${elapsed}s
 
@@ -88,9 +90,9 @@ runNinjaScraper({
    Errors:     ${result.errors}
 ═══════════════════════════════════════════
 `)
-    process.exit(0)
-  })
-  .catch((err) => {
-    console.error('\n❌ Scrape failed:', err)
-    process.exit(1)
-  })
+}
+
+main().catch((err) => {
+  console.error('\n❌ Scrape failed:', err)
+  process.exit(1)
+})
