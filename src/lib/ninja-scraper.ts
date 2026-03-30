@@ -95,12 +95,11 @@ export interface NinjaFilterOptions {
 }
 
 export async function runNinjaScraper(options: {
-  dryRun?: boolean
   maxListings?: number
   filters?: NinjaFilterOptions
   onProgress?: (msg: string) => void
 }): Promise<ScrapeResult> {
-  const { dryRun = false, maxListings, filters, onProgress = console.log } = options
+  const { maxListings, filters, onProgress = console.log } = options
 
   // Log active filters
   if (filters?.yearFrom || filters?.yearTo || (filters?.driveType && filters.driveType !== 'any')) {
@@ -179,42 +178,65 @@ export async function runNinjaScraper(options: {
     // ----------------------------------------------------------
     onProgress('Step 2: Setting filters & navigating to Toyota makersearch...')
 
-    // Set year range filters before submitting
+    // Debug: dump all form fields on searchcondition page to discover filter field names
+    const formFields = await page.evaluate(() => {
+      const fields: Array<{ id: string; name: string; tag: string; type: string; value: string }> = []
+      const inputs = document.querySelectorAll('input, select')
+      inputs.forEach(el => {
+        const inp = el as HTMLInputElement | HTMLSelectElement
+        // Only include fields with IDs that look like conditions/filters
+        if (inp.id || inp.name) {
+          const entry: any = { id: inp.id || '', name: inp.name || '', tag: el.tagName, value: inp.value || '' }
+          if (el.tagName === 'INPUT') entry.type = (el as HTMLInputElement).type
+          if (el.tagName === 'SELECT') {
+            entry.options = Array.from((el as HTMLSelectElement).options).map(o => ({ v: o.value, t: o.textContent?.trim() }))
+          }
+          fields.push(entry)
+        }
+      })
+      return fields
+    })
+    // Log fields that look like condition/filter fields
+    const conditionFields = formFields.filter(f =>
+      (f.id && f.id.toLowerCase().includes('condition')) ||
+      (f.name && f.name.toLowerCase().includes('condition')) ||
+      (f.id && (f.id.toLowerCase().includes('year') || f.id.toLowerCase().includes('drive') || f.id.toLowerCase().includes('model')))
+    )
+    if (conditionFields.length > 0) {
+      onProgress(`  Filter fields found: ${JSON.stringify(conditionFields, null, 2)}`)
+    } else {
+      onProgress(`  No condition filter fields found. All form fields (${formFields.length}):`)
+      // Log first 30 fields for debugging
+      formFields.slice(0, 30).forEach(f => onProgress(`    ${f.id || f.name}: ${f.tag}${f.value ? '=' + f.value : ''}`))
+    }
+
+    // Set year range filters if the fields exist
     if (filters?.yearFrom) {
-      await page.evaluate((y) => {
+      const set = await page.evaluate((y) => {
         const el = document.getElementById('conditionModelYearFrom') as HTMLInputElement
-        if (el) el.value = String(y)
+        if (el) { el.value = String(y); return true }
+        return false
       }, filters.yearFrom)
-      onProgress(`  Set year from: ${filters.yearFrom}`)
+      onProgress(`  Year from ${filters.yearFrom}: ${set ? 'set' : 'field not found'}`)
     }
     if (filters?.yearTo) {
-      await page.evaluate((y) => {
+      const set = await page.evaluate((y) => {
         const el = document.getElementById('conditionModelYearTo') as HTMLInputElement
-        if (el) el.value = String(y)
+        if (el) { el.value = String(y); return true }
+        return false
       }, filters.yearTo)
-      onProgress(`  Set year to: ${filters.yearTo}`)
+      onProgress(`  Year to ${filters.yearTo}: ${set ? 'set' : 'field not found'}`)
     }
 
-    // Set drive type filter
+    // Set drive type filter if the field exists
     if (filters?.driveType && filters.driveType !== 'any') {
-      await page.evaluate((dt) => {
+      const set = await page.evaluate((dt) => {
         const el = document.getElementById('conditionDriveType') as HTMLInputElement | HTMLSelectElement
-        if (el) el.value = dt === '4WD' ? '02' : '01'
+        if (el) { el.value = dt === '4WD' ? '02' : '01'; return true }
+        return false
       }, filters.driveType)
-      onProgress(`  Set drive type: ${filters.driveType}`)
+      onProgress(`  Drive type ${filters.driveType}: ${set ? 'set' : 'field not found'}`)
     }
-
-    // Debug: dump available drive type options (useful for first run)
-    const driveOptions = await page.evaluate(() => {
-      const el = document.getElementById('conditionDriveType')
-      if (!el) return 'conditionDriveType element not found'
-      if (el.tagName === 'SELECT') {
-        const opts = Array.from((el as HTMLSelectElement).options)
-        return opts.map(o => ({ value: o.value, text: o.textContent?.trim() }))
-      }
-      return { tagName: el.tagName, value: (el as HTMLInputElement).value }
-    })
-    onProgress(`  Drive type field: ${JSON.stringify(driveOptions)}`)
 
     await page.evaluate(() => {
       (document.getElementById('brandGroupingCode') as HTMLInputElement).value = '01';
@@ -311,17 +333,15 @@ export async function runNinjaScraper(options: {
     // ----------------------------------------------------------
     // 4. Log scrape start
     // ----------------------------------------------------------
-    const supabase = dryRun ? null : createAdminClient()
+    const supabase = createAdminClient()
     let logId: string | null = null
 
-    if (supabase) {
-      const { data: log } = await supabase
-        .from('scrape_logs')
-        .insert({ source: 'ninja', status: 'running', listings_found: limitedRefs.length })
-        .select('id')
-        .single()
-      logId = log?.id ?? null
-    }
+    const { data: log } = await supabase
+      .from('scrape_logs')
+      .insert({ source: 'ninja', status: 'running', listings_found: limitedRefs.length })
+      .select('id')
+      .single()
+    logId = log?.id ?? null
 
     // ----------------------------------------------------------
     // 5. Fetch detail pages
@@ -388,23 +408,21 @@ export async function runNinjaScraper(options: {
         )
 
         // Write to Supabase
-        if (supabase) {
-          const { data: existing } = await supabase
-            .from('listings')
-            .select('id')
-            .eq('external_id', van.external_id)
-            .maybeSingle()
+        const { data: existing } = await supabase
+          .from('listings')
+          .select('id')
+          .eq('external_id', van.external_id)
+          .maybeSingle()
 
-          if (existing) {
-            duplicates++
+        if (existing) {
+          duplicates++
+        } else {
+          const { error: insertErr } = await supabase.from('listings').insert(toListingRow(van))
+          if (insertErr) {
+            onProgress(`${label} — DB error: ${insertErr.message}`)
+            errors++
           } else {
-            const { error: insertErr } = await supabase.from('listings').insert(toListingRow(van))
-            if (insertErr) {
-              onProgress(`${label} — DB error: ${insertErr.message}`)
-              errors++
-            } else {
-              newInserts++
-            }
+            newInserts++
           }
         }
 
@@ -426,7 +444,7 @@ export async function runNinjaScraper(options: {
     // ----------------------------------------------------------
     // 6. Update scrape log
     // ----------------------------------------------------------
-    if (supabase && logId) {
+    if (logId) {
       await supabase
         .from('scrape_logs')
         .update({

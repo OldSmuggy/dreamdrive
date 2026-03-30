@@ -12,7 +12,6 @@ interface ScrapeResult {
 }
 
 export default function ScrapePanel({ secret }: { secret: string }) {
-  const [dryRun, setDryRun] = useState(true)
   const [max, setMax] = useState('')
   const [yearFrom, setYearFrom] = useState('2015')
   const [yearTo, setYearTo] = useState('2024')
@@ -25,7 +24,6 @@ export default function ScrapePanel({ secret }: { secret: string }) {
 
   const buildCommand = () => {
     let cmd = 'npx tsx scripts/run-ninja-scrape.ts'
-    if (dryRun) cmd += ' --dry-run'
     if (max.trim()) cmd += ` --max ${max.trim()}`
     if (yearFrom.trim()) cmd += ` --year-from ${yearFrom.trim()}`
     if (yearTo.trim()) cmd += ` --year-to ${yearTo.trim()}`
@@ -46,7 +44,6 @@ export default function ScrapePanel({ secret }: { secret: string }) {
     setError(null)
 
     const params = new URLSearchParams()
-    if (dryRun) params.set('dryRun', 'true')
     if (max.trim()) params.set('max', max.trim())
 
     const url = `/api/scrape${params.toString() ? `?${params}` : ''}`
@@ -167,21 +164,6 @@ export default function ScrapePanel({ secret }: { secret: string }) {
           </label>
         </div>
 
-        {/* Options row */}
-        <div className="flex items-center gap-6 mb-5">
-          <label className="flex items-center gap-2 cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={dryRun}
-              onChange={e => setDryRun(e.target.checked)}
-              className="w-4 h-4 accent-ocean"
-            />
-            <span className="text-sm font-medium text-gray-700">
-              Dry run <span className="text-gray-400 font-normal">(preview only, no DB writes)</span>
-            </span>
-          </label>
-        </div>
-
         {/* One-time setup */}
         <div className="bg-gray-50 rounded-lg p-3 mb-3 text-xs text-gray-500 font-mono">
           <div className="text-gray-400 mb-1"># First time setup</div>
@@ -202,7 +184,7 @@ export default function ScrapePanel({ secret }: { secret: string }) {
         </div>
 
         <p className="text-xs text-gray-400 mt-2">
-          Run this command in Terminal. Takes ~2–4s per listing.
+          Copy and paste into Terminal. Takes ~2–4s per listing.
           Needs <code className="bg-gray-100 px-1 rounded">NINJA_LOGIN_ID</code> and <code className="bg-gray-100 px-1 rounded">NINJA_PASSWORD</code> in <code className="bg-gray-100 px-1 rounded">.env.local</code>.
         </p>
       </div>
@@ -234,9 +216,7 @@ export default function ScrapePanel({ secret }: { secret: string }) {
       {/* Result summary */}
       {result && (
         <div className="bg-green-50 border border-green-200 rounded-xl p-5">
-          <p className="font-semibold text-green-800 mb-3">
-            {dryRun ? 'Dry run complete' : 'Scrape complete'}
-          </p>
+          <p className="font-semibold text-green-800 mb-3">Scrape complete</p>
           <div className="grid grid-cols-3 gap-3 text-center">
             {[
               { label: 'Found', value: result.found },
@@ -252,7 +232,7 @@ export default function ScrapePanel({ secret }: { secret: string }) {
               </div>
             ))}
           </div>
-          {!dryRun && result.newInserts > 0 && (
+          {result.newInserts > 0 && (
             <div className="mt-4 text-center">
               <a href="/admin/listings" className="text-ocean text-sm font-semibold underline">
                 → View listings
