@@ -88,12 +88,24 @@ export interface ScrapeResult {
 // Main scraper entry point
 // ============================================================
 
+export interface NinjaFilterOptions {
+  yearFrom?: number    // e.g. 2015
+  yearTo?: number      // e.g. 2024
+  driveType?: '2WD' | '4WD' | 'any'
+}
+
 export async function runNinjaScraper(options: {
   dryRun?: boolean
   maxListings?: number
+  filters?: NinjaFilterOptions
   onProgress?: (msg: string) => void
 }): Promise<ScrapeResult> {
-  const { dryRun = false, maxListings, onProgress = console.log } = options
+  const { dryRun = false, maxListings, filters, onProgress = console.log } = options
+
+  // Log active filters
+  if (filters?.yearFrom || filters?.yearTo || (filters?.driveType && filters.driveType !== 'any')) {
+    onProgress(`Filters: year ${filters.yearFrom ?? 'any'}–${filters.yearTo ?? 'any'}, drive: ${filters.driveType ?? 'any'}`)
+  }
 
   const loginId = process.env.NINJA_LOGIN_ID
   const password = process.env.NINJA_PASSWORD
@@ -163,9 +175,47 @@ export async function runNinjaScraper(options: {
     await humanDelay(1000, 3000)
 
     // ----------------------------------------------------------
-    // 2. Navigate to makersearch (Toyota)
+    // 2. Set search filters and navigate to makersearch (Toyota)
     // ----------------------------------------------------------
-    onProgress('Step 2: Navigating to Toyota makersearch...')
+    onProgress('Step 2: Setting filters & navigating to Toyota makersearch...')
+
+    // Set year range filters before submitting
+    if (filters?.yearFrom) {
+      await page.evaluate((y) => {
+        const el = document.getElementById('conditionModelYearFrom') as HTMLInputElement
+        if (el) el.value = String(y)
+      }, filters.yearFrom)
+      onProgress(`  Set year from: ${filters.yearFrom}`)
+    }
+    if (filters?.yearTo) {
+      await page.evaluate((y) => {
+        const el = document.getElementById('conditionModelYearTo') as HTMLInputElement
+        if (el) el.value = String(y)
+      }, filters.yearTo)
+      onProgress(`  Set year to: ${filters.yearTo}`)
+    }
+
+    // Set drive type filter
+    if (filters?.driveType && filters.driveType !== 'any') {
+      await page.evaluate((dt) => {
+        const el = document.getElementById('conditionDriveType') as HTMLInputElement | HTMLSelectElement
+        if (el) el.value = dt === '4WD' ? '02' : '01'
+      }, filters.driveType)
+      onProgress(`  Set drive type: ${filters.driveType}`)
+    }
+
+    // Debug: dump available drive type options (useful for first run)
+    const driveOptions = await page.evaluate(() => {
+      const el = document.getElementById('conditionDriveType')
+      if (!el) return 'conditionDriveType element not found'
+      if (el.tagName === 'SELECT') {
+        const opts = Array.from((el as HTMLSelectElement).options)
+        return opts.map(o => ({ value: o.value, text: o.textContent?.trim() }))
+      }
+      return { tagName: el.tagName, value: (el as HTMLInputElement).value }
+    })
+    onProgress(`  Drive type field: ${JSON.stringify(driveOptions)}`)
+
     await page.evaluate(() => {
       (document.getElementById('brandGroupingCode') as HTMLInputElement).value = '01';
       (document.getElementById('action') as HTMLInputElement).value = 'init';
