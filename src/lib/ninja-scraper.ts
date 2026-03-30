@@ -1,13 +1,16 @@
 /**
- * NINJA auction scraper — pure fetch based (no Playwright, no Firecrawl).
+ * NINJA auction scraper — Playwright-based (real browser).
  *
- * Performs the full login flow (session → AJAX login → loginPrimary →
- * searchcondition → makersearch) using plain fetch with cookie tracking,
- * then paginates search results and fetches detail pages.
+ * USS NINJA requires a real browser to function correctly due to:
+ * - Server-side Struts session state tied to form tokens
+ * - Single-session enforcement (conflict page on duplicate logins)
+ * - Timestamp-based tokens that must be extracted from rendered pages
  *
- * Works reliably on Vercel serverless — no browser binary needed.
+ * Uses headless Chromium via Playwright. Cannot run on Vercel serverless —
+ * must be triggered from a machine with Chromium installed.
  */
 
+import { chromium, type Page, type BrowserContext } from 'playwright'
 import { createAdminClient } from './supabase'
 
 // ============================================================
@@ -27,11 +30,18 @@ const EXCLUDED_GRADES = [
 // Car category codes: 146 = HIACE VAN, 198 = REGIUS ACE VAN
 const CAR_CATEGORY_NOS = ['146', '198']
 
+/** Random delay between min and max milliseconds to mimic human browsing */
+function humanDelay(minMs = 800, maxMs = 2500): Promise<void> {
+  const ms = Math.floor(Math.random() * (maxMs - minMs)) + minMs
+  return new Promise((r) => setTimeout(r, ms))
+}
+
 // ============================================================
 // Types
 // ============================================================
 
 export interface NinjaListingRef {
+  carKindType: string
   KaijoCode: string
   AuctionCount: string
   BidNo: string
@@ -75,85 +85,6 @@ export interface ScrapeResult {
 }
 
 // ============================================================
-// Cookie-based fetch helper
-// ============================================================
-
-const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-
-/** Mutable cookie jar — updated by ninjaFetch after each response */
-let _cookies: Record<string, string> = {}
-
-function cookieStr() {
-  return Object.entries(_cookies).map(([k, v]) => `${k}=${v}`).join('; ')
-}
-
-/** Merge new Set-Cookie values into the cookie jar */
-function absorbCookies(res: Response) {
-  // Try getSetCookie (Node 20+)
-  const setCookies = res.headers.getSetCookie?.() ?? []
-  if (setCookies.length > 0) {
-    for (const sc of setCookies) {
-      const [pair] = sc.split(';')
-      const [k, ...v] = pair.split('=')
-      if (k?.trim()) _cookies[k.trim()] = v.join('=').trim()
-    }
-  } else {
-    // Fallback: parse raw set-cookie header
-    const raw = res.headers.get('set-cookie') || ''
-    for (const part of raw.split(/,(?=\s*\w+=)/)) {
-      const [pair] = part.split(';')
-      const [k, ...v] = pair.split('=')
-      if (k?.trim()) _cookies[k.trim()] = v.join('=').trim()
-    }
-  }
-}
-
-async function ninjaFetch(
-  url: string,
-  options?: {
-    form?: Record<string, string>
-    headers?: Record<string, string>
-    referer?: string
-  }
-): Promise<{ text: string; status: number }> {
-  const headers: Record<string, string> = {
-    'User-Agent': UA,
-    Cookie: cookieStr(),
-    ...(options?.headers ?? {}),
-  }
-  if (options?.referer) headers['Referer'] = options.referer
-
-  const init: RequestInit = { headers, redirect: 'manual' }
-
-  if (options?.form) {
-    init.method = 'POST'
-    headers['Content-Type'] = 'application/x-www-form-urlencoded'
-    init.body = new URLSearchParams(options.form).toString()
-  }
-
-  let res = await fetch(url, init)
-  absorbCookies(res)
-
-  // Follow redirects manually so we capture cookies at each hop
-  let redirects = 0
-  while (res.status >= 300 && res.status < 400 && redirects < 5) {
-    const loc = res.headers.get('location')
-    if (!loc) break
-    await res.text() // consume body
-    const redirectUrl = loc.startsWith('http') ? loc : `${BASE}${loc}`
-    res = await fetch(redirectUrl, {
-      headers: { 'User-Agent': UA, Cookie: cookieStr(), Referer: url },
-      redirect: 'manual',
-    })
-    absorbCookies(res)
-    redirects++
-  }
-
-  const text = await res.text()
-  return { text, status: res.status }
-}
-
-// ============================================================
 // Main scraper entry point
 // ============================================================
 
@@ -171,460 +102,555 @@ export async function runNinjaScraper(options: {
     throw new Error('NINJA_LOGIN_ID and NINJA_PASSWORD must be set in environment variables')
   }
 
-  // Reset cookie jar for fresh session
-  _cookies = {}
+  const browser = await chromium.launch({
+    headless: true,
+    args: [
+      '--disable-blink-features=AutomationControlled',
+      '--no-sandbox',
+    ],
+  })
+  const context = await browser.newContext({
+    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+    viewport: { width: 1280, height: 800 },
+    locale: 'en-AU',
+    timezoneId: 'Australia/Sydney',
+  })
 
-  // ----------------------------------------------------------
-  // 1. Login via plain fetch
-  // ----------------------------------------------------------
-  onProgress('Step 1: Logging in...')
-  const { loginJson, scHtml } = await performLogin(loginId, password, onProgress)
+  try {
+    const page = await context.newPage()
 
-  if (!cookieStr().includes('JSESSIONID')) {
-    throw new Error('No session cookie obtained — cannot proceed')
-  }
+    // Remove automation detection signals
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'webdriver', { get: () => false })
+    })
 
-  // ----------------------------------------------------------
-  // 2. Extract form fields and POST to makersearch.action
-  // ----------------------------------------------------------
-  onProgress('Step 2: Navigating to makersearch (Toyota)...')
+    // ----------------------------------------------------------
+    // 1. Login
+    // ----------------------------------------------------------
+    onProgress('Step 1: Logging in to NINJA...')
+    await page.goto(`${BASE}/ninja/`, { waitUntil: 'networkidle' })
+    await humanDelay(1000, 2000)
 
-  const scFormFields = extractFormFields(scHtml)
-  scFormFields['brandGroupingCode'] = '01' // Toyota
-  scFormFields['bodyType'] = ''
-  scFormFields['cornerSearchCheckCorner'] = ''
-  scFormFields['action'] = 'init'
+    // Type credentials with human-like delays
+    await page.fill('#loginId', loginId)
+    await humanDelay(300, 800)
+    await page.fill('#password', password)
+    await humanDelay(500, 1200)
 
-  const { text: msHtml, status: msStatus } = await ninjaFetch(
-    `${BASE}/ninja/makersearch.action`,
-    {
-      form: scFormFields,
-      referer: `${BASE}/ninja/searchcondition.action`,
+    await page.evaluate(({ loginId, password }) => {
+      (document.getElementById('loginId') as HTMLInputElement).value = loginId;
+      (document.getElementById('password') as HTMLInputElement).value = password;
+      (window as any).login()
+    }, { loginId, password })
+
+    await page.waitForTimeout(3000)
+
+    // Handle session conflict page
+    const bodyText = await page.textContent('body') || ''
+    if (bodyText.includes('already logged in') || bodyText.includes('seniToSearchcondition')) {
+      onProgress('  Session conflict — confirming takeover...')
+      await Promise.all([
+        page.waitForNavigation({ waitUntil: 'load', timeout: 30000 }),
+        page.click('a[onclick*="seniToSearchcondition"]'),
+      ])
     }
-  )
+    await page.waitForLoadState('networkidle').catch(() => {})
 
-  onProgress(`makersearch: status=${msStatus} len=${msHtml.length} timeout=${msHtml.includes('sessionTimeOut')}`)
-
-  if (msHtml.includes('sessionTimeOut') || msStatus >= 400) {
-    throw new Error(`makersearch failed (status ${msStatus})`)
-  }
-
-  const msFormFields = extractFormFields(msHtml)
-
-  // ----------------------------------------------------------
-  // 3. Check listing counts before attempting search
-  // ----------------------------------------------------------
-  onProgress('Step 3: Checking listing counts...')
-
-  for (const catNo of CAR_CATEGORY_NOS) {
-    const catName = catNo === '146' ? 'HIACE VAN' : 'REGIUS ACE VAN'
-    // Look for count in makersearch page: "HIACE VAN (123)"
-    const countMatch = msHtml.match(new RegExp(`${catName}\\s*\\((\\d+)\\)`, 'i'))
-    const count = countMatch ? parseInt(countMatch[1]) : -1
-    onProgress(`  ${catName} (${catNo}): ${count >= 0 ? count + ' listings' : 'count unknown'}`)
-  }
-
-  // ----------------------------------------------------------
-  // 4. Paginate through search results for each car category
-  // ----------------------------------------------------------
-  onProgress('Step 4: Collecting listing references...')
-  const allListingRefs: NinjaListingRef[] = []
-
-  for (const carCategoryNo of CAR_CATEGORY_NOS) {
-    onProgress(`Searching carCategoryNo=${carCategoryNo}...`)
-
-    for (let pg = 1; pg <= 10; pg++) {
-      onProgress(`  Page ${pg}...`)
-
-      // Follow the same flow as the browser:
-      // makerListChoiceCarCat() sets carCategoryNo, action=seniSearch,
-      // submits form1 to searchresultlist.action
-      const srFormFields = { ...msFormFields }
-      srFormFields['carCategoryNo'] = carCategoryNo
-      srFormFields['action'] = 'seniSearch'
-      srFormFields['page'] = String(pg)
-
-      const { text: html, status: srStatus } = await ninjaFetch(
-        `${BASE}/ninja/searchresultlist.action`,
-        {
-          form: srFormFields,
-          referer: `${BASE}/ninja/makersearch.action`,
-        }
-      )
-
-      if (!html || srStatus >= 400) {
-        onProgress(`  Page ${pg}: HTTP ${srStatus} — stopping`)
-        break
-      }
-
-      if (isLoginPage(html) || html.includes('sessionTimeOut')) {
-        onProgress(`  Page ${pg}: session expired — stopping`)
-        break
-      }
-
-      const refs = extractListingRefs(html)
-      if (refs.length === 0) {
-        onProgress(`  Page ${pg}: 0 listings — end of results`)
-        break
-      }
-
-      onProgress(`  Page ${pg}: ${refs.length} listings`)
-      allListingRefs.push(...refs)
-
-      if (!html.includes('次へ') && !html.includes('next') && refs.length < 100) break
-
-      await delay(300)
+    if (!page.url().includes('searchcondition')) {
+      throw new Error(`Login failed — ended up on ${page.url()}`)
     }
-  }
+    onProgress('  ✓ Logged in successfully')
+    await humanDelay(1000, 3000)
 
-  onProgress(`Total listing refs collected: ${allListingRefs.length}`)
+    // ----------------------------------------------------------
+    // 2. Navigate to makersearch (Toyota)
+    // ----------------------------------------------------------
+    onProgress('Step 2: Navigating to Toyota makersearch...')
+    await page.evaluate(() => {
+      (document.getElementById('brandGroupingCode') as HTMLInputElement).value = '01';
+      (document.getElementById('action') as HTMLInputElement).value = 'init';
+      (document.getElementById('form1') as HTMLFormElement).action = 'makersearch.action';
+      (document.getElementById('form1') as HTMLFormElement).submit()
+    })
+    await page.waitForNavigation({ waitUntil: 'load', timeout: 15000 })
+    await page.waitForLoadState('networkidle').catch(() => {})
 
-  const limitedRefs = maxListings ? allListingRefs.slice(0, maxListings) : allListingRefs
+    await humanDelay(1000, 2000)
 
-  // ----------------------------------------------------------
-  // 5. Log scrape start in Supabase
-  // ----------------------------------------------------------
-  const supabase = createAdminClient()
-  let logId: string | null = null
+    // Log available counts
+    const msText = await page.textContent('body') || ''
+    for (const catNo of CAR_CATEGORY_NOS) {
+      const name = catNo === '146' ? 'HIACE VAN' : 'REGIUS ACE VAN'
+      const m = msText.match(new RegExp(`${name}\\s*\\((\\d+)\\)`, 'i'))
+      onProgress(`  ${name}: ${m?.[1] ?? '0'} listings`)
+    }
 
-  if (!dryRun) {
-    const { data: log } = await supabase
-      .from('scrape_logs')
-      .insert({
-        source: 'ninja',
-        status: 'running',
-        listings_found: limitedRefs.length,
-      })
-      .select('id')
-      .single()
-    logId = log?.id ?? null
-  }
+    // ----------------------------------------------------------
+    // 3. Search each car category and collect listing refs
+    // ----------------------------------------------------------
+    onProgress('Step 3: Collecting listing references...')
+    const allRefs: NinjaListingRef[] = []
 
-  // ----------------------------------------------------------
-  // 6. Fetch detail page for each listing ref
-  // ----------------------------------------------------------
-  const processed: ScrapedVan[] = []
-  let skipped = 0
-  let errors = 0
-  let newInserts = 0
-  let duplicates = 0
+    for (const catNo of CAR_CATEGORY_NOS) {
+      const catName = catNo === '146' ? 'HIACE VAN' : 'REGIUS ACE VAN'
+      onProgress(`  Searching ${catName} (${catNo})...`)
+      await humanDelay(800, 2000)
 
-  for (let i = 0; i < limitedRefs.length; i++) {
-    const ref = limitedRefs[i]
-    const label = `[${i + 1}/${limitedRefs.length}] ${ref.KaijoCode}-${ref.AuctionCount}-${ref.BidNo}`
+      // Click the car category on makersearch page
+      await Promise.all([
+        page.waitForNavigation({ waitUntil: 'load', timeout: 15000 }),
+        page.evaluate((no) => (window as any).makerListChoiceCarCat(no), catNo),
+      ])
+      await page.waitForLoadState('networkidle').catch(() => {})
 
-    try {
-      // Navigate to car detail using the panCarDetail pattern:
-      // set hidden fields then POST to cardetail.action with action=search
-      const detailForm = { ...msFormFields }
-      detailForm['action'] = 'search'
-      detailForm['KaijoCode'] = ref.KaijoCode
-      detailForm['AuctionCount'] = ref.AuctionCount
-      detailForm['BidNo'] = ref.BidNo
-      detailForm['carKindType'] = '1'
+      // Get result count
+      const srText = await page.textContent('body') || ''
+      const countMatch = srText.match(/Result[s\s　]*[：:]\s*(\d+)/i)
+      const totalResults = parseInt(countMatch?.[1] || '0')
+      onProgress(`    Results: ${totalResults}`)
 
-      const { text: html } = await ninjaFetch(
-        `${BASE}/ninja/cardetail.action`,
-        {
-          form: detailForm,
-          referer: `${BASE}/ninja/searchresultlist.action`,
-        }
-      )
+      if (totalResults === 0) continue
 
-      if (!html || html.length < 500) {
-        onProgress(`${label} — empty response, skipping`)
-        errors++
-        continue
-      }
-
-      if (isLoginPage(html)) {
-        onProgress(`${label} — session expired`)
-        errors++
-        continue
-      }
-
-      const van = parseDetailPage(html, ref)
-      if (!van) {
-        onProgress(`${label} — parse failed`)
-        errors++
-        continue
-      }
-
-      // Grade exclusion filter
-      const gradeUp = (van.grade || '').toUpperCase()
-      const excluded = EXCLUDED_GRADES.find((ex) => gradeUp.includes(ex))
-      if (excluded) {
-        onProgress(`${label} — excluded grade: ${van.grade}`)
-        skipped++
-        continue
-      }
-
-      processed.push(van)
-
-      onProgress(
-        `${label} — ${van.grade || 'UNKNOWN'} ${van.model_year ?? '?'} ` +
-          `${van.mileage_km ?? '?'}km score:${van.inspection_score ?? '-'} ¥${van.start_price_jpy ?? '?'}`
-      )
-
-      // Write to Supabase (skip in dryRun)
-      if (!dryRun) {
-        const { data: existing } = await supabase
-          .from('listings')
-          .select('id')
-          .eq('external_id', van.external_id)
-          .maybeSingle()
-
-        if (existing) {
-          duplicates++
-        } else {
-          const { error: insertErr } = await supabase.from('listings').insert(toListingRow(van))
-          if (insertErr) {
-            onProgress(`${label} — DB error: ${insertErr.message}`)
-            errors++
-          } else {
-            newInserts++
+      // carListData contains ALL listing refs for the entire search (not per-page)
+      const pageRefs = await page.evaluate(() => {
+        const carListData = (document.getElementById('carListData') as HTMLInputElement)?.value || ''
+        const refs: Array<{ carKindType: string; KaijoCode: string; AuctionCount: string; BidNo: string }> = []
+        for (const entry of carListData.split(',').filter(e => e.trim())) {
+          const parts = entry.split('ж')
+          if (parts.length >= 4) {
+            refs.push({
+              carKindType: parts[0],
+              KaijoCode: parts[1],
+              AuctionCount: parts[2],
+              BidNo: parts[3],
+            })
           }
         }
+        return refs
+      })
+
+      onProgress(`    Collected ${pageRefs.length} refs from carListData`)
+      allRefs.push(...pageRefs)
+
+      // Go back to makersearch for the next category
+      if (CAR_CATEGORY_NOS.indexOf(catNo) < CAR_CATEGORY_NOS.length - 1) {
+        onProgress(`  Going back to makersearch...`)
+        await page.evaluate(() => {
+          (document.getElementById('brandGroupingCode') as HTMLInputElement).value = '01';
+          (document.getElementById('action') as HTMLInputElement).value = 'init';
+          (document.getElementById('form1') as HTMLFormElement).action = 'makersearch.action';
+          (document.getElementById('form1') as HTMLFormElement).submit()
+        })
+        await page.waitForNavigation({ waitUntil: 'load', timeout: 15000 })
+        await page.waitForLoadState('networkidle').catch(() => {})
       }
-    } catch (err) {
-      onProgress(`${label} — error: ${err}`)
-      errors++
     }
 
-    await delay(250)
-  }
+    // Deduplicate refs
+    const seen = new Set<string>()
+    const uniqueRefs = allRefs.filter(r => {
+      const key = `${r.KaijoCode}|${r.AuctionCount}|${r.BidNo}`
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
 
-  // ----------------------------------------------------------
-  // 7. Update scrape log
-  // ----------------------------------------------------------
-  if (!dryRun && logId) {
-    await supabase
-      .from('scrape_logs')
-      .update({
-        completed_at: new Date().toISOString(),
-        listings_found: limitedRefs.length,
-        listings_new: newInserts,
-        status: 'success',
-      })
-      .eq('id', logId)
-  }
+    onProgress(`Total unique refs: ${uniqueRefs.length}`)
+    const limitedRefs = maxListings ? uniqueRefs.slice(0, maxListings) : uniqueRefs
 
-  onProgress(
-    `Done. found=${limitedRefs.length} processed=${processed.length} new=${newInserts} ` +
+    // ----------------------------------------------------------
+    // 4. Log scrape start
+    // ----------------------------------------------------------
+    const supabase = dryRun ? null : createAdminClient()
+    let logId: string | null = null
+
+    if (supabase) {
+      const { data: log } = await supabase
+        .from('scrape_logs')
+        .insert({ source: 'ninja', status: 'running', listings_found: limitedRefs.length })
+        .select('id')
+        .single()
+      logId = log?.id ?? null
+    }
+
+    // ----------------------------------------------------------
+    // 5. Fetch detail pages
+    // ----------------------------------------------------------
+    onProgress('Step 4: Fetching detail pages...')
+    const processed: ScrapedVan[] = []
+    let skipped = 0
+    let errors = 0
+    let newInserts = 0
+    let duplicates = 0
+
+    // Navigate to the search results page first (need valid form state)
+    if (!page.url().includes('searchresultlist')) {
+      await Promise.all([
+        page.waitForNavigation({ waitUntil: 'load', timeout: 15000 }),
+        page.evaluate(() => (window as any).makerListChoiceCarCat('146')),
+      ])
+      await page.waitForLoadState('networkidle').catch(() => {})
+    }
+
+    for (let i = 0; i < limitedRefs.length; i++) {
+      const ref = limitedRefs[i]
+      const label = `[${i + 1}/${limitedRefs.length}] ${ref.KaijoCode}-${ref.AuctionCount}-${ref.BidNo}`
+
+      try {
+        // Human-like delay between detail pages (longer for first few, then vary)
+        if (i > 0) await humanDelay(1500, 4000)
+
+        // Navigate to detail page using seniCarDetail (use string eval to avoid tsx compilation artifacts)
+        await Promise.all([
+          page.waitForNavigation({ waitUntil: 'load', timeout: 15000 }),
+          page.evaluate(
+            `seniCarDetail('${ref.carKindType}','${ref.KaijoCode}','${ref.AuctionCount}','${ref.BidNo}','')`
+          ),
+        ])
+        await page.waitForLoadState('networkidle').catch(() => {})
+
+        // Extract van data from the detail page
+        const van = await extractDetailPage(page, ref)
+        if (!van) {
+          onProgress(`${label} — parse failed`)
+          errors++
+          // Go back
+          await page.goBack({ waitUntil: 'load' }).catch(() => {})
+          await page.waitForLoadState('networkidle').catch(() => {})
+          continue
+        }
+
+        // Grade exclusion
+        const gradeUp = (van.grade || '').toUpperCase()
+        const excluded = EXCLUDED_GRADES.find((ex) => gradeUp.includes(ex))
+        if (excluded) {
+          onProgress(`${label} — excluded grade: ${van.grade}`)
+          skipped++
+          await page.goBack({ waitUntil: 'load' }).catch(() => {})
+          await page.waitForLoadState('networkidle').catch(() => {})
+          continue
+        }
+
+        processed.push(van)
+        onProgress(
+          `${label} — ${van.grade || 'UNKNOWN'} ${van.model_year ?? '?'} ` +
+          `${van.mileage_km ?? '?'}km score:${van.inspection_score ?? '-'} ¥${van.start_price_jpy ?? '?'}`
+        )
+
+        // Write to Supabase
+        if (supabase) {
+          const { data: existing } = await supabase
+            .from('listings')
+            .select('id')
+            .eq('external_id', van.external_id)
+            .maybeSingle()
+
+          if (existing) {
+            duplicates++
+          } else {
+            const { error: insertErr } = await supabase.from('listings').insert(toListingRow(van))
+            if (insertErr) {
+              onProgress(`${label} — DB error: ${insertErr.message}`)
+              errors++
+            } else {
+              newInserts++
+            }
+          }
+        }
+
+        // Go back to results list
+        await page.goBack({ waitUntil: 'load' }).catch(() => {})
+        await page.waitForLoadState('networkidle').catch(() => {})
+
+      } catch (err) {
+        onProgress(`${label} — error: ${err}`)
+        errors++
+        // Try to recover by going back
+        await page.goBack({ waitUntil: 'load' }).catch(() => {})
+        await page.waitForLoadState('networkidle').catch(() => {})
+      }
+
+      await delay(250)
+    }
+
+    // ----------------------------------------------------------
+    // 6. Update scrape log
+    // ----------------------------------------------------------
+    if (supabase && logId) {
+      await supabase
+        .from('scrape_logs')
+        .update({
+          completed_at: new Date().toISOString(),
+          listings_found: limitedRefs.length,
+          listings_new: newInserts,
+          status: 'success',
+        })
+        .eq('id', logId)
+    }
+
+    onProgress(
+      `Done. found=${limitedRefs.length} processed=${processed.length} new=${newInserts} ` +
       `dupes=${duplicates} skipped=${skipped} errors=${errors}`
-  )
+    )
 
-  return {
-    found: limitedRefs.length,
-    processed: processed.length,
-    skipped,
-    errors,
-    newInserts,
-    duplicates,
-    sample: processed.slice(0, 10),
-    logId,
+    return {
+      found: limitedRefs.length,
+      processed: processed.length,
+      skipped,
+      errors,
+      newInserts,
+      duplicates,
+      sample: processed.slice(0, 10),
+      logId,
+    }
+  } finally {
+    await browser.close()
   }
 }
 
 // ============================================================
-// Login flow — pure fetch
+// Detail page extractor
 // ============================================================
 
-async function performLogin(
-  loginId: string,
-  password: string,
-  onProgress: (msg: string) => void
-): Promise<{ loginJson: Record<string, string>; scHtml: string }> {
-
-  // Get JSESSIONID
-  const sessionRes = await fetch(`${BASE}/ninja/`, {
-    headers: { 'User-Agent': UA },
-    redirect: 'manual',
-  })
-  absorbCookies(sessionRes)
-  await sessionRes.text()
-
-  // Follow redirect if any
-  const loc = sessionRes.headers.get('location')
-  if (loc) {
-    const redirectUrl = loc.startsWith('http') ? loc : `${BASE}${loc}`
-    const r2 = await fetch(redirectUrl, {
-      headers: { 'User-Agent': UA, Cookie: cookieStr() },
-      redirect: 'manual',
-    })
-    absorbCookies(r2)
-    await r2.text()
+async function extractDetailPage(page: Page, ref: NinjaListingRef): Promise<ScrapedVan | null> {
+  // Use string-based evaluate to avoid tsx/esbuild __name injection.
+  // DOM structure: data is in CSS-classed divs, NOT in labelled th/td pairs.
+  //   .vehicleDetailLeftBox → year (text), .vehicleDetailName (model + grade)
+  //   .vehicleDetailPlace → auction site, date, bid no
+  //   .vehicleDetailEvaluationPoint → inspection score (full-width chars)
+  //   .vehicleDetailPrice → start price
+  //   .vehicleDetailTable th/td → Type(chassis), Mileage, Body color, Displacement, Transmission
+  //   .vehicleDetailEqTable td.onBack → equipment flags
+  //   hidden inputs photo1-photo6 → photo file paths
+  //   img[src*="get_ex_image"] → inspection sheet image
+  interface DetailPageData {
+    grade: string | null; chassisCode: string | null; yearRaw: string | null
+    mileageRaw: string | null; colourRaw: string | null; transRaw: string | null
+    dispRaw: string | null; scoreRaw: string | null; priceRaw: string | null
+    driveRaw: string | null; auctionDateRaw: string | null; auctionSiteRaw: string | null
+    sessionRaw: string | null; nameText: string; photos: string[]
+    inspectionSheet: string | null; hasNav: boolean; hasLeather: boolean
+    hasSunroof: boolean; hasAlloys: boolean
   }
 
-  const hasSession = cookieStr().includes('JSESSIONID')
-  onProgress(`Session: JSESSIONID ${hasSession ? 'obtained' : 'NOT FOUND'} (cookie: ${cookieStr().slice(0, 60)}...)`)
+  const data = await page.evaluate(`(function() {
+    function getTableVal(label) {
+      var ths = document.querySelectorAll('.vehicleDetailTable th');
+      for (var i = 0; i < ths.length; i++) {
+        if (ths[i].textContent && ths[i].textContent.trim().indexOf(label) !== -1) {
+          var td = ths[i].nextElementSibling;
+          if (td && td.tagName === 'TD') return td.textContent.trim() || null;
+        }
+      }
+      return null;
+    }
 
-  // AJAX login
-  const { text: loginText } = await ninjaFetch(`${BASE}/ninja/login.action`, {
-    form: { action: 'login', loginId, password, isFlg: '', language: '1' },
-    headers: { 'X-Requested-With': 'XMLHttpRequest' },
-    referer: `${BASE}/ninja/`,
-  })
+    // Header section: year, model name, grade
+    var leftBox = document.querySelector('.vehicleDetailLeftBox');
+    var leftBoxText = leftBox ? leftBox.textContent : '';
+    var yearMatch = leftBoxText.match(/\\b(19|20)\\d{2}\\b/);
+    var yearRaw = yearMatch ? yearMatch[0] : null;
 
-  let loginJson: Record<string, string>
-  try {
-    loginJson = JSON.parse(loginText)
-  } catch {
-    onProgress(`Login response (not JSON): ${loginText.slice(0, 300)}`)
-    throw new Error('Login returned non-JSON — check credentials')
+    var nameEl = document.querySelector('.vehicleDetailName');
+    var nameText = nameEl ? nameEl.textContent.trim().replace(/\\s+/g, ' ') : '';
+    // nameText is like "TOYOTA HIACE VAN 4D 4WD DX" or "TOYOTA HIACE VAN 4D 2WD DX GL PACKAGE"
+    // Extract drive from name
+    var driveRaw = null;
+    if (nameText.indexOf('4WD') !== -1) driveRaw = '4WD';
+    else if (nameText.indexOf('2WD') !== -1 || nameText.indexOf('FR') !== -1) driveRaw = '2WD';
+
+    // Extract grade: everything after "4WD" or "2WD" or "FR"
+    var grade = null;
+    var driveMatch = nameText.match(/(?:4WD|2WD|FR)\\s+(.+)/);
+    if (driveMatch) {
+      grade = driveMatch[1].trim();
+    }
+
+    // Auction info: site, date, session
+    var placeEl = document.querySelector('.vehicleDetailPlace');
+    var placeText = placeEl ? placeEl.textContent.trim().replace(/\\s+/g, ' ') : '';
+    // e.g. "Yokohama 1087times 2026/03/31 Bid No.50076"
+    var siteMatch = placeText.match(/^([A-Za-z]+)/);
+    var auctionSiteRaw = siteMatch ? siteMatch[1] : null;
+    var sessionMatch = placeText.match(/(\\d+)times/);
+    var sessionRaw = sessionMatch ? sessionMatch[1] : null;
+    var dateMatch = placeText.match(/(\\d{4}\\/\\d{2}\\/\\d{2})/);
+    var auctionDateRaw = dateMatch ? dateMatch[1] : null;
+
+    // Score (may be full-width like Ｓ)
+    var scoreEl = document.querySelector('.vehicleDetailEvaluationPoint');
+    var scoreRaw = scoreEl ? scoreEl.textContent.trim() : null;
+    // Convert full-width to half-width
+    if (scoreRaw) {
+      scoreRaw = scoreRaw.replace(/[Ａ-Ｚａ-ｚ０-９．]/g, function(c) {
+        return String.fromCharCode(c.charCodeAt(0) - 0xFEE0);
+      });
+    }
+
+    // Price
+    var priceEl = document.querySelector('.vehicleDetailPrice');
+    var priceRaw = priceEl ? priceEl.textContent.trim() : null;
+
+    // Table values
+    var chassisCode = getTableVal('Type');
+    var mileageRaw = getTableVal('Mileage');
+    var colourRaw = getTableVal('Body color');
+    var dispRaw = getTableVal('Displacement');
+    var transRaw = getTableVal('Transmission');
+
+    // Photos from hidden inputs (photo1-photo6)
+    var photos = [];
+    for (var i = 1; i <= 6; i++) {
+      var input = document.getElementById('photo' + i);
+      if (input && input.value) {
+        photos.push('https://www.ninja-cartrade.jp/ninja/cardetail.action?action=get_image&FilePath=' + encodeURIComponent(input.value) + '&carKindType=1');
+      }
+    }
+
+    // Inspection sheet: img with get_ex_image
+    var inspectionSheet = null;
+    var exImgs = document.querySelectorAll('img[src*="get_ex_image"]');
+    if (exImgs.length > 0) {
+      inspectionSheet = exImgs[0].src;
+    }
+
+    // Equipment flags from .vehicleDetailEqTable
+    var eqCells = document.querySelectorAll('.vehicleDetailEqTable td');
+    var hasNav = false, hasLeather = false, hasSunroof = false, hasAlloys = false;
+    for (var i = 0; i < eqCells.length; i++) {
+      var cell = eqCells[i];
+      var isOn = cell.className.indexOf('onBack') !== -1;
+      var txt = cell.textContent.toLowerCase();
+      if (txt.indexOf('navigation') !== -1 || txt.indexOf('navi') !== -1) hasNav = isOn;
+      if (txt.indexOf('leather') !== -1) hasLeather = isOn;
+      if (txt.indexOf('sunroof') !== -1) hasSunroof = isOn;
+      if (txt.indexOf('aluminum') !== -1 || txt.indexOf('alloy') !== -1) hasAlloys = isOn;
+    }
+
+    return {
+      grade: grade,
+      chassisCode: chassisCode,
+      yearRaw: yearRaw,
+      mileageRaw: mileageRaw,
+      colourRaw: colourRaw,
+      transRaw: transRaw,
+      dispRaw: dispRaw,
+      scoreRaw: scoreRaw,
+      priceRaw: priceRaw,
+      driveRaw: driveRaw,
+      auctionDateRaw: auctionDateRaw,
+      auctionSiteRaw: auctionSiteRaw,
+      sessionRaw: sessionRaw,
+      nameText: nameText,
+      photos: photos,
+      inspectionSheet: inspectionSheet,
+      hasNav: hasNav,
+      hasLeather: hasLeather,
+      hasSunroof: hasSunroof,
+      hasAlloys: hasAlloys,
+    };
+  })()`) as DetailPageData | null
+
+  if (!data) return null
+
+  // Parse year
+  let modelYear: number | null = null
+  if (data.yearRaw) {
+    const yearMatch = data.yearRaw.match(/(\d{4})/)
+    if (yearMatch) modelYear = parseInt(yearMatch[1])
   }
 
-  if (loginJson.errflg === '1') {
-    throw new Error(`Login rejected: ${loginJson.errLoginId ?? ''} ${loginJson.errPassword ?? ''}`)
+  // Parse transmission (may be full-width like ＩＡ)
+  let transmission: 'IA' | 'AT' | 'MT' | null = null
+  if (data.transRaw) {
+    // Convert full-width to half-width first
+    const t = data.transRaw.replace(/[Ａ-Ｚａ-ｚ]/g, (c: string) =>
+      String.fromCharCode(c.charCodeAt(0) - 0xFEE0)
+    ).toUpperCase()
+    if (t.includes('IA') || t.includes('CVT') || t.includes('DCT')) transmission = 'IA'
+    else if (t.includes('AT')) transmission = 'AT'
+    else if (t.includes('MT')) transmission = 'MT'
   }
 
-  onProgress(`Login: errflg=${loginJson.errflg} buyerId=${loginJson.buyerId ?? '?'}`)
-
-  // loginPrimary — establishes full session
-  const { text: primaryHtml } = await ninjaFetch(`${BASE}/ninja/login.action`, {
-    form: {
-      action: 'loginPrimary', loginPrimaryGamen: '1', site: '2',
-      memberCode: loginJson.memberCode ?? '', branchCode: loginJson.branchCode ?? '',
-      memberName: loginJson.memberName ?? '', buyerId: loginJson.buyerId ?? '',
-      buyerName: loginJson.buyerName ?? '', buyerImagePath: loginJson.buyerImagePath ?? '',
-      buyerKaijoNameOpenFlg: loginJson.buyerKaijoNameOpenFlg ?? '',
-      language: '1', errflg: '', ID: '', gamenGroup: '', token: '',
-    },
-    referer: `${BASE}/ninja/`,
-  })
-
-  // Extract form1 fields from loginPrimary response — these are the BASE
-  // for all subsequent navigation (same pattern as browser form1)
-  const form1 = extractFormFields(primaryHtml)
-  onProgress(`loginPrimary: ${primaryHtml.length} chars, ${Object.keys(form1).length} form fields`)
-
-  // Navigate to searchcondition (search mode)
-  form1['gamenGroup'] = '22'
-  form1['action'] = ''
-
-  const { text: scHtml, status: scStatus } = await ninjaFetch(`${BASE}/ninja/searchcondition.action`, {
-    form: form1,
-    referer: `${BASE}/ninja/login.action`,
-  })
-
-  onProgress(`searchcondition: status=${scStatus} len=${scHtml.length} timeout=${scHtml.includes('sessionTimeOut')}`)
-
-  if (scHtml.includes('sessionTimeOut') || scStatus >= 400) {
-    onProgress(`scHtml snippet: ${scHtml.slice(0, 300).replace(/\s+/g, ' ')}`)
-    throw new Error(`Search session failed (status ${scStatus})`)
+  // Parse drive from header name text
+  let drive: '2WD' | '4WD' | null = null
+  if (data.driveRaw) {
+    drive = data.driveRaw === '4WD' ? '4WD' : '2WD'
   }
 
-  return { loginJson, scHtml }
+  // Parse score
+  const validScores = ['S', '6', '5.5', '5', '4.5', '4', '3.5', '3', 'R', 'RA', 'X']
+  const scoreClean = (data.scoreRaw || '').trim().toUpperCase()
+  const inspectionScore = validScores.includes(scoreClean) ? scoreClean : null
+
+  // Parse auction date
+  let auctionDate: string | null = null
+  if (data.auctionDateRaw) {
+    auctionDate = data.auctionDateRaw.replace(/\//g, '-')
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(auctionDate)) auctionDate = null
+  }
+
+  // Parse chassis code (may be full-width like ＧＤＨ２０６Ｖ)
+  let chassisCode = data.chassisCode || null
+  if (chassisCode) {
+    chassisCode = chassisCode.replace(/[Ａ-Ｚａ-ｚ０-９]/g, (c: string) =>
+      String.fromCharCode(c.charCodeAt(0) - 0xFEE0)
+    )
+  }
+
+  const bodyColour = data.colourRaw ? data.colourRaw.split(/[（(]/)[0].trim().replace(/\u00a0/g, ' ').trim() : null
+  const grade = data.grade || null
+  const gradeUpper = (grade || '').toUpperCase()
+
+  // Build model name from header text
+  let modelName = 'TOYOTA HIACE VAN'
+  if (data.nameText) {
+    // nameText is like "TOYOTA HIACE VAN 4D 4WD DX"
+    const cleaned = data.nameText.replace(/\u00a0/g, ' ').trim()
+    // Use the full name (without grade suffix) as model_name
+    const parts = cleaned.split(/\s+/)
+    // Find where grade starts (after 4WD/2WD/FR)
+    const driveIdx = parts.findIndex((p: string) => /^(4WD|2WD|FR)$/.test(p))
+    if (driveIdx >= 0) {
+      modelName = parts.slice(0, driveIdx + 1).join(' ')
+    } else {
+      modelName = cleaned
+    }
+  }
+
+  return {
+    external_id: `${ref.KaijoCode}-${ref.AuctionCount}-${ref.BidNo}`,
+    kaijo_code: ref.KaijoCode,
+    auction_count: data.sessionRaw || ref.AuctionCount,
+    bid_no: ref.BidNo,
+    auction_date: auctionDate,
+    auction_site_name: data.auctionSiteRaw || null,
+    model_name: modelName,
+    grade,
+    chassis_code: chassisCode,
+    model_year: modelYear,
+    transmission,
+    displacement_cc: extractNumber(data.dispRaw),
+    drive,
+    mileage_km: extractNumber(data.mileageRaw),
+    inspection_score: inspectionScore,
+    body_colour: bodyColour,
+    start_price_jpy: extractNumber(data.priceRaw),
+    has_nav: data.hasNav,
+    has_leather: data.hasLeather,
+    has_sunroof: data.hasSunroof,
+    has_alloys: data.hasAlloys,
+    photos: data.photos,
+    inspection_sheet: data.inspectionSheet,
+  }
 }
 
 // ============================================================
 // Helpers
 // ============================================================
 
-function isLoginPage(html: string): boolean {
-  return (
-    html.includes('action="/ninja/logincheck.action"') ||
-    html.includes('sessionTimeOut') ||
-    (html.includes('loginId') && html.includes('password') && html.length < 8000)
-  )
-}
-
 function delay(ms: number) {
   return new Promise((r) => setTimeout(r, ms))
-}
-
-function extractFormFields(html: string): Record<string, string> {
-  const fields: Record<string, string> = {}
-  const re = /<input[^>]+name="([^"]+)"[^>]*value="([^"]*)"[^>]*/gi
-  let m: RegExpExecArray | null
-  while ((m = re.exec(html)) !== null) {
-    fields[m[1]] = m[2]
-  }
-  return fields
-}
-
-// ============================================================
-// Search result HTML parser — extract listing refs
-// ============================================================
-
-function extractListingRefs(html: string): NinjaListingRef[] {
-  const refs: NinjaListingRef[] = []
-  const seen = new Set<string>()
-
-  const addRef = (k: string, ac: string, bn: string) => {
-    const key = `${k}|${ac}|${bn}`
-    if (!seen.has(key)) {
-      seen.add(key)
-      refs.push({ KaijoCode: k, AuctionCount: ac, BidNo: bn })
-    }
-  }
-
-  let m: RegExpExecArray | null
-
-  // Pattern 1: URL query params — cardetail.action?KaijoCode=X&AuctionCount=Y&BidNo=Z
-  const linkRe = /cardetail\.action[^"'>\s]*KaijoCode=([^&"'>\s]+)[^"'>\s]*AuctionCount=([^&"'>\s]+)[^"'>\s]*BidNo=([^&"'>\s]+)/gi
-  while ((m = linkRe.exec(html)) !== null) addRef(m[1], m[2], m[3])
-
-  // Pattern 2: href/action attributes with cardetail URLs
-  const hrefRe = /(?:href|action)="([^"]*cardetail\.action[^"]*)"/gi
-  while ((m = hrefRe.exec(html)) !== null) {
-    try {
-      const href = m[1].replace(/&amp;/g, '&')
-      const fullUrl = href.startsWith('http') ? href : `${BASE}${href}`
-      const u = new URL(fullUrl)
-      const k = u.searchParams.get('KaijoCode')
-      const ac = u.searchParams.get('AuctionCount')
-      const bn = u.searchParams.get('BidNo')
-      if (k && ac && bn) addRef(k, ac, bn)
-    } catch { /* ignore malformed URLs */ }
-  }
-
-  // Pattern 3: seniCarDetail(carKindType, kaijoCode, auctionCount, bidNo, zaikoNo)
-  // Defined in carlist.js — params are: 1=carKindType, 2=KaijoCode, 3=AuctionCount, 4=BidNo, 5=zaikoNo
-  const seniDetailRe = /seniCarDetail\s*\(\s*'([^']+)'\s*,\s*'([^']+)'\s*,\s*'([^']+)'\s*,\s*'([^']+)'\s*(?:,\s*'([^']+)')?\s*\)/gi
-  while ((m = seniDetailRe.exec(html)) !== null) addRef(m[2], m[3], m[4])
-
-  // Pattern 4: Other onclick patterns with 3+ params (KaijoCode, AuctionCount, BidNo)
-  const onclickRe = /(?:seniToCardetail|showDetail|cardetailView|carDetail|panCarDetailWith)\s*\(\s*'([^']+)'\s*,\s*'([^']+)'\s*,\s*'([^']+)'\s*\)/gi
-  while ((m = onclickRe.exec(html)) !== null) addRef(m[1], m[2], m[3])
-
-  // Pattern 5: Inline JS setting hidden fields before panCarDetail()
-  // e.g.: $('#KaijoCode').val('TK');$('#AuctionCount').val('1234');$('#BidNo').val('5678');panCarDetail()
-  const inlineRe = /\$\('#KaijoCode'\)\.val\('([^']+)'\)[^;]*\$\('#AuctionCount'\)\.val\('([^']+)'\)[^;]*\$\('#BidNo'\)\.val\('([^']+)'\)/gi
-  while ((m = inlineRe.exec(html)) !== null) addRef(m[1], m[2], m[3])
-
-  // Pattern 6: carListData hidden field — pipe-delimited entries separated by ж
-  // Format: carKindType|KaijoCode|AuctionCount|BidNo per entry
-  const cldMatch = html.match(/name="carListData"[^>]*value="([^"]+)"/)
-  if (cldMatch) {
-    for (const entry of cldMatch[1].split(',').filter((e: string) => e.trim())) {
-      const parts = entry.split('ж')
-      if (parts.length >= 4) {
-        addRef(parts[1], parts[2], parts[3])
-      }
-    }
-  }
-
-  return refs
-}
-
-// ============================================================
-// Detail page HTML parser
-// ============================================================
-
-function extractField(html: string, label: string): string | null {
-  const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-  const patterns = [
-    new RegExp(`${escaped}[^<]*</th>\\s*<td[^>]*>\\s*([^<\\r\\n]+?)\\s*(?:<|$)`, 'is'),
-    new RegExp(`${escaped}[^<]*</td>\\s*<td[^>]*>\\s*([^<\\r\\n]+?)\\s*(?:<|$)`, 'is'),
-    new RegExp(`${escaped}[^<]*</[^>]+>\\s*<[^>]+>\\s*<[^>]+>\\s*([^<\\r\\n]+?)\\s*<`, 'is'),
-  ]
-  for (const re of patterns) {
-    const match = html.match(re)
-    const val = match?.[1]?.trim()
-    if (val && val.length > 0 && val.length < 200) return val
-  }
-  return null
 }
 
 function extractNumber(str: string | null): number | null {
@@ -632,132 +658,6 @@ function extractNumber(str: string | null): number | null {
   const cleaned = str.replace(/[^\d]/g, '')
   const n = parseInt(cleaned, 10)
   return isNaN(n) ? null : n
-}
-
-function extractPhotos(html: string): { photos: string[]; inspectionSheet: string | null } {
-  const photos: string[] = []
-  let inspectionSheet: string | null = null
-  const seen = new Set<string>()
-
-  const addPhoto = (url: string) => {
-    if (!url || seen.has(url) || url.includes('noimage') || url.includes('nophoto')) return
-    seen.add(url)
-    if (/hyoka|inspection|sheet|hyouka/i.test(url)) {
-      if (!inspectionSheet) inspectionSheet = url
-    } else {
-      photos.push(url)
-    }
-  }
-
-  const mainRe = /id="mainPhoto"[^>]*src="([^"]+)"/i
-  const mainMatch = html.match(mainRe)
-  if (mainMatch) addPhoto(mainMatch[1])
-
-  const imgRe = /src="(https?:\/\/[^"]*ninja-cartrade\.jp[^"]*\.(jpg|jpeg|png|gif))"/gi
-  let m: RegExpExecArray | null
-  while ((m = imgRe.exec(html)) !== null) {
-    addPhoto(m[1])
-    if (photos.length >= 6) break
-  }
-
-  const relImgRe = /src="(\/[^"]*\.(jpg|jpeg|png))"/gi
-  while ((m = relImgRe.exec(html)) !== null) {
-    addPhoto(`${BASE}${m[1]}`)
-    if (photos.length >= 6) break
-  }
-
-  return { photos: photos.slice(0, 6), inspectionSheet }
-}
-
-function parseDetailPage(html: string, ref: NinjaListingRef): ScrapedVan | null {
-  if (!html || html.length < 500) return null
-
-  const grade = extractField(html, 'グレード')
-  const chassisCode = extractField(html, '型式')
-  const yearRaw = extractField(html, '年式')
-  const mileageRaw = extractField(html, '走行距離')
-  const colourRaw = extractField(html, 'ボディカラー')
-  const transRaw = extractField(html, 'ミッション') || extractField(html, 'トランスミッション')
-  const dispRaw = extractField(html, '排気量')
-  const scoreRaw = extractField(html, '評価点') || extractField(html, '評価')
-  const priceRaw = extractField(html, '開始価格') || extractField(html, '開始金額')
-  const driveRaw = extractField(html, '駆動') || extractField(html, '駆動方式')
-  const auctionDateRaw = extractField(html, '開催日')
-  const auctionSiteRaw = extractField(html, '会場') || extractField(html, '開催場所')
-  const sessionRaw = extractField(html, '開催回') || extractField(html, '回')
-
-  let modelYear: number | null = null
-  if (yearRaw) {
-    const yearMatch = yearRaw.match(/(\d{4})/)
-    if (yearMatch) {
-      modelYear = parseInt(yearMatch[1])
-    } else {
-      const reiwaMatch = yearRaw.match(/R(\d+)|令和(\d+)/)
-      if (reiwaMatch) modelYear = 2018 + parseInt(reiwaMatch[1] || reiwaMatch[2])
-      const heiseiMatch = yearRaw.match(/H(\d+)|平成(\d+)/)
-      if (heiseiMatch) modelYear = 1988 + parseInt(heiseiMatch[1] || heiseiMatch[2])
-    }
-  }
-
-  let transmission: 'IA' | 'AT' | 'MT' | null = null
-  if (transRaw) {
-    const t = transRaw.toUpperCase()
-    if (t.includes('IA') || t.includes('CVT') || t.includes('DCT')) transmission = 'IA'
-    else if (t.includes('AT') || t.includes('オートマ')) transmission = 'AT'
-    else if (t.includes('MT') || t.includes('マニュアル')) transmission = 'MT'
-  }
-
-  let drive: '2WD' | '4WD' | null = null
-  if (driveRaw) {
-    drive = /4WD|4×4|AWD|四駆/i.test(driveRaw) ? '4WD' : '2WD'
-  }
-
-  const validScores = ['S', '6', '5.5', '5', '4.5', '4', '3.5', '3', 'R', 'RA', 'X']
-  const scoreClean = (scoreRaw || '').trim().toUpperCase()
-  const inspectionScore = validScores.includes(scoreClean) ? scoreClean : null
-
-  let auctionDate: string | null = null
-  if (auctionDateRaw) {
-    auctionDate = auctionDateRaw.replace(/\//g, '-').split(/\s/)[0]
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(auctionDate)) auctionDate = null
-  }
-
-  const bodyColour = colourRaw ? colourRaw.split(/[（(]/)[0].trim() : null
-  const { photos, inspectionSheet } = extractPhotos(html)
-
-  const hasNav = html.includes('ナビ') || html.includes('ナビゲーション') || html.includes('カーナビ') || html.includes('フルセグ')
-  const hasLeather = html.includes('レザー') || html.includes('本革')
-  const hasSunroof = html.includes('サンルーフ') || html.includes('ガラスルーフ') || html.includes('ムーンルーフ')
-  const hasAlloys = html.includes('アルミ') || html.includes('アルミホイール')
-
-  const gradeUpper = (grade || '').toUpperCase()
-  const modelName = gradeUpper ? `TOYOTA HIACE ${gradeUpper}` : 'TOYOTA HIACE VAN'
-
-  return {
-    external_id: `${ref.KaijoCode}-${ref.AuctionCount}-${ref.BidNo}`,
-    kaijo_code: ref.KaijoCode,
-    auction_count: sessionRaw || ref.AuctionCount,
-    bid_no: ref.BidNo,
-    auction_date: auctionDate,
-    auction_site_name: auctionSiteRaw || null,
-    model_name: modelName,
-    grade: grade || null,
-    chassis_code: chassisCode || null,
-    model_year: modelYear,
-    transmission,
-    displacement_cc: extractNumber(dispRaw),
-    drive,
-    mileage_km: extractNumber(mileageRaw),
-    inspection_score: inspectionScore,
-    body_colour: bodyColour,
-    start_price_jpy: extractNumber(priceRaw),
-    has_nav: hasNav,
-    has_leather: hasLeather,
-    has_sunroof: hasSunroof,
-    has_alloys: hasAlloys,
-    photos,
-    inspection_sheet: inspectionSheet,
-  }
 }
 
 // ============================================================
