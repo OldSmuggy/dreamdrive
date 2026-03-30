@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 
-const SOURCING_FEE = 3000
+const SOURCING_FEE = 2750
 const SHIPPING = 2500
 const CUSTOMS_ENTRY = 110
 const BMSB = 250

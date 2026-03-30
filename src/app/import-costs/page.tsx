@@ -73,7 +73,7 @@ export default function ImportCostsPage() {
                     Auction ~$15k
                   </div>
                   <div className="flex items-center justify-center bg-ocean text-white" style={{ width: '12%' }}>
-                    Fee $3k
+                    Fee $2.75k
                   </div>
                   <div className="flex items-center justify-center bg-teal-500 text-white" style={{ width: '28%' }}>
                     Ship + import
@@ -264,7 +264,7 @@ export default function ImportCostsPage() {
 const COSTS = [
   {
     title: 'Bare Camper sourcing & Japan agent fee',
-    cost: '$3,000 flat',
+    cost: '$2,500 + GST',
     desc: 'Covers everything from finding your van at auction through to landing it in Australia. Sourcing, inspection, purchase coordination, Japan-side logistics, export paperwork, and import management.',
   },
   {
@@ -291,7 +291,7 @@ const COSTS = [
 
 const EXAMPLE_ROWS = [
   { item: 'Vehicle (¥2,000,000 @ ~¥105/$1)', value: '$19,048' },
-  { item: 'Bare Camper fee', value: '$3,000' },
+  { item: 'Bare Camper fee', value: '$2,750' },
   { item: 'Shipping', value: '$2,500' },
   { item: 'GST (10% on ~$21,548)', value: '$2,155' },
   { item: 'Customs entry + BMSB', value: '$360' },
@@ -324,7 +324,7 @@ const BUILD_OPTIONS = [
 
 const HOW_TO_START = [
   {
-    title: 'Pay a $3,000 deposit to start the search',
+    title: 'Pay a $2,750 deposit to start the search',
     desc: 'This is applied directly to your sourcing fee. It gets us started and secures your spot in the queue.',
   },
   {
