@@ -8,6 +8,14 @@
  *   npx tsx scripts/run-ninja-scrape.ts --max 10       # limit to 10 listings
  *   npx tsx scripts/run-ninja-scrape.ts --dry-run --max 5
  *
+ * Filters:
+ *   --year-from 2015     # minimum model year
+ *   --year-to 2024       # maximum model year
+ *   --drive 4WD          # drive type: 2WD or 4WD
+ *
+ * Example (filtered):
+ *   npx tsx scripts/run-ninja-scrape.ts --dry-run --year-from 2015 --year-to 2024 --drive 4WD
+ *
  * Requirements:
  *   - Playwright + Chromium installed (npx playwright install chromium)
  *   - .env.local with NINJA_LOGIN_ID, NINJA_PASSWORD, and Supabase keys
@@ -38,6 +46,15 @@ const dryRun = args.includes('--dry-run')
 const maxIdx = args.indexOf('--max')
 const maxListings = maxIdx >= 0 ? parseInt(args[maxIdx + 1]) : undefined
 
+const yearFromIdx = args.indexOf('--year-from')
+const yearFrom = yearFromIdx >= 0 ? parseInt(args[yearFromIdx + 1]) : undefined
+
+const yearToIdx = args.indexOf('--year-to')
+const yearTo = yearToIdx >= 0 ? parseInt(args[yearToIdx + 1]) : undefined
+
+const driveIdx = args.indexOf('--drive')
+const driveType = driveIdx >= 0 ? (args[driveIdx + 1] as '2WD' | '4WD') : undefined
+
 console.log(`
 ╔══════════════════════════════════════════╗
 ║     NINJA Auction Scraper                ║
@@ -46,6 +63,7 @@ console.log(`
 
 Mode:         ${dryRun ? '🔍 DRY RUN (no DB writes)' : '💾 LIVE (writing to Supabase)'}
 Max listings: ${maxListings ?? 'ALL'}
+Filters:      year ${yearFrom ?? 'any'}–${yearTo ?? 'any'}, drive: ${driveType ?? 'any'}
 `)
 
 const start = Date.now()
@@ -53,6 +71,7 @@ const start = Date.now()
 runNinjaScraper({
   dryRun,
   maxListings,
+  filters: { yearFrom, yearTo, driveType },
   onProgress: (msg) => console.log(msg),
 })
   .then((result) => {

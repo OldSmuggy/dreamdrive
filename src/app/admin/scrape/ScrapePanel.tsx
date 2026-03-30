@@ -12,12 +12,32 @@ interface ScrapeResult {
 }
 
 export default function ScrapePanel({ secret }: { secret: string }) {
-  const [dryRun, setDryRun] = useState(false)
+  const [dryRun, setDryRun] = useState(true)
   const [max, setMax] = useState('')
+  const [yearFrom, setYearFrom] = useState('2015')
+  const [yearTo, setYearTo] = useState('2024')
+  const [driveType, setDriveType] = useState<'any' | '2WD' | '4WD'>('4WD')
+  const [copied, setCopied] = useState(false)
   const [running, setRunning] = useState(false)
   const [log, setLog] = useState<string[]>([])
   const [result, setResult] = useState<ScrapeResult | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  const buildCommand = () => {
+    let cmd = 'npx tsx scripts/run-ninja-scrape.ts'
+    if (dryRun) cmd += ' --dry-run'
+    if (max.trim()) cmd += ` --max ${max.trim()}`
+    if (yearFrom.trim()) cmd += ` --year-from ${yearFrom.trim()}`
+    if (yearTo.trim()) cmd += ` --year-to ${yearTo.trim()}`
+    if (driveType !== 'any') cmd += ` --drive ${driveType}`
+    return cmd
+  }
+
+  const copyCommand = async () => {
+    await navigator.clipboard.writeText(buildCommand())
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   const handleRun = async () => {
     setRunning(true)
@@ -81,32 +101,6 @@ export default function ScrapePanel({ secret }: { secret: string }) {
         </p>
       </div>
 
-      {/* How to run — terminal instructions */}
-      <div className="bg-ocean/5 border border-ocean/20 rounded-xl p-5 mb-5 text-sm text-gray-700">
-        <p className="font-semibold text-ocean mb-2">How to run the NINJA scraper</p>
-        <p className="mb-3">
-          The scraper uses a real browser (Playwright + Chromium) to log into NINJA,
-          so it <strong>must be run from your Mac</strong> — it can&apos;t run on Vercel.
-          Open Terminal and run:
-        </p>
-        <div className="bg-gray-950 text-gray-200 rounded-lg p-4 font-mono text-xs leading-relaxed mb-3 overflow-x-auto">
-          <div className="text-gray-500"># Navigate to the project</div>
-          <div>cd ~/Desktop/&quot;DD App&quot;/dreamdrive</div>
-          <div className="mt-2 text-gray-500"># First time only — install the browser</div>
-          <div>npx playwright install chromium</div>
-          <div className="mt-2 text-gray-500"># Dry run (preview, no DB writes)</div>
-          <div>npx tsx scripts/run-ninja-scrape.ts --dry-run</div>
-          <div className="mt-2 text-gray-500"># Full scrape → writes to Supabase</div>
-          <div className="text-green-400">npx tsx scripts/run-ninja-scrape.ts</div>
-          <div className="mt-2 text-gray-500"># Limit to N listings (good for testing)</div>
-          <div>npx tsx scripts/run-ninja-scrape.ts --dry-run --max 5</div>
-        </div>
-        <p className="text-xs text-gray-500">
-          Takes ~2–4 seconds per listing (with anti-detection delays). Full scrape of ~225 vans takes ~10 minutes.
-          Needs <code className="bg-gray-100 px-1 rounded">NINJA_LOGIN_ID</code> and <code className="bg-gray-100 px-1 rounded">NINJA_PASSWORD</code> in <code className="bg-gray-100 px-1 rounded">.env.local</code>.
-        </p>
-      </div>
-
       {/* When to run notice */}
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-5 text-sm text-amber-900">
         <p className="font-semibold mb-1">When to run</p>
@@ -118,9 +112,63 @@ export default function ScrapePanel({ secret }: { secret: string }) {
         </p>
       </div>
 
-      {/* Controls */}
+      {/* Command Builder */}
       <div className="bg-white border border-gray-200 rounded-xl p-6 mb-5">
-        <div className="flex flex-wrap gap-6 mb-5">
+        <p className="font-semibold text-charcoal mb-4">Command Builder</p>
+
+        {/* Filters row */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-5">
+          <label className="flex flex-col gap-1">
+            <span className="text-xs font-medium text-gray-500">Year from</span>
+            <input
+              type="number"
+              value={yearFrom}
+              onChange={e => setYearFrom(e.target.value)}
+              placeholder="any"
+              min={1990}
+              max={2030}
+              className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ocean"
+            />
+          </label>
+          <label className="flex flex-col gap-1">
+            <span className="text-xs font-medium text-gray-500">Year to</span>
+            <input
+              type="number"
+              value={yearTo}
+              onChange={e => setYearTo(e.target.value)}
+              placeholder="any"
+              min={1990}
+              max={2030}
+              className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ocean"
+            />
+          </label>
+          <label className="flex flex-col gap-1">
+            <span className="text-xs font-medium text-gray-500">Drive type</span>
+            <select
+              value={driveType}
+              onChange={e => setDriveType(e.target.value as 'any' | '2WD' | '4WD')}
+              className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ocean bg-white"
+            >
+              <option value="any">Any</option>
+              <option value="2WD">2WD</option>
+              <option value="4WD">4WD</option>
+            </select>
+          </label>
+          <label className="flex flex-col gap-1">
+            <span className="text-xs font-medium text-gray-500">Max listings</span>
+            <input
+              type="number"
+              value={max}
+              onChange={e => setMax(e.target.value)}
+              placeholder="all"
+              min={1}
+              className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ocean"
+            />
+          </label>
+        </div>
+
+        {/* Options row */}
+        <div className="flex items-center gap-6 mb-5">
           <label className="flex items-center gap-2 cursor-pointer select-none">
             <input
               type="checkbox"
@@ -129,24 +177,39 @@ export default function ScrapePanel({ secret }: { secret: string }) {
               className="w-4 h-4 accent-ocean"
             />
             <span className="text-sm font-medium text-gray-700">
-              Dry run <span className="text-gray-400 font-normal">(parse only, no DB writes)</span>
+              Dry run <span className="text-gray-400 font-normal">(preview only, no DB writes)</span>
             </span>
-          </label>
-
-          <label className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-700">Max listings</span>
-            <input
-              type="number"
-              value={max}
-              onChange={e => setMax(e.target.value)}
-              placeholder="all"
-              min={1}
-              className="w-20 px-2 py-1 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ocean"
-            />
-            <span className="text-gray-400 text-xs">useful for testing</span>
           </label>
         </div>
 
+        {/* One-time setup */}
+        <div className="bg-gray-50 rounded-lg p-3 mb-3 text-xs text-gray-500 font-mono">
+          <div className="text-gray-400 mb-1"># First time setup</div>
+          <div>cd ~/Desktop/&quot;DD App&quot;/dreamdrive && npx playwright install chromium</div>
+        </div>
+
+        {/* Generated command */}
+        <div className="relative group">
+          <div className="bg-gray-950 text-green-400 rounded-lg p-4 font-mono text-sm overflow-x-auto pr-16">
+            {buildCommand()}
+          </div>
+          <button
+            onClick={copyCommand}
+            className="absolute top-2 right-2 px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-md text-xs font-medium transition-colors"
+          >
+            {copied ? '✓ Copied!' : '📋 Copy'}
+          </button>
+        </div>
+
+        <p className="text-xs text-gray-400 mt-2">
+          Run this command in Terminal. Takes ~2–4s per listing.
+          Needs <code className="bg-gray-100 px-1 rounded">NINJA_LOGIN_ID</code> and <code className="bg-gray-100 px-1 rounded">NINJA_PASSWORD</code> in <code className="bg-gray-100 px-1 rounded">.env.local</code>.
+        </p>
+      </div>
+
+      {/* Run from browser (local only) */}
+      <div className="bg-white border border-gray-200 rounded-xl p-6 mb-5">
+        <p className="font-semibold text-charcoal mb-3">Or run from browser <span className="text-xs font-normal text-gray-400">(local dev only)</span></p>
         <button
           onClick={handleRun}
           disabled={running}
