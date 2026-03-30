@@ -211,7 +211,7 @@ export default function Hiace4x4() {
             <p className="text-sm font-semibold text-charcoal mb-3">Example: KDH206V diesel 4x4, grade 4, 120,000km (¥2,500,000)</p>
             <div className="space-y-1 text-sm text-gray-600">
               <div className="flex justify-between"><span>Vehicle at auction</span><span>~$23,800</span></div>
-              <div className="flex justify-between"><span>Bare Camper fee (Japan agent + AU broker)</span><span>$3,000</span></div>
+              <div className="flex justify-between"><span>Bare Camper fee ($2,500 + GST)</span><span>$2,750</span></div>
               <div className="flex justify-between"><span>Ocean freight (Yokohama → Brisbane)</span><span>$2,500</span></div>
               <div className="flex justify-between"><span>GST (10% on landed value)</span><span>~$2,630</span></div>
               <div className="flex justify-between"><span>Customs + quarantine</span><span>$360</span></div>

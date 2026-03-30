@@ -324,7 +324,7 @@ export default function AccountClient({
         {/* ── DEPOSIT HOLDS ── */}
         {tab === 'deposits' && (
           depositHolds.length === 0 ? (
-            <EmptyState icon="💰" title="No deposit holds yet" desc="Place a $3,000 refundable deposit to hold any van for up to 7 days.">
+            <EmptyState icon="💰" title="No deposit holds yet" desc="Place a $2,750 refundable deposit to hold any van for up to 7 days.">
               <Link href="/browse" className="btn-primary inline-block mt-4">Browse Vans</Link>
             </EmptyState>
           ) : (

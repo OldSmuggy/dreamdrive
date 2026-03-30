@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 
-const SOURCING_FEE = 3000
+const SOURCING_FEE = 2750  // $2,500 + GST
 const SHIPPING = 2500
 const CUSTOMS_ENTRY = 110
 const BMSB = 250
@@ -131,7 +131,7 @@ export default function ImportCalculator() {
       <div>
         {[
           { label: `Vehicle (${fmtJpy(jpyPrice)} @ ${exchangeRate})`, value: fmt(calc.vehicleAud), note: 'Actual auction price, converted at current rate' },
-          { label: 'Bare Camper fee (Japan agent + AU broker)', value: fmt(SOURCING_FEE), note: 'One fee covers both sides — Japan buyer\'s agent and Australian broker. Only importer that handles both.' },
+          { label: 'Bare Camper fee ($2,500 + GST)', value: fmt(SOURCING_FEE), note: 'One fee covers both sides — our Japan buyer\'s agent and Australian broker. Only campervan brand with our own team in JP, AU & NZ.' },
           { label: 'Shipping (Yokohama → Brisbane)', value: fmt(SHIPPING), note: 'RORO ocean freight incl. pre-clean & quarantine prep' },
           { label: 'GST (10% on landed value)', value: fmt(calc.gst), note: '10% on vehicle + shipping. 0% import duty (JEPA free trade)' },
           { label: 'Customs entry + BMSB heat treatment', value: fmt(CUSTOMS_ENTRY + BMSB), note: `Entry fee $110 + quarantine heat treatment $250` },

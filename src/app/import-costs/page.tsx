@@ -73,7 +73,7 @@ export default function ImportCostsPage() {
                     Auction ~$15k
                   </div>
                   <div className="flex items-center justify-center bg-ocean text-white" style={{ width: '12%' }}>
-                    Fee $3k
+                    Fee $2.75k
                   </div>
                   <div className="flex items-center justify-center bg-teal-500 text-white" style={{ width: '28%' }}>
                     Ship + import
@@ -148,7 +148,7 @@ export default function ImportCostsPage() {
                 ))}
                 <tr className="bg-charcoal text-white">
                   <td className="px-6 py-4 font-bold text-base">Total landed &amp; complied</td>
-                  <td className="px-6 py-4 text-right font-bold text-sand text-lg">~$28,863</td>
+                  <td className="px-6 py-4 text-right font-bold text-sand text-lg">~$29,354</td>
                 </tr>
               </tbody>
             </table>
@@ -264,8 +264,8 @@ export default function ImportCostsPage() {
 const COSTS = [
   {
     title: 'Bare Camper fee (Japan agent + AU broker)',
-    cost: '$3,000 flat',
-    desc: 'One fee covers both sides: the Japan-based buyer\'s agent (auction bidding, inspection, purchase, export logistics) AND the Australia-side broker (Vehicle Import Approval, customs, compliance coordination, project management). We\'re the only importer that handles both under one roof — most charge separately for each.',
+    cost: '$2,500 + GST',
+    desc: 'One fee covers both sides: our own buyer in Japan (auction bidding, inspection, purchase, export logistics) AND the Australia-side broker (Vehicle Import Approval, customs, compliance coordination, project management). We\'re the only campervan brand with our own team in Japan, Australia, and NZ — most importers outsource to third-party agents and charge separately for each.',
   },
   {
     title: 'Vehicle purchase price',
@@ -291,11 +291,13 @@ const COSTS = [
 
 const EXAMPLE_ROWS = [
   { item: 'Vehicle (¥2,000,000 @ ~¥105/$1)', value: '$19,048' },
-  { item: 'Bare Camper fee (Japan agent + AU broker)', value: '$3,000' },
-  { item: 'Shipping', value: '$2,500' },
-  { item: 'GST (10% on ~$21,548)', value: '$2,155' },
-  { item: 'Customs entry + BMSB', value: '$360' },
-  { item: 'Compliance (inc transport + safety cert)', value: '$1,800' },
+  { item: 'Bare Camper fee ($2,500 + GST)', value: '$2,750' },
+  { item: 'Shipping (RORO LWB)', value: '$1,700' },
+  { item: 'GST (10% on landed value)', value: '$2,075' },
+  { item: 'Customs entry + BMSB inspection', value: '$360' },
+  { item: 'Dolphin port handling + transport', value: '$237' },
+  { item: 'Compliance (RAWS + safety cert)', value: '$1,889' },
+  { item: 'Registration + stamp duty (QLD, 6 months)', value: '$1,295' },
 ]
 
 const BUILD_OPTIONS = [
@@ -324,7 +326,7 @@ const BUILD_OPTIONS = [
 
 const HOW_TO_START = [
   {
-    title: 'Pay a $3,000 deposit to start the search',
+    title: 'Pay a $2,750 deposit to start the search',
     desc: 'This is applied directly to your sourcing fee. It gets us started and secures your spot in the queue.',
   },
   {

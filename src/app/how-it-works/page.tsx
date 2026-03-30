@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import Footer from '@/components/ui/Footer'
 import { generateMeta } from '@/lib/seo'
 
@@ -27,11 +28,11 @@ const STEPS = [
   },
   {
     number: '03',
-    title: 'Secure with a $3,000 Hold',
-    desc: 'Place a fully refundable $3,000 deposit to lock in your van. This goes towards your final purchase price and covers both the Japan-side buyer\'s agent and the Australia-side brokerage — we\'re the only business that handles both under one fee.',
+    title: 'Secure with a $2,500 + GST Hold',
+    desc: 'Place a fully refundable $2,750 deposit to lock in your van. This is your Bare Camper sourcing fee and covers both our Japan-side buyer\'s agent and the Australia-side brokerage — we\'re the only campervan brand that handles both under one fee.',
     timeline: 'Week 1',
     icon: '🔒',
-    detail: 'Most importers charge separately for the Japan agent and the Australian broker. Our $3,000 covers everything: bidding, inspection, purchase, export, import approval, customs, compliance coordination, and project management. Changed your mind? The hold is fully refundable.',
+    detail: 'Most importers outsource to third-party agents in Japan and charge you separately. Our $2,500 + GST covers everything: bidding, inspection, purchase, export, import approval, customs, compliance coordination, and project management. Changed your mind? The hold is fully refundable.',
   },
   {
     number: '04',
@@ -69,7 +70,7 @@ const STEPS = [
 
 const TRUST_STATS = [
   { value: 'JP + AU + NZ', label: 'our own teams' },
-  { value: '$3,000', label: 'refundable deposit' },
+  { value: '$2,750', label: 'refundable deposit' },
   { value: '0% duty', label: 'under JAEPA free trade' },
   { value: '12-month', label: 'conversion warranty' },
 ]
@@ -158,45 +159,76 @@ export default function HowItWorksPage() {
         </div>
       </section>
 
-      {/* What you pay */}
-      <section className="bg-white py-16">
+      {/* Real worked example */}
+      <section id="real-example" className="bg-white py-16">
         <div className="max-w-4xl mx-auto px-4">
           <div className="text-center mb-10">
-            <h2 className="text-3xl md:text-4xl text-charcoal mb-3">What you actually pay</h2>
+            <p className="text-driftwood text-sm font-semibold tracking-widest uppercase mb-4">Real Numbers</p>
+            <h2 className="text-3xl md:text-4xl text-charcoal mb-3">What you actually pay — a real import</h2>
             <p className="text-gray-500 max-w-xl mx-auto">
-              No hidden fees, no dealer markup. Here&apos;s a typical example for a ¥2,000,000 Hiace.
+              This is a real Toyota Hiace we imported to Queensland in 2025. Every dollar accounted for — no hidden fees.
             </p>
           </div>
 
-          <div className="bg-cream rounded-2xl p-6 md:p-8 max-w-2xl mx-auto">
-            <div className="space-y-3">
-              {[
-                { label: 'Vehicle purchase price (¥2,000,000)', value: '~$19,000' },
-                { label: 'Bare Camper fee (Japan agent + AU broker)', value: '$3,000' },
-                { label: 'Ocean freight (RORO)', value: '$2,500' },
-                { label: 'GST (10% on landed value)', value: '~$2,150' },
-                { label: 'Customs + quarantine', value: '$360' },
-                { label: 'Compliance (RAWS)', value: '~$1,800' },
-              ].map(row => (
-                <div key={row.label} className="flex justify-between items-center py-2 border-b border-gray-200 last:border-0">
-                  <span className="text-gray-600 text-sm">{row.label}</span>
-                  <span className="text-charcoal font-semibold text-sm">{row.value}</span>
+          <div className="lg:grid lg:grid-cols-5 lg:gap-8 lg:items-start">
+            {/* Photo */}
+            <div className="lg:col-span-2 mb-6 lg:mb-0">
+              <div className="relative rounded-2xl overflow-hidden">
+                <Image
+                  src="/images/example-import-hiace.jpg"
+                  alt="2020 Toyota Hiace DX 2.8L Diesel LWB — imported from Japan and delivered to Queensland"
+                  width={800}
+                  height={533}
+                  className="w-full h-auto object-cover"
+                />
+              </div>
+              <p className="text-xs text-gray-400 mt-2 text-center">
+                2020 Toyota Hiace DX 2.8L Diesel (LWB) — delivered to QLD, March 2025
+              </p>
+            </div>
+
+            {/* Breakdown */}
+            <div className="lg:col-span-3">
+              <div className="bg-cream rounded-2xl overflow-hidden">
+                <div className="space-y-0">
+                  {[
+                    { label: 'Vehicle purchase (¥4,394,000 @ ¥97/$1)', value: '$45,565', note: 'Actual auction price, converted at customs valuation rate' },
+                    { label: 'Bare Camper sourcing fee ($2,500 + GST)', value: '$2,750', note: 'Our Japan buyer + AU broker — one fee, both countries' },
+                    { label: 'Shipping — RORO Yokohama → Brisbane (LWB)', value: '$1,711', note: 'SLWB vans are +$2,000 due to size' },
+                    { label: 'GST (10% on landed value)', value: '$4,729', note: '10% on vehicle + shipping. 0% import duty under JAEPA.' },
+                    { label: 'Customs entry + processing', value: '$109', note: 'Australian customs entry fee' },
+                    { label: 'BMSB inspection + port transport', value: '$473', note: 'Biosecurity inspection at Cargo Clear + transport from port' },
+                    { label: 'Compliance (RAWS) + safety cert', value: '$1,927', note: 'RAWS compliance plate, roadworthy, safety cert, transport to workshop' },
+                    { label: 'Registration + stamp duty (QLD, 6 months)', value: '$1,185', note: 'State government fees — varies by state and rego period' },
+                    { label: 'Rego arrangement fee', value: '$110', note: 'We handle the paperwork' },
+                  ].map((row, i) => (
+                    <div key={row.label} className={`flex justify-between items-start px-5 py-3 ${i % 2 === 0 ? 'bg-cream' : 'bg-white'}`}>
+                      <div className="flex-1 min-w-0 mr-4">
+                        <span className="text-gray-700 text-sm block">{row.label}</span>
+                        <span className="text-gray-400 text-xs">{row.note}</span>
+                      </div>
+                      <span className="text-charcoal font-semibold text-sm shrink-0">{row.value}</span>
+                    </div>
+                  ))}
+                  <div className="flex justify-between items-center px-5 py-4 bg-charcoal text-white">
+                    <span className="font-bold text-base">Total — landed, complied & registered</span>
+                    <span className="text-sand text-xl font-bold">$58,559</span>
+                  </div>
                 </div>
-              ))}
-              <div className="flex justify-between items-center pt-3 mt-2 border-t-2 border-ocean/20">
-                <span className="text-charcoal font-bold">Total landed & complied</span>
-                <span className="text-ocean text-xl font-bold">~$28,810</span>
+
+                <div className="px-5 py-4 bg-ocean/5 border-t border-ocean/10">
+                  <p className="text-xs text-gray-500 leading-relaxed">
+                    <strong className="text-charcoal">Important:</strong> You are responsible for all associated fees shown above. Additional costs may apply if your shipment is flagged for BMSB fumigation or heat treatment at the border. Compliance and registration costs vary by state. This example is for Queensland — other states may differ. Exchange rate fluctuates daily.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-4 text-center">
+                <Link href="/import-costs" className="text-ocean text-sm font-semibold hover:underline">
+                  Use our interactive calculator for your exact numbers →
+                </Link>
               </div>
             </div>
-            <p className="text-center text-xs text-gray-400 mt-4">
-              Same van from an Australian dealer: $33,000–$38,000. You save $4,000–$9,000.
-            </p>
-          </div>
-
-          <div className="text-center mt-8">
-            <Link href="/import-costs" className="text-ocean text-sm font-semibold hover:underline">
-              Use our interactive calculator for your exact numbers →
-            </Link>
           </div>
         </div>
       </section>

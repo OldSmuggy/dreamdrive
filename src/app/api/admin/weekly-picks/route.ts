@@ -75,12 +75,12 @@ export async function POST(req: NextRequest) {
       <p style="color: #8B7355; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px;">Bare Camper</p>
       <h1 style="color: #2C2C2A; font-size: 24px; margin: 8px 0 8px;">This Week's Top Auction Picks</h1>
       <p style="color: #555; line-height: 1.6; margin-bottom: 24px;">
-        Here are the ${picks.length} best vans going through Japanese auction this week — hand-picked based on grade, mileage, and value. Want one? Hit "View & Hold" to place a $3,000 refundable deposit before it sells.
+        Here are the ${picks.length} best vans going through Japanese auction this week — hand-picked based on grade, mileage, and value. Want one? Hit "View & Hold" to place a $2,750 refundable deposit before it sells.
       </p>
       ${vanListHtml}
       <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
       <p style="color: #555; font-size: 13px; line-height: 1.6;">
-        <strong>How it works:</strong> Place a $3,000 refundable deposit and we'll bid on your behalf. If we win, the deposit comes off the final price. If we don't, you get it back in full.
+        <strong>How it works:</strong> Place a $2,750 refundable deposit and we'll bid on your behalf. If we win, the deposit comes off the final price. If we don't, you get it back in full.
       </p>
       <p style="color: #555; font-size: 13px; margin-top: 12px;">
         Got questions? Reply to this email or <a href="https://wa.me/61432182892" style="color: #3D6B73;">chat on WhatsApp</a>.

@@ -73,7 +73,7 @@ export default function LeadFormModal({
 
   const modalTitle = title ?? (leadType === 'deposit_intent' ? 'Hold This Van' : leadType === 'pop_top_booking' ? 'Book Your Build Slot' : 'Book a Free Consultation')
   const modalSubtitle = subtitle ?? (leadType === 'deposit_intent'
-    ? "We'll contact you to arrange the $3,000 refundable deposit and secure this van."
+    ? "We'll contact you to arrange the $2,750 refundable deposit and secure this van."
     : leadType === 'pop_top_booking'
     ? 'Get in touch and we\'ll schedule your 10-business-day build slot.'
     : 'Free 20-minute call with Jared. We\'ll talk through your build options. No obligation.')
@@ -151,7 +151,7 @@ export default function LeadFormModal({
 
                   {leadType === 'deposit_intent' && (
                     <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-xs text-amber-800">
-                      No payment taken here. We will contact you to arrange the $3,000 refundable deposit and lock in this van.
+                      No payment taken here. We will contact you to arrange the $2,750 refundable deposit and lock in this van.
                     </div>
                   )}
 

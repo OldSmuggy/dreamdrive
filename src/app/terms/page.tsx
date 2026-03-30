@@ -76,7 +76,7 @@ export default function TermsPage() {
             <ul className="text-gray-600 space-y-3 list-disc list-inside">
               <li>
                 <strong>Deposit amounts</strong> — a deposit is required to secure a vehicle or book a build slot.
-                Deposit amounts vary by service ($3,000–$5,000 AUD).
+                Deposit amounts vary by service ($2,750–$5,000 AUD).
               </li>
               <li>
                 <strong>Refund policy</strong> — deposits for auction vehicles are refundable if the auction is

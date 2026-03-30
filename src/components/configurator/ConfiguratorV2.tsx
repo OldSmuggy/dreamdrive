@@ -1022,8 +1022,8 @@ function SummaryStep({
 }) {
   const isDepositCTA = selectedVan?.source === 'auction' || selectedVan?.source === 'au_stock'
   const depositLeadType = isDepositCTA ? 'deposit_intent' : 'consultation'
-  const ctaLabel = selectedVan?.source === 'auction'  ? 'Hold This Van — $3,000 Deposit'
-    : selectedVan?.source === 'au_stock'              ? 'Reserve Now — $3,000 Deposit'
+  const ctaLabel = selectedVan?.source === 'auction'  ? 'Hold This Van — $2,750 Deposit'
+    : selectedVan?.source === 'au_stock'              ? 'Reserve Now — $2,750 Deposit'
     : selectedVan                                     ? 'Express Interest — Book a Call'
     : isBYO                                           ? 'Book a Consultation'
     :                                                   'Save My Build & Find a Van'
@@ -1245,7 +1245,7 @@ function SummaryStep({
                 <h3 className="text-lg text-charcoal">{ctaLabel}</h3>
                 {isDepositCTA && (
                   <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-2">
-                    No payment here — we&apos;ll contact you to arrange the $3,000 refundable deposit.
+                    No payment here — we&apos;ll contact you to arrange the $2,750 refundable deposit.
                   </p>
                 )}
               </div>

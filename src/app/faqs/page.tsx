@@ -23,8 +23,8 @@ const CATEGORIES = [
         a: 'Typically 10–14 weeks from auction win to Australian delivery. Roughly: 2–3 weeks Japan-side logistics and export paperwork, 3–4 weeks ocean freight (Yokohama to Brisbane), 1–2 weeks customs and quarantine clearance, then 2–3 weeks at the compliance workshop for inspection, safety certificate, and compliance plate.',
       },
       {
-        q: 'What happens after I place the $3,000 deposit?',
-        a: 'The $3,000 hold is fully refundable and secures your chosen van while we finalise paperwork. It goes towards your final purchase price. Once you\'re locked in, we handle bidding (or dealer negotiation), payment in yen, export documentation, and shipping. You get progress updates at every stage.',
+        q: 'What happens after I place the $2,750 deposit?',
+        a: 'The $2,750 hold is fully refundable and secures your chosen van while we finalise paperwork. It goes towards your final purchase price. Once you\'re locked in, we handle bidding (or dealer negotiation), payment in yen, export documentation, and shipping. You get progress updates at every stage.',
       },
       {
         q: 'Do I need to do anything during the import?',
@@ -42,11 +42,11 @@ const CATEGORIES = [
     faqs: [
       {
         q: 'What does it cost to import a Hiace from Japan?',
-        a: 'For a typical H200 LWB Hiace at ¥2,000,000 (~$19,000 AUD), expect: vehicle ~$19,000, Bare Camper sourcing fee $3,000, ocean freight $2,500, GST (10% on landed value) ~$2,150, customs + quarantine ~$360, compliance ~$1,800. Total landed and complied: approximately $28,800–$30,000 AUD. Compare that to the same van from an Australian dealer at $33,000–$38,000.',
+        a: 'For a typical H200 LWB Hiace at ¥2,000,000 (~$19,000 AUD), expect: vehicle ~$19,000, Bare Camper sourcing fee $2,750, ocean freight $2,500, GST (10% on landed value) ~$2,150, customs + quarantine ~$360, compliance ~$1,800. Total landed and complied: approximately $28,800–$30,000 AUD. Compare that to the same van from an Australian dealer at $33,000–$38,000.',
       },
       {
         q: 'What is the Bare Camper sourcing fee?',
-        a: 'Our flat $3,000 fee covers both sides of the import — our own buyer in Japan (auction bidding, dealer negotiation, vehicle inspection, purchase, and export logistics) AND the Australia-side brokerage (Vehicle Import Approval, customs, compliance coordination, and project management). We\'re the only campervan brand with our own team on the ground in Japan, Australia, and New Zealand — not outsourced to third-party agents. Most importers use a separate Japan agent and charge you separately. We handle both under one roof, one fee. No hidden margins — what you see at auction is what you pay.',
+        a: 'Our flat $2,750 fee covers both sides of the import — our own buyer in Japan (auction bidding, dealer negotiation, vehicle inspection, purchase, and export logistics) AND the Australia-side brokerage (Vehicle Import Approval, customs, compliance coordination, and project management). We\'re the only campervan brand with our own team on the ground in Japan, Australia, and New Zealand — not outsourced to third-party agents. Most importers use a separate Japan agent and charge you separately. We handle both under one roof, one fee. No hidden margins — what you see at auction is what you pay.',
       },
       {
         q: 'Do I pay GST on a Japanese import?',
@@ -54,7 +54,7 @@ const CATEGORIES = [
       },
       {
         q: 'What\'s the difference between buying from a dealer and importing direct?',
-        a: 'When you buy a Japanese import Hiace from an Australian dealer, you\'re paying the dealer\'s margin on top of the importer\'s margin on top of the auction price. That can add $5,000–$10,000. Importing direct through Bare Camper means you pay the actual auction price plus our flat $3,000 fee. You see the auction grade, photos, and inspection report — and you decide whether to bid.',
+        a: 'When you buy a Japanese import Hiace from an Australian dealer, you\'re paying the dealer\'s margin on top of the importer\'s margin on top of the auction price. That can add $5,000–$10,000. Importing direct through Bare Camper means you pay the actual auction price plus our flat $2,750 fee. You see the auction grade, photos, and inspection report — and you decide whether to bid.',
       },
       {
         q: 'Are there any hidden fees?',
@@ -162,7 +162,7 @@ const CATEGORIES = [
       },
       {
         q: 'Do I need a deposit for finance?',
-        a: 'The $3,000 hold can serve as your deposit. Beyond that, deposit requirements depend on the lender and your credit profile. Many buyers get approved with no additional deposit.',
+        a: 'The $2,750 hold can serve as your deposit. Beyond that, deposit requirements depend on the lender and your credit profile. Many buyers get approved with no additional deposit.',
       },
       {
         q: 'Personal loan or chattel mortgage — which is better?',

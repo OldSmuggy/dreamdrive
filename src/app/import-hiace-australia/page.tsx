@@ -19,7 +19,7 @@ const faqs = [
   },
   {
     q: 'What does it cost to import a Hiace from Japan?',
-    a: 'For a typical H200 LWB Hiace at ¥2,000,000 (~$19,000 AUD), expect to pay: vehicle purchase price ~$19,000, Bare Camper sourcing fee $3,000, ocean freight $2,500, GST (10% on landed value) ~$2,155, customs entry + quarantine ~$360, compliance ~$1,800. Total landed and complied: approximately $28,800–$30,000 AUD depending on exchange rate. Compare that to the same quality van from an Australian dealer at $33,000–$38,000.',
+    a: 'For a typical H200 LWB Hiace at ¥2,000,000 (~$19,000 AUD), expect to pay: vehicle purchase price ~$19,000, Bare Camper sourcing fee $2,750, ocean freight $2,500, GST (10% on landed value) ~$2,155, customs entry + quarantine ~$360, compliance ~$1,800. Total landed and complied: approximately $28,800–$30,000 AUD depending on exchange rate. Compare that to the same quality van from an Australian dealer at $33,000–$38,000.',
   },
   {
     q: 'H200 vs H300 Hiace — which should I import?',
@@ -47,7 +47,7 @@ const faqs = [
   },
   {
     q: 'What\'s the difference between buying from a dealer and importing direct?',
-    a: 'When you buy a Japanese import Hiace from an Australian dealer, you\'re paying the dealer\'s margin on top of the importer\'s margin on top of the auction price. That can add $5,000–$10,000 to the cost of the same quality van. Importing direct through Bare Camper means you pay the actual auction price plus our flat $3,000 fee. You see the auction grade, the photos, the inspection report — and you decide whether to bid.',
+    a: 'When you buy a Japanese import Hiace from an Australian dealer, you\'re paying the dealer\'s margin on top of the importer\'s margin on top of the auction price. That can add $5,000–$10,000 to the cost of the same quality van. Importing direct through Bare Camper means you pay the actual auction price plus our flat $2,750 fee. You see the auction grade, the photos, the inspection report — and you decide whether to bid.',
   },
   {
     q: 'Can I get a roof conversion done at the same time as the import?',
@@ -107,7 +107,7 @@ export default function ImportHiaceGuide() {
             <div className="text-sm text-white/80">Auction to driveway</div>
           </div>
           <div>
-            <div className="text-2xl font-bold">$3,000</div>
+            <div className="text-2xl font-bold">$2,750</div>
             <div className="text-sm text-white/80">Japan agent + AU broker</div>
           </div>
           <div>
@@ -135,7 +135,7 @@ export default function ImportHiaceGuide() {
             <p className="text-sm font-semibold text-charcoal mb-2">The numbers on a typical H200 LWB Hiace (¥2,000,000 auction)</p>
             <div className="space-y-1 text-sm text-gray-600">
               <div className="flex justify-between"><span>Vehicle (at auction)</span><span>~$19,000</span></div>
-              <div className="flex justify-between"><span>Bare Camper fee (Japan agent + AU broker)</span><span>$3,000</span></div>
+              <div className="flex justify-between"><span>Bare Camper fee (Japan agent + AU broker)</span><span>$2,750</span></div>
               <div className="flex justify-between"><span>Ocean freight (Yokohama → Brisbane)</span><span>$2,500</span></div>
               <div className="flex justify-between"><span>GST (10% on landed value)</span><span>~$2,155</span></div>
               <div className="flex justify-between"><span>Customs + quarantine</span><span>$360</span></div>
@@ -186,7 +186,7 @@ export default function ImportHiaceGuide() {
           <h2 className="text-2xl font-bold text-charcoal mb-6">The import process — step by step</h2>
           <div className="space-y-4">
             {[
-              { n: '1', title: 'Pay deposit & brief us', desc: 'A $3,000 deposit starts the process. Tell us your spec — model, year range, mileage target, budget. This gets applied to your sourcing fee.' },
+              { n: '1', title: 'Pay deposit & brief us', desc: 'A $2,750 deposit starts the process. Tell us your spec — model, year range, mileage target, budget. This gets applied to your sourcing fee.' },
               { n: '2', title: 'We find your van at auction', desc: 'We monitor Japanese auctions weekly and send you matching vans with full auction reports — grade, mileage, photos, inspection notes. You decide which ones to bid on.' },
               { n: '3', title: 'We win it', desc: 'Once you approve a van, we bid at the next auction. If we win, the van moves to our Japan logistics partner for export preparation.' },
               { n: '4', title: 'Japan-side logistics', desc: 'Export documentation, pre-clean, BMSB quarantine preparation. The van is loaded at Yokohama port. Takes roughly 2–3 weeks.' },

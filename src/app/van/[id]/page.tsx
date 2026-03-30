@@ -90,8 +90,8 @@ export default async function VanDetailPage({ params }: { params: { id: string }
     ['Grade Score',    listing.inspection_score ? `${listing.inspection_score} — ${scoreLabel(listing.inspection_score)}` : '—'],
   ]
 
-  const ctaLabel = listing.source === 'auction' ? 'Hold This Van — $3,000 Deposit'
-    : listing.source === 'au_stock' ? 'Reserve Now — $3,000 Deposit'
+  const ctaLabel = listing.source === 'auction' ? 'Hold This Van — $2,750 Deposit'
+    : listing.source === 'au_stock' ? 'Reserve Now — $2,750 Deposit'
     : 'Express Interest — Book a Call'
 
   const vehicleJsonLd = {
