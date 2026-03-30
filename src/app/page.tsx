@@ -26,13 +26,15 @@ export default async function HomePage() {
 
   try {
     const supabase = createSupabaseServer()
-    // Prefer featured non-auction vans, fall back to most recent Japan dealer van
+    // Prefer featured non-auction vans that have photos, most recent first
     let { data } = await supabase
       .from('listings')
       .select('*')
       .eq('status', 'available')
       .eq('featured', true)
       .neq('source', 'auction')
+      .not('photos', 'eq', '{}')
+      .order('created_at', { ascending: false })
       .limit(1)
       .single()
     // If no featured van, get most recent Japan dealer van with photos
@@ -42,6 +44,7 @@ export default async function HomePage() {
         .select('*')
         .eq('status', 'available')
         .in('source', ['dealer_goonet', 'dealer_carsensor'])
+        .not('photos', 'eq', '{}')
         .order('created_at', { ascending: false })
         .limit(1)
         .single()
