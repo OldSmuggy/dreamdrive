@@ -35,6 +35,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const { logo_url } = await getSiteSettings()
   return (
     <html lang="en" className={body.variable}>
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#2C2C2A" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Bare Camper" />
+        <link rel="apple-touch-icon" href="/icon-192.png" />
+      </head>
       <body className="font-body bg-white text-gray-900 antialiased">
         <GoogleAnalytics />
         <MetaPixel />

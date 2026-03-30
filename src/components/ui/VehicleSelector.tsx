@@ -11,6 +11,7 @@ const VEHICLES = [
     image: '/images/vans/h200-lwb-icon.png',
     href: '/browse?model=hiace_h200&size=LWB',
     comingSoon: false,
+    iconScale: 0.8,
   },
   {
     id: 'h200_slwb',
@@ -18,6 +19,7 @@ const VEHICLES = [
     image: '/images/vans/h200-slwb-icon.png',
     href: '/browse?model=hiace_h200&size=SLWB',
     comingSoon: false,
+    iconScale: 1,
   },
   {
     id: 'h300_lwb',
@@ -25,6 +27,7 @@ const VEHICLES = [
     image: '/images/vans/300-lwb-icon.png',
     href: '/browse?model=hiace_300&size=LWB',
     comingSoon: true,
+    iconScale: 0.8,
   },
   {
     id: 'h300_slwb',
@@ -32,6 +35,7 @@ const VEHICLES = [
     image: '/images/vans/300-slwb-icon.png',
     href: '/browse?model=hiace_300&size=SLWB',
     comingSoon: true,
+    iconScale: 1,
   },
 ]
 
@@ -66,7 +70,7 @@ function VanCard({ v, isHovered, isSiblingHovered, onHover, onLeave }: {
       )}
       <div
         className="relative w-full aspect-[2/1]"
-        style={{ opacity: v.comingSoon ? 0.5 : 1 }}
+        style={{ opacity: v.comingSoon ? 0.5 : 1, transform: `scale(${v.iconScale})` }}
       >
         <Image
           src={v.image}

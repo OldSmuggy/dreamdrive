@@ -4,8 +4,8 @@ import Footer from '@/components/ui/Footer'
 import { generateMeta } from '@/lib/seo'
 
 export const metadata = generateMeta({
-  title: 'How Pricing Works — Bare Camper',
-  description: 'No dealer markup. No hidden fees. Just the real cost of getting a quality Hiace to Australia. Transparent breakdown of every import cost.',
+  title: 'Toyota Hiace Import Costs Australia — What You\'ll Actually Pay | Bare Camper',
+  description: 'Full breakdown of every cost to import a Toyota Hiace from Japan to Australia. Auction price, shipping, GST, compliance — no surprises. Includes interactive cost calculator.',
   url: '/import-costs',
 })
 
@@ -31,7 +31,7 @@ export default function ImportCostsPage() {
             <p className="text-driftwood text-sm font-semibold tracking-widest uppercase mb-4">The Case for Going Direct</p>
             <h2 className="text-4xl text-charcoal font-bold mb-5">Why direct from auction is smarter</h2>
             <p className="text-gray-500 text-lg leading-relaxed">
-              When you buy from an Australian dealer, you&apos;re paying their margin on top of an exporter&apos;s margin on top of the actual auction price. That&apos;s two sets of profit stacked on the same van. With Bare Camper you pay the actual auction price plus a single flat fee. The saving is typically $5,000–$10,000 on the same quality van — or you put those savings into a significantly better van.
+              When you buy from an Australian dealer, you&apos;re paying their margin on top of an exporter&apos;s margin on top of the actual auction price. That&apos;s two sets of profit stacked on the same van. With Bare Camper you pay the actual auction price plus a single flat fee — and because we&apos;re the only campervan brand with our own team in Japan, Australia, and NZ, there are no third-party agent fees baked in. The saving is typically $5,000–$10,000 on the same quality van.
             </p>
           </div>
 
@@ -148,7 +148,7 @@ export default function ImportCostsPage() {
                 ))}
                 <tr className="bg-charcoal text-white">
                   <td className="px-6 py-4 font-bold text-base">Total landed &amp; complied</td>
-                  <td className="px-6 py-4 text-right font-bold text-sand text-lg">~$28,863</td>
+                  <td className="px-6 py-4 text-right font-bold text-sand text-lg">~$29,354</td>
                 </tr>
               </tbody>
             </table>
@@ -263,9 +263,9 @@ export default function ImportCostsPage() {
 
 const COSTS = [
   {
-    title: 'Bare Camper sourcing & Japan agent fee',
+    title: 'Bare Camper fee (Japan agent + AU broker)',
     cost: '$2,500 + GST',
-    desc: 'Covers everything from finding your van at auction through to landing it in Australia. Sourcing, inspection, purchase coordination, Japan-side logistics, export paperwork, and import management.',
+    desc: 'One fee covers both sides: our own buyer in Japan (auction bidding, inspection, purchase, export logistics) AND the Australia-side broker (Vehicle Import Approval, customs, compliance coordination, project management). We\'re the only campervan brand with our own team in Japan, Australia, and NZ — most importers outsource to third-party agents and charge separately for each.',
   },
   {
     title: 'Vehicle purchase price',
@@ -291,11 +291,13 @@ const COSTS = [
 
 const EXAMPLE_ROWS = [
   { item: 'Vehicle (¥2,000,000 @ ~¥105/$1)', value: '$19,048' },
-  { item: 'Bare Camper fee', value: '$2,750' },
-  { item: 'Shipping', value: '$2,500' },
-  { item: 'GST (10% on ~$21,548)', value: '$2,155' },
-  { item: 'Customs entry + BMSB', value: '$360' },
-  { item: 'Compliance (inc transport + safety cert)', value: '$1,800' },
+  { item: 'Bare Camper fee ($2,500 + GST)', value: '$2,750' },
+  { item: 'Shipping (RORO LWB)', value: '$1,700' },
+  { item: 'GST (10% on landed value)', value: '$2,075' },
+  { item: 'Customs entry + BMSB inspection', value: '$360' },
+  { item: 'Dolphin port handling + transport', value: '$237' },
+  { item: 'Compliance (RAWS + safety cert)', value: '$1,889' },
+  { item: 'Registration + stamp duty (QLD, 6 months)', value: '$1,295' },
 ]
 
 const BUILD_OPTIONS = [

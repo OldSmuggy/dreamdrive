@@ -12,8 +12,8 @@ import VehicleSelector from '@/components/ui/VehicleSelector'
 import type { Listing } from '@/types'
 
 export const metadata = generateMeta({
-  title: 'Bare Camper — Just What You Need | Toyota Hiace Campervans',
-  description: "A quality Hiace from Japan. Professional fiberglass when you're ready. A full build if you want it. Nothing you don't. Australia's campervan platform by Dream Drive & DIY RV Solutions.",
+  title: 'Import Japanese Hiace Vans to Australia | Bare Camper',
+  description: "Australia's only end-to-end Hiace import service. Source direct from Japanese auction, shipped and complied to your door, then convert it — pop top, hi-top or full turnkey. By Dream Drive & DIY RV Solutions.",
   url: '/',
 })
 
@@ -26,13 +26,15 @@ export default async function HomePage() {
 
   try {
     const supabase = createSupabaseServer()
-    // Prefer featured non-auction vans, fall back to most recent Japan dealer van
+    // Prefer featured non-auction vans that have photos, most recent first
     let { data } = await supabase
       .from('listings')
       .select('*')
       .eq('status', 'available')
       .eq('featured', true)
       .neq('source', 'auction')
+      .not('photos', 'eq', '{}')
+      .order('created_at', { ascending: false })
       .limit(1)
       .single()
     // If no featured van, get most recent Japan dealer van with photos
@@ -42,6 +44,7 @@ export default async function HomePage() {
         .select('*')
         .eq('status', 'available')
         .in('source', ['dealer_goonet', 'dealer_carsensor'])
+        .not('photos', 'eq', '{}')
         .order('created_at', { ascending: false })
         .limit(1)
         .single()
@@ -55,21 +58,81 @@ export default async function HomePage() {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://barecamper.com.au'
   const orgJsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'AutoDealer',
-    name: 'Bare Camper',
-    description: "Australia's campervan platform. Source your Hiace from Japan, get professional fiberglass, or go full turnkey. By Dream Drive & DIY RV Solutions.",
-    url: baseUrl,
-    telephone: '0432182892',
-    address: {
-      '@type': 'PostalAddress',
-      streetAddress: '1/10 Jones Road',
-      addressLocality: 'Capalaba',
-      addressRegion: 'QLD',
-      postalCode: '4157',
-      addressCountry: 'AU',
-    },
-    openingHours: 'Mo-Fr 10:00-16:00',
-    priceRange: '$$',
+    '@graph': [
+      {
+        '@type': ['AutoDealer', 'LocalBusiness'],
+        '@id': `${baseUrl}/#business`,
+        name: 'Bare Camper',
+        description: "Australia's only end-to-end Hiace import service. Source direct from Japanese auction, shipped and complied to your door, then convert it — pop top, hi-top or full turnkey. By Dream Drive & DIY RV Solutions.",
+        url: baseUrl,
+        telephone: '+61432182892',
+        email: 'hello@barecamper.com.au',
+        address: {
+          '@type': 'PostalAddress',
+          streetAddress: '1/10 Jones Road',
+          addressLocality: 'Capalaba',
+          addressRegion: 'QLD',
+          postalCode: '4157',
+          addressCountry: 'AU',
+        },
+        geo: {
+          '@type': 'GeoCoordinates',
+          latitude: -27.527,
+          longitude: 153.207,
+        },
+        openingHoursSpecification: {
+          '@type': 'OpeningHoursSpecification',
+          dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+          opens: '09:00',
+          closes: '17:00',
+        },
+        areaServed: {
+          '@type': 'Country',
+          name: 'Australia',
+        },
+        priceRange: '$$$',
+        aggregateRating: {
+          '@type': 'AggregateRating',
+          ratingValue: '5',
+          reviewCount: '6',
+          bestRating: '5',
+          worstRating: '5',
+        },
+        review: [
+          { '@type': 'Review', author: { '@type': 'Person', name: 'Luke' }, reviewRating: { '@type': 'Rating', ratingValue: '5' }, reviewBody: 'I love my new home.' },
+          { '@type': 'Review', author: { '@type': 'Person', name: 'Josh' }, reviewRating: { '@type': 'Rating', ratingValue: '5' }, reviewBody: 'No more rent — I happily live in my camper.' },
+          { '@type': 'Review', author: { '@type': 'Person', name: 'Michael' }, reviewRating: { '@type': 'Rating', ratingValue: '5' }, reviewBody: 'This is the perfect weekender for my family.' },
+          { '@type': 'Review', author: { '@type': 'Person', name: 'Kate' }, reviewRating: { '@type': 'Rating', ratingValue: '5' }, reviewBody: 'Goober van is part of the family.' },
+          { '@type': 'Review', author: { '@type': 'Person', name: 'Tom' }, reviewRating: { '@type': 'Rating', ratingValue: '5' }, reviewBody: 'The perfect size for me to travel in comfort.' },
+          { '@type': 'Review', author: { '@type': 'Person', name: 'Sharon' }, reviewRating: { '@type': 'Rating', ratingValue: '5' }, reviewBody: 'Could not be happier with our camper.' },
+        ],
+        knowsAbout: [
+          'Toyota Hiace import Australia',
+          'Japanese vehicle import',
+          'Campervan conversion',
+          'RAWS compliance',
+          'Pop top conversion',
+          'Hi-top conversion',
+        ],
+        sameAs: [
+          'https://www.facebook.com/barecamper',
+          'https://www.instagram.com/barecamper',
+        ],
+      },
+      {
+        '@type': 'WebSite',
+        '@id': `${baseUrl}/#website`,
+        url: baseUrl,
+        name: 'Bare Camper',
+        description: "Australia's only end-to-end Hiace import and campervan conversion service.",
+        publisher: { '@id': `${baseUrl}/#business` },
+        potentialAction: {
+          '@type': 'SearchAction',
+          target: { '@type': 'EntryPoint', urlTemplate: `${baseUrl}/browse?q={search_term_string}` },
+          'query-input': 'required name=search_term_string',
+        },
+      },
+    ],
   }
 
   return (
@@ -255,7 +318,83 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ─── 8. CTA FOOTER ────────────────────────────────── */}
+      {/* ─── 8. TESTIMONIALS ──────────────────────────────── */}
+      <section className="py-20 bg-cream">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <p className="text-driftwood text-sm font-semibold tracking-widest uppercase mb-4">Real Customers</p>
+            <h2 className="text-4xl text-charcoal font-bold">What our customers say</h2>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              { name: 'Luke', location: 'Brisbane, QLD', van: 'H200 SLWB', quote: 'I love my new home.' },
+              { name: 'Josh', location: 'Brisbane, QLD', van: 'H200 Pop Top', quote: 'No more rent — I happily live in my camper.' },
+              { name: 'Michael', location: 'QLD', van: 'H200 SLWB', quote: 'This is the perfect weekender for my family.' },
+              { name: 'Kate', location: 'QLD', van: 'H200 SLWB', quote: 'Goober van is part of the family.' },
+              { name: 'Tom', location: 'QLD', van: 'H200 LWB', quote: 'The perfect size for me to travel in comfort.' },
+              { name: 'Sharon', location: 'QLD', van: 'H200 Pop Top', quote: 'Could not be happier with our camper.' },
+            ].map(t => (
+              <div key={t.name} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col">
+                <div className="flex gap-0.5 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <svg key={i} className="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  ))}
+                </div>
+                <p className="text-charcoal text-lg leading-relaxed flex-1">&ldquo;{t.quote}&rdquo;</p>
+                <div className="mt-4 pt-4 border-t border-gray-100">
+                  <p className="font-semibold text-charcoal text-sm">{t.name}</p>
+                  <p className="text-gray-400 text-xs">{t.van} · {t.location}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── 8b. SELL A VAN / COMMUNITY ──────────────────── */}
+      <section className="py-20 bg-white">
+        <div className="max-w-5xl mx-auto px-4">
+          <div className="text-center mb-10">
+            <p className="text-driftwood text-sm font-semibold tracking-widest uppercase mb-4">Got a Van to Sell?</p>
+            <h2 className="text-3xl text-charcoal font-bold mb-3">Earn money from a van you&apos;ve spotted</h2>
+            <p className="text-gray-500 text-lg max-w-2xl mx-auto leading-relaxed">
+              Know someone selling a great Hiace? Seen one on Facebook or Gumtree? Let us know — we&apos;ll do the legwork and pay you a <strong className="text-charcoal">$200 finders fee</strong> for Japanese vans bought by a customer, or Aussie vans that lead to a Bare Camper conversion.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-6">
+            <Link
+              href="/tip-a-van"
+              className="group flex gap-5 items-start bg-cream rounded-2xl p-6 border border-transparent hover:border-ocean/20 hover:shadow-md transition-all"
+            >
+              <div className="text-4xl shrink-0">💡</div>
+              <div>
+                <h3 className="font-bold text-charcoal text-lg mb-1 group-hover:text-ocean transition-colors">Tip a Van — Earn $200</h3>
+                <p className="text-gray-500 text-sm leading-relaxed">
+                  Spotted a van online? Drop us the link. If it sells through Bare Camper, we&apos;ll pay you $200. Takes 60 seconds.
+                </p>
+                <span className="mt-3 inline-block text-ocean text-sm font-semibold group-hover:underline">Send a tip →</span>
+              </div>
+            </Link>
+            <Link
+              href="/account/my-listings"
+              className="group flex gap-5 items-start bg-cream rounded-2xl p-6 border border-transparent hover:border-ocean/20 hover:shadow-md transition-all"
+            >
+              <div className="text-4xl shrink-0">📬</div>
+              <div>
+                <h3 className="font-bold text-charcoal text-lg mb-1 group-hover:text-ocean transition-colors">List Your Van</h3>
+                <p className="text-gray-500 text-sm leading-relaxed">
+                  Selling a van yourself? List it on Bare Camper for free. We&apos;ll show it to our buyer network and pay you a $200 fee if a customer buys it.
+                </p>
+                <span className="mt-3 inline-block text-ocean text-sm font-semibold group-hover:underline">Create a listing →</span>
+              </div>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── 9. CTA FOOTER ────────────────────────────────── */}
       <section className="bg-charcoal text-white py-20 text-center">
         <div className="max-w-2xl mx-auto px-4">
           <p className="text-sand text-sm font-semibold tracking-widest uppercase mb-4">Get Started</p>
@@ -355,13 +494,13 @@ const PATHS: { image: string; tag: string; name: string; desc: string; tags: str
 const TRUST = [
   { value: '100+',   label: 'Vans delivered' },
   { value: '25+',    label: 'Years of fiberglass' },
-  { value: '$2,750', label: 'Refundable hold' },
+  { value: 'JP + AU + NZ', label: 'Teams on the ground' },
   { value: '100%',   label: 'Aus compliant' },
 ]
 
 const WHY_US = [
+  { icon: '🌏', title: 'Our team in Japan, Australia & NZ', desc: "We're the only campervan brand with a physical presence in Japan, Australia, and New Zealand. Our own buyer in Japan, our own workshop in Brisbane. Not outsourced — ours." },
   { icon: '🔓', title: 'No lock-in', desc: "Buy just the van. Add the roof next month. Fit it out next year. Or get everything now. Your timeline, your call." },
-  { icon: '🇯🇵', title: 'Direct from Japan', desc: "Vans sourced from Japanese auctions and dealers. No mystery pricing, no middlemen. You see what's available and what it costs." },
   { icon: '🏭', title: '25 years of fiberglass', desc: "Our Brisbane factory has been manufacturing pop tops since before van life was a hashtag. This is what we do." },
   { icon: '🤝', title: 'Real people', desc: "You're dealing with Jared and Andrew — not a call centre. The same people who import the vans and build the roofs are the ones answering your questions." },
 ]

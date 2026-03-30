@@ -1,10 +1,11 @@
+export const dynamic = 'force-dynamic'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createSupabaseServer } from '@/lib/supabase-server'
 import { getJpyRate } from '@/lib/settings'
 import { listingDisplayPrice, importBreakdown } from '@/lib/pricing'
 import { generateMeta } from '@/lib/seo'
-import { centsToAud, scoreColor, scoreLabel, sourceLabel, sourceBadgeColor, auctionUrgency, locationBadgeInfo, fitOutLevelInfo } from '@/lib/utils'
+import { centsToAud, scoreColor, scoreLabel, sourceLabel, sourceBadgeColor, auctionUrgency, locationBadgeInfo, fitOutLevelInfo, curationBadgeInfo } from '@/lib/utils'
 import AuctionBanner from '@/components/ui/AuctionBanner'
 import AuctionCountdownBanner from '@/components/van/AuctionCountdownBanner'
 import PhotoGallery from '@/components/van/PhotoGallery'
@@ -14,6 +15,12 @@ import ShareButtons from '@/components/ui/ShareButtons'
 import DepositHoldButton from '@/components/ui/DepositHoldButton'
 import ImportEstimate from '@/components/van/ImportEstimate'
 import ViewContentTracker from '@/components/van/ViewContentTracker'
+import BuyerAgentNotes from '@/components/van/BuyerAgentNotes'
+import MarketContext from '@/components/van/MarketContext'
+import PipelineTimeline from '@/components/van/PipelineTimeline'
+import InspirationBlock from '@/components/van/InspirationBlock'
+import StickyMobileCTA from '@/components/van/StickyMobileCTA'
+import AskAboutVan from '@/components/van/AskAboutVan'
 import type { Listing } from '@/types'
 
 export async function generateMetadata({ params }: { params: { id: string } }) {
@@ -42,6 +49,7 @@ export default async function VanDetailPage({ params }: { params: { id: string }
   const urgency  = listing.source === 'auction' ? auctionUrgency(listing.auction_date) : null
   const locBadge = locationBadgeInfo(listing)
   const foBadge  = fitOutLevelInfo(listing.fit_out_level)
+  const curBadge = curationBadgeInfo(listing.curation_badge)
 
   // Check if user has saved this van + is admin
   let isSaved = false
@@ -64,7 +72,7 @@ export default async function VanDetailPage({ params }: { params: { id: string }
   const isJapanListing = listing.source !== 'au_stock'
   const { priceCents, isEstimate } = listingDisplayPrice(listing, jpyRate)
   const displayPrice = priceCents ? centsToAud(priceCents) : 'POA'
-  const breakdown = isJapanListing ? importBreakdown(listing, jpyRate) : null
+  const breakdown = isJapanListing ? importBreakdown(listing, jpyRate, listing.size === 'SLWB') : null
 
   const internalsLabel: Record<string, string> = {
     empty: 'Empty',
@@ -125,6 +133,11 @@ export default async function VanDetailPage({ params }: { params: { id: string }
         model_year={listing.model_year}
         price_cents={priceCents}
       />
+      <StickyMobileCTA
+        listingId={listing.id}
+        price={displayPrice}
+        ctaLabel="Build This Van →"
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(vehicleJsonLd) }}
@@ -165,6 +178,7 @@ export default async function VanDetailPage({ params }: { params: { id: string }
                 {urgency === 'closing_soon' && <span className="bg-amber-400 text-amber-900 text-xs font-bold px-2 py-0.5 rounded">CLOSING SOON</span>}
                 {urgency === 'last_chance'  && <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded">LAST CHANCE</span>}
                 {listing.has_fitout && <span className="bg-purple-600 text-white text-xs font-bold px-2 py-0.5 rounded">🏕 Campervan Build</span>}
+                {listing.is_community_find && <span className="bg-driftwood text-white text-xs font-bold px-2 py-0.5 rounded">Community Find</span>}
               </div>
               {listing.power_system && listing.power_system !== 'None' && (
                 <div className="absolute top-3 right-3 bg-gray-900/80 text-white text-xs px-2 py-0.5 rounded pointer-events-none">
@@ -197,6 +211,11 @@ export default async function VanDetailPage({ params }: { params: { id: string }
                   🏕 Campervan Build{listing.fitout_grade ? ` · ${listing.fitout_grade}` : ''}
                 </div>
               )}
+              {curBadge && (
+                <div className={`inline-flex items-center ${curBadge.bg} ${curBadge.text} text-xs font-bold px-2.5 py-1 rounded`}>
+                  {curBadge.label}
+                </div>
+              )}
               <div className="ml-auto flex items-center gap-3">
                 <ShareButtons url={`/van/${listing.id}`} title={`${listing.model_year} ${listing.model_name} — Bare Camper`} />
                 <SaveVanButton listingId={listing.id} userId={user?.id ?? null} initialSaved={isSaved} />
@@ -227,6 +246,9 @@ export default async function VanDetailPage({ params }: { params: { id: string }
               </p>
             )}
 
+            {/* Pipeline timeline */}
+            <PipelineTimeline stage={listing.pipeline_stage} eta={listing.pipeline_eta} />
+
             <div className="mb-6">
               <div className="flex items-baseline gap-2">
                 <div className="text-3xl text-ocean">{displayPrice}</div>
@@ -246,6 +268,12 @@ export default async function VanDetailPage({ params }: { params: { id: string }
               {!isJapanListing && priceCents && (
                 <p className="text-xs text-gray-400 mt-1">All-in price — import, compliance & GST included.</p>
               )}
+              {listing.market_comparison_aud && priceCents && listing.market_comparison_aud > priceCents && (
+                <div className="mt-3 inline-flex items-center gap-2 bg-green-50 border border-green-200 text-green-800 text-sm font-semibold px-3 py-2 rounded-lg">
+                  <span>📉</span>
+                  <span>${Math.round((listing.market_comparison_aud - priceCents) / 100).toLocaleString()} below comparable local listings</span>
+                </div>
+              )}
             </div>
 
             {/* Itemised import estimate */}
@@ -253,33 +281,14 @@ export default async function VanDetailPage({ params }: { params: { id: string }
               <ImportEstimate lines={breakdown.lines} totalCents={breakdown.totalCents} />
             )}
 
-            {/* AU market price comparison */}
-            {listing.au_market_price_low && listing.au_market_price_high && (
-              <div className="mb-6 bg-gray-50 rounded-xl p-5">
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">What this van is worth in Australia</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="bg-ocean/5 border border-ocean/10 rounded-lg p-4">
-                    <p className="text-xs text-gray-500 mb-1">Through Bare Camper</p>
-                    <p className="text-xl font-semibold text-ocean">
-                      {priceCents ? `~${centsToAud(priceCents)}` : 'POA'}
-                    </p>
-                    <p className="text-[11px] text-gray-400 mt-0.5">landed in Brisbane</p>
-                  </div>
-                  <div className="bg-white border border-gray-200 rounded-lg p-4">
-                    <p className="text-xs text-gray-500 mb-1">On the Australian market</p>
-                    <p className="text-xl font-semibold text-gray-700">
-                      ${listing.au_market_price_low.toLocaleString('en-AU')} – ${listing.au_market_price_high.toLocaleString('en-AU')}
-                    </p>
-                    {listing.au_market_source && (
-                      <p className="text-[11px] text-gray-400 mt-0.5">{listing.au_market_source}</p>
-                    )}
-                  </div>
-                </div>
-                {listing.au_market_note && (
-                  <p className="text-[11px] text-gray-400 mt-2.5">{listing.au_market_note}</p>
-                )}
-              </div>
-            )}
+            {/* Market comparison */}
+            <MarketContext
+              listingPriceCents={priceCents}
+              auMarketPriceLow={listing.au_market_price_low}
+              auMarketPriceHigh={listing.au_market_price_high}
+              auMarketSource={listing.au_market_source}
+              auMarketNote={listing.au_market_note}
+            />
 
             {/* Spec table */}
             <div className="border border-gray-200 rounded-xl overflow-hidden mb-6">
@@ -368,6 +377,18 @@ export default async function VanDetailPage({ params }: { params: { id: string }
                 Not sure? Take the Van Match Quiz →
               </Link>
             </div>
+
+            {/* Ask about this van — logged-in users */}
+            {user && (
+              <div className="mt-6">
+                <AskAboutVan listingId={listing.id} />
+              </div>
+            )}
+            {!user && (
+              <div className="mt-6 text-center text-sm text-gray-500">
+                <Link href="/login" className="text-ocean font-semibold hover:underline">Sign in</Link> to ask us about this van.
+              </div>
+            )}
           </div>
         </div>
 
@@ -377,6 +398,12 @@ export default async function VanDetailPage({ params }: { params: { id: string }
             <p className="text-gray-600 leading-relaxed">{listing.description}</p>
           </div>
         )}
+
+        {/* Buyer agent notes */}
+        <BuyerAgentNotes notes={listing.notes ?? []} />
+
+        {/* Inspiration / what this van could become */}
+        <InspirationBlock inspiration={listing.inspiration ?? null} />
 
         {listing.conversion_video_url && (
           <div className="mt-10">

@@ -1,9 +1,9 @@
 'use client'
-import { useState, useMemo, useEffect, useCallback } from 'react'
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { centsToAud, scoreColor, scoreLabel, auctionUrgency, locationBadgeInfo, fitOutLevelInfo } from '@/lib/utils'
+import { centsToAud, scoreColor, scoreLabel, auctionUrgency, locationBadgeInfo, fitOutLevelInfo, curationBadgeInfo } from '@/lib/utils'
 import { listingDisplayPrice } from '@/lib/pricing'
 import SaveVanButton from '@/components/ui/SaveVanButton'
 import type { Listing } from '@/types'
@@ -144,6 +144,25 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
 
   // Mobile drawer
   const [drawerOpen, setDrawerOpen] = useState(false)
+
+  // Stock alert (notify me when stock arrives)
+  const [notifyEmail, setNotifyEmail] = useState('')
+  const [notifyName, setNotifyName] = useState('')
+  const [notifyNotes, setNotifyNotes] = useState('')
+  const [notifySending, setNotifySending] = useState(false)
+  const [notifySent, setNotifySent] = useState(false)
+
+  async function submitStockAlert() {
+    if (!notifyEmail) return
+    setNotifySending(true)
+    await fetch('/api/stock-alerts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: notifyEmail, name: notifyName, notes: notifyNotes }),
+    }).catch(() => {})
+    setNotifySending(false)
+    setNotifySent(true)
+  }
 
   // ── Sync filter state to URL ──
   const syncUrl = useCallback((overrides?: Record<string, string | string[] | undefined>) => {
@@ -471,11 +490,28 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
         </div>
       )}
 
+      {/* ── Sell a Van banner ── */}
+      {!hasActiveFilters && (
+        <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-cream rounded-xl px-4 py-3.5 border border-driftwood/20">
+          <p className="text-sm text-gray-600">
+            <span className="font-semibold text-charcoal">Got a van to sell?</span> List it here or tip us off about one — earn <strong className="text-charcoal">$200</strong> if it sells.
+          </p>
+          <div className="flex gap-2 shrink-0">
+            <Link href="/tip-a-van" className="text-xs font-semibold text-ocean border border-ocean rounded-full px-3 py-1.5 hover:bg-ocean hover:text-white transition-colors">
+              💡 Tip a Van
+            </Link>
+            <Link href="/account/my-listings" className="text-xs font-semibold text-ocean border border-ocean rounded-full px-3 py-1.5 hover:bg-ocean hover:text-white transition-colors">
+              📬 List Your Van
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* ── For Sale Vehicles ── */}
       {forSaleVehicles.length > 0 && !hasActiveFilters && (
         <div className="mb-8">
           <h2 className="text-xl text-charcoal mb-4">Contract for Sale</h2>
-          <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
             {forSaleVehicles.map(v => (
               <ForSaleCard key={v.id} vehicle={v} />
             ))}
@@ -485,13 +521,58 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
 
       {/* ── Grid ── */}
       {filtered.length === 0 && forSaleVehicles.length === 0 ? (
-        <div className="text-center py-20 text-gray-400">
+        <div className="text-center py-16">
           <div className="text-5xl mb-4">🔍</div>
-          <p className="text-lg font-semibold">No listings match your filters.</p>
-          <p className="text-sm mt-1">Try broadening your search.</p>
+          <p className="text-xl font-bold text-charcoal mb-2">No vans match your filters.</p>
+          <p className="text-gray-500 mb-4">Try broadening your search, or get notified when new vans arrive.</p>
+          {hasActiveFilters && (
+            <button onClick={clearAll} className="mb-8 text-ocean font-semibold hover:underline text-sm block mx-auto">
+              ← Clear all filters
+            </button>
+          )}
+          {notifySent ? (
+            <div className="max-w-sm mx-auto bg-ocean/10 text-ocean rounded-2xl p-6">
+              <div className="text-3xl mb-2">✓</div>
+              <p className="font-semibold">You&apos;re on the list!</p>
+              <p className="text-sm mt-1 text-ocean/70">We&apos;ll email you when new stock arrives that matches what you&apos;re after.</p>
+            </div>
+          ) : (
+            <div className="max-w-sm mx-auto bg-cream rounded-2xl p-6 text-left">
+              <p className="font-semibold text-charcoal mb-1">Get notified when stock arrives</p>
+              <p className="text-gray-500 text-sm mb-4">Leave your details and we&apos;ll give you a heads-up when the right van comes in.</p>
+              <input
+                type="text"
+                placeholder="Your name"
+                value={notifyName}
+                onChange={e => setNotifyName(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-ocean/30"
+              />
+              <input
+                type="email"
+                placeholder="Your email *"
+                value={notifyEmail}
+                onChange={e => setNotifyEmail(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-ocean/30"
+              />
+              <textarea
+                placeholder="What are you after? (e.g. diesel, 4WD, pop top)"
+                value={notifyNotes}
+                onChange={e => setNotifyNotes(e.target.value)}
+                rows={2}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-ocean/30 resize-none"
+              />
+              <button
+                onClick={submitStockAlert}
+                disabled={!notifyEmail || notifySending}
+                className="btn-primary w-full py-2.5 text-sm disabled:opacity-50"
+              >
+                {notifySending ? 'Sending…' : 'Notify Me'}
+              </button>
+            </div>
+          )}
         </div>
       ) : (
-        <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
+        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
           {filtered.map(listing => (
             <ListingCard
               key={listing.id}
@@ -537,39 +618,39 @@ function ForSaleCard({ vehicle }: { vehicle: ForSaleVehicle }) {
   }
 
   return (
-    <div className="bg-white border-2 border-amber-200 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow group">
+    <div className="bg-white border border-amber-200 rounded-lg sm:rounded-xl overflow-hidden hover:shadow-md transition-shadow duration-200 group">
       {/* Photo */}
-      <div className="relative h-[220px] overflow-hidden">
+      <div className="relative h-[150px] sm:h-[180px] lg:h-[220px] overflow-hidden">
         {photo ? (
-          <Image src={photo} alt={label} fill className="object-cover" sizes="(max-width: 768px) 100vw, 50vw" />
+          <Image src={photo} alt={label} fill className="object-cover" sizes="(max-width: 768px) 50vw, 33vw" />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center bg-amber-50 text-amber-300 text-5xl">🚐</div>
+          <div className="absolute inset-0 flex items-center justify-center bg-amber-50 text-amber-300 text-3xl sm:text-5xl">🚐</div>
         )}
-        <div className="absolute top-3 left-3 flex gap-1 flex-wrap">
-          <span className="bg-amber-500 text-white text-xs font-bold px-2 py-0.5 rounded">{vehicle.sale_label ?? 'CONTRACT FOR SALE'}</span>
+        <div className="absolute top-2 left-2 sm:top-3 sm:left-3 flex gap-1 flex-wrap">
+          <span className="bg-amber-500 text-white text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 sm:px-2 rounded">{vehicle.sale_label ?? 'CONTRACT FOR SALE'}</span>
         </div>
       </div>
 
       {/* Info */}
-      <div className="p-4">
-        <p className="font-semibold text-sm text-gray-900 truncate">{label}</p>
+      <div className="p-2 sm:p-3">
+        <p className="font-semibold text-xs sm:text-sm text-gray-900 truncate">{label}</p>
         {vehicle.build?.build_type && vehicle.build.build_type !== 'none' && (
-          <p className="text-xs text-amber-700 font-medium mt-0.5">{vehicle.build.build_type.toUpperCase()} Build</p>
+          <p className="text-[10px] sm:text-xs text-amber-700 font-medium mt-0.5">{vehicle.build.build_type.toUpperCase()} Build</p>
         )}
         {stageLabel && (
-          <p className="text-xs text-gray-500 mt-1">Currently: {stageLabel}</p>
+          <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">Currently: {stageLabel}</p>
         )}
         {vehicle.sale_notes && (
-          <p className="text-xs text-gray-500 mt-1 line-clamp-2">{vehicle.sale_notes}</p>
+          <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1 line-clamp-2 hidden sm:block">{vehicle.sale_notes}</p>
         )}
 
-        <div className="flex items-center justify-between mt-3 pt-3 border-t border-amber-100">
-          <span className="text-amber-700 text-base font-semibold">
+        <div className="flex items-center justify-between mt-2 pt-2 sm:mt-3 sm:pt-3 border-t border-amber-100">
+          <span className="text-amber-700 text-sm sm:text-base font-bold">
             {vehicle.sale_price_aud ? centsToAud(vehicle.sale_price_aud) : 'POA'}
           </span>
           <button
             onClick={() => setShowInterest(true)}
-            className="bg-amber-500 text-white text-xs font-semibold px-3 py-1.5 rounded-full hover:bg-amber-600 transition-colors"
+            className="hidden sm:inline-flex bg-amber-500 text-white text-xs font-semibold px-3 py-1.5 rounded-full hover:bg-amber-600 transition-colors"
           >
             Express Interest
           </button>
@@ -615,10 +696,14 @@ function ForSaleCard({ vehicle }: { vehicle: ForSaleVehicle }) {
 function ListingCard({ listing, userId, initialSaved, jpyRate }: { listing: Listing; userId: string | null; initialSaved: boolean; jpyRate: number }) {
   const router = useRouter()
   const photo    = listing.photos[0] ?? null
+  const spinVideo = (listing as any).spin_video as string | null
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const [isHovering, setIsHovering] = useState(false)
   const urgency  = listing.source === 'auction' ? auctionUrgency(listing.auction_date) : null
   const sColor   = scoreColor(listing.inspection_score)
   const locBadge = locationBadgeInfo(listing)
   const foBadge  = fitOutLevelInfo(listing.fit_out_level)
+  const curBadge = curationBadgeInfo(listing.curation_badge)
   const auctionBlur = !userId && listing.source === 'auction'
 
   const { priceCents, isEstimate } = listingDisplayPrice(listing, jpyRate)
@@ -663,19 +748,47 @@ function ListingCard({ listing, userId, initialSaved, jpyRate }: { listing: List
   }, [auctionResult])
 
   return (
-    <Link href={`/van/${listing.id}`} className="bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow group block">
-      {/* Photo */}
-      <div className="relative h-[220px] overflow-hidden">
+    <Link
+      href={`/van/${listing.id}`}
+      className="bg-white border border-gray-100 rounded-lg sm:rounded-xl overflow-hidden hover:shadow-md transition-shadow duration-200 group block"
+      onMouseEnter={() => {
+        setIsHovering(true)
+        if (spinVideo && videoRef.current) {
+          videoRef.current.currentTime = 0
+          videoRef.current.play().catch(() => {})
+        }
+      }}
+      onMouseLeave={() => {
+        setIsHovering(false)
+        if (videoRef.current) {
+          videoRef.current.pause()
+        }
+      }}
+    >
+      {/* Photo / Spin Video */}
+      <div className="relative h-[150px] sm:h-[180px] lg:h-[220px] overflow-hidden bg-gray-900">
         {photo ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={photo}
             alt={listing.model_name}
-            className={`absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 ${auctionBlur ? 'blur-md scale-110' : ''}`}
+            className={`absolute inset-0 w-full h-full object-cover transition-all duration-500 ${auctionBlur ? 'blur-md scale-110' : ''} ${isHovering && spinVideo ? 'opacity-0 scale-95' : 'opacity-100 group-hover:scale-105'}`}
             style={{ objectPosition: listing.image_focal_point ?? 'center' }}
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center bg-gray-100 text-gray-300 text-5xl">🚐</div>
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-100 text-gray-300 text-3xl sm:text-5xl">🚐</div>
+        )}
+        {/* Spin video overlay */}
+        {spinVideo && (
+          <video
+            ref={videoRef}
+            src={spinVideo}
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-500 ${isHovering ? 'opacity-100' : 'opacity-0'}`}
+          />
         )}
         {/* Auction blur CTA */}
         {auctionBlur && (
@@ -699,39 +812,46 @@ function ListingCard({ listing, userId, initialSaved, jpyRate }: { listing: List
           </div>
         )}
         {/* Top-left: location badge */}
-        <div className="absolute top-3 left-3 flex gap-1 flex-wrap">
-          <span className={`${locBadge.bg} text-white text-xs font-bold px-2 py-0.5 rounded`}>
+        <div className="absolute top-2 left-2 sm:top-3 sm:left-3 flex gap-1 flex-wrap max-w-[65%]">
+          <span className={`${locBadge.bg} text-white text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 sm:px-2 rounded`}>
             {locBadge.label}
           </span>
           {countdownBadge && (
-            <span className={`text-xs font-bold px-2 py-0.5 rounded ${countdownBadge.cls} ${countdownBadge.pulse ? 'animate-pulse' : ''}`}>
+            <span className={`text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 sm:px-2 rounded ${countdownBadge.cls} ${countdownBadge.pulse ? 'animate-pulse' : ''}`}>
               {countdownBadge.text}
             </span>
           )}
           {resultBadge && (
-            <span className={`text-xs font-bold px-2 py-0.5 rounded ${resultBadge.cls}`}>
+            <span className={`text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 sm:px-2 rounded ${resultBadge.cls}`}>
               {resultBadge.text}
             </span>
           )}
           {listing.featured && listing.source === 'au_stock' && (
-            <span className="bg-ocean text-white text-xs font-bold px-2 py-0.5 rounded">FEATURED</span>
+            <span className="bg-ocean text-white text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 sm:px-2 rounded">FEATURED</span>
+          )}
+          {listing.is_community_find && (
+            <span className="bg-driftwood text-white text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 sm:px-2 rounded">COMMUNITY FIND</span>
           )}
         </div>
-        {/* Top-right: save + grade */}
-        <div className="absolute top-3 right-3 flex flex-col items-end gap-1">
-          <SaveVanButton listingId={listing.id} userId={userId} initialSaved={initialSaved} />
+        {/* Top-right: grade + badges */}
+        <div className="absolute top-2 right-2 sm:top-3 sm:right-3 flex flex-col items-end gap-0.5 sm:gap-1">
           {listing.inspection_score && (
-            <div className={`score-${sColor} text-xs font-bold px-2 py-0.5 rounded`}>
+            <div className={`score-${sColor} text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 sm:px-2 rounded`}>
               Grade {listing.inspection_score}
             </div>
           )}
           {listing.has_fitout && (
-            <div className="text-white text-xs font-bold px-2 py-0.5 rounded" style={{ background: '#92400e' }}>
-              🏕 Campervan Build{listing.fitout_grade ? ` · ${listing.fitout_grade}` : ''}
+            <div className="text-white text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 sm:px-2 rounded" style={{ background: '#92400e' }}>
+              🏕 Campervan{listing.fitout_grade ? ` · ${listing.fitout_grade}` : ''}
+            </div>
+          )}
+          {curBadge && (
+            <div className={`${curBadge.bg} ${curBadge.text} text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 sm:px-2 rounded`}>
+              {curBadge.label}
             </div>
           )}
           {listing.power_system && listing.power_system !== 'None' && (
-            <div className="bg-gray-900/80 text-white text-xs px-2 py-0.5 rounded">
+            <div className="bg-gray-900/80 text-white text-[9px] sm:text-[10px] px-1.5 py-0.5 sm:px-2 rounded hidden sm:block">
               🔌 {listing.power_system === '240V Australian' ? '240V AU Ready' : '100V JP'}
             </div>
           )}
@@ -739,43 +859,43 @@ function ListingCard({ listing, userId, initialSaved, jpyRate }: { listing: List
       </div>
 
       {/* Info */}
-      <div className="p-4">
-        <p className="font-semibold text-sm text-gray-900 truncate">{listing.model_name}</p>
-        <p className="text-xs text-gray-500 mt-0.5">
+      <div className="p-2 sm:p-3">
+        <p className="font-semibold text-xs sm:text-sm text-gray-900 truncate">{listing.model_name}</p>
+        <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5">
           {[listing.model_year, listing.mileage_km ? `${listing.mileage_km.toLocaleString()} km` : null, listing.drive, listing.transmission]
             .filter(Boolean).join(' · ')}
         </p>
 
         {/* Location sub-text */}
         {locBadge.sub && (
-          <p className="text-xs mt-1 font-medium" style={{ color: locBadge.bg.replace('bg-', '').replace('-600', '') === 'green' ? '#15803d' : locBadge.bg.replace('bg-', '').replace('-600', '') === 'orange' ? '#ea580c' : '#dc2626' }}>
+          <p className="text-[10px] sm:text-xs mt-0.5 sm:mt-1 font-medium" style={{ color: locBadge.bg.replace('bg-', '').replace('-600', '') === 'green' ? '#15803d' : locBadge.bg.replace('bg-', '').replace('-600', '') === 'orange' ? '#ea580c' : '#dc2626' }}>
             {locBadge.sub}
           </p>
         )}
 
         {/* Fit-out level badge */}
         {foBadge && (
-          <span className={`inline-block mt-1.5 text-xs font-semibold px-2 py-0.5 rounded border ${foBadge.cls}`}>
+          <span className={`inline-block mt-1 sm:mt-1.5 text-[10px] sm:text-xs font-semibold px-1.5 sm:px-2 py-0.5 rounded border ${foBadge.cls}`}>
             {foBadge.label}
           </span>
         )}
 
         {listing.source === 'au_stock' && listing.eta_date && (
-          <p className="text-xs text-ocean font-medium mt-1">
+          <p className="text-[10px] sm:text-xs text-ocean font-medium mt-0.5 sm:mt-1">
             ETA ~{new Date(listing.eta_date).toLocaleDateString('en-AU', { month: 'short', year: 'numeric' })}
           </p>
         )}
         {listing.source === 'auction' && listing.auction_date && (
-          <p className="text-xs text-amber-700 font-medium mt-1">
+          <p className="text-[10px] sm:text-xs text-amber-700 font-medium mt-0.5 sm:mt-1">
             Auction {new Date(listing.auction_date).toLocaleDateString('en-AU', { weekday: 'short', month: 'short', day: 'numeric' })}
           </p>
         )}
 
-        <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+        <div className="flex items-center justify-between mt-2 pt-2 sm:mt-3 sm:pt-3 border-t border-gray-100">
           <div>
-            <span className="text-ocean text-base font-semibold">
+            <span className="text-ocean text-sm sm:text-base font-bold">
               {displayPrice}
-              {isEstimate && priceCents && <span className="text-xs text-gray-400 font-normal ml-1">est.</span>}
+              {isEstimate && priceCents && <span className="text-[10px] sm:text-xs text-gray-400 font-normal ml-1">est.</span>}
             </span>
             {listing.au_market_price_low && listing.au_market_price_high && (
               <p className="text-[11px] text-gray-400 leading-tight mt-0.5">
@@ -783,7 +903,10 @@ function ListingCard({ listing, userId, initialSaved, jpyRate }: { listing: List
               </p>
             )}
           </div>
-          <span className="btn-primary btn-sm text-xs">View & Build</span>
+          <div className="flex items-center gap-2">
+            <span className="hidden sm:inline-flex btn-primary btn-sm text-xs">View &amp; Build</span>
+            <SaveVanButton listingId={listing.id} userId={userId} initialSaved={initialSaved} />
+          </div>
         </div>
       </div>
     </Link>

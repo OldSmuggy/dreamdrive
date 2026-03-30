@@ -1,6 +1,6 @@
 import { type ClassValue, clsx } from 'clsx'
 import { addDays, addHours, nextDay, set, differenceInSeconds } from 'date-fns'
-import type { CountdownParts, InspectionScore, Product } from '@/types'
+import type { CountdownParts, CurationBadge, InspectionScore, PipelineStage, Product } from '@/types'
 
 export function cn(...inputs: ClassValue[]) {
   return clsx(inputs)
@@ -115,4 +115,37 @@ export function fitOutLevelInfo(level: string | null | undefined): {
     full:    { label: 'Full Campervan', desc: 'Fully converted camper — ready to travel',                                         cls: 'bg-cream text-ocean border-ocean-light' },
   }
   return map[level] ?? null
+}
+
+// ---- Curation badges ----
+export function curationBadgeInfo(badge: CurationBadge | null | undefined): {
+  label: string; bg: string; text: string
+} | null {
+  if (!badge) return null
+  const map: Record<CurationBadge, { label: string; bg: string; text: string }> = {
+    staff_pick:     { label: 'Staff Pick',     bg: 'bg-amber-100',  text: 'text-amber-800' },
+    rare_find:      { label: 'Rare Find',      bg: 'bg-teal-100',   text: 'text-teal-800' },
+    low_km:         { label: 'Low KM',         bg: 'bg-green-100',  text: 'text-green-800' },
+    budget_entry:   { label: 'Budget Entry',   bg: 'bg-blue-100',   text: 'text-blue-800' },
+    adventure_spec: { label: 'Adventure Spec', bg: 'bg-stone-200',  text: 'text-stone-800' },
+    arriving_soon:  { label: 'Arriving Soon',  bg: 'bg-orange-100', text: 'text-orange-800' },
+  }
+  return map[badge] ?? null
+}
+
+// ---- Pipeline stages ----
+export const PIPELINE_STAGES: { key: PipelineStage; label: string }[] = [
+  { key: 'listed',      label: 'Listed' },
+  { key: 'purchased',   label: 'Purchased' },
+  { key: 'export_yard', label: 'Export Yard' },
+  { key: 'on_ship',     label: 'On Ship' },
+  { key: 'arrived',     label: 'Arrived' },
+  { key: 'compliance',  label: 'Compliance' },
+  { key: 'ready',       label: 'Ready' },
+]
+
+export function pipelineStageIndex(stage: PipelineStage | null | undefined): number {
+  if (!stage) return 0
+  const idx = PIPELINE_STAGES.findIndex(s => s.key === stage)
+  return idx >= 0 ? idx : 0
 }

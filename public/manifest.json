@@ -1,0 +1,26 @@
+{
+  "name": "Bare Camper",
+  "short_name": "Bare Camper",
+  "description": "Import Japanese Hiace vans to Australia. Source, convert, and build your dream campervan.",
+  "start_url": "/browse",
+  "display": "standalone",
+  "background_color": "#FAF6F1",
+  "theme_color": "#2C2C2A",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["auto", "shopping"],
+  "lang": "en-AU"
+}

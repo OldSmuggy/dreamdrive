@@ -134,26 +134,42 @@ export default function ConfiguratorV2({
       total += fp
     }
 
-    // ── Van price (always separate) ──────────────────────────────────────────
+    // ── Van price (split into vehicle + import costs) ─────────────────────────
+    const addVanLines = (van: Listing | null, label?: string) => {
+      if (!van) {
+        lines.push({ label: 'Van', price: null, note: 'To be selected — see price range above' })
+        return
+      }
+      const { priceCents: allInPrice } = listingDisplayPrice(van, jpyRate)
+      if (van.source === 'au_stock') {
+        lines.push({ label: label ?? van.model_name, price: allInPrice ?? 0, note: 'AU stock — price as listed' })
+        total += allInPrice ?? 0
+      } else {
+        // Japan-sourced: show van price and import costs separately
+        const rate = jpyRate && jpyRate > 0 ? jpyRate : 0.0095
+        const jpyPrice = van.start_price_jpy || van.buy_price_jpy || 0
+        const vehicleCents = jpyPrice > 0 ? Math.round(jpyPrice * rate * 100) : 0
+        const importCosts = (allInPrice ?? 0) - vehicleCents
+        lines.push({ label: label ?? van.model_name, price: vehicleCents, note: 'Vehicle purchase price (converted from ¥)' })
+        total += vehicleCents
+        if (importCosts > 0) {
+          lines.push({ label: 'Import, shipping, GST, compliance & rego', price: importCosts, note: 'All-in: fee, freight, customs, GST, compliance, QLD rego' })
+          total += importCosts
+        }
+      }
+    }
+
     if (isVanFirst) {
-      const { priceCents: vp } = selectedVan ? listingDisplayPrice(selectedVan, jpyRate) : { priceCents: 0 }
-      lines.push({ label: selectedVan?.model_name ?? 'Your Van', price: vp ?? 0, note: isJapanBuild ? 'Incl. $10,000 import fee' : undefined })
-      total += vp ?? 0
+      addVanLines(selectedVan, selectedVan?.model_name ?? 'Your Van')
     } else if (isTama || (isMana && manaLocation === 'japan')) {
-      // Japan build — show van as separate line if selected
       if (selectedVan) {
-        const { priceCents: vp } = listingDisplayPrice(selectedVan, jpyRate)
-        lines.push({ label: selectedVan.model_name, price: vp ?? 0, note: 'Incl. $10,000 import fee' })
-        total += vp ?? 0
+        addVanLines(selectedVan)
       } else {
         lines.push({ label: 'Van', price: null, note: 'To be selected — see price range above' })
       }
     } else if (fitoutSlug !== null) {
-      // AU build with fitout (MANA AU, Bare Camper)
       if (!isBYO && selectedVan) {
-        const { priceCents: vp } = listingDisplayPrice(selectedVan, jpyRate)
-        lines.push({ label: selectedVan.model_name, price: vp ?? 0, note: 'Incl. $10,000 import fee' })
-        total += vp ?? 0
+        addVanLines(selectedVan)
       } else if (isBYO) {
         lines.push({ label: 'Your own van', price: null, note: 'BYO — compatibility to be confirmed' })
       } else {
@@ -1022,8 +1038,8 @@ function SummaryStep({
 }) {
   const isDepositCTA = selectedVan?.source === 'auction' || selectedVan?.source === 'au_stock'
   const depositLeadType = isDepositCTA ? 'deposit_intent' : 'consultation'
-  const ctaLabel = selectedVan?.source === 'auction'  ? 'Hold This Van — $3,000 Deposit'
-    : selectedVan?.source === 'au_stock'              ? 'Reserve Now — $3,000 Deposit'
+  const ctaLabel = selectedVan?.source === 'auction'  ? 'Hold This Van — $2,750 Deposit'
+    : selectedVan?.source === 'au_stock'              ? 'Reserve Now — $2,750 Deposit'
     : selectedVan                                     ? 'Express Interest — Book a Call'
     : isBYO                                           ? 'Book a Consultation'
     :                                                   'Save My Build & Find a Van'
@@ -1219,8 +1235,8 @@ function SummaryStep({
             <p className="px-5 pb-4 text-xs text-gray-400 leading-relaxed">
               {fitoutSlug === 'tama' || fitoutSlug === 'mana'
                 ? 'Base price includes van + full conversion.'
-                : 'Van price estimated from current exchange rates.'}
-              {' '}All prices AUD incl. GST.
+                : 'Total is all-in: van, sourcing fee, shipping, customs, GST, compliance & QLD rego.'}
+              {' '}All prices AUD incl. GST. Estimates based on current exchange rates.
             </p>
           </div>
 
@@ -1245,7 +1261,7 @@ function SummaryStep({
                 <h3 className="text-lg text-charcoal">{ctaLabel}</h3>
                 {isDepositCTA && (
                   <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-2">
-                    No payment here — we&apos;ll contact you to arrange the $3,000 refundable deposit.
+                    No payment here — we&apos;ll contact you to arrange the $2,750 refundable deposit.
                   </p>
                 )}
               </div>

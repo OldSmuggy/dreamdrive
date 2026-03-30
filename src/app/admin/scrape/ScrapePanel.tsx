@@ -81,6 +81,32 @@ export default function ScrapePanel({ secret }: { secret: string }) {
         </p>
       </div>
 
+      {/* How to run — terminal instructions */}
+      <div className="bg-ocean/5 border border-ocean/20 rounded-xl p-5 mb-5 text-sm text-gray-700">
+        <p className="font-semibold text-ocean mb-2">How to run the NINJA scraper</p>
+        <p className="mb-3">
+          The scraper uses a real browser (Playwright + Chromium) to log into NINJA,
+          so it <strong>must be run from your Mac</strong> — it can&apos;t run on Vercel.
+          Open Terminal and run:
+        </p>
+        <div className="bg-gray-950 text-gray-200 rounded-lg p-4 font-mono text-xs leading-relaxed mb-3 overflow-x-auto">
+          <div className="text-gray-500"># Navigate to the project</div>
+          <div>cd ~/Desktop/&quot;DD App&quot;/dreamdrive</div>
+          <div className="mt-2 text-gray-500"># First time only — install the browser</div>
+          <div>npx playwright install chromium</div>
+          <div className="mt-2 text-gray-500"># Dry run (preview, no DB writes)</div>
+          <div>npx tsx scripts/run-ninja-scrape.ts --dry-run</div>
+          <div className="mt-2 text-gray-500"># Full scrape → writes to Supabase</div>
+          <div className="text-green-400">npx tsx scripts/run-ninja-scrape.ts</div>
+          <div className="mt-2 text-gray-500"># Limit to N listings (good for testing)</div>
+          <div>npx tsx scripts/run-ninja-scrape.ts --dry-run --max 5</div>
+        </div>
+        <p className="text-xs text-gray-500">
+          Takes ~2–4 seconds per listing (with anti-detection delays). Full scrape of ~225 vans takes ~10 minutes.
+          Needs <code className="bg-gray-100 px-1 rounded">NINJA_LOGIN_ID</code> and <code className="bg-gray-100 px-1 rounded">NINJA_PASSWORD</code> in <code className="bg-gray-100 px-1 rounded">.env.local</code>.
+        </p>
+      </div>
+
       {/* When to run notice */}
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-5 text-sm text-amber-900">
         <p className="font-semibold mb-1">When to run</p>

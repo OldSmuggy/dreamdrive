@@ -14,7 +14,12 @@ const nextConfig = {
     serverComponentsExternalPackages: [
       'playwright-core',
       '@sparticuz/chromium',
+      '@mendable/firecrawl-js',
     ],
+    // Allow server actions to accept larger payloads (images up to 4 MB)
+    serverActions: {
+      bodySizeLimit: '4mb',
+    },
   },
   async headers() {
     return [

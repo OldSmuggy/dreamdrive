@@ -21,6 +21,7 @@ type EditState = {
   aud_estimate: string
   au_price_aud: string
   start_price_jpy: string
+  market_comparison_aud: string
   source: string
   status: string
   au_status: string
@@ -28,6 +29,7 @@ type EditState = {
   fit_out_level: string
   vehicle_model: string
   conversion_video_url: string
+  spin_video: string
   featured: boolean
   has_nav: boolean
   has_leather: boolean
@@ -56,10 +58,15 @@ type EditState = {
   auction_result: string
   sold_price_jpy: string
   top_bid_jpy: string
+  curation_badge: string
+  pipeline_stage: string
+  pipeline_eta: string
   au_market_price_low: string
   au_market_price_high: string
   au_market_source: string
   au_market_note: string
+  notes_json: string
+  inspiration_json: string
 }
 
 function toEditState(l: Listing): EditState {
@@ -78,6 +85,7 @@ function toEditState(l: Listing): EditState {
     aud_estimate: l.aud_estimate ? (l.aud_estimate / 100).toFixed(0) : '',
     au_price_aud: l.au_price_aud ? (l.au_price_aud / 100).toFixed(0) : '',
     start_price_jpy: l.start_price_jpy?.toString() ?? '',
+    market_comparison_aud: l.market_comparison_aud ? (l.market_comparison_aud / 100).toFixed(0) : '',
     source: l.source,
     status: l.status,
     au_status: l.au_status ?? '',
@@ -85,6 +93,7 @@ function toEditState(l: Listing): EditState {
     fit_out_level: l.fit_out_level ?? '',
     vehicle_model: l.vehicle_model ?? '',
     conversion_video_url: l.conversion_video_url ?? '',
+    spin_video: l.spin_video ?? '',
     featured: l.featured,
     has_nav: l.has_nav,
     has_leather: l.has_leather,
@@ -113,10 +122,15 @@ function toEditState(l: Listing): EditState {
     auction_result: (l as any).auction_result ?? 'pending',
     sold_price_jpy: (l as any).sold_price_jpy?.toString() ?? '',
     top_bid_jpy: (l as any).top_bid_jpy?.toString() ?? '',
-    au_market_price_low: (l as any).au_market_price_low?.toString() ?? '',
-    au_market_price_high: (l as any).au_market_price_high?.toString() ?? '',
-    au_market_source: (l as any).au_market_source ?? '',
-    au_market_note: (l as any).au_market_note ?? '',
+    curation_badge: l.curation_badge ?? '',
+    pipeline_stage: l.pipeline_stage ?? '',
+    pipeline_eta: l.pipeline_eta ? l.pipeline_eta.slice(0, 10) : '',
+    au_market_price_low: l.au_market_price_low?.toString() ?? '',
+    au_market_price_high: l.au_market_price_high?.toString() ?? '',
+    au_market_source: l.au_market_source ?? '',
+    au_market_note: l.au_market_note ?? '',
+    notes_json: l.notes ? JSON.stringify(l.notes, null, 2) : '',
+    inspiration_json: l.inspiration ? JSON.stringify(l.inspiration, null, 2) : '',
   }
 }
 
@@ -244,6 +258,410 @@ function NotifyButton({ listingId }: { listingId: string }) {
                   className="px-5 py-2 bg-ocean text-white text-sm font-semibold rounded-lg hover:bg-ocean/90 disabled:opacity-50"
                 >
                   {sending ? 'Sending…' : `Send to ${selected.size} customer${selected.size !== 1 ? 's' : ''}`}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
+
+// ---- Notify Stock Alert Subscribers Button ----
+function NotifyStockAlertsButton({ listingId }: { listingId: string }) {
+  const [sending, setSending] = useState(false)
+  const [result, setResult] = useState<string | null>(null)
+
+  const send = async () => {
+    if (!confirm('Send stock alert emails to all matching subscribers?')) return
+    setSending(true)
+    setResult(null)
+    try {
+      const res = await fetch('/api/admin/notify-stock-matches', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ listing_id: listingId }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      setResult(`Sent to ${data.total} subscriber${data.total !== 1 ? 's' : ''}`)
+    } catch (e) {
+      setResult(`Error: ${e}`)
+    } finally {
+      setSending(false)
+    }
+  }
+
+  return (
+    <div className="relative">
+      <button
+        onClick={send}
+        disabled={sending}
+        className="text-sm px-3 py-1.5 rounded-lg border border-ocean/30 text-ocean hover:bg-ocean/5 disabled:opacity-50"
+      >
+        {sending ? 'Sending…' : '🔔 Notify Subscribers'}
+      </button>
+      {result && (
+        <span className="ml-2 text-xs text-gray-500">{result}</span>
+      )}
+    </div>
+  )
+}
+
+// ---- Send to Nao (Buyer Agent) Button ----
+function SendToNaoButton({ listingId, modelName }: { listingId: string; modelName: string }) {
+  const [open, setOpen] = useState(false)
+  const [customerName, setCustomerName] = useState('')
+  const [notes, setNotes] = useState('')
+  const [sending, setSending] = useState(false)
+  const [sent, setSent] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleSend = async () => {
+    setSending(true)
+    setError('')
+    try {
+      const res = await fetch('/api/admin/send-to-buyer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          listing_id: listingId,
+          customer_name: customerName || undefined,
+          notes: notes || undefined,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to send')
+      setSent(true)
+    } catch (e) {
+      setError(String(e))
+    } finally {
+      setSending(false)
+    }
+  }
+
+  const handleClose = () => {
+    setOpen(false)
+    setSent(false)
+    setError('')
+    setCustomerName('')
+    setNotes('')
+  }
+
+  return (
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        className="text-sm px-3 py-1.5 rounded-lg border border-green-200 text-green-700 hover:bg-green-50 font-medium"
+      >
+        Send to Nao
+      </button>
+
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={handleClose}>
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full mx-4" onClick={e => e.stopPropagation()}>
+            <div className="p-5 border-b">
+              <h3 className="text-lg font-bold text-charcoal">Send to Nao</h3>
+              <p className="text-sm text-gray-500 mt-1">
+                Email purchase request for <strong>{modelName}</strong> to Naoyuki Takahashi.
+              </p>
+            </div>
+
+            <div className="p-5 space-y-4">
+              {sent ? (
+                <div className="text-center py-4">
+                  <p className="text-green-700 font-semibold text-base">Purchase request sent!</p>
+                  <p className="text-sm text-gray-500 mt-1">Nao will receive the email shortly.</p>
+                </div>
+              ) : (
+                <>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Customer Name (optional)</label>
+                    <input
+                      value={customerName}
+                      onChange={e => setCustomerName(e.target.value)}
+                      placeholder="e.g. Morgan Willaume"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ocean bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Notes (optional)</label>
+                    <textarea
+                      value={notes}
+                      onChange={e => setNotes(e.target.value)}
+                      placeholder="Any special instructions or details..."
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ocean bg-white resize-none"
+                    />
+                  </div>
+                  {error && <p className="text-sm text-red-600">{error}</p>}
+                </>
+              )}
+            </div>
+
+            <div className="p-5 border-t flex gap-3 justify-end">
+              <button onClick={handleClose} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800">
+                {sent ? 'Close' : 'Cancel'}
+              </button>
+              {!sent && (
+                <button
+                  onClick={handleSend}
+                  disabled={sending}
+                  className="px-5 py-2 bg-green-700 text-white text-sm font-semibold rounded-lg hover:bg-green-800 disabled:opacity-50"
+                >
+                  {sending ? 'Sending...' : 'Send to Nao'}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
+
+// ---- Start Deal Button (New Deal System) ----
+function StartDealButton({ listing }: { listing: Listing }) {
+  const [open, setOpen] = useState(false)
+  const [customers, setCustomers] = useState<{ id: string; first_name: string; last_name: string | null; email: string | null }[]>([])
+  const [buyers, setBuyers] = useState<{ id: string; name: string; email: string; company: string | null; is_active: boolean }[]>([])
+  const [loadingData, setLoadingData] = useState(false)
+  const [customerSearch, setCustomerSearch] = useState('')
+  const [selectedCustomerId, setSelectedCustomerId] = useState('')
+  const [selectedBuyerId, setSelectedBuyerId] = useState('')
+  const [notes, setNotes] = useState('')
+  const [sending, setSending] = useState(false)
+  const [result, setResult] = useState<{
+    deal: { id: string }
+    customerWhatsAppUrl?: string
+    buyerWhatsAppUrl?: string
+  } | null>(null)
+  const [error, setError] = useState('')
+
+  const handleOpen = async () => {
+    setOpen(true)
+    setResult(null)
+    setError('')
+    setCustomerSearch('')
+    setSelectedCustomerId('')
+    setSelectedBuyerId('')
+    setNotes('')
+    setLoadingData(true)
+    try {
+      const [custRes, buyerRes] = await Promise.all([
+        fetch('/api/customers'),
+        fetch('/api/admin/buyers'),
+      ])
+      const custData = await custRes.json()
+      const buyerData = await buyerRes.json()
+      if (Array.isArray(custData)) setCustomers(custData)
+      if (Array.isArray(buyerData)) {
+        setBuyers(buyerData)
+        // Pre-select first active buyer
+        const firstActive = buyerData.find((b: any) => b.is_active)
+        if (firstActive) setSelectedBuyerId(firstActive.id)
+      }
+    } catch (e) {
+      setError('Failed to load data: ' + String(e))
+    } finally {
+      setLoadingData(false)
+    }
+  }
+
+  const handleClose = () => {
+    setOpen(false)
+    setResult(null)
+    setError('')
+  }
+
+  const filteredCustomers = customers.filter(c => {
+    if (!customerSearch.trim()) return true
+    const search = customerSearch.toLowerCase()
+    const name = `${c.first_name} ${c.last_name ?? ''}`.toLowerCase()
+    return name.includes(search) || c.email?.toLowerCase().includes(search)
+  })
+
+  const handleSubmit = async () => {
+    if (!selectedCustomerId) { setError('Please select a customer'); return }
+    if (!selectedBuyerId) { setError('Please select a buyer'); return }
+    setSending(true)
+    setError('')
+    try {
+      const res = await fetch('/api/admin/deals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          listing_id: listing.id,
+          customer_id: selectedCustomerId,
+          buyer_id: selectedBuyerId,
+          notes: notes.trim() || undefined,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to create deal')
+      setResult(data)
+    } catch (e) {
+      setError(String(e))
+    } finally {
+      setSending(false)
+    }
+  }
+
+  const selectedCustomer = customers.find(c => c.id === selectedCustomerId)
+
+  return (
+    <>
+      <button
+        onClick={handleOpen}
+        className="text-sm px-3 py-1.5 rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-semibold"
+      >
+        Start Deal
+      </button>
+
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={handleClose}>
+          <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="p-5 border-b">
+              <h3 className="text-lg font-bold text-charcoal flex items-center gap-2">
+                <span className="text-xl">🤝</span> Start Deal
+              </h3>
+              <p className="text-sm text-gray-500 mt-1">
+                {listing.model_year ?? ''} {listing.model_name}{listing.grade ? ` — ${listing.grade}` : ''}
+              </p>
+            </div>
+
+            <div className="p-5 space-y-4">
+              {loadingData ? (
+                <p className="text-sm text-gray-500 py-4 text-center">Loading customers and buyers...</p>
+              ) : result ? (
+                <div className="space-y-4">
+                  <div className="text-center py-2">
+                    <p className="text-emerald-700 font-semibold text-base">Deal created!</p>
+                    <p className="text-sm text-gray-500 mt-1">
+                      {selectedCustomer ? `${selectedCustomer.first_name} ${selectedCustomer.last_name ?? ''}`.trim() : 'Customer'} × {buyers.find(b => b.id === selectedBuyerId)?.name ?? 'Buyer'}
+                    </p>
+                  </div>
+
+                  <div className="space-y-3">
+                    {result.customerWhatsAppUrl && (
+                      <a
+                        href={result.customerWhatsAppUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-2 w-full py-3 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 text-sm"
+                      >
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                        WhatsApp Customer
+                      </a>
+                    )}
+                    {result.buyerWhatsAppUrl && (
+                      <a
+                        href={result.buyerWhatsAppUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-2 w-full py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 text-sm"
+                      >
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                        WhatsApp Buyer
+                      </a>
+                    )}
+                    <a
+                      href={`/admin/deals/${result.deal.id}`}
+                      className="flex items-center justify-center gap-2 w-full py-3 bg-ocean text-white font-semibold rounded-xl hover:bg-ocean/90 text-sm"
+                    >
+                      View Deal →
+                    </a>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {/* Customer selector */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Customer *</label>
+                    <input
+                      type="text"
+                      value={customerSearch}
+                      onChange={e => setCustomerSearch(e.target.value)}
+                      placeholder="Search by name or email..."
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ocean bg-white mb-2"
+                    />
+                    <div className="max-h-40 overflow-y-auto border border-gray-200 rounded-lg">
+                      {filteredCustomers.length === 0 ? (
+                        <p className="text-xs text-gray-400 p-3 text-center">No customers found</p>
+                      ) : (
+                        filteredCustomers.slice(0, 50).map(c => {
+                          const name = `${c.first_name} ${c.last_name ?? ''}`.trim()
+                          const isSelected = selectedCustomerId === c.id
+                          return (
+                            <button
+                              key={c.id}
+                              type="button"
+                              onClick={() => setSelectedCustomerId(c.id)}
+                              className={`w-full text-left px-3 py-2 text-sm border-b border-gray-100 last:border-b-0 transition-colors ${
+                                isSelected
+                                  ? 'bg-ocean/10 text-ocean font-semibold'
+                                  : 'hover:bg-gray-50 text-charcoal'
+                              }`}
+                            >
+                              <span>{name}</span>
+                              {c.email && <span className="text-xs text-gray-400 ml-2">{c.email}</span>}
+                            </button>
+                          )
+                        })
+                      )}
+                    </div>
+                    {selectedCustomer && (
+                      <p className="text-xs text-ocean mt-1.5 font-medium">
+                        Selected: {selectedCustomer.first_name} {selectedCustomer.last_name ?? ''}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Buyer selector */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Buyer *</label>
+                    <select
+                      value={selectedBuyerId}
+                      onChange={e => setSelectedBuyerId(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ocean bg-white"
+                    >
+                      <option value="">Select buyer...</option>
+                      {buyers.map(b => (
+                        <option key={b.id} value={b.id}>
+                          {b.name}{b.company ? ` (${b.company})` : ''}{!b.is_active ? ' [inactive]' : ''}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Notes */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Notes (optional)</label>
+                    <textarea
+                      value={notes}
+                      onChange={e => setNotes(e.target.value)}
+                      placeholder="Max bid, special requests, anything relevant..."
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ocean bg-white resize-none"
+                    />
+                  </div>
+                  {error && <p className="text-sm text-red-600">{error}</p>}
+                </>
+              )}
+            </div>
+
+            <div className="p-5 border-t flex gap-3 justify-end">
+              <button onClick={handleClose} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800">
+                {result ? 'Close' : 'Cancel'}
+              </button>
+              {!result && !loadingData && (
+                <button
+                  onClick={handleSubmit}
+                  disabled={sending}
+                  className="px-5 py-2 bg-emerald-700 text-white text-sm font-semibold rounded-lg hover:bg-emerald-800 disabled:opacity-50"
+                >
+                  {sending ? 'Creating deal...' : 'Create Deal'}
                 </button>
               )}
             </div>
@@ -713,6 +1131,41 @@ function ListingRow({
                   />
                 </div>
               </div>
+              {editState.source === 'customer_upload' && (
+                <div className="rounded-lg border border-driftwood/30 bg-driftwood/5 p-4 space-y-3">
+                  <p className="text-xs font-semibold text-driftwood uppercase tracking-wide">Community Find — Private Fields</p>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Source Category</label>
+                    <input
+                      value={l.source_category ?? ''}
+                      readOnly
+                      className={`${inputClass} bg-gray-50 text-gray-500`}
+                      placeholder="No category set"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Source URL</label>
+                    <div className="flex gap-2">
+                      <input
+                        value={l.source_url ?? ''}
+                        readOnly
+                        className={`${inputClass} bg-gray-50 text-gray-500 flex-1`}
+                        placeholder="No URL provided"
+                      />
+                      {l.source_url && (
+                        <a
+                          href={l.source_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3 py-2 bg-ocean text-white text-xs rounded-lg hover:bg-ocean/90 shrink-0"
+                        >
+                          Open ↗
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
               {editState.source === 'auction' && (<>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -774,6 +1227,23 @@ function ListingRow({
                   placeholder="YouTube or Vimeo URL"
                 />
               </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">360 Spin Video</label>
+                {editState.spin_video ? (
+                  <div className="flex items-center gap-2">
+                    <video src={editState.spin_video} className="h-16 rounded" muted loop playsInline autoPlay />
+                    <button type="button" onClick={() => onSet('spin_video', '')} className="text-red-500 text-xs hover:underline">Remove</button>
+                  </div>
+                ) : (
+                  <PhotoUploadButton
+                    label="🎬 Upload Spin Video"
+                    accept="video/mp4,video/quicktime,video/webm"
+                    multiple={false}
+                    onUploaded={url => onSet('spin_video', url)}
+                    onUploadingChange={onUploadingChange}
+                  />
+                )}
+              </div>
             </div>
 
             {/* Right — pricing + flags */}
@@ -791,6 +1261,14 @@ function ListingRow({
                   <span className="absolute left-3 top-2 text-sm text-gray-400">$</span>
                   <input type="number" value={editState.au_price_aud} onChange={e => onSet('au_price_aud', e.target.value)} className={`${inputClass} pl-6`} />
                 </div>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Market Comparison ($)</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-2 text-sm text-gray-400">$</span>
+                  <input type="number" value={editState.market_comparison_aud} onChange={e => onSet('market_comparison_aud', e.target.value)} className={`${inputClass} pl-6`} placeholder="Comparable local price" />
+                </div>
+                <p className="text-[10px] text-gray-400 mt-0.5">If set, shows &ldquo;$X below market&rdquo; on listing page</p>
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-1.5">Japan Price (¥)</label>
@@ -898,6 +1376,92 @@ function ListingRow({
                 </select>
               </div>
             </div>
+          </div>
+
+          {/* Curation & Pipeline */}
+          <div className="border-t border-gray-200 pt-4 mb-4">
+            <label className="block text-xs font-semibold text-gray-600 mb-3">Curation &amp; Pipeline</label>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Curation Badge</label>
+                <select value={editState.curation_badge} onChange={e => onSet('curation_badge', e.target.value)} className={inputClass}>
+                  <option value="">— none —</option>
+                  <option value="staff_pick">⭐ Staff Pick</option>
+                  <option value="best_value">💰 Best Value</option>
+                  <option value="rare_find">🔍 Rare Find</option>
+                  <option value="low_km">🏆 Low KM</option>
+                  <option value="adventure_ready">🏕 Adventure Ready</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Pipeline Stage</label>
+                <select value={editState.pipeline_stage} onChange={e => onSet('pipeline_stage', e.target.value)} className={inputClass}>
+                  <option value="">— none —</option>
+                  <option value="listed">Listed</option>
+                  <option value="sourced">Sourced</option>
+                  <option value="purchased">Purchased</option>
+                  <option value="shipping">Shipping</option>
+                  <option value="customs">Customs</option>
+                  <option value="compliance">Compliance</option>
+                  <option value="ready">Ready</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Pipeline ETA</label>
+                <input type="date" value={editState.pipeline_eta} onChange={e => onSet('pipeline_eta', e.target.value)} className={inputClass} />
+              </div>
+            </div>
+          </div>
+
+          {/* Market Context */}
+          <div className="border-t border-gray-200 pt-4 mb-4">
+            <label className="block text-xs font-semibold text-gray-600 mb-3">AU Market Context</label>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Market Low ($)</label>
+                <input type="number" value={editState.au_market_price_low} onChange={e => onSet('au_market_price_low', e.target.value)} className={inputClass} placeholder="e.g. 35000" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Market High ($)</label>
+                <input type="number" value={editState.au_market_price_high} onChange={e => onSet('au_market_price_high', e.target.value)} className={inputClass} placeholder="e.g. 55000" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Source</label>
+                <input value={editState.au_market_source} onChange={e => onSet('au_market_source', e.target.value)} className={inputClass} placeholder="e.g. Carsales, Facebook" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Market Note</label>
+                <input value={editState.au_market_note} onChange={e => onSet('au_market_note', e.target.value)} className={inputClass} placeholder="Short context..." />
+              </div>
+            </div>
+          </div>
+
+          {/* Buyer Notes (JSON) */}
+          <div className="border-t border-gray-200 pt-4 mb-4">
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Buyer Agent Notes <span className="text-gray-400 font-normal">(JSON array)</span>
+            </label>
+            <textarea
+              value={editState.notes_json}
+              onChange={e => onSet('notes_json', e.target.value)}
+              className={`${inputClass} font-mono text-xs`}
+              rows={4}
+              placeholder={'[\n  { "id": "1", "author": "Jared", "date": "2026-03-30", "sentiment": "positive", "type": "general", "content": "Great condition..." }\n]'}
+            />
+          </div>
+
+          {/* Inspiration (JSON) */}
+          <div className="border-t border-gray-200 pt-4 mb-4">
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Inspiration Block <span className="text-gray-400 font-normal">(JSON object)</span>
+            </label>
+            <textarea
+              value={editState.inspiration_json}
+              onChange={e => onSet('inspiration_json', e.target.value)}
+              className={`${inputClass} font-mono text-xs`}
+              rows={4}
+              placeholder={'{ "title": "What this van could become", "description": "...", "images": [], "link": "", "link_text": "" }'}
+            />
           </div>
 
           {/* Photos */}
@@ -1010,6 +1574,9 @@ function ListingRow({
               {isTranslating ? 'Translating…' : '🌐 Re-translate with AI'}
             </button>
             <NotifyButton listingId={l.id} />
+            <NotifyStockAlertsButton listingId={l.id} />
+            <SendToNaoButton listingId={l.id} modelName={l.model_name || 'Unknown Van'} />
+            <StartDealButton listing={l} />
           </div>
         </div>
       )}
@@ -1194,6 +1761,7 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
         aud_estimate: editState.aud_estimate ? Math.round(parseFloat(editState.aud_estimate) * 100) : null,
         au_price_aud: editState.au_price_aud ? Math.round(parseFloat(editState.au_price_aud) * 100) : null,
         start_price_jpy: editState.start_price_jpy ? parseInt(editState.start_price_jpy) : null,
+        market_comparison_aud: editState.market_comparison_aud ? Math.round(parseFloat(editState.market_comparison_aud) * 100) : null,
         source: editState.source,
         status: editState.status,
         au_status: editState.au_status || null,
@@ -1201,6 +1769,7 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
         fit_out_level: editState.fit_out_level || null,
         vehicle_model: editState.vehicle_model || null,
         conversion_video_url: editState.conversion_video_url || null,
+        spin_video: editState.spin_video || null,
         featured: editState.featured,
         has_nav: editState.has_nav,
         has_leather: editState.has_leather,
@@ -1229,10 +1798,15 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
         auction_result: editState.auction_result || null,
         sold_price_jpy: editState.sold_price_jpy ? parseInt(editState.sold_price_jpy) : null,
         top_bid_jpy: editState.top_bid_jpy ? parseInt(editState.top_bid_jpy) : null,
+        curation_badge: editState.curation_badge || null,
+        pipeline_stage: editState.pipeline_stage || null,
+        pipeline_eta: editState.pipeline_eta || null,
         au_market_price_low: editState.au_market_price_low ? parseInt(editState.au_market_price_low) : null,
         au_market_price_high: editState.au_market_price_high ? parseInt(editState.au_market_price_high) : null,
         au_market_source: editState.au_market_source || null,
         au_market_note: editState.au_market_note || null,
+        notes: editState.notes_json ? JSON.parse(editState.notes_json) : null,
+        inspiration: editState.inspiration_json ? JSON.parse(editState.inspiration_json) : null,
       }
 
       const res = await fetch(`/api/listings/${id}`, {

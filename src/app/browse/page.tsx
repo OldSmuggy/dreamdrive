@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { createSupabaseServer } from '@/lib/supabase-server'
 import { createAdminClient } from '@/lib/supabase'
 import { getJpyRate } from '@/lib/settings'
@@ -8,8 +9,8 @@ import BrowseGuide from '@/components/listings/BrowseGuide'
 import type { Listing } from '@/types'
 
 export const metadata = generateMeta({
-  title: 'Browse Toyota Hiace Vans from Japan',
-  description: 'Browse available Toyota Hiace H200 vans from Japan auction and dealers. Filter by year, mileage, grade and drive type. All-in AUD price estimates shown.',
+  title: 'Toyota Hiace Vans for Import from Japan | Browse Stock | Bare Camper',
+  description: 'Browse Toyota Hiace H200 and H300 vans available from Japanese auction and dealers. Auction-graded, verified kms, all-in AUD pricing. Import direct — no dealer markup.',
   url: '/browse',
 })
 

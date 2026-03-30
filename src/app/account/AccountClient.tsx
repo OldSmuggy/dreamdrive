@@ -186,6 +186,16 @@ export default function AccountClient({
           <p className="text-white/50 text-sm mb-1">My Account</p>
           <h1 className="text-3xl">{name}</h1>
           <p className="text-white/60 text-sm mt-1">{user.email}</p>
+          <div className="mt-5">
+            <Link
+              href="/account/my-listings"
+              className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors border border-white/20"
+            >
+              <span>🚐</span>
+              <span>My Listings</span>
+              <span className="text-white/50">→</span>
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -314,7 +324,7 @@ export default function AccountClient({
         {/* ── DEPOSIT HOLDS ── */}
         {tab === 'deposits' && (
           depositHolds.length === 0 ? (
-            <EmptyState icon="💰" title="No deposit holds yet" desc="Place a $3,000 refundable deposit to hold any van for up to 7 days.">
+            <EmptyState icon="💰" title="No deposit holds yet" desc="Place a $2,750 refundable deposit to hold any van for up to 7 days.">
               <Link href="/browse" className="btn-primary inline-block mt-4">Browse Vans</Link>
             </EmptyState>
           ) : (
