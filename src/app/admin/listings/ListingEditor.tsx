@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { centsToAud, sourceLabel } from '@/lib/utils'
+import { getAuMarketPrice } from '@/lib/au-market-price'
 import type { Listing, Source } from '@/types'
 import PhotoUploadButton from '@/components/ui/PhotoUploadButton'
 
@@ -55,6 +56,10 @@ type EditState = {
   auction_result: string
   sold_price_jpy: string
   top_bid_jpy: string
+  au_market_price_low: string
+  au_market_price_high: string
+  au_market_source: string
+  au_market_note: string
 }
 
 function toEditState(l: Listing): EditState {
@@ -108,6 +113,10 @@ function toEditState(l: Listing): EditState {
     auction_result: (l as any).auction_result ?? 'pending',
     sold_price_jpy: (l as any).sold_price_jpy?.toString() ?? '',
     top_bid_jpy: (l as any).top_bid_jpy?.toString() ?? '',
+    au_market_price_low: (l as any).au_market_price_low?.toString() ?? '',
+    au_market_price_high: (l as any).au_market_price_high?.toString() ?? '',
+    au_market_source: (l as any).au_market_source ?? '',
+    au_market_note: (l as any).au_market_note ?? '',
   }
 }
 
@@ -795,6 +804,54 @@ function ListingRow({
                   </p>
                 )}
               </div>
+              {/* AU Market Price Comparison */}
+              <div className="pt-2 border-t border-gray-200">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-xs font-semibold text-gray-600">AU Market Price</label>
+                  <button
+                    type="button"
+                    className="text-xs text-ocean hover:underline font-medium"
+                    onClick={() => {
+                      const year = editState.model_year ? parseInt(editState.model_year) : null
+                      const km = editState.mileage_km ? parseInt(editState.mileage_km) : null
+                      const drive = editState.drive || null
+                      if (!year || km == null) return
+                      const result = getAuMarketPrice(year, drive, km)
+                      if (result) {
+                        onSet('au_market_price_low', result.au_market_price_low.toString())
+                        onSet('au_market_price_high', result.au_market_price_high.toString())
+                        onSet('au_market_source', result.au_market_source)
+                        onSet('au_market_note', result.au_market_note)
+                      }
+                    }}
+                  >
+                    Auto-fill from market data
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-[10px] text-gray-400 mb-0.5">Low ($)</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-2 text-sm text-gray-400">$</span>
+                      <input type="number" value={editState.au_market_price_low} onChange={e => onSet('au_market_price_low', e.target.value)} className={`${inputClass} pl-6`} placeholder="35000" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] text-gray-400 mb-0.5">High ($)</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-2 text-sm text-gray-400">$</span>
+                      <input type="number" value={editState.au_market_price_high} onChange={e => onSet('au_market_price_high', e.target.value)} className={`${inputClass} pl-6`} placeholder="48000" />
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-1.5">
+                  <input value={editState.au_market_source} onChange={e => onSet('au_market_source', e.target.value)} className={`${inputClass} text-xs`} placeholder="Source" />
+                </div>
+                <div className="mt-1.5">
+                  <input value={editState.au_market_note} onChange={e => onSet('au_market_note', e.target.value)} className={`${inputClass} text-xs`} placeholder="Note" />
+                </div>
+              </div>
+
               <div className="pt-1 space-y-2">
                 <label className="block text-xs font-semibold text-gray-600 mb-1">Features & Flags</label>
                 {([
@@ -1172,6 +1229,10 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
         auction_result: editState.auction_result || null,
         sold_price_jpy: editState.sold_price_jpy ? parseInt(editState.sold_price_jpy) : null,
         top_bid_jpy: editState.top_bid_jpy ? parseInt(editState.top_bid_jpy) : null,
+        au_market_price_low: editState.au_market_price_low ? parseInt(editState.au_market_price_low) : null,
+        au_market_price_high: editState.au_market_price_high ? parseInt(editState.au_market_price_high) : null,
+        au_market_source: editState.au_market_source || null,
+        au_market_note: editState.au_market_note || null,
       }
 
       const res = await fetch(`/api/listings/${id}`, {

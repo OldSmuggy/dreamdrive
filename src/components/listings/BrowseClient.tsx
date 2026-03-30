@@ -772,10 +772,17 @@ function ListingCard({ listing, userId, initialSaved, jpyRate }: { listing: List
         )}
 
         <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-          <span className="text-ocean text-base font-semibold">
-            {displayPrice}
-            {isEstimate && priceCents && <span className="text-xs text-gray-400 font-normal ml-1">est.</span>}
-          </span>
+          <div>
+            <span className="text-ocean text-base font-semibold">
+              {displayPrice}
+              {isEstimate && priceCents && <span className="text-xs text-gray-400 font-normal ml-1">est.</span>}
+            </span>
+            {listing.au_market_price_low && listing.au_market_price_high && (
+              <p className="text-[11px] text-gray-400 leading-tight mt-0.5">
+                Similar in AU: ${Math.round(listing.au_market_price_low / 1000)}–{Math.round(listing.au_market_price_high / 1000)}K
+              </p>
+            )}
+          </div>
           <span className="btn-primary btn-sm text-xs">View & Build</span>
         </div>
       </div>

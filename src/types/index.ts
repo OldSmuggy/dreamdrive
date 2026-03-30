@@ -82,6 +82,10 @@ export interface Listing {
   has_power_windows: boolean
   has_rear_ac: boolean
   interior_dimensions: string | null
+  au_market_price_low: number | null
+  au_market_price_high: number | null
+  au_market_source: string | null
+  au_market_note: string | null
 }
 
 export interface Product {

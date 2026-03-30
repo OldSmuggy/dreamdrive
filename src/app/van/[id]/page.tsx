@@ -253,6 +253,34 @@ export default async function VanDetailPage({ params }: { params: { id: string }
               <ImportEstimate lines={breakdown.lines} totalCents={breakdown.totalCents} />
             )}
 
+            {/* AU market price comparison */}
+            {listing.au_market_price_low && listing.au_market_price_high && (
+              <div className="mb-6 bg-gray-50 rounded-xl p-5">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">What this van is worth in Australia</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="bg-ocean/5 border border-ocean/10 rounded-lg p-4">
+                    <p className="text-xs text-gray-500 mb-1">Through Bare Camper</p>
+                    <p className="text-xl font-semibold text-ocean">
+                      {priceCents ? `~${centsToAud(priceCents)}` : 'POA'}
+                    </p>
+                    <p className="text-[11px] text-gray-400 mt-0.5">landed in Brisbane</p>
+                  </div>
+                  <div className="bg-white border border-gray-200 rounded-lg p-4">
+                    <p className="text-xs text-gray-500 mb-1">On the Australian market</p>
+                    <p className="text-xl font-semibold text-gray-700">
+                      ${listing.au_market_price_low.toLocaleString('en-AU')} – ${listing.au_market_price_high.toLocaleString('en-AU')}
+                    </p>
+                    {listing.au_market_source && (
+                      <p className="text-[11px] text-gray-400 mt-0.5">{listing.au_market_source}</p>
+                    )}
+                  </div>
+                </div>
+                {listing.au_market_note && (
+                  <p className="text-[11px] text-gray-400 mt-2.5">{listing.au_market_note}</p>
+                )}
+              </div>
+            )}
+
             {/* Spec table */}
             <div className="border border-gray-200 rounded-xl overflow-hidden mb-6">
               {specs.map(([k, v], i) => (
