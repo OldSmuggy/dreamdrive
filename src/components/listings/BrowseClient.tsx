@@ -892,10 +892,17 @@ function ListingCard({ listing, userId, initialSaved, jpyRate }: { listing: List
         )}
 
         <div className="flex items-center justify-between mt-2 pt-2 sm:mt-3 sm:pt-3 border-t border-gray-100">
-          <span className="text-ocean text-sm sm:text-base font-bold">
-            {displayPrice}
-            {isEstimate && priceCents && <span className="text-[10px] sm:text-xs text-gray-400 font-normal ml-1">est.</span>}
-          </span>
+          <div>
+            <span className="text-ocean text-sm sm:text-base font-bold">
+              {displayPrice}
+              {isEstimate && priceCents && <span className="text-[10px] sm:text-xs text-gray-400 font-normal ml-1">est.</span>}
+            </span>
+            {listing.au_market_price_low && listing.au_market_price_high && (
+              <p className="text-[11px] text-gray-400 leading-tight mt-0.5">
+                Similar in AU: ${Math.round(listing.au_market_price_low / 1000)}–{Math.round(listing.au_market_price_high / 1000)}K
+              </p>
+            )}
+          </div>
           <div className="flex items-center gap-2">
             <span className="hidden sm:inline-flex btn-primary btn-sm text-xs">View &amp; Build</span>
             <SaveVanButton listingId={listing.id} userId={userId} initialSaved={initialSaved} />

@@ -77,6 +77,11 @@ create table if not exists listings (
   -- Photos (array of CDN URLs)
   photos              text[] default '{}',
   inspection_sheet    text null,       -- CDN URL
+  -- AU market price comparison
+  au_market_price_low  int null,       -- AUD whole dollars
+  au_market_price_high int null,       -- AUD whole dollars
+  au_market_source     text default 'Carsales, CarsGuide, Autotrader — March 2026',
+  au_market_note       text null,
   -- Metadata
   raw_data            jsonb null,
   scraped_at          timestamptz null,
