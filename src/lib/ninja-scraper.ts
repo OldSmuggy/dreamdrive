@@ -370,26 +370,47 @@ export async function runNinjaScraper(options: {
       const label = `[${i + 1}/${limitedRefs.length}] ${ref.KaijoCode}-${ref.AuctionCount}-${ref.BidNo}`
 
       try {
-        // Human-like delay between detail pages (longer for first few, then vary)
+        // Human-like delay between detail pages
         if (i > 0) await humanDelay(1500, 4000)
 
-        // Navigate to detail page using seniCarDetail (use string eval to avoid tsx compilation artifacts)
+        // Navigate to detail page by directly setting form fields and submitting.
+        // This works from ANY NINJA page (search results OR another detail page)
+        // because form1 exists on all pages. Avoids the broken goBack() which
+        // loses Struts server-side form token state.
         await Promise.all([
           page.waitForNavigation({ waitUntil: 'load', timeout: 15000 }),
           page.evaluate(
-            `seniCarDetail('${ref.carKindType}','${ref.KaijoCode}','${ref.AuctionCount}','${ref.BidNo}','')`
+            `(function() {
+              var form = document.getElementById('form1');
+              if (!form) { window.location.href = '/ninja/searchcondition.action'; return; }
+              var s = function(id, v) { var el = document.getElementById(id); if (el) el.value = v; };
+              s('carKindType', '${ref.carKindType}');
+              s('KaijoCode', '${ref.KaijoCode}');
+              s('AuctionCount', '${ref.AuctionCount}');
+              s('BidNo', '${ref.BidNo}');
+              s('action', '');
+              form.action = 'cardetail.action';
+              form.submit();
+            })()`
           ),
         ])
         await page.waitForLoadState('networkidle').catch(() => {})
+
+        // Check if we actually landed on a detail page
+        const pageUrl = page.url()
+        if (!pageUrl.includes('cardetail')) {
+          onProgress(`${label} — navigation failed (landed on ${pageUrl})`)
+          errors++
+          // Try to recover: go back to search results
+          await recoverToSearchResults(page, onProgress)
+          continue
+        }
 
         // Extract van data from the detail page
         const van = await extractDetailPage(page, ref)
         if (!van) {
           onProgress(`${label} — parse failed`)
           errors++
-          // Go back
-          await page.goBack({ waitUntil: 'load' }).catch(() => {})
-          await page.waitForLoadState('networkidle').catch(() => {})
           continue
         }
 
@@ -399,8 +420,6 @@ export async function runNinjaScraper(options: {
         if (excluded) {
           onProgress(`${label} — excluded grade: ${van.grade}`)
           skipped++
-          await page.goBack({ waitUntil: 'load' }).catch(() => {})
-          await page.waitForLoadState('networkidle').catch(() => {})
           continue
         }
 
@@ -434,7 +453,7 @@ export async function runNinjaScraper(options: {
             }
           }
           van.photos = uploadedPhotos
-          onProgress(`${label} — ${uploadedPhotos.length}/${van.photos.length || uploadedPhotos.length} photos saved`)
+          onProgress(`${label} — ${uploadedPhotos.length} photos saved`)
         }
 
         // Download inspection sheet if present
@@ -487,16 +506,11 @@ export async function runNinjaScraper(options: {
           }
         }
 
-        // Go back to results list
-        await page.goBack({ waitUntil: 'load' }).catch(() => {})
-        await page.waitForLoadState('networkidle').catch(() => {})
-
       } catch (err) {
         onProgress(`${label} — error: ${err}`)
         errors++
-        // Try to recover by going back
-        await page.goBack({ waitUntil: 'load' }).catch(() => {})
-        await page.waitForLoadState('networkidle').catch(() => {})
+        // Try to recover to a usable page state
+        await recoverToSearchResults(page, onProgress).catch(() => {})
       }
 
       await delay(250)
@@ -777,6 +791,35 @@ async function extractDetailPage(page: Page, ref: NinjaListingRef): Promise<Scra
 // ============================================================
 // Helpers
 // ============================================================
+
+/** Try to recover to a usable page state after navigation failure */
+async function recoverToSearchResults(page: Page, onProgress: (msg: string) => void) {
+  try {
+    // Try submitting form1 back to makersearch
+    await Promise.all([
+      page.waitForNavigation({ waitUntil: 'load', timeout: 10000 }),
+      page.evaluate(() => {
+        const form = document.getElementById('form1') as HTMLFormElement
+        if (form) {
+          (document.getElementById('brandGroupingCode') as HTMLInputElement).value = '01';
+          (document.getElementById('action') as HTMLInputElement).value = 'init';
+          form.action = 'makersearch.action'
+          form.submit()
+        }
+      }),
+    ])
+    await page.waitForLoadState('networkidle').catch(() => {})
+    // Then navigate to search results
+    await Promise.all([
+      page.waitForNavigation({ waitUntil: 'load', timeout: 10000 }),
+      page.evaluate(() => (window as any).makerListChoiceCarCat('146')),
+    ])
+    await page.waitForLoadState('networkidle').catch(() => {})
+    onProgress('  Recovered to search results')
+  } catch {
+    onProgress('  Recovery failed — continuing anyway')
+  }
+}
 
 function delay(ms: number) {
   return new Promise((r) => setTimeout(r, ms))
