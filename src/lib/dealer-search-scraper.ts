@@ -89,16 +89,21 @@ interface SearchPageResult {
 function parseSearchPage(html: string): SearchPageResult {
   const listingUrls: string[] = []
 
-  // Car Sensor listing links: /usedcar/detail/XXXXX/
-  const detailRe = /href="(\/usedcar\/detail\/[A-Z0-9]+\/?)"[^>]*>/gi
+  // Car Sensor listing links — handle both relative and absolute URLs
+  // Firecrawl returns full URLs: href="https://www.carsensor.net/usedcar/detail/AU6828858957/index.html"
+  // Plain fetch returns relative: href="/usedcar/detail/AU6828858957/"
+  const detailRe = /href="((?:https?:\/\/www\.carsensor\.net)?\/usedcar\/detail\/[A-Z0-9]+(?:\/(?:index\.html)?)?)"[^>]*>/gi
   const seen = new Set<string>()
   let m
 
   while ((m = detailRe.exec(html)) !== null) {
-    const path = m[1].replace(/\/$/, '')
-    if (!seen.has(path)) {
-      seen.add(path)
-      listingUrls.push(`https://www.carsensor.net${path}/`)
+    // Normalise to full absolute URL without index.html
+    const raw = m[1]
+    const fullUrl = raw.startsWith('http') ? raw : `https://www.carsensor.net${raw}`
+    const cleanUrl = fullUrl.replace(/\/index\.html$/, '/').replace(/\/?$/, '/')
+    if (!seen.has(cleanUrl)) {
+      seen.add(cleanUrl)
+      listingUrls.push(cleanUrl)
     }
   }
 

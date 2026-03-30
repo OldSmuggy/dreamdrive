@@ -1,20 +1,13 @@
-import { chromium } from 'playwright-core'
-import { createAdminClient } from './supabase'
+/**
+ * NINJA auction scraper — Firecrawl + fetch based (no Playwright).
+ *
+ * Uses Firecrawl's executeJavascript actions to handle the AJAX login
+ * flow inside a real browser, then extracts cookies and uses plain
+ * fetch for all subsequent requests. Works reliably on Vercel serverless.
+ */
 
-// On Vercel/Lambda: use @sparticuz/chromium (Lambda-compatible binary, fits within 250MB limit).
-// Locally: playwright's own installed Chromium via the standard PLAYWRIGHT_BROWSERS_PATH.
-async function launchBrowser() {
-  if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
-    const sparticuz = (await import('@sparticuz/chromium')).default
-    return chromium.launch({
-      args: sparticuz.args,
-      executablePath: await sparticuz.executablePath(),
-      headless: true,
-    })
-  }
-  // Local dev — uses the browser installed by `playwright install chromium`
-  return chromium.launch({ headless: true, args: ['--no-sandbox'] })
-}
+import { createAdminClient } from './supabase'
+import Firecrawl from '@mendable/firecrawl-js'
 
 // ============================================================
 // Constants
@@ -81,6 +74,41 @@ export interface ScrapeResult {
 }
 
 // ============================================================
+// Cookie-based fetch helper
+// ============================================================
+
+const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+
+async function ninjaFetch(
+  url: string,
+  cookie: string,
+  options?: {
+    form?: Record<string, string>
+    headers?: Record<string, string>
+    referer?: string
+  }
+): Promise<{ text: string; status: number }> {
+  const headers: Record<string, string> = {
+    'User-Agent': UA,
+    Cookie: cookie,
+    ...(options?.headers ?? {}),
+  }
+  if (options?.referer) headers['Referer'] = options.referer
+
+  const init: RequestInit = { headers, redirect: 'follow' }
+
+  if (options?.form) {
+    init.method = 'POST'
+    headers['Content-Type'] = 'application/x-www-form-urlencoded'
+    init.body = new URLSearchParams(options.form).toString()
+  }
+
+  const res = await fetch(url, init)
+  const text = await res.text()
+  return { text, status: res.status }
+}
+
+// ============================================================
 // Main scraper entry point
 // ============================================================
 
@@ -93,381 +121,492 @@ export async function runNinjaScraper(options: {
 
   const loginId = process.env.NINJA_LOGIN_ID
   const password = process.env.NINJA_PASSWORD
+  const firecrawlKey = process.env.FIRECRAWL_API_KEY
 
   if (!loginId || !password) {
     throw new Error('NINJA_LOGIN_ID and NINJA_PASSWORD must be set in environment variables')
   }
+  if (!firecrawlKey) {
+    throw new Error('FIRECRAWL_API_KEY must be set for NINJA scraping')
+  }
 
-  const browser = await launchBrowser()
+  const firecrawl = new Firecrawl({ apiKey: firecrawlKey })
+
+  // ----------------------------------------------------------
+  // 1. Use Firecrawl to load NINJA login page, execute AJAX
+  //    login, and extract session cookies + search page HTML
+  // ----------------------------------------------------------
+  onProgress('Step 1: Loading NINJA login page via Firecrawl...')
+
+  // Build the JS that performs the full login flow inside the browser
+  const loginScript = `
+    async function doLogin() {
+      // Step A: AJAX login
+      const loginRes = await fetch('/ninja/login.action', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: new URLSearchParams({
+          action: 'login',
+          loginId: ${JSON.stringify(loginId)},
+          password: ${JSON.stringify(password)},
+          isFlg: '',
+          language: '1'
+        }).toString()
+      });
+      const loginJson = await loginRes.json();
+
+      if (loginJson.errflg === '1') {
+        return JSON.stringify({ error: 'Login rejected', details: loginJson });
+      }
+
+      // Step B: loginPrimary
+      await fetch('/ninja/login.action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          action: 'loginPrimary',
+          loginPrimaryGamen: '1',
+          site: '2',
+          memberCode: loginJson.memberCode || '',
+          branchCode: loginJson.branchCode || '',
+          memberName: loginJson.memberName || '',
+          buyerId: loginJson.buyerId || '',
+          buyerName: loginJson.buyerName || '',
+          buyerImagePath: loginJson.buyerImagePath || '',
+          buyerKaijoNameOpenFlg: loginJson.buyerKaijoNameOpenFlg || '',
+          language: '1',
+          errflg: '',
+          ID: '',
+          gamenGroup: '',
+          token: ''
+        }).toString()
+      });
+
+      // Step C: Navigate to searchcondition
+      const scRes = await fetch('/ninja/searchcondition.action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          action: '',
+          loginPrimaryGamen: '1',
+          site: '2',
+          memberCode: loginJson.memberCode || '',
+          branchCode: loginJson.branchCode || '',
+          memberName: loginJson.memberName || '',
+          buyerId: loginJson.buyerId || '',
+          buyerName: loginJson.buyerName || '',
+          buyerImagePath: loginJson.buyerImagePath || '',
+          buyerKaijoNameOpenFlg: loginJson.buyerKaijoNameOpenFlg || '',
+          language: '1',
+          errflg: '',
+          ID: '',
+          gamenGroup: '22',
+          token: ''
+        }).toString()
+      });
+      const scHtml = await scRes.text();
+
+      return JSON.stringify({
+        success: true,
+        cookies: document.cookie,
+        loginJson: loginJson,
+        scHtml: scHtml,
+        scStatus: scRes.status
+      });
+    }
+    return doLogin();
+  `
+
+  let sessionCookie = ''
+  let loginJson: Record<string, string> = {}
+  let scHtml = ''
 
   try {
-    // ----------------------------------------------------------
-    // 1. Login via Playwright to obtain session cookies
-    // ----------------------------------------------------------
-    onProgress('Launching browser and logging in to NINJA...')
-
-    const context = await browser.newContext({
-      userAgent:
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      locale: 'ja-JP',
+    const result = await firecrawl.scrape(`${BASE}/ninja/`, {
+      formats: ['rawHtml'],
+      timeout: 60000,
+      waitFor: 3000,
+      actions: [
+        { type: 'wait', milliseconds: 2000 },
+        { type: 'executeJavascript', script: loginScript },
+      ],
     })
 
-    // ----------------------------------------------------------
-    // Use a Playwright page to load the login page so the server
-    // sets a JSESSIONID cookie. Then use context.request for all
-    // further calls (shares the same cookie jar as the browser).
-    // ----------------------------------------------------------
-    const page = await context.newPage()
-    onProgress('Loading NINJA login page to establish session...')
-    await page.goto(`${BASE}/ninja/`, { waitUntil: 'domcontentloaded', timeout: 30000 })
-    await page.close()
-
-    // context.request shares the browser's cookie jar (including JSESSIONID)
-    const req = context.request
-
-    // ----------------------------------------------------------
-    // AJAX login — replicates exactly what login.js does:
-    //   $.ajax({ type:'POST', url:'login.action', data:{ action:'login', loginId, password } })
-    // Returns JSON with errflg, memberCode, buyerId, etc.
-    // ----------------------------------------------------------
-    onProgress('Sending AJAX login request...')
-    const loginAjaxRes = await req.post(`${BASE}/ninja/login.action`, {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'X-Requested-With': 'XMLHttpRequest',
-        Referer: `${BASE}/ninja/`,
-      },
-      form: {
-        action: 'login',
-        loginId,
-        password,
-        isFlg: '',
-        language: '1',
-      },
-    })
-
-    const loginJson = await loginAjaxRes.json().catch(() => null) as Record<string, string> | null
-    onProgress(`Login AJAX status: ${loginAjaxRes.status()} errflg="${loginJson?.errflg ?? 'N/A'}"`)
-
-    if (!loginJson) {
-      throw new Error('Login AJAX returned non-JSON response — check credentials or site availability')
-    }
-    if (loginJson.errflg === '1') {
-      throw new Error(
-        `Login rejected: ${loginJson.errLoginId ?? ''} ${loginJson.errPassword ?? ''}`.trim() ||
-          'Invalid credentials'
-      )
+    // Extract results from executeJavascript
+    const jsReturns = (result as any)?.actions?.javascriptReturns ?? []
+    if (jsReturns.length === 0) {
+      throw new Error('Firecrawl returned no JS results — login script may not have executed')
     }
 
-    // ----------------------------------------------------------
-    // When errflg==9 (concurrent session), the login.js "Login" button
-    // calls seniToSearchcondition() which:
-    //   1. Already did loginPrimary POST → form has all member data
-    //   2. Sets gamenGroup="22", action="" and submits to searchcondition.action
-    //
-    // We replicate that exact form submission here.
-    // ----------------------------------------------------------
-    onProgress('Submitting loginPrimary to establish session...')
-    const lpRes = await req.post(`${BASE}/ninja/login.action`, {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        Referer: `${BASE}/ninja/`,
-      },
-      form: {
-        action: 'loginPrimary',
-        loginPrimaryGamen: '1',
-        site: '2',
-        memberCode: loginJson.memberCode ?? '',
-        branchCode: loginJson.branchCode ?? '',
-        memberName: loginJson.memberName ?? '',
-        buyerId: loginJson.buyerId ?? '',
-        buyerName: loginJson.buyerName ?? '',
-        buyerImagePath: loginJson.buyerImagePath ?? '',
-        buyerKaijoNameOpenFlg: loginJson.buyerKaijoNameOpenFlg ?? '',
-        language: '1',
-        errflg: '',
-        ID: '',
-        gamenGroup: '',
-        token: '',
-      },
-    })
-    onProgress(`loginPrimary status: ${lpRes.status()}`)
-
-    // Now invoke seniToSearchcondition(): gamenGroup="22", action="", submit to searchcondition.action
-    onProgress('Navigating to search condition page...')
-    const scRes = await req.post(`${BASE}/ninja/searchcondition.action`, {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        Referer: `${BASE}/ninja/login.action`,
-      },
-      form: {
-        action: '',
-        loginPrimaryGamen: '1',
-        site: '2',
-        memberCode: loginJson.memberCode ?? '',
-        branchCode: loginJson.branchCode ?? '',
-        memberName: loginJson.memberName ?? '',
-        buyerId: loginJson.buyerId ?? '',
-        buyerName: loginJson.buyerName ?? '',
-        buyerImagePath: loginJson.buyerImagePath ?? '',
-        buyerKaijoNameOpenFlg: loginJson.buyerKaijoNameOpenFlg ?? '',
-        language: '1',
-        errflg: '',
-        ID: '',
-        gamenGroup: '22',
-        token: '',
-      },
-    })
-    const scHtml = await scRes.text()
-    onProgress(`searchcondition status: ${scRes.status()} len: ${scHtml.length} sessionTimeout: ${scHtml.includes('sessionTimeOut')}`)
-
-    if (scHtml.includes('sessionTimeOut') || scRes.status() >= 400) {
-      throw new Error(`Failed to establish search session (status ${scRes.status()})`)
+    const returnValue = jsReturns[0]?.value
+    let loginResult: any
+    try {
+      loginResult = typeof returnValue === 'string' ? JSON.parse(returnValue) : returnValue
+    } catch {
+      onProgress(`JS return value: ${String(returnValue).slice(0, 200)}`)
+      throw new Error('Failed to parse login script result')
     }
 
-    onProgress(`Login successful. buyerId=${loginJson.buyerId ?? '?'} memberCode=${loginJson.memberCode ?? '?'}`)
+    if (loginResult?.error) {
+      throw new Error(`Login failed: ${loginResult.error} — ${JSON.stringify(loginResult.details ?? '')}`)
+    }
 
-    // ----------------------------------------------------------
-    // 2. Extract ALL form1 fields from searchcondition page, then
-    //    POST to makersearch.action (replicates seniBrand('01'))
-    //    Requires ALL hidden fields from the previous page.
-    // ----------------------------------------------------------
-    onProgress('Priming makersearch state (seniBrand flow)...')
-    const scFormFields = extractFormFields(scHtml)
-    scFormFields['brandGroupingCode'] = '01'
-    scFormFields['bodyType'] = ''
-    scFormFields['cornerSearchCheckCorner'] = ''
-    scFormFields['action'] = 'init'
+    if (!loginResult?.success) {
+      onProgress(`Login result: ${JSON.stringify(loginResult).slice(0, 300)}`)
+      throw new Error('Login script did not return success')
+    }
 
-    const msRes = await req.post(`${BASE}/ninja/makersearch.action`, {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        Referer: `${BASE}/ninja/searchcondition.action`,
-      },
+    sessionCookie = loginResult.cookies || ''
+    loginJson = loginResult.loginJson || {}
+    scHtml = loginResult.scHtml || ''
+
+    onProgress(`✓ Firecrawl login successful. buyerId=${loginJson.buyerId ?? '?'} cookie length=${sessionCookie.length}`)
+    onProgress(`  searchcondition status: ${loginResult.scStatus} HTML length: ${scHtml.length}`)
+
+    if (scHtml.includes('sessionTimeOut') || scHtml.length < 500) {
+      throw new Error(`Search session not established (scHtml ${scHtml.length} chars, sessionTimeOut=${scHtml.includes('sessionTimeOut')})`)
+    }
+  } catch (err) {
+    onProgress(`Firecrawl login error: ${err}`)
+
+    // Fallback: try plain fetch approach
+    onProgress('Attempting fallback: plain fetch login...')
+    const fallbackResult = await plainFetchLogin(loginId, password, onProgress)
+    sessionCookie = fallbackResult.cookie
+    loginJson = fallbackResult.loginJson
+    scHtml = fallbackResult.scHtml
+  }
+
+  if (!sessionCookie) {
+    throw new Error('No session cookie obtained — cannot proceed')
+  }
+
+  // ----------------------------------------------------------
+  // 2. Extract form fields and POST to makersearch.action
+  // ----------------------------------------------------------
+  onProgress('Step 2: Priming makersearch state...')
+
+  const scFormFields = extractFormFields(scHtml)
+  scFormFields['brandGroupingCode'] = '01'
+  scFormFields['bodyType'] = ''
+  scFormFields['cornerSearchCheckCorner'] = ''
+  scFormFields['action'] = 'init'
+
+  const { text: msHtml, status: msStatus } = await ninjaFetch(
+    `${BASE}/ninja/makersearch.action`,
+    sessionCookie,
+    {
       form: scFormFields,
-    })
-    const msHtml = await msRes.text()
-    onProgress(`makersearch status: ${msRes.status()} len: ${msHtml.length} sessionTimeout: ${msHtml.includes('sessionTimeOut')}`)
-
-    if (msHtml.includes('sessionTimeOut') || msRes.status() >= 400) {
-      throw new Error(`makersearch failed (status ${msRes.status()})`)
+      referer: `${BASE}/ninja/searchcondition.action`,
     }
+  )
 
-    // Extract ALL form1 fields from makersearch page for use in searchresultlist
-    const msFormFields = extractFormFields(msHtml)
+  onProgress(`makersearch status: ${msStatus} len: ${msHtml.length} sessionTimeout: ${msHtml.includes('sessionTimeOut')}`)
 
-    // ----------------------------------------------------------
-    // 3. Paginate through search results for each car category
-    //    (146=HIACE VAN, 198=REGIUS ACE VAN) and collect listing refs
-    // ----------------------------------------------------------
-    onProgress('Collecting listing references...')
-    const allListingRefs: NinjaListingRef[] = []
+  if (msHtml.includes('sessionTimeOut') || msStatus >= 400) {
+    throw new Error(`makersearch failed (status ${msStatus})`)
+  }
 
-    for (const carCategoryNo of CAR_CATEGORY_NOS) {
-      onProgress(`Searching carCategoryNo=${carCategoryNo}...`)
+  const msFormFields = extractFormFields(msHtml)
 
-      for (let pg = 1; pg <= 10; pg++) {
-        onProgress(`  Page ${pg}...`)
+  // ----------------------------------------------------------
+  // 3. Paginate through search results for each car category
+  // ----------------------------------------------------------
+  onProgress('Step 3: Collecting listing references...')
+  const allListingRefs: NinjaListingRef[] = []
 
-        const srFormFields = { ...msFormFields }
-        srFormFields['carCategoryNo'] = carCategoryNo
-        srFormFields['action'] = 'seniSearch'
-        srFormFields['page'] = String(pg)
-        // Remove checkbox-style fields that cause server issues
-        delete srFormFields['evaluation']
+  for (const carCategoryNo of CAR_CATEGORY_NOS) {
+    onProgress(`Searching carCategoryNo=${carCategoryNo}...`)
 
-        const srRes = await req.post(`${BASE}/ninja/searchresultlist.action`, {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            Referer: `${BASE}/ninja/makersearch.action`,
-          },
+    for (let pg = 1; pg <= 10; pg++) {
+      onProgress(`  Page ${pg}...`)
+
+      const srFormFields = { ...msFormFields }
+      srFormFields['carCategoryNo'] = carCategoryNo
+      srFormFields['action'] = 'seniSearch'
+      srFormFields['page'] = String(pg)
+      delete srFormFields['evaluation']
+
+      const { text: html, status: srStatus } = await ninjaFetch(
+        `${BASE}/ninja/searchresultlist.action`,
+        sessionCookie,
+        {
           form: srFormFields,
-        })
-
-        const html = await srRes.text()
-
-        if (!html || srRes.status() >= 400) {
-          onProgress(`  Page ${pg}: HTTP ${srRes.status()} — stopping`)
-          break
+          referer: `${BASE}/ninja/makersearch.action`,
         }
+      )
 
-        if (isLoginPage(html) || html.includes('sessionTimeOut')) {
-          onProgress(`  Page ${pg}: session expired — stopping`)
-          break
-        }
-
-        const refs = extractListingRefs(html)
-        if (refs.length === 0) {
-          onProgress(`  Page ${pg}: 0 listings — end of results`)
-          if (pg === 1) {
-            onProgress(`  HTML snippet: ${html.substring(0, 300).replace(/\s+/g, ' ')}`)
-          }
-          break
-        }
-
-        onProgress(`  Page ${pg}: ${refs.length} listings`)
-        allListingRefs.push(...refs)
-
-        if (!html.includes('次へ') && !html.includes('next') && refs.length < 100) break
+      if (!html || srStatus >= 400) {
+        onProgress(`  Page ${pg}: HTTP ${srStatus} — stopping`)
+        break
       }
+
+      if (isLoginPage(html) || html.includes('sessionTimeOut')) {
+        onProgress(`  Page ${pg}: session expired — stopping`)
+        break
+      }
+
+      const refs = extractListingRefs(html)
+      if (refs.length === 0) {
+        onProgress(`  Page ${pg}: 0 listings — end of results`)
+        if (pg === 1) {
+          onProgress(`  HTML snippet: ${html.substring(0, 300).replace(/\s+/g, ' ')}`)
+        }
+        break
+      }
+
+      onProgress(`  Page ${pg}: ${refs.length} listings`)
+      allListingRefs.push(...refs)
+
+      if (!html.includes('次へ') && !html.includes('next') && refs.length < 100) break
+
+      await delay(300)
     }
+  }
 
-    onProgress(`Total listing refs collected: ${allListingRefs.length}`)
+  onProgress(`Total listing refs collected: ${allListingRefs.length}`)
 
-    const limitedRefs = maxListings ? allListingRefs.slice(0, maxListings) : allListingRefs
+  const limitedRefs = maxListings ? allListingRefs.slice(0, maxListings) : allListingRefs
 
-    // ----------------------------------------------------------
-    // 4. Log scrape start in Supabase
-    // ----------------------------------------------------------
-    const supabase = createAdminClient()
-    let logId: string | null = null
+  // ----------------------------------------------------------
+  // 4. Log scrape start in Supabase
+  // ----------------------------------------------------------
+  const supabase = createAdminClient()
+  let logId: string | null = null
 
-    if (!dryRun) {
-      const { data: log } = await supabase
-        .from('scrape_logs')
-        .insert({
-          source: 'ninja',
-          status: 'running',
-          listings_found: limitedRefs.length,
-        })
-        .select('id')
-        .single()
-      logId = log?.id ?? null
-    }
+  if (!dryRun) {
+    const { data: log } = await supabase
+      .from('scrape_logs')
+      .insert({
+        source: 'ninja',
+        status: 'running',
+        listings_found: limitedRefs.length,
+      })
+      .select('id')
+      .single()
+    logId = log?.id ?? null
+  }
 
-    // ----------------------------------------------------------
-    // 5. Fetch detail page for each listing ref
-    // ----------------------------------------------------------
-    const processed: ScrapedVan[] = []
-    let skipped = 0
-    let errors = 0
-    let newInserts = 0
-    let duplicates = 0
+  // ----------------------------------------------------------
+  // 5. Fetch detail page for each listing ref
+  // ----------------------------------------------------------
+  const processed: ScrapedVan[] = []
+  let skipped = 0
+  let errors = 0
+  let newInserts = 0
+  let duplicates = 0
 
-    for (let i = 0; i < limitedRefs.length; i++) {
-      const ref = limitedRefs[i]
-      const label = `[${i + 1}/${limitedRefs.length}] ${ref.KaijoCode}-${ref.AuctionCount}-${ref.BidNo}`
+  for (let i = 0; i < limitedRefs.length; i++) {
+    const ref = limitedRefs[i]
+    const label = `[${i + 1}/${limitedRefs.length}] ${ref.KaijoCode}-${ref.AuctionCount}-${ref.BidNo}`
 
-      try {
-        const detailRes = await req.post(`${BASE}/ninja/cardetail.action`, {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            Referer: `${BASE}/ninja/searchresultlist.action`,
-          },
+    try {
+      const { text: html } = await ninjaFetch(
+        `${BASE}/ninja/cardetail.action`,
+        sessionCookie,
+        {
           form: {
             KaijoCode: ref.KaijoCode,
             AuctionCount: ref.AuctionCount,
             BidNo: ref.BidNo,
             carKindType: '1',
           },
-        })
-        const html = await detailRes.text()
-
-        if (!html || html.length < 500) {
-          onProgress(`${label} — empty response, skipping`)
-          errors++
-          continue
+          referer: `${BASE}/ninja/searchresultlist.action`,
         }
+      )
 
-        if (
-          html.includes('action="/ninja/logincheck.action"') ||
-          (html.includes('loginId') && html.length < 5000)
-        ) {
-          onProgress(`${label} — session expired`)
-          errors++
-          continue
-        }
-
-        const van = parseDetailPage(html, ref)
-        if (!van) {
-          onProgress(`${label} — parse failed`)
-          errors++
-          continue
-        }
-
-        // Grade exclusion filter
-        const gradeUp = (van.grade || '').toUpperCase()
-        const excluded = EXCLUDED_GRADES.find((ex) => gradeUp.includes(ex))
-        if (excluded) {
-          onProgress(`${label} — excluded grade: ${van.grade}`)
-          skipped++
-          continue
-        }
-
-        processed.push(van)
-
-        onProgress(
-          `${label} — ${van.grade || 'UNKNOWN'} ${van.model_year ?? '?'} ` +
-            `${van.mileage_km ?? '?'}km score:${van.inspection_score ?? '-'} ¥${van.start_price_jpy ?? '?'}`
-        )
-
-        // Write to Supabase (skip in dryRun)
-        if (!dryRun) {
-          const { data: existing } = await supabase
-            .from('listings')
-            .select('id')
-            .eq('external_id', van.external_id)
-            .maybeSingle()
-
-          if (existing) {
-            duplicates++
-          } else {
-            const { error: insertErr } = await supabase.from('listings').insert(toListingRow(van))
-            if (insertErr) {
-              onProgress(`${label} — DB error: ${insertErr.message}`)
-              errors++
-            } else {
-              newInserts++
-            }
-          }
-        }
-      } catch (err) {
-        onProgress(`${label} — error: ${err}`)
+      if (!html || html.length < 500) {
+        onProgress(`${label} — empty response, skipping`)
         errors++
+        continue
       }
 
-      // Polite delay between requests
-      await delay(250)
+      if (
+        html.includes('action="/ninja/logincheck.action"') ||
+        (html.includes('loginId') && html.length < 5000)
+      ) {
+        onProgress(`${label} — session expired`)
+        errors++
+        continue
+      }
+
+      const van = parseDetailPage(html, ref)
+      if (!van) {
+        onProgress(`${label} — parse failed`)
+        errors++
+        continue
+      }
+
+      // Grade exclusion filter
+      const gradeUp = (van.grade || '').toUpperCase()
+      const excluded = EXCLUDED_GRADES.find((ex) => gradeUp.includes(ex))
+      if (excluded) {
+        onProgress(`${label} — excluded grade: ${van.grade}`)
+        skipped++
+        continue
+      }
+
+      processed.push(van)
+
+      onProgress(
+        `${label} — ${van.grade || 'UNKNOWN'} ${van.model_year ?? '?'} ` +
+          `${van.mileage_km ?? '?'}km score:${van.inspection_score ?? '-'} ¥${van.start_price_jpy ?? '?'}`
+      )
+
+      // Write to Supabase (skip in dryRun)
+      if (!dryRun) {
+        const { data: existing } = await supabase
+          .from('listings')
+          .select('id')
+          .eq('external_id', van.external_id)
+          .maybeSingle()
+
+        if (existing) {
+          duplicates++
+        } else {
+          const { error: insertErr } = await supabase.from('listings').insert(toListingRow(van))
+          if (insertErr) {
+            onProgress(`${label} — DB error: ${insertErr.message}`)
+            errors++
+          } else {
+            newInserts++
+          }
+        }
+      }
+    } catch (err) {
+      onProgress(`${label} — error: ${err}`)
+      errors++
     }
 
-    // ----------------------------------------------------------
-    // 6. Update scrape log
-    // ----------------------------------------------------------
-    if (!dryRun && logId) {
-      await supabase
-        .from('scrape_logs')
-        .update({
-          completed_at: new Date().toISOString(),
-          listings_found: limitedRefs.length,
-          listings_new: newInserts,
-          status: 'success',
-        })
-        .eq('id', logId)
-    }
+    await delay(250)
+  }
 
-    onProgress(
-      `Done. found=${limitedRefs.length} processed=${processed.length} new=${newInserts} ` +
-        `dupes=${duplicates} skipped=${skipped} errors=${errors}`
-    )
+  // ----------------------------------------------------------
+  // 6. Update scrape log
+  // ----------------------------------------------------------
+  if (!dryRun && logId) {
+    await supabase
+      .from('scrape_logs')
+      .update({
+        completed_at: new Date().toISOString(),
+        listings_found: limitedRefs.length,
+        listings_new: newInserts,
+        status: 'success',
+      })
+      .eq('id', logId)
+  }
 
-    await context.close()
+  onProgress(
+    `Done. found=${limitedRefs.length} processed=${processed.length} new=${newInserts} ` +
+      `dupes=${duplicates} skipped=${skipped} errors=${errors}`
+  )
 
-    return {
-      found: limitedRefs.length,
-      processed: processed.length,
-      skipped,
-      errors,
-      newInserts,
-      duplicates,
-      sample: processed.slice(0, 10),
-      logId,
-    }
-  } finally {
-    await browser.close()
+  return {
+    found: limitedRefs.length,
+    processed: processed.length,
+    skipped,
+    errors,
+    newInserts,
+    duplicates,
+    sample: processed.slice(0, 10),
+    logId,
   }
 }
 
 // ============================================================
+// Fallback: plain fetch login (if Firecrawl actions fail)
+// ============================================================
+
+async function plainFetchLogin(
+  loginId: string,
+  password: string,
+  onProgress: (msg: string) => void
+): Promise<{ cookie: string; loginJson: Record<string, string>; scHtml: string }> {
+
+  // Get JSESSIONID via plain fetch
+  const sessionRes = await fetch(`${BASE}/ninja/`, {
+    headers: { 'User-Agent': UA },
+    redirect: 'manual',
+  })
+
+  let cookie = ''
+  const setCookies = sessionRes.headers.getSetCookie?.() ?? []
+  for (const sc of setCookies) {
+    const [pair] = sc.split(';')
+    const [name, ...rest] = pair.split('=')
+    if (name?.trim() === 'JSESSIONID') {
+      cookie = `JSESSIONID=${rest.join('=').trim()}`
+    }
+  }
+  await sessionRes.text() // consume body
+
+  if (!cookie) {
+    // Try extracting from raw headers
+    const rawCookie = sessionRes.headers.get('set-cookie') || ''
+    const jsMatch = rawCookie.match(/JSESSIONID=([^;]+)/)
+    if (jsMatch) cookie = `JSESSIONID=${jsMatch[1]}`
+  }
+
+  onProgress(`Fallback: JSESSIONID ${cookie ? 'obtained' : 'NOT FOUND'}`)
+
+  // AJAX login
+  const { text: loginText } = await ninjaFetch(`${BASE}/ninja/login.action`, cookie, {
+    form: { action: 'login', loginId, password, isFlg: '', language: '1' },
+    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+    referer: `${BASE}/ninja/`,
+  })
+
+  let loginJson: Record<string, string>
+  try {
+    loginJson = JSON.parse(loginText)
+  } catch {
+    throw new Error('Fallback login returned non-JSON')
+  }
+
+  if (loginJson.errflg === '1') {
+    throw new Error(`Login rejected: ${loginJson.errLoginId ?? ''} ${loginJson.errPassword ?? ''}`)
+  }
+
+  onProgress(`Fallback login: errflg=${loginJson.errflg}`)
+
+  // loginPrimary
+  await ninjaFetch(`${BASE}/ninja/login.action`, cookie, {
+    form: {
+      action: 'loginPrimary', loginPrimaryGamen: '1', site: '2',
+      memberCode: loginJson.memberCode ?? '', branchCode: loginJson.branchCode ?? '',
+      memberName: loginJson.memberName ?? '', buyerId: loginJson.buyerId ?? '',
+      buyerName: loginJson.buyerName ?? '', buyerImagePath: loginJson.buyerImagePath ?? '',
+      buyerKaijoNameOpenFlg: loginJson.buyerKaijoNameOpenFlg ?? '',
+      language: '1', errflg: '', ID: '', gamenGroup: '', token: '',
+    },
+    referer: `${BASE}/ninja/`,
+  })
+
+  // searchcondition
+  const { text: scHtml, status: scStatus } = await ninjaFetch(`${BASE}/ninja/searchcondition.action`, cookie, {
+    form: {
+      action: '', loginPrimaryGamen: '1', site: '2',
+      memberCode: loginJson.memberCode ?? '', branchCode: loginJson.branchCode ?? '',
+      memberName: loginJson.memberName ?? '', buyerId: loginJson.buyerId ?? '',
+      buyerName: loginJson.buyerName ?? '', buyerImagePath: loginJson.buyerImagePath ?? '',
+      buyerKaijoNameOpenFlg: loginJson.buyerKaijoNameOpenFlg ?? '',
+      language: '1', errflg: '', ID: '', gamenGroup: '22', token: '',
+    },
+    referer: `${BASE}/ninja/login.action`,
+  })
+
+  onProgress(`Fallback searchcondition: status=${scStatus} len=${scHtml.length}`)
+
+  if (scHtml.includes('sessionTimeOut') || scStatus >= 400) {
+    throw new Error(`Fallback: search session failed (status ${scStatus})`)
+  }
+
+  return { cookie, loginJson, scHtml }
+}
+
 // ============================================================
 // Helpers
 // ============================================================
@@ -480,17 +619,9 @@ function isLoginPage(html: string): boolean {
   )
 }
 
-// HTTP helper
-// ============================================================
-
-
 function delay(ms: number) {
   return new Promise((r) => setTimeout(r, ms))
 }
-
-// ============================================================
-// Extract all <input name=... value=...> fields from a form page
-// ============================================================
 
 function extractFormFields(html: string): Record<string, string> {
   const fields: Record<string, string> = {}
@@ -518,12 +649,10 @@ function extractListingRefs(html: string): NinjaListingRef[] {
     }
   }
 
-  // Match cardetail.action query string links
   const linkRe = /cardetail\.action[^"'>\s]*KaijoCode=([^&"'>\s]+)[^"'>\s]*AuctionCount=([^&"'>\s]+)[^"'>\s]*BidNo=([^&"'>\s]+)/gi
   let m: RegExpExecArray | null
   while ((m = linkRe.exec(html)) !== null) addRef(m[1], m[2], m[3])
 
-  // Extract all cardetail.action hrefs and parse individually
   const hrefRe = /(?:href|action)="([^"]*cardetail\.action[^"]*)"/gi
   while ((m = hrefRe.exec(html)) !== null) {
     try {
@@ -537,8 +666,6 @@ function extractListingRefs(html: string): NinjaListingRef[] {
     } catch {}
   }
 
-  // Match onclick/JS handlers with 3 string args:
-  // seniToCardetail('TK','1234','001'), showDetail(...), cardetailView(...)
   const onclickRe = /(?:seniToCardetail|showDetail|cardetailView|carDetail)\s*\(\s*'([^']+)'\s*,\s*'([^']+)'\s*,\s*'([^']+)'\s*\)/gi
   while ((m = onclickRe.exec(html)) !== null) addRef(m[1], m[2], m[3])
 
@@ -550,22 +677,11 @@ function extractListingRefs(html: string): NinjaListingRef[] {
 // ============================================================
 
 function extractField(html: string, label: string): string | null {
-  // Match <th>LABEL</th><td>VALUE</td> or <td class="label">LABEL</td><td>VALUE</td>
   const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   const patterns = [
-    new RegExp(
-      `${escaped}[^<]*</th>\\s*<td[^>]*>\\s*([^<\\r\\n]+?)\\s*(?:<|$)`,
-      'is'
-    ),
-    new RegExp(
-      `${escaped}[^<]*</td>\\s*<td[^>]*>\\s*([^<\\r\\n]+?)\\s*(?:<|$)`,
-      'is'
-    ),
-    // Some sites wrap in spans
-    new RegExp(
-      `${escaped}[^<]*</[^>]+>\\s*<[^>]+>\\s*<[^>]+>\\s*([^<\\r\\n]+?)\\s*<`,
-      'is'
-    ),
+    new RegExp(`${escaped}[^<]*</th>\\s*<td[^>]*>\\s*([^<\\r\\n]+?)\\s*(?:<|$)`, 'is'),
+    new RegExp(`${escaped}[^<]*</td>\\s*<td[^>]*>\\s*([^<\\r\\n]+?)\\s*(?:<|$)`, 'is'),
+    new RegExp(`${escaped}[^<]*</[^>]+>\\s*<[^>]+>\\s*<[^>]+>\\s*([^<\\r\\n]+?)\\s*<`, 'is'),
   ]
   for (const re of patterns) {
     const match = html.match(re)
@@ -590,7 +706,6 @@ function extractPhotos(html: string): { photos: string[]; inspectionSheet: strin
   const addPhoto = (url: string) => {
     if (!url || seen.has(url) || url.includes('noimage') || url.includes('nophoto')) return
     seen.add(url)
-    // Separate inspection sheet (hyoka = 評価, assessment)
     if (/hyoka|inspection|sheet|hyouka/i.test(url)) {
       if (!inspectionSheet) inspectionSheet = url
     } else {
@@ -598,12 +713,10 @@ function extractPhotos(html: string): { photos: string[]; inspectionSheet: strin
     }
   }
 
-  // Main photo
   const mainRe = /id="mainPhoto"[^>]*src="([^"]+)"/i
   const mainMatch = html.match(mainRe)
   if (mainMatch) addPhoto(mainMatch[1])
 
-  // All img srcs from ninja-cartrade domain
   const imgRe = /src="(https?:\/\/[^"]*ninja-cartrade\.jp[^"]*\.(jpg|jpeg|png|gif))"/gi
   let m: RegExpExecArray | null
   while ((m = imgRe.exec(html)) !== null) {
@@ -611,7 +724,6 @@ function extractPhotos(html: string): { photos: string[]; inspectionSheet: strin
     if (photos.length >= 6) break
   }
 
-  // Relative image paths (common on Japanese auction sites)
   const relImgRe = /src="(\/[^"]*\.(jpg|jpeg|png))"/gi
   while ((m = relImgRe.exec(html)) !== null) {
     addPhoto(`${BASE}${m[1]}`)
@@ -638,25 +750,16 @@ function parseDetailPage(html: string, ref: NinjaListingRef): ScrapedVan | null 
   const auctionSiteRaw = extractField(html, '会場') || extractField(html, '開催場所')
   const sessionRaw = extractField(html, '開催回') || extractField(html, '回')
 
-  // Model year: prefer 4-digit year, also handle Japanese era formats
   let modelYear: number | null = null
   if (yearRaw) {
     const yearMatch = yearRaw.match(/(\d{4})/)
     if (yearMatch) {
       modelYear = parseInt(yearMatch[1])
     } else {
-      // Reiwa (R) era: R1=2019, R2=2020, etc.
       const reiwaMatch = yearRaw.match(/R(\d+)|令和(\d+)/)
-      if (reiwaMatch) {
-        const yr = parseInt(reiwaMatch[1] || reiwaMatch[2])
-        modelYear = 2018 + yr
-      }
-      // Heisei (H) era: H1=1989
+      if (reiwaMatch) modelYear = 2018 + parseInt(reiwaMatch[1] || reiwaMatch[2])
       const heiseiMatch = yearRaw.match(/H(\d+)|平成(\d+)/)
-      if (heiseiMatch) {
-        const yr = parseInt(heiseiMatch[1] || heiseiMatch[2])
-        modelYear = 1988 + yr
-      }
+      if (heiseiMatch) modelYear = 1988 + parseInt(heiseiMatch[1] || heiseiMatch[2])
     }
   }
 
@@ -677,27 +780,18 @@ function parseDetailPage(html: string, ref: NinjaListingRef): ScrapedVan | null 
   const scoreClean = (scoreRaw || '').trim().toUpperCase()
   const inspectionScore = validScores.includes(scoreClean) ? scoreClean : null
 
-  // Auction date: normalise 2024/03/21 → 2024-03-21
   let auctionDate: string | null = null
   if (auctionDateRaw) {
     auctionDate = auctionDateRaw.replace(/\//g, '-').split(/\s/)[0]
-    // Validate it looks like a date
     if (!/^\d{4}-\d{2}-\d{2}$/.test(auctionDate)) auctionDate = null
   }
 
   const bodyColour = colourRaw ? colourRaw.split(/[（(]/)[0].trim() : null
-
   const { photos, inspectionSheet } = extractPhotos(html)
 
-  // Equipment detection from Japanese text in full page HTML
-  const hasNav =
-    html.includes('ナビ') ||
-    html.includes('ナビゲーション') ||
-    html.includes('カーナビ') ||
-    html.includes('フルセグ')
+  const hasNav = html.includes('ナビ') || html.includes('ナビゲーション') || html.includes('カーナビ') || html.includes('フルセグ')
   const hasLeather = html.includes('レザー') || html.includes('本革')
-  const hasSunroof =
-    html.includes('サンルーフ') || html.includes('ガラスルーフ') || html.includes('ムーンルーフ')
+  const hasSunroof = html.includes('サンルーフ') || html.includes('ガラスルーフ') || html.includes('ムーンルーフ')
   const hasAlloys = html.includes('アルミ') || html.includes('アルミホイール')
 
   const gradeUpper = (grade || '').toUpperCase()
@@ -735,7 +829,6 @@ function parseDetailPage(html: string, ref: NinjaListingRef): ScrapedVan | null 
 // ============================================================
 
 function toListingRow(van: ScrapedVan) {
-  // AUD rough estimate: JPY × ~0.0095 exchange + $10,000 flat fee (import, shipping, compliance, GST)
   const audEstimate = van.start_price_jpy
     ? Math.round((van.start_price_jpy * 0.0095 + 10000) * 100)
     : null
