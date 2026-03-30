@@ -27,10 +27,10 @@ export const MANA_JP_CONVERSION_JPY = 4_500_000   // ¥4,500,000 (Japan build)
 export const MANA_AU_CONVERSION_AUD = 45_000       // $45,000 AUD (Australia build)
 
 // ── Price range assumptions for product page display ──────────────────────────
-// Cheapest realistic Japan Hiace after conversion: ~$15k AUD + $10k import = $25k
-// Most expensive realistic Japan Hiace after conversion: ~$40k AUD + $10k import = $50k
-const VAN_RANGE_LOW_AUD  = 15_000
-const VAN_RANGE_HIGH_AUD = 40_000
+// Cheapest realistic Japan Hiace: ~$15k vehicle + ~$8k import costs = $23k
+// Most expensive realistic Japan Hiace: ~$40k vehicle + ~$12k import costs = $52k
+const VAN_RANGE_LOW_AUD  = 23_000
+const VAN_RANGE_HIGH_AUD = 52_000
 
 /** Calculate the customer-facing display price for a van listing.
  *
@@ -52,7 +52,7 @@ export function listingDisplayPrice(
     }
   }
 
-  // Japan-sourced — convert JPY to AUD and add real import costs
+  // Japan-sourced — convert JPY to AUD and add real itemised import costs
   const rate = jpyRate && jpyRate > 0 ? jpyRate : FALLBACK_RATE
   const jpyPrice = listing.start_price_jpy || listing.buy_price_jpy || null
 
@@ -74,6 +74,64 @@ export function listingDisplayPrice(
   }
 
   return { priceCents: null, isEstimate: false }
+}
+
+// ── Import breakdown ──────────────────────────────────────────────────────────
+
+export interface ImportBreakdownLine {
+  label: string
+  cents: number
+  note?: string
+}
+
+export interface ImportBreakdown {
+  vehicleCents: number
+  lines: ImportBreakdownLine[]
+  totalCents: number
+  jpyPrice: number
+  jpyRate: number
+}
+
+/** Return an itemised import cost breakdown for a Japan-sourced listing. */
+export function importBreakdown(
+  listing: Pick<Listing, 'source' | 'start_price_jpy' | 'buy_price_jpy' | 'aud_estimate' | 'au_price_aud'>,
+  jpyRate?: number | null,
+  isSlwb?: boolean,
+): ImportBreakdown | null {
+  if (listing.source === 'au_stock') return null
+
+  const rate = jpyRate && jpyRate > 0 ? jpyRate : FALLBACK_RATE
+  const jpyPrice = listing.start_price_jpy || listing.buy_price_jpy || null
+  if (!jpyPrice || jpyPrice <= 0) return null
+
+  const vehicleCents = Math.round(jpyPrice * rate * 100)
+  const shippingCents = isSlwb ? SHIPPING_SLWB_CENTS : SHIPPING_LWB_CENTS
+  const gstCents = Math.round((vehicleCents + shippingCents) * GST_RATE)
+  const dolphinCents = DOLPHIN_INSPECT_CENTS + DOLPHIN_TRANSPORT_CENTS
+  const complianceCents = COMPLIANCE_CENTS + WHARF_TRANSPORT_CENTS + SAFETY_CERT_CENTS
+  const regoStampCents = REGO_STAMP_QLD_CENTS + REGO_ARRANGE_CENTS
+
+  const totalCents = vehicleCents + SOURCING_FEE_INC_GST_CENTS + shippingCents + gstCents
+    + CUSTOMS_ENTRY_CENTS + BMSB_CENTS + dolphinCents + complianceCents + regoStampCents
+
+  const lines: ImportBreakdownLine[] = [
+    { label: 'Vehicle purchase price', cents: vehicleCents, note: `¥${jpyPrice.toLocaleString()} × ${rate.toFixed(4)}` },
+    { label: 'Bare Camper fee (Japan + AU)', cents: SOURCING_FEE_INC_GST_CENTS, note: '$2,500 + GST' },
+    { label: `Shipping (Japan → Australia${isSlwb ? ', SLWB' : ''})`, cents: shippingCents },
+    { label: 'GST (10% on vehicle + shipping)', cents: gstCents },
+    { label: 'Customs entry + BMSB inspection', cents: CUSTOMS_ENTRY_CENTS + BMSB_CENTS },
+    { label: 'Port handling + transport', cents: dolphinCents },
+    { label: 'Compliance (RAWS + safety cert)', cents: complianceCents },
+    { label: 'Registration + stamp duty (QLD est.)', cents: regoStampCents },
+  ]
+
+  return {
+    vehicleCents,
+    lines,
+    totalCents: Math.round(totalCents / 10_000) * 10_000,
+    jpyPrice,
+    jpyRate: rate,
+  }
 }
 
 /** Get the TAMA conversion fee in AUD (calculated from JPY). */
@@ -100,8 +158,8 @@ export function conversionPriceRange(
   conversionAud: number,
   includePopTopAud: number = 0,
 ): { low: number; high: number } {
-  const vanLow  = VAN_RANGE_LOW_AUD  + 10_000  // $15k van + $10k import = $25k
-  const vanHigh = VAN_RANGE_HIGH_AUD + 10_000  // $40k van + $10k import = $50k
+  const vanLow  = VAN_RANGE_LOW_AUD   // already includes import costs
+  const vanHigh = VAN_RANGE_HIGH_AUD  // already includes import costs
   return {
     low:  Math.round((vanLow  + conversionAud + includePopTopAud) / 1000) * 1000,
     high: Math.round((vanHigh + conversionAud + includePopTopAud) / 1000) * 1000,
@@ -113,55 +171,3 @@ export function formatAud(amount: number): string {
   return `$${Math.round(amount).toLocaleString('en-AU')}`
 }
 
-// ── Itemised import breakdown (for display on build/pricing pages) ───────────
-
-export interface ImportBreakdown {
-  vehicleCents: number
-  sourcingFeeCents: number
-  shippingCents: number
-  gstCents: number
-  customsBmsbCents: number
-  dolphinCents: number
-  complianceCents: number
-  regoStampCents: number
-  totalCents: number
-}
-
-/** Decompose a Japan-sourced listing into itemised import costs.
- *  Returns null for AU stock or when JPY price is unavailable.
- */
-export function importBreakdown(
-  listing: Pick<Listing, 'source' | 'start_price_jpy' | 'buy_price_jpy' | 'aud_estimate' | 'au_price_aud'>,
-  jpyRate?: number | null,
-  isSlwb?: boolean,
-): ImportBreakdown | null {
-  if (listing.source === 'au_stock') return null
-
-  const rate = jpyRate && jpyRate > 0 ? jpyRate : FALLBACK_RATE
-  const jpyPrice = listing.start_price_jpy || listing.buy_price_jpy || null
-  if (!jpyPrice || jpyPrice <= 0) return null
-
-  const vehicleCents = Math.round(jpyPrice * rate * 100)
-  const shippingCents = isSlwb ? SHIPPING_SLWB_CENTS : SHIPPING_LWB_CENTS
-  const gstCents = Math.round((vehicleCents + shippingCents) * GST_RATE)
-  const sourcingFeeCents = SOURCING_FEE_INC_GST_CENTS
-  const customsBmsbCents = CUSTOMS_ENTRY_CENTS + BMSB_CENTS + DOLPHIN_INSPECT_CENTS + DOLPHIN_TRANSPORT_CENTS
-  const dolphinCents = DOLPHIN_INSPECT_CENTS + DOLPHIN_TRANSPORT_CENTS
-  const complianceCents = COMPLIANCE_CENTS + WHARF_TRANSPORT_CENTS + SAFETY_CERT_CENTS
-  const regoStampCents = REGO_STAMP_QLD_CENTS + REGO_ARRANGE_CENTS
-
-  const totalCents = vehicleCents + sourcingFeeCents + shippingCents + gstCents
-    + CUSTOMS_ENTRY_CENTS + BMSB_CENTS + dolphinCents + complianceCents + regoStampCents
-
-  return {
-    vehicleCents,
-    sourcingFeeCents,
-    shippingCents,
-    gstCents,
-    customsBmsbCents,
-    dolphinCents,
-    complianceCents,
-    regoStampCents,
-    totalCents,
-  }
-}

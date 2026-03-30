@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createSupabaseServer } from '@/lib/supabase-server'
 import { getJpyRate } from '@/lib/settings'
-import { listingDisplayPrice } from '@/lib/pricing'
+import { listingDisplayPrice, importBreakdown } from '@/lib/pricing'
 import { generateMeta } from '@/lib/seo'
 import { centsToAud, scoreColor, scoreLabel, sourceLabel, sourceBadgeColor, auctionUrgency, locationBadgeInfo, fitOutLevelInfo } from '@/lib/utils'
 import AuctionBanner from '@/components/ui/AuctionBanner'
@@ -13,6 +13,7 @@ import ConversionDetails from '@/components/van/ConversionDetails'
 import SaveVanButton from '@/components/ui/SaveVanButton'
 import ShareButtons from '@/components/ui/ShareButtons'
 import DepositHoldButton from '@/components/ui/DepositHoldButton'
+import ImportEstimate from '@/components/van/ImportEstimate'
 import ViewContentTracker from '@/components/van/ViewContentTracker'
 import StickyMobileCTA from '@/components/van/StickyMobileCTA'
 import AskAboutVan from '@/components/van/AskAboutVan'
@@ -66,6 +67,7 @@ export default async function VanDetailPage({ params }: { params: { id: string }
   const isJapanListing = listing.source !== 'au_stock'
   const { priceCents, isEstimate } = listingDisplayPrice(listing, jpyRate)
   const displayPrice = priceCents ? centsToAud(priceCents) : 'POA'
+  const breakdown = isJapanListing ? importBreakdown(listing, jpyRate, listing.size === 'SLWB') : null
 
   const internalsLabel: Record<string, string> = {
     empty: 'Empty',
@@ -241,13 +243,13 @@ export default async function VanDetailPage({ params }: { params: { id: string }
                   <span className="text-sm text-gray-400">est.</span>
                 )}
               </div>
-              {isJapanListing && listing.start_price_jpy && priceCents && (
+              {isJapanListing && priceCents && (
                 <p className="text-xs text-gray-400 mt-1.5 leading-relaxed">
-                  ¥{listing.start_price_jpy.toLocaleString()} JPY × {jpyRate.toFixed(4)} + $10,000 import package
+                  All-in estimate — includes vehicle, sourcing fee, shipping, GST, compliance &amp; rego.
                   <span className="block text-amber-600 font-medium mt-0.5">Final price confirmed at time of payment — depends on exchange rate.</span>
                 </p>
               )}
-              {isJapanListing && !listing.start_price_jpy && !priceCents && (
+              {isJapanListing && !priceCents && (
                 <p className="text-xs text-gray-400 mt-1">Contact us for pricing on this van.</p>
               )}
               {!isJapanListing && priceCents && (
@@ -260,6 +262,11 @@ export default async function VanDetailPage({ params }: { params: { id: string }
                 </div>
               )}
             </div>
+
+            {/* Itemised import estimate */}
+            {breakdown && (
+              <ImportEstimate lines={breakdown.lines} totalCents={breakdown.totalCents} />
+            )}
 
             {/* Spec table */}
             <div className="border border-gray-200 rounded-xl overflow-hidden mb-6">

@@ -26,21 +26,22 @@ export default async function HomePage() {
 
   try {
     const supabase = createSupabaseServer()
-    // Prefer featured vans, fall back to most recent with photos
+    // Prefer featured non-auction vans, fall back to most recent Japan dealer van
     let { data } = await supabase
       .from('listings')
       .select('*')
       .eq('status', 'available')
       .eq('featured', true)
+      .neq('source', 'auction')
       .limit(1)
       .single()
-    // If no featured van, get most recent non-auction van with photos
+    // If no featured van, get most recent Japan dealer van with photos
     if (!data) {
       const fallback = await supabase
         .from('listings')
         .select('*')
         .eq('status', 'available')
-        .neq('source', 'auction')
+        .in('source', ['dealer_goonet', 'dealer_carsensor'])
         .order('created_at', { ascending: false })
         .limit(1)
         .single()
