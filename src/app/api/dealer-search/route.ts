@@ -25,6 +25,7 @@ export async function POST(req: NextRequest) {
       drive: body.drive || 'any',
       fuel: body.fuel || 'any',
       transmission: body.transmission || 'any',
+      grade: body.grade || 'dx_only',
       maxPages: Math.min(Math.max(Number(body.maxPages) || 3, 1), 10),
       dryRun: body.dryRun === true,
     }

@@ -40,6 +40,7 @@ export default function AdminImportPage() {
   const [searchDrive, setSearchDrive] = useState('any')
   const [searchFuel, setSearchFuel] = useState('any')
   const [searchTransmission, setSearchTransmission] = useState('any')
+  const [searchGrade, setSearchGrade] = useState('dx_only')
   const [searchMaxPages, setSearchMaxPages] = useState('3')
   const [searchDryRun, setSearchDryRun] = useState(true)
   const [searchLoading, setSearchLoading] = useState(false)
@@ -155,6 +156,7 @@ export default function AdminImportPage() {
           drive: searchDrive,
           fuel: searchFuel,
           transmission: searchTransmission,
+          grade: searchGrade,
           maxPages: Number(searchMaxPages),
           dryRun: searchDryRun,
         }),
@@ -513,6 +515,19 @@ export default function AdminImportPage() {
                   <option value="AT">Automatic</option>
                   <option value="MT">Manual</option>
                 </select>
+              </div>
+
+              <div className="col-span-2">
+                <label className="block text-xs font-semibold text-gray-600 mb-1">Grade Filter</label>
+                <select
+                  value={searchGrade}
+                  onChange={e => setSearchGrade(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ocean"
+                >
+                  <option value="dx_only">DX + DX GL Package only (recommended)</option>
+                  <option value="all">All grades (includes Super GL, Dark Prime, etc.)</option>
+                </select>
+                <p className="text-xs text-gray-400 mt-1">DX grades are best for campervan conversions. Super GL and Dark Prime are excluded by default.</p>
               </div>
             </div>
 

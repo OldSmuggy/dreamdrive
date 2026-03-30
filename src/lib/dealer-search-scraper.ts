@@ -25,8 +25,45 @@ export interface DealerSearchFilters {
   drive?: '4WD' | '2WD' | 'any'
   fuel?: 'diesel' | 'petrol' | 'any'
   transmission?: 'AT' | 'MT' | 'any'
+  grade?: 'dx_only' | 'all'  // 'dx_only' = DX + DX GL Package only
   maxPages: number   // 1-10
   dryRun: boolean
+}
+
+// ── Grade filtering ──────────────────────────────────────────────────────────
+// Grades we EXCLUDE — Super GL, Dark Prime, Wagon, Commuter, etc.
+// We only want DX and DX GL Package for campervan conversions.
+const EXCLUDED_GRADE_PATTERNS = [
+  'スーパーGL',    // Super GL
+  'SUPER GL',
+  'ダークプライム', // Dark Prime
+  'DARK PRIME',
+  'ワゴン',        // Wagon
+  'WAGON',
+  'コミューター',   // Commuter
+  'COMMUTER',
+  'グランドキャビン', // Grand Cabin
+  'GRAND CABIN',
+]
+
+function isDxGrade(modelName: string): boolean {
+  const upper = modelName.toUpperCase()
+  // Must contain DX somewhere in the name
+  if (!modelName.includes('DX') && !upper.includes('DX')) return false
+  // Must NOT contain excluded patterns
+  for (const pattern of EXCLUDED_GRADE_PATTERNS) {
+    if (modelName.includes(pattern) || upper.includes(pattern.toUpperCase())) return false
+  }
+  return true
+}
+
+function shouldExcludeByGrade(modelName: string): boolean {
+  // Check if the listing matches any excluded grade pattern
+  const upper = modelName.toUpperCase()
+  for (const pattern of EXCLUDED_GRADE_PATTERNS) {
+    if (modelName.includes(pattern) || upper.includes(pattern.toUpperCase())) return true
+  }
+  return false
 }
 
 export interface SearchProgress {
@@ -228,6 +265,18 @@ export async function runDealerSearch(
 
       const parsed = parseCarSensor(html)
       const photos = extractPhotos(html, 'dealer_carsensor')
+
+      // Grade filtering — skip Super GL, Dark Prime, Wagon etc. if dx_only filter is set
+      if (filters.grade === 'dx_only' && shouldExcludeByGrade(parsed.modelName)) {
+        result.skipped++
+        onProgress({
+          type: 'skip',
+          message: `[${i + 1}/${allListingUrls.length}] Skipped (grade): ${parsed.modelName}`,
+          ...result,
+        })
+        await sleep(100)
+        continue
+      }
 
       if (filters.dryRun) {
         result.imported++

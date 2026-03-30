@@ -1,13 +1,14 @@
 /**
- * NINJA auction scraper — Firecrawl + fetch based (no Playwright).
+ * NINJA auction scraper — pure fetch based (no Playwright, no Firecrawl).
  *
- * Uses Firecrawl's executeJavascript actions to handle the AJAX login
- * flow inside a real browser, then extracts cookies and uses plain
- * fetch for all subsequent requests. Works reliably on Vercel serverless.
+ * Performs the full login flow (session → AJAX login → loginPrimary →
+ * searchcondition → makersearch) using plain fetch with cookie tracking,
+ * then paginates search results and fetches detail pages.
+ *
+ * Works reliably on Vercel serverless — no browser binary needed.
  */
 
 import { createAdminClient } from './supabase'
-import Firecrawl from '@mendable/firecrawl-js'
 
 // ============================================================
 // Constants
@@ -79,27 +80,22 @@ export interface ScrapeResult {
 
 const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 
-/** Mutable cookie string — updated by ninjaFetch after each response */
-let _sessionCookie = ''
+/** Mutable cookie jar — updated by ninjaFetch after each response */
+let _cookies: Record<string, string> = {}
 
-function setSessionCookie(c: string) { _sessionCookie = c }
-function getSessionCookie() { return _sessionCookie }
+function cookieStr() {
+  return Object.entries(_cookies).map(([k, v]) => `${k}=${v}`).join('; ')
+}
 
-/** Merge new Set-Cookie values into the session cookie string */
+/** Merge new Set-Cookie values into the cookie jar */
 function absorbCookies(res: Response) {
-  const existing = new Map<string, string>()
-  // Parse current cookies
-  for (const pair of _sessionCookie.split('; ')) {
-    const [k, ...v] = pair.split('=')
-    if (k?.trim()) existing.set(k.trim(), v.join('='))
-  }
   // Try getSetCookie (Node 20+)
   const setCookies = res.headers.getSetCookie?.() ?? []
   if (setCookies.length > 0) {
     for (const sc of setCookies) {
       const [pair] = sc.split(';')
       const [k, ...v] = pair.split('=')
-      if (k?.trim()) existing.set(k.trim(), v.join('=').trim())
+      if (k?.trim()) _cookies[k.trim()] = v.join('=').trim()
     }
   } else {
     // Fallback: parse raw set-cookie header
@@ -107,10 +103,9 @@ function absorbCookies(res: Response) {
     for (const part of raw.split(/,(?=\s*\w+=)/)) {
       const [pair] = part.split(';')
       const [k, ...v] = pair.split('=')
-      if (k?.trim()) existing.set(k.trim(), v.join('=').trim())
+      if (k?.trim()) _cookies[k.trim()] = v.join('=').trim()
     }
   }
-  _sessionCookie = Array.from(existing.entries()).map(([k, v]) => `${k}=${v}`).join('; ')
 }
 
 async function ninjaFetch(
@@ -123,7 +118,7 @@ async function ninjaFetch(
 ): Promise<{ text: string; status: number }> {
   const headers: Record<string, string> = {
     'User-Agent': UA,
-    Cookie: _sessionCookie,
+    Cookie: cookieStr(),
     ...(options?.headers ?? {}),
   }
   if (options?.referer) headers['Referer'] = options.referer
@@ -147,7 +142,7 @@ async function ninjaFetch(
     await res.text() // consume body
     const redirectUrl = loc.startsWith('http') ? loc : `${BASE}${loc}`
     res = await fetch(redirectUrl, {
-      headers: { 'User-Agent': UA, Cookie: _sessionCookie, Referer: url },
+      headers: { 'User-Agent': UA, Cookie: cookieStr(), Referer: url },
       redirect: 'manual',
     })
     absorbCookies(res)
@@ -171,174 +166,31 @@ export async function runNinjaScraper(options: {
 
   const loginId = process.env.NINJA_LOGIN_ID
   const password = process.env.NINJA_PASSWORD
-  const firecrawlKey = process.env.FIRECRAWL_API_KEY
 
   if (!loginId || !password) {
     throw new Error('NINJA_LOGIN_ID and NINJA_PASSWORD must be set in environment variables')
   }
-  if (!firecrawlKey) {
-    throw new Error('FIRECRAWL_API_KEY must be set for NINJA scraping')
-  }
 
-  const firecrawl = new Firecrawl({ apiKey: firecrawlKey })
+  // Reset cookie jar for fresh session
+  _cookies = {}
 
   // ----------------------------------------------------------
-  // 1. Use Firecrawl to load NINJA login page, execute AJAX
-  //    login, and extract session cookies + search page HTML
+  // 1. Login via plain fetch
   // ----------------------------------------------------------
-  onProgress('Step 1: Loading NINJA login page via Firecrawl...')
+  onProgress('Step 1: Logging in...')
+  const { loginJson, scHtml } = await performLogin(loginId, password, onProgress)
 
-  // Build the JS that performs the full login flow inside the browser
-  const loginScript = `
-    (async function doLogin() {
-      // Step A: AJAX login
-      const loginRes = await fetch('/ninja/login.action', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'X-Requested-With': 'XMLHttpRequest'
-        },
-        body: new URLSearchParams({
-          action: 'login',
-          loginId: ${JSON.stringify(loginId)},
-          password: ${JSON.stringify(password)},
-          isFlg: '',
-          language: '1'
-        }).toString()
-      });
-      const loginJson = await loginRes.json();
-
-      if (loginJson.errflg === '1') {
-        return JSON.stringify({ error: 'Login rejected', details: loginJson });
-      }
-
-      // Step B: loginPrimary
-      await fetch('/ninja/login.action', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-          action: 'loginPrimary',
-          loginPrimaryGamen: '1',
-          site: '2',
-          memberCode: loginJson.memberCode || '',
-          branchCode: loginJson.branchCode || '',
-          memberName: loginJson.memberName || '',
-          buyerId: loginJson.buyerId || '',
-          buyerName: loginJson.buyerName || '',
-          buyerImagePath: loginJson.buyerImagePath || '',
-          buyerKaijoNameOpenFlg: loginJson.buyerKaijoNameOpenFlg || '',
-          language: '1',
-          errflg: '',
-          ID: '',
-          gamenGroup: '',
-          token: ''
-        }).toString()
-      });
-
-      // Step C: Navigate to searchcondition
-      const scRes = await fetch('/ninja/searchcondition.action', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-          action: '',
-          loginPrimaryGamen: '1',
-          site: '2',
-          memberCode: loginJson.memberCode || '',
-          branchCode: loginJson.branchCode || '',
-          memberName: loginJson.memberName || '',
-          buyerId: loginJson.buyerId || '',
-          buyerName: loginJson.buyerName || '',
-          buyerImagePath: loginJson.buyerImagePath || '',
-          buyerKaijoNameOpenFlg: loginJson.buyerKaijoNameOpenFlg || '',
-          language: '1',
-          errflg: '',
-          ID: '',
-          gamenGroup: '22',
-          token: ''
-        }).toString()
-      });
-      const scHtml = await scRes.text();
-
-      return JSON.stringify({
-        success: true,
-        cookies: document.cookie,
-        loginJson: loginJson,
-        scHtml: scHtml,
-        scStatus: scRes.status
-      });
-    })()
-  `
-
-  let loginJson: Record<string, string> = {}
-  let scHtml = ''
-
-  try {
-    const result = await firecrawl.scrape(`${BASE}/ninja/`, {
-      formats: ['rawHtml'],
-      timeout: 60000,
-      waitFor: 3000,
-      actions: [
-        { type: 'wait', milliseconds: 2000 },
-        { type: 'executeJavascript', script: loginScript },
-      ],
-    })
-
-    // Extract results from executeJavascript
-    const jsReturns = (result as any)?.actions?.javascriptReturns ?? []
-    if (jsReturns.length === 0) {
-      throw new Error('Firecrawl returned no JS results — login script may not have executed')
-    }
-
-    const returnValue = jsReturns[0]?.value
-    let loginResult: any
-    try {
-      loginResult = typeof returnValue === 'string' ? JSON.parse(returnValue) : returnValue
-    } catch {
-      onProgress(`JS return value: ${String(returnValue).slice(0, 200)}`)
-      throw new Error('Failed to parse login script result')
-    }
-
-    if (loginResult?.error) {
-      throw new Error(`Login failed: ${loginResult.error} — ${JSON.stringify(loginResult.details ?? '')}`)
-    }
-
-    if (!loginResult?.success) {
-      onProgress(`Login result: ${JSON.stringify(loginResult).slice(0, 300)}`)
-      throw new Error('Login script did not return success')
-    }
-
-    setSessionCookie(loginResult.cookies || '')
-    loginJson = loginResult.loginJson || {}
-    scHtml = loginResult.scHtml || ''
-
-    onProgress(`✓ Firecrawl login successful. buyerId=${loginJson.buyerId ?? '?'} cookie length=${getSessionCookie().length}`)
-    onProgress(`  searchcondition status: ${loginResult.scStatus} HTML length: ${scHtml.length}`)
-
-    if (scHtml.includes('sessionTimeOut') || scHtml.length < 500) {
-      throw new Error(`Search session not established (scHtml ${scHtml.length} chars, sessionTimeOut=${scHtml.includes('sessionTimeOut')})`)
-    }
-  } catch (err) {
-    onProgress(`Firecrawl login error: ${err}`)
-
-    // Fallback: try plain fetch approach
-    onProgress('Attempting fallback: plain fetch login...')
-    const fallbackResult = await plainFetchLogin(loginId, password, onProgress)
-    loginJson = fallbackResult.loginJson
-    scHtml = fallbackResult.scHtml
-    // Cookie is already set in _sessionCookie by plainFetchLogin
-  }
-
-  if (!getSessionCookie()) {
+  if (!cookieStr().includes('JSESSIONID')) {
     throw new Error('No session cookie obtained — cannot proceed')
   }
 
   // ----------------------------------------------------------
   // 2. Extract form fields and POST to makersearch.action
   // ----------------------------------------------------------
-  onProgress('Step 2: Priming makersearch state...')
+  onProgress('Step 2: Navigating to makersearch (Toyota)...')
 
   const scFormFields = extractFormFields(scHtml)
-  scFormFields['brandGroupingCode'] = '01'
+  scFormFields['brandGroupingCode'] = '01' // Toyota
   scFormFields['bodyType'] = ''
   scFormFields['cornerSearchCheckCorner'] = ''
   scFormFields['action'] = 'init'
@@ -351,7 +203,7 @@ export async function runNinjaScraper(options: {
     }
   )
 
-  onProgress(`makersearch status: ${msStatus} len: ${msHtml.length} sessionTimeout: ${msHtml.includes('sessionTimeOut')}`)
+  onProgress(`makersearch: status=${msStatus} len=${msHtml.length} timeout=${msHtml.includes('sessionTimeOut')}`)
 
   if (msHtml.includes('sessionTimeOut') || msStatus >= 400) {
     throw new Error(`makersearch failed (status ${msStatus})`)
@@ -360,9 +212,22 @@ export async function runNinjaScraper(options: {
   const msFormFields = extractFormFields(msHtml)
 
   // ----------------------------------------------------------
-  // 3. Paginate through search results for each car category
+  // 3. Check listing counts before attempting search
   // ----------------------------------------------------------
-  onProgress('Step 3: Collecting listing references...')
+  onProgress('Step 3: Checking listing counts...')
+
+  for (const catNo of CAR_CATEGORY_NOS) {
+    const catName = catNo === '146' ? 'HIACE VAN' : 'REGIUS ACE VAN'
+    // Look for count in makersearch page: "HIACE VAN (123)"
+    const countMatch = msHtml.match(new RegExp(`${catName}\\s*\\((\\d+)\\)`, 'i'))
+    const count = countMatch ? parseInt(countMatch[1]) : -1
+    onProgress(`  ${catName} (${catNo}): ${count >= 0 ? count + ' listings' : 'count unknown'}`)
+  }
+
+  // ----------------------------------------------------------
+  // 4. Paginate through search results for each car category
+  // ----------------------------------------------------------
+  onProgress('Step 4: Collecting listing references...')
   const allListingRefs: NinjaListingRef[] = []
 
   for (const carCategoryNo of CAR_CATEGORY_NOS) {
@@ -371,11 +236,13 @@ export async function runNinjaScraper(options: {
     for (let pg = 1; pg <= 10; pg++) {
       onProgress(`  Page ${pg}...`)
 
+      // Follow the same flow as the browser:
+      // makerListChoiceCarCat() sets carCategoryNo, action=seniSearch,
+      // submits form1 to searchresultlist.action
       const srFormFields = { ...msFormFields }
       srFormFields['carCategoryNo'] = carCategoryNo
       srFormFields['action'] = 'seniSearch'
       srFormFields['page'] = String(pg)
-      delete srFormFields['evaluation']
 
       const { text: html, status: srStatus } = await ninjaFetch(
         `${BASE}/ninja/searchresultlist.action`,
@@ -398,9 +265,6 @@ export async function runNinjaScraper(options: {
       const refs = extractListingRefs(html)
       if (refs.length === 0) {
         onProgress(`  Page ${pg}: 0 listings — end of results`)
-        if (pg === 1) {
-          onProgress(`  HTML snippet: ${html.substring(0, 300).replace(/\s+/g, ' ')}`)
-        }
         break
       }
 
@@ -418,7 +282,7 @@ export async function runNinjaScraper(options: {
   const limitedRefs = maxListings ? allListingRefs.slice(0, maxListings) : allListingRefs
 
   // ----------------------------------------------------------
-  // 4. Log scrape start in Supabase
+  // 5. Log scrape start in Supabase
   // ----------------------------------------------------------
   const supabase = createAdminClient()
   let logId: string | null = null
@@ -437,7 +301,7 @@ export async function runNinjaScraper(options: {
   }
 
   // ----------------------------------------------------------
-  // 5. Fetch detail page for each listing ref
+  // 6. Fetch detail page for each listing ref
   // ----------------------------------------------------------
   const processed: ScrapedVan[] = []
   let skipped = 0
@@ -450,15 +314,19 @@ export async function runNinjaScraper(options: {
     const label = `[${i + 1}/${limitedRefs.length}] ${ref.KaijoCode}-${ref.AuctionCount}-${ref.BidNo}`
 
     try {
+      // Navigate to car detail using the panCarDetail pattern:
+      // set hidden fields then POST to cardetail.action with action=search
+      const detailForm = { ...msFormFields }
+      detailForm['action'] = 'search'
+      detailForm['KaijoCode'] = ref.KaijoCode
+      detailForm['AuctionCount'] = ref.AuctionCount
+      detailForm['BidNo'] = ref.BidNo
+      detailForm['carKindType'] = '1'
+
       const { text: html } = await ninjaFetch(
         `${BASE}/ninja/cardetail.action`,
         {
-          form: {
-            KaijoCode: ref.KaijoCode,
-            AuctionCount: ref.AuctionCount,
-            BidNo: ref.BidNo,
-            carKindType: '1',
-          },
+          form: detailForm,
           referer: `${BASE}/ninja/searchresultlist.action`,
         }
       )
@@ -469,10 +337,7 @@ export async function runNinjaScraper(options: {
         continue
       }
 
-      if (
-        html.includes('action="/ninja/logincheck.action"') ||
-        (html.includes('loginId') && html.length < 5000)
-      ) {
+      if (isLoginPage(html)) {
         onProgress(`${label} — session expired`)
         errors++
         continue
@@ -530,7 +395,7 @@ export async function runNinjaScraper(options: {
   }
 
   // ----------------------------------------------------------
-  // 6. Update scrape log
+  // 7. Update scrape log
   // ----------------------------------------------------------
   if (!dryRun && logId) {
     await supabase
@@ -562,37 +427,37 @@ export async function runNinjaScraper(options: {
 }
 
 // ============================================================
-// Fallback: plain fetch login (if Firecrawl actions fail)
+// Login flow — pure fetch
 // ============================================================
 
-async function plainFetchLogin(
+async function performLogin(
   loginId: string,
   password: string,
   onProgress: (msg: string) => void
 ): Promise<{ loginJson: Record<string, string>; scHtml: string }> {
 
-  // Get JSESSIONID via plain fetch — use manual redirect to capture cookies
+  // Get JSESSIONID
   const sessionRes = await fetch(`${BASE}/ninja/`, {
     headers: { 'User-Agent': UA },
     redirect: 'manual',
   })
   absorbCookies(sessionRes)
-  await sessionRes.text() // consume body
+  await sessionRes.text()
 
   // Follow redirect if any
   const loc = sessionRes.headers.get('location')
   if (loc) {
     const redirectUrl = loc.startsWith('http') ? loc : `${BASE}${loc}`
     const r2 = await fetch(redirectUrl, {
-      headers: { 'User-Agent': UA, Cookie: _sessionCookie },
+      headers: { 'User-Agent': UA, Cookie: cookieStr() },
       redirect: 'manual',
     })
     absorbCookies(r2)
     await r2.text()
   }
 
-  const hasSession = _sessionCookie.includes('JSESSIONID')
-  onProgress(`Fallback: JSESSIONID ${hasSession ? 'obtained' : 'NOT FOUND'} (cookie: ${_sessionCookie.slice(0, 60)}...)`)
+  const hasSession = cookieStr().includes('JSESSIONID')
+  onProgress(`Session: JSESSIONID ${hasSession ? 'obtained' : 'NOT FOUND'} (cookie: ${cookieStr().slice(0, 60)}...)`)
 
   // AJAX login
   const { text: loginText } = await ninjaFetch(`${BASE}/ninja/login.action`, {
@@ -606,17 +471,17 @@ async function plainFetchLogin(
     loginJson = JSON.parse(loginText)
   } catch {
     onProgress(`Login response (not JSON): ${loginText.slice(0, 300)}`)
-    throw new Error('Fallback login returned non-JSON')
+    throw new Error('Login returned non-JSON — check credentials')
   }
 
   if (loginJson.errflg === '1') {
     throw new Error(`Login rejected: ${loginJson.errLoginId ?? ''} ${loginJson.errPassword ?? ''}`)
   }
 
-  onProgress(`Fallback login: errflg=${loginJson.errflg} buyerId=${loginJson.buyerId ?? '?'}`)
+  onProgress(`Login: errflg=${loginJson.errflg} buyerId=${loginJson.buyerId ?? '?'}`)
 
-  // loginPrimary
-  await ninjaFetch(`${BASE}/ninja/login.action`, {
+  // loginPrimary — establishes full session
+  const { text: primaryHtml } = await ninjaFetch(`${BASE}/ninja/login.action`, {
     form: {
       action: 'loginPrimary', loginPrimaryGamen: '1', site: '2',
       memberCode: loginJson.memberCode ?? '', branchCode: loginJson.branchCode ?? '',
@@ -628,27 +493,25 @@ async function plainFetchLogin(
     referer: `${BASE}/ninja/`,
   })
 
-  onProgress(`After loginPrimary cookie: ${_sessionCookie.slice(0, 80)}...`)
+  // Extract form1 fields from loginPrimary response — these are the BASE
+  // for all subsequent navigation (same pattern as browser form1)
+  const form1 = extractFormFields(primaryHtml)
+  onProgress(`loginPrimary: ${primaryHtml.length} chars, ${Object.keys(form1).length} form fields`)
 
-  // searchcondition
+  // Navigate to searchcondition (search mode)
+  form1['gamenGroup'] = '22'
+  form1['action'] = ''
+
   const { text: scHtml, status: scStatus } = await ninjaFetch(`${BASE}/ninja/searchcondition.action`, {
-    form: {
-      action: '', loginPrimaryGamen: '1', site: '2',
-      memberCode: loginJson.memberCode ?? '', branchCode: loginJson.branchCode ?? '',
-      memberName: loginJson.memberName ?? '', buyerId: loginJson.buyerId ?? '',
-      buyerName: loginJson.buyerName ?? '', buyerImagePath: loginJson.buyerImagePath ?? '',
-      buyerKaijoNameOpenFlg: loginJson.buyerKaijoNameOpenFlg ?? '',
-      language: '1', errflg: '', ID: '', gamenGroup: '22', token: '',
-    },
+    form: form1,
     referer: `${BASE}/ninja/login.action`,
   })
 
-  onProgress(`Fallback searchcondition: status=${scStatus} len=${scHtml.length} sessionTimeout=${scHtml.includes('sessionTimeOut')}`)
+  onProgress(`searchcondition: status=${scStatus} len=${scHtml.length} timeout=${scHtml.includes('sessionTimeOut')}`)
 
   if (scHtml.includes('sessionTimeOut') || scStatus >= 400) {
-    // Log more detail to help debug
     onProgress(`scHtml snippet: ${scHtml.slice(0, 300).replace(/\s+/g, ' ')}`)
-    throw new Error(`Fallback: search session failed (status ${scStatus})`)
+    throw new Error(`Search session failed (status ${scStatus})`)
   }
 
   return { loginJson, scHtml }
@@ -661,7 +524,7 @@ async function plainFetchLogin(
 function isLoginPage(html: string): boolean {
   return (
     html.includes('action="/ninja/logincheck.action"') ||
-    html.includes('name="loginId"') ||
+    html.includes('sessionTimeOut') ||
     (html.includes('loginId') && html.includes('password') && html.length < 8000)
   )
 }
@@ -696,10 +559,13 @@ function extractListingRefs(html: string): NinjaListingRef[] {
     }
   }
 
-  const linkRe = /cardetail\.action[^"'>\s]*KaijoCode=([^&"'>\s]+)[^"'>\s]*AuctionCount=([^&"'>\s]+)[^"'>\s]*BidNo=([^&"'>\s]+)/gi
   let m: RegExpExecArray | null
+
+  // Pattern 1: URL query params — cardetail.action?KaijoCode=X&AuctionCount=Y&BidNo=Z
+  const linkRe = /cardetail\.action[^"'>\s]*KaijoCode=([^&"'>\s]+)[^"'>\s]*AuctionCount=([^&"'>\s]+)[^"'>\s]*BidNo=([^&"'>\s]+)/gi
   while ((m = linkRe.exec(html)) !== null) addRef(m[1], m[2], m[3])
 
+  // Pattern 2: href/action attributes with cardetail URLs
   const hrefRe = /(?:href|action)="([^"]*cardetail\.action[^"]*)"/gi
   while ((m = hrefRe.exec(html)) !== null) {
     try {
@@ -710,11 +576,34 @@ function extractListingRefs(html: string): NinjaListingRef[] {
       const ac = u.searchParams.get('AuctionCount')
       const bn = u.searchParams.get('BidNo')
       if (k && ac && bn) addRef(k, ac, bn)
-    } catch {}
+    } catch { /* ignore malformed URLs */ }
   }
 
-  const onclickRe = /(?:seniToCardetail|showDetail|cardetailView|carDetail)\s*\(\s*'([^']+)'\s*,\s*'([^']+)'\s*,\s*'([^']+)'\s*\)/gi
+  // Pattern 3: seniCarDetail(carKindType, kaijoCode, auctionCount, bidNo, zaikoNo)
+  // Defined in carlist.js — params are: 1=carKindType, 2=KaijoCode, 3=AuctionCount, 4=BidNo, 5=zaikoNo
+  const seniDetailRe = /seniCarDetail\s*\(\s*'([^']+)'\s*,\s*'([^']+)'\s*,\s*'([^']+)'\s*,\s*'([^']+)'\s*(?:,\s*'([^']+)')?\s*\)/gi
+  while ((m = seniDetailRe.exec(html)) !== null) addRef(m[2], m[3], m[4])
+
+  // Pattern 4: Other onclick patterns with 3+ params (KaijoCode, AuctionCount, BidNo)
+  const onclickRe = /(?:seniToCardetail|showDetail|cardetailView|carDetail|panCarDetailWith)\s*\(\s*'([^']+)'\s*,\s*'([^']+)'\s*,\s*'([^']+)'\s*\)/gi
   while ((m = onclickRe.exec(html)) !== null) addRef(m[1], m[2], m[3])
+
+  // Pattern 5: Inline JS setting hidden fields before panCarDetail()
+  // e.g.: $('#KaijoCode').val('TK');$('#AuctionCount').val('1234');$('#BidNo').val('5678');panCarDetail()
+  const inlineRe = /\$\('#KaijoCode'\)\.val\('([^']+)'\)[^;]*\$\('#AuctionCount'\)\.val\('([^']+)'\)[^;]*\$\('#BidNo'\)\.val\('([^']+)'\)/gi
+  while ((m = inlineRe.exec(html)) !== null) addRef(m[1], m[2], m[3])
+
+  // Pattern 6: carListData hidden field — pipe-delimited entries separated by ж
+  // Format: carKindType|KaijoCode|AuctionCount|BidNo per entry
+  const cldMatch = html.match(/name="carListData"[^>]*value="([^"]+)"/)
+  if (cldMatch) {
+    for (const entry of cldMatch[1].split(',').filter((e: string) => e.trim())) {
+      const parts = entry.split('ж')
+      if (parts.length >= 4) {
+        addRef(parts[1], parts[2], parts[3])
+      }
+    }
+  }
 
   return refs
 }
