@@ -16,6 +16,29 @@ export type Drive = '2WD' | '4WD'
 export type ProductCategory = 'fitout' | 'electrical' | 'poptop' | 'addon'
 export type FitoutGrade = 'Excellent' | 'Good' | 'Fair' | 'Unknown'
 export type PowerSystem = '100V Japanese' | '240V Australian' | 'None'
+export type CurationBadge = 'staff_pick' | 'rare_find' | 'low_km' | 'budget_entry' | 'adventure_spec' | 'arriving_soon'
+export type PipelineStage = 'listed' | 'purchased' | 'export_yard' | 'on_ship' | 'arrived' | 'compliance' | 'ready'
+export type NoteSentiment = 'positive' | 'neutral' | 'caution'
+export type NoteType = 'agent_comment' | 'extra_photos' | 'condition_flag' | 'seller_info'
+
+export interface BuyerNote {
+  id: string
+  type: NoteType
+  author: string
+  date: string
+  content: string
+  sentiment: NoteSentiment
+  images?: string[]
+}
+
+export interface InspirationBlock {
+  title: string
+  description: string
+  images: string[]
+  link?: string
+  link_text?: string
+}
+
 export type LeadType = 'consultation' | 'interest' | 'quiz_result' | 'finance_enquiry'
 export type LeadStatus = 'new' | 'contacted' | 'qualified' | 'closed'
 export type DepositStatus = 'pending' | 'held' | 'refunded' | 'converted'
@@ -89,6 +112,16 @@ export interface Listing {
   source_category: string | null
   view_count: number
   market_comparison_aud: number | null
+  // New listing enrichment fields
+  curation_badge: CurationBadge | null
+  notes: BuyerNote[]
+  au_market_price_low: number | null
+  au_market_price_high: number | null
+  au_market_source: string | null
+  au_market_note: string | null
+  pipeline_stage: PipelineStage | null
+  pipeline_eta: string | null
+  inspiration: InspirationBlock | null
 }
 
 export interface Product {

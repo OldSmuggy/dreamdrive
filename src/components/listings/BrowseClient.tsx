@@ -3,7 +3,7 @@ import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { centsToAud, scoreColor, scoreLabel, auctionUrgency, locationBadgeInfo, fitOutLevelInfo } from '@/lib/utils'
+import { centsToAud, scoreColor, scoreLabel, auctionUrgency, locationBadgeInfo, fitOutLevelInfo, curationBadgeInfo } from '@/lib/utils'
 import { listingDisplayPrice } from '@/lib/pricing'
 import SaveVanButton from '@/components/ui/SaveVanButton'
 import type { Listing } from '@/types'
@@ -703,6 +703,7 @@ function ListingCard({ listing, userId, initialSaved, jpyRate }: { listing: List
   const sColor   = scoreColor(listing.inspection_score)
   const locBadge = locationBadgeInfo(listing)
   const foBadge  = fitOutLevelInfo(listing.fit_out_level)
+  const curBadge = curationBadgeInfo(listing.curation_badge)
   const auctionBlur = !userId && listing.source === 'auction'
 
   const { priceCents, isEstimate } = listingDisplayPrice(listing, jpyRate)
@@ -842,6 +843,11 @@ function ListingCard({ listing, userId, initialSaved, jpyRate }: { listing: List
           {listing.has_fitout && (
             <div className="text-white text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 sm:px-2 rounded" style={{ background: '#92400e' }}>
               🏕 Campervan{listing.fitout_grade ? ` · ${listing.fitout_grade}` : ''}
+            </div>
+          )}
+          {curBadge && (
+            <div className={`${curBadge.bg} ${curBadge.text} text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 sm:px-2 rounded`}>
+              {curBadge.label}
             </div>
           )}
           {listing.power_system && listing.power_system !== 'None' && (

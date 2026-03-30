@@ -5,7 +5,7 @@ import { createSupabaseServer } from '@/lib/supabase-server'
 import { getJpyRate } from '@/lib/settings'
 import { listingDisplayPrice, importBreakdown } from '@/lib/pricing'
 import { generateMeta } from '@/lib/seo'
-import { centsToAud, scoreColor, scoreLabel, sourceLabel, sourceBadgeColor, auctionUrgency, locationBadgeInfo, fitOutLevelInfo } from '@/lib/utils'
+import { centsToAud, scoreColor, scoreLabel, sourceLabel, sourceBadgeColor, auctionUrgency, locationBadgeInfo, fitOutLevelInfo, curationBadgeInfo } from '@/lib/utils'
 import AuctionBanner from '@/components/ui/AuctionBanner'
 import AuctionCountdownBanner from '@/components/van/AuctionCountdownBanner'
 import PhotoGallery from '@/components/van/PhotoGallery'
@@ -15,6 +15,10 @@ import ShareButtons from '@/components/ui/ShareButtons'
 import DepositHoldButton from '@/components/ui/DepositHoldButton'
 import ImportEstimate from '@/components/van/ImportEstimate'
 import ViewContentTracker from '@/components/van/ViewContentTracker'
+import BuyerAgentNotes from '@/components/van/BuyerAgentNotes'
+import MarketContext from '@/components/van/MarketContext'
+import PipelineTimeline from '@/components/van/PipelineTimeline'
+import InspirationBlock from '@/components/van/InspirationBlock'
 import StickyMobileCTA from '@/components/van/StickyMobileCTA'
 import AskAboutVan from '@/components/van/AskAboutVan'
 import type { Listing } from '@/types'
@@ -45,6 +49,7 @@ export default async function VanDetailPage({ params }: { params: { id: string }
   const urgency  = listing.source === 'auction' ? auctionUrgency(listing.auction_date) : null
   const locBadge = locationBadgeInfo(listing)
   const foBadge  = fitOutLevelInfo(listing.fit_out_level)
+  const curBadge = curationBadgeInfo(listing.curation_badge)
 
   // Check if user has saved this van + is admin
   let isSaved = false
@@ -206,6 +211,11 @@ export default async function VanDetailPage({ params }: { params: { id: string }
                   🏕 Campervan Build{listing.fitout_grade ? ` · ${listing.fitout_grade}` : ''}
                 </div>
               )}
+              {curBadge && (
+                <div className={`inline-flex items-center ${curBadge.bg} ${curBadge.text} text-xs font-bold px-2.5 py-1 rounded`}>
+                  {curBadge.label}
+                </div>
+              )}
               <div className="ml-auto flex items-center gap-3">
                 <ShareButtons url={`/van/${listing.id}`} title={`${listing.model_year} ${listing.model_name} — Bare Camper`} />
                 <SaveVanButton listingId={listing.id} userId={user?.id ?? null} initialSaved={isSaved} />
@@ -235,6 +245,9 @@ export default async function VanDetailPage({ params }: { params: { id: string }
                 ETA in Australia: ~{new Date(listing.eta_date).toLocaleDateString('en-AU', { month: 'long', year: 'numeric' })}
               </p>
             )}
+
+            {/* Pipeline timeline */}
+            <PipelineTimeline stage={listing.pipeline_stage} eta={listing.pipeline_eta} />
 
             <div className="mb-6">
               <div className="flex items-baseline gap-2">
@@ -267,6 +280,15 @@ export default async function VanDetailPage({ params }: { params: { id: string }
             {breakdown && (
               <ImportEstimate lines={breakdown.lines} totalCents={breakdown.totalCents} />
             )}
+
+            {/* Market comparison */}
+            <MarketContext
+              listingPriceCents={priceCents}
+              auMarketPriceLow={listing.au_market_price_low}
+              auMarketPriceHigh={listing.au_market_price_high}
+              auMarketSource={listing.au_market_source}
+              auMarketNote={listing.au_market_note}
+            />
 
             {/* Spec table */}
             <div className="border border-gray-200 rounded-xl overflow-hidden mb-6">
@@ -376,6 +398,12 @@ export default async function VanDetailPage({ params }: { params: { id: string }
             <p className="text-gray-600 leading-relaxed">{listing.description}</p>
           </div>
         )}
+
+        {/* Buyer agent notes */}
+        <BuyerAgentNotes notes={listing.notes ?? []} />
+
+        {/* Inspiration / what this van could become */}
+        <InspirationBlock inspiration={listing.inspiration ?? null} />
 
         {listing.conversion_video_url && (
           <div className="mt-10">

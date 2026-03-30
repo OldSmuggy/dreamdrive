@@ -57,6 +57,15 @@ type EditState = {
   auction_result: string
   sold_price_jpy: string
   top_bid_jpy: string
+  curation_badge: string
+  pipeline_stage: string
+  pipeline_eta: string
+  au_market_price_low: string
+  au_market_price_high: string
+  au_market_source: string
+  au_market_note: string
+  notes_json: string
+  inspiration_json: string
 }
 
 function toEditState(l: Listing): EditState {
@@ -112,6 +121,15 @@ function toEditState(l: Listing): EditState {
     auction_result: (l as any).auction_result ?? 'pending',
     sold_price_jpy: (l as any).sold_price_jpy?.toString() ?? '',
     top_bid_jpy: (l as any).top_bid_jpy?.toString() ?? '',
+    curation_badge: l.curation_badge ?? '',
+    pipeline_stage: l.pipeline_stage ?? '',
+    pipeline_eta: l.pipeline_eta ? l.pipeline_eta.slice(0, 10) : '',
+    au_market_price_low: l.au_market_price_low?.toString() ?? '',
+    au_market_price_high: l.au_market_price_high?.toString() ?? '',
+    au_market_source: l.au_market_source ?? '',
+    au_market_note: l.au_market_note ?? '',
+    notes_json: l.notes ? JSON.stringify(l.notes, null, 2) : '',
+    inspiration_json: l.inspiration ? JSON.stringify(l.inspiration, null, 2) : '',
   }
 }
 
@@ -1311,6 +1329,92 @@ function ListingRow({
             </div>
           </div>
 
+          {/* Curation & Pipeline */}
+          <div className="border-t border-gray-200 pt-4 mb-4">
+            <label className="block text-xs font-semibold text-gray-600 mb-3">Curation &amp; Pipeline</label>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Curation Badge</label>
+                <select value={editState.curation_badge} onChange={e => onSet('curation_badge', e.target.value)} className={inputClass}>
+                  <option value="">— none —</option>
+                  <option value="staff_pick">⭐ Staff Pick</option>
+                  <option value="best_value">💰 Best Value</option>
+                  <option value="rare_find">🔍 Rare Find</option>
+                  <option value="low_km">🏆 Low KM</option>
+                  <option value="adventure_ready">🏕 Adventure Ready</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Pipeline Stage</label>
+                <select value={editState.pipeline_stage} onChange={e => onSet('pipeline_stage', e.target.value)} className={inputClass}>
+                  <option value="">— none —</option>
+                  <option value="listed">Listed</option>
+                  <option value="sourced">Sourced</option>
+                  <option value="purchased">Purchased</option>
+                  <option value="shipping">Shipping</option>
+                  <option value="customs">Customs</option>
+                  <option value="compliance">Compliance</option>
+                  <option value="ready">Ready</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Pipeline ETA</label>
+                <input type="date" value={editState.pipeline_eta} onChange={e => onSet('pipeline_eta', e.target.value)} className={inputClass} />
+              </div>
+            </div>
+          </div>
+
+          {/* Market Context */}
+          <div className="border-t border-gray-200 pt-4 mb-4">
+            <label className="block text-xs font-semibold text-gray-600 mb-3">AU Market Context</label>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Market Low ($)</label>
+                <input type="number" value={editState.au_market_price_low} onChange={e => onSet('au_market_price_low', e.target.value)} className={inputClass} placeholder="e.g. 35000" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Market High ($)</label>
+                <input type="number" value={editState.au_market_price_high} onChange={e => onSet('au_market_price_high', e.target.value)} className={inputClass} placeholder="e.g. 55000" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Source</label>
+                <input value={editState.au_market_source} onChange={e => onSet('au_market_source', e.target.value)} className={inputClass} placeholder="e.g. Carsales, Facebook" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Market Note</label>
+                <input value={editState.au_market_note} onChange={e => onSet('au_market_note', e.target.value)} className={inputClass} placeholder="Short context..." />
+              </div>
+            </div>
+          </div>
+
+          {/* Buyer Notes (JSON) */}
+          <div className="border-t border-gray-200 pt-4 mb-4">
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Buyer Agent Notes <span className="text-gray-400 font-normal">(JSON array)</span>
+            </label>
+            <textarea
+              value={editState.notes_json}
+              onChange={e => onSet('notes_json', e.target.value)}
+              className={`${inputClass} font-mono text-xs`}
+              rows={4}
+              placeholder={'[\n  { "id": "1", "author": "Jared", "date": "2026-03-30", "sentiment": "positive", "type": "general", "content": "Great condition..." }\n]'}
+            />
+          </div>
+
+          {/* Inspiration (JSON) */}
+          <div className="border-t border-gray-200 pt-4 mb-4">
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Inspiration Block <span className="text-gray-400 font-normal">(JSON object)</span>
+            </label>
+            <textarea
+              value={editState.inspiration_json}
+              onChange={e => onSet('inspiration_json', e.target.value)}
+              className={`${inputClass} font-mono text-xs`}
+              rows={4}
+              placeholder={'{ "title": "What this van could become", "description": "...", "images": [], "link": "", "link_text": "" }'}
+            />
+          </div>
+
           {/* Photos */}
           <div className="border-t border-gray-200 pt-4 mb-4">
             <div className="flex items-center justify-between mb-3">
@@ -1645,6 +1749,15 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
         auction_result: editState.auction_result || null,
         sold_price_jpy: editState.sold_price_jpy ? parseInt(editState.sold_price_jpy) : null,
         top_bid_jpy: editState.top_bid_jpy ? parseInt(editState.top_bid_jpy) : null,
+        curation_badge: editState.curation_badge || null,
+        pipeline_stage: editState.pipeline_stage || null,
+        pipeline_eta: editState.pipeline_eta || null,
+        au_market_price_low: editState.au_market_price_low ? parseInt(editState.au_market_price_low) : null,
+        au_market_price_high: editState.au_market_price_high ? parseInt(editState.au_market_price_high) : null,
+        au_market_source: editState.au_market_source || null,
+        au_market_note: editState.au_market_note || null,
+        notes: editState.notes_json ? JSON.parse(editState.notes_json) : null,
+        inspiration: editState.inspiration_json ? JSON.parse(editState.inspiration_json) : null,
       }
 
       const res = await fetch(`/api/listings/${id}`, {
