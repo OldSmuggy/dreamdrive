@@ -79,9 +79,42 @@ export interface ScrapeResult {
 
 const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 
+/** Mutable cookie string — updated by ninjaFetch after each response */
+let _sessionCookie = ''
+
+function setSessionCookie(c: string) { _sessionCookie = c }
+function getSessionCookie() { return _sessionCookie }
+
+/** Merge new Set-Cookie values into the session cookie string */
+function absorbCookies(res: Response) {
+  const existing = new Map<string, string>()
+  // Parse current cookies
+  for (const pair of _sessionCookie.split('; ')) {
+    const [k, ...v] = pair.split('=')
+    if (k?.trim()) existing.set(k.trim(), v.join('='))
+  }
+  // Try getSetCookie (Node 20+)
+  const setCookies = res.headers.getSetCookie?.() ?? []
+  if (setCookies.length > 0) {
+    for (const sc of setCookies) {
+      const [pair] = sc.split(';')
+      const [k, ...v] = pair.split('=')
+      if (k?.trim()) existing.set(k.trim(), v.join('=').trim())
+    }
+  } else {
+    // Fallback: parse raw set-cookie header
+    const raw = res.headers.get('set-cookie') || ''
+    for (const part of raw.split(/,(?=\s*\w+=)/)) {
+      const [pair] = part.split(';')
+      const [k, ...v] = pair.split('=')
+      if (k?.trim()) existing.set(k.trim(), v.join('=').trim())
+    }
+  }
+  _sessionCookie = Array.from(existing.entries()).map(([k, v]) => `${k}=${v}`).join('; ')
+}
+
 async function ninjaFetch(
   url: string,
-  cookie: string,
   options?: {
     form?: Record<string, string>
     headers?: Record<string, string>
@@ -90,12 +123,12 @@ async function ninjaFetch(
 ): Promise<{ text: string; status: number }> {
   const headers: Record<string, string> = {
     'User-Agent': UA,
-    Cookie: cookie,
+    Cookie: _sessionCookie,
     ...(options?.headers ?? {}),
   }
   if (options?.referer) headers['Referer'] = options.referer
 
-  const init: RequestInit = { headers, redirect: 'follow' }
+  const init: RequestInit = { headers, redirect: 'manual' }
 
   if (options?.form) {
     init.method = 'POST'
@@ -103,7 +136,24 @@ async function ninjaFetch(
     init.body = new URLSearchParams(options.form).toString()
   }
 
-  const res = await fetch(url, init)
+  let res = await fetch(url, init)
+  absorbCookies(res)
+
+  // Follow redirects manually so we capture cookies at each hop
+  let redirects = 0
+  while (res.status >= 300 && res.status < 400 && redirects < 5) {
+    const loc = res.headers.get('location')
+    if (!loc) break
+    await res.text() // consume body
+    const redirectUrl = loc.startsWith('http') ? loc : `${BASE}${loc}`
+    res = await fetch(redirectUrl, {
+      headers: { 'User-Agent': UA, Cookie: _sessionCookie, Referer: url },
+      redirect: 'manual',
+    })
+    absorbCookies(res)
+    redirects++
+  }
+
   const text = await res.text()
   return { text, status: res.status }
 }
@@ -140,7 +190,7 @@ export async function runNinjaScraper(options: {
 
   // Build the JS that performs the full login flow inside the browser
   const loginScript = `
-    async function doLogin() {
+    (async function doLogin() {
       // Step A: AJAX login
       const loginRes = await fetch('/ninja/login.action', {
         method: 'POST',
@@ -216,11 +266,9 @@ export async function runNinjaScraper(options: {
         scHtml: scHtml,
         scStatus: scRes.status
       });
-    }
-    return doLogin();
+    })()
   `
 
-  let sessionCookie = ''
   let loginJson: Record<string, string> = {}
   let scHtml = ''
 
@@ -259,11 +307,11 @@ export async function runNinjaScraper(options: {
       throw new Error('Login script did not return success')
     }
 
-    sessionCookie = loginResult.cookies || ''
+    setSessionCookie(loginResult.cookies || '')
     loginJson = loginResult.loginJson || {}
     scHtml = loginResult.scHtml || ''
 
-    onProgress(`✓ Firecrawl login successful. buyerId=${loginJson.buyerId ?? '?'} cookie length=${sessionCookie.length}`)
+    onProgress(`✓ Firecrawl login successful. buyerId=${loginJson.buyerId ?? '?'} cookie length=${getSessionCookie().length}`)
     onProgress(`  searchcondition status: ${loginResult.scStatus} HTML length: ${scHtml.length}`)
 
     if (scHtml.includes('sessionTimeOut') || scHtml.length < 500) {
@@ -275,12 +323,12 @@ export async function runNinjaScraper(options: {
     // Fallback: try plain fetch approach
     onProgress('Attempting fallback: plain fetch login...')
     const fallbackResult = await plainFetchLogin(loginId, password, onProgress)
-    sessionCookie = fallbackResult.cookie
     loginJson = fallbackResult.loginJson
     scHtml = fallbackResult.scHtml
+    // Cookie is already set in _sessionCookie by plainFetchLogin
   }
 
-  if (!sessionCookie) {
+  if (!getSessionCookie()) {
     throw new Error('No session cookie obtained — cannot proceed')
   }
 
@@ -297,7 +345,6 @@ export async function runNinjaScraper(options: {
 
   const { text: msHtml, status: msStatus } = await ninjaFetch(
     `${BASE}/ninja/makersearch.action`,
-    sessionCookie,
     {
       form: scFormFields,
       referer: `${BASE}/ninja/searchcondition.action`,
@@ -332,7 +379,6 @@ export async function runNinjaScraper(options: {
 
       const { text: html, status: srStatus } = await ninjaFetch(
         `${BASE}/ninja/searchresultlist.action`,
-        sessionCookie,
         {
           form: srFormFields,
           referer: `${BASE}/ninja/makersearch.action`,
@@ -406,7 +452,6 @@ export async function runNinjaScraper(options: {
     try {
       const { text: html } = await ninjaFetch(
         `${BASE}/ninja/cardetail.action`,
-        sessionCookie,
         {
           form: {
             KaijoCode: ref.KaijoCode,
@@ -524,36 +569,33 @@ async function plainFetchLogin(
   loginId: string,
   password: string,
   onProgress: (msg: string) => void
-): Promise<{ cookie: string; loginJson: Record<string, string>; scHtml: string }> {
+): Promise<{ loginJson: Record<string, string>; scHtml: string }> {
 
-  // Get JSESSIONID via plain fetch
+  // Get JSESSIONID via plain fetch — use manual redirect to capture cookies
   const sessionRes = await fetch(`${BASE}/ninja/`, {
     headers: { 'User-Agent': UA },
     redirect: 'manual',
   })
-
-  let cookie = ''
-  const setCookies = sessionRes.headers.getSetCookie?.() ?? []
-  for (const sc of setCookies) {
-    const [pair] = sc.split(';')
-    const [name, ...rest] = pair.split('=')
-    if (name?.trim() === 'JSESSIONID') {
-      cookie = `JSESSIONID=${rest.join('=').trim()}`
-    }
-  }
+  absorbCookies(sessionRes)
   await sessionRes.text() // consume body
 
-  if (!cookie) {
-    // Try extracting from raw headers
-    const rawCookie = sessionRes.headers.get('set-cookie') || ''
-    const jsMatch = rawCookie.match(/JSESSIONID=([^;]+)/)
-    if (jsMatch) cookie = `JSESSIONID=${jsMatch[1]}`
+  // Follow redirect if any
+  const loc = sessionRes.headers.get('location')
+  if (loc) {
+    const redirectUrl = loc.startsWith('http') ? loc : `${BASE}${loc}`
+    const r2 = await fetch(redirectUrl, {
+      headers: { 'User-Agent': UA, Cookie: _sessionCookie },
+      redirect: 'manual',
+    })
+    absorbCookies(r2)
+    await r2.text()
   }
 
-  onProgress(`Fallback: JSESSIONID ${cookie ? 'obtained' : 'NOT FOUND'}`)
+  const hasSession = _sessionCookie.includes('JSESSIONID')
+  onProgress(`Fallback: JSESSIONID ${hasSession ? 'obtained' : 'NOT FOUND'} (cookie: ${_sessionCookie.slice(0, 60)}...)`)
 
   // AJAX login
-  const { text: loginText } = await ninjaFetch(`${BASE}/ninja/login.action`, cookie, {
+  const { text: loginText } = await ninjaFetch(`${BASE}/ninja/login.action`, {
     form: { action: 'login', loginId, password, isFlg: '', language: '1' },
     headers: { 'X-Requested-With': 'XMLHttpRequest' },
     referer: `${BASE}/ninja/`,
@@ -563,6 +605,7 @@ async function plainFetchLogin(
   try {
     loginJson = JSON.parse(loginText)
   } catch {
+    onProgress(`Login response (not JSON): ${loginText.slice(0, 300)}`)
     throw new Error('Fallback login returned non-JSON')
   }
 
@@ -570,10 +613,10 @@ async function plainFetchLogin(
     throw new Error(`Login rejected: ${loginJson.errLoginId ?? ''} ${loginJson.errPassword ?? ''}`)
   }
 
-  onProgress(`Fallback login: errflg=${loginJson.errflg}`)
+  onProgress(`Fallback login: errflg=${loginJson.errflg} buyerId=${loginJson.buyerId ?? '?'}`)
 
   // loginPrimary
-  await ninjaFetch(`${BASE}/ninja/login.action`, cookie, {
+  await ninjaFetch(`${BASE}/ninja/login.action`, {
     form: {
       action: 'loginPrimary', loginPrimaryGamen: '1', site: '2',
       memberCode: loginJson.memberCode ?? '', branchCode: loginJson.branchCode ?? '',
@@ -585,8 +628,10 @@ async function plainFetchLogin(
     referer: `${BASE}/ninja/`,
   })
 
+  onProgress(`After loginPrimary cookie: ${_sessionCookie.slice(0, 80)}...`)
+
   // searchcondition
-  const { text: scHtml, status: scStatus } = await ninjaFetch(`${BASE}/ninja/searchcondition.action`, cookie, {
+  const { text: scHtml, status: scStatus } = await ninjaFetch(`${BASE}/ninja/searchcondition.action`, {
     form: {
       action: '', loginPrimaryGamen: '1', site: '2',
       memberCode: loginJson.memberCode ?? '', branchCode: loginJson.branchCode ?? '',
@@ -598,13 +643,15 @@ async function plainFetchLogin(
     referer: `${BASE}/ninja/login.action`,
   })
 
-  onProgress(`Fallback searchcondition: status=${scStatus} len=${scHtml.length}`)
+  onProgress(`Fallback searchcondition: status=${scStatus} len=${scHtml.length} sessionTimeout=${scHtml.includes('sessionTimeOut')}`)
 
   if (scHtml.includes('sessionTimeOut') || scStatus >= 400) {
+    // Log more detail to help debug
+    onProgress(`scHtml snippet: ${scHtml.slice(0, 300).replace(/\s+/g, ' ')}`)
     throw new Error(`Fallback: search session failed (status ${scStatus})`)
   }
 
-  return { cookie, loginJson, scHtml }
+  return { loginJson, scHtml }
 }
 
 // ============================================================
