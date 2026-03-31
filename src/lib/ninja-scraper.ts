@@ -560,77 +560,129 @@ export async function runNinjaScraper(options: {
           continue
         }
 
-        // Download photos while still on the detail page (session cookies needed)
+        // Download photos by extracting pixel data from already-loaded <img> elements via canvas.
+        // We can't use context.request.get() because the cardetail.action image URLs require
+        // the exact session state from the page view — separate HTTP requests get HTML instead.
         const originalPhotoCount = van.photos.length
         if (van.photos.length > 0) {
-          onProgress(`${label} — downloading ${van.photos.length} photos...`)
+          onProgress(`${label} — extracting ${van.photos.length} photos via canvas...`)
           const uploadedPhotos: string[] = []
-          for (const ninjaUrl of van.photos) {
-            try {
-              const response = await context.request.get(ninjaUrl)
-              if (response.ok()) {
-                const buffer = await response.body()
-                const contentType = response.headers()['content-type'] || 'image/jpeg'
-                const ext = contentType.includes('png') ? 'png' : 'jpg'
-                const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-                const storagePath = `listings/${filename}`
 
-                const { error: uploadErr } = await supabase.storage
-                  .from('listing-images')
-                  .upload(storagePath, buffer, { contentType, upsert: false })
-
-                if (!uploadErr) {
-                  const { data: { publicUrl } } = supabase.storage.from('listing-images').getPublicUrl(storagePath)
-                  uploadedPhotos.push(publicUrl)
-                } else {
-                  onProgress(`${label} — photo upload error: ${uploadErr.message}`)
+          // Extract all photos as base64 data URLs in one evaluate call
+          const photoDataUrls = await page.evaluate(`(function() {
+            var results = [];
+            var seenSrc = {};
+            var imgs = document.querySelectorAll('img.vehicleDetailImage, .vehicleDetailImageBox img.imgboder');
+            for (var i = 0; i < imgs.length; i++) {
+              var img = imgs[i];
+              if (!img.src || img.src.indexOf('get_image') === -1) continue;
+              if (seenSrc[img.src]) continue;
+              seenSrc[img.src] = true;
+              if (img.naturalWidth === 0 || img.naturalHeight === 0) continue;
+              try {
+                var canvas = document.createElement('canvas');
+                canvas.width = img.naturalWidth;
+                canvas.height = img.naturalHeight;
+                var ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                results.push(canvas.toDataURL('image/jpeg', 0.92));
+              } catch (e) {
+                // CORS or tainted canvas — skip
+                results.push(null);
+              }
+            }
+            // Fallback: try thumbnail strip
+            if (results.length === 0) {
+              var thumbImgs = document.querySelectorAll('.photoThumb img');
+              for (var i = 0; i < thumbImgs.length; i++) {
+                var img = thumbImgs[i];
+                if (!img.src || img.src.indexOf('get_image') === -1) continue;
+                if (seenSrc[img.src]) continue;
+                seenSrc[img.src] = true;
+                if (img.naturalWidth === 0 || img.naturalHeight === 0) continue;
+                try {
+                  var canvas = document.createElement('canvas');
+                  canvas.width = img.naturalWidth;
+                  canvas.height = img.naturalHeight;
+                  var ctx = canvas.getContext('2d');
+                  ctx.drawImage(img, 0, 0);
+                  results.push(canvas.toDataURL('image/jpeg', 0.92));
+                } catch (e) {
+                  results.push(null);
                 }
+              }
+            }
+            return results;
+          })()`) as (string | null)[]
+
+          for (let pi = 0; pi < photoDataUrls.length; pi++) {
+            const dataUrl = photoDataUrls[pi]
+            if (!dataUrl) continue
+            try {
+              // Convert data URL to buffer
+              const base64 = dataUrl.split(',')[1]
+              const buffer = Buffer.from(base64, 'base64')
+              const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`
+              const storagePath = `listings/${filename}`
+
+              const { error: uploadErr } = await supabase.storage
+                .from('listing-images')
+                .upload(storagePath, buffer, { contentType: 'image/jpeg', upsert: false })
+
+              if (!uploadErr) {
+                const { data: { publicUrl } } = supabase.storage.from('listing-images').getPublicUrl(storagePath)
+                uploadedPhotos.push(publicUrl)
               } else {
-                onProgress(`${label} — photo download failed: HTTP ${response.status()}`)
+                onProgress(`${label} — photo ${pi + 1} upload error: ${uploadErr.message}`)
               }
             } catch (photoErr) {
-              onProgress(`${label} — photo download error: ${photoErr}`)
+              onProgress(`${label} — photo ${pi + 1} error: ${photoErr}`)
             }
           }
           van.photos = uploadedPhotos
           onProgress(`${label} — ${uploadedPhotos.length}/${originalPhotoCount} photos saved`)
         } else {
-          // Debug: log what the photo elements contain
-          const photoDebug = await page.evaluate(`(function() {
-            var result = [];
-            for (var i = 1; i <= 6; i++) {
-              var el = document.getElementById('photo' + i);
-              result.push('photo' + i + ': ' + (el ? (el.value || '(empty)') : '(not found)'));
-            }
-            var imgs = document.querySelectorAll('img[src*="get_image"]');
-            result.push('img[get_image] tags: ' + imgs.length);
-            for (var j = 0; j < Math.min(imgs.length, 3); j++) {
-              result.push('  img[' + j + ']: ' + imgs[j].src.substring(0, 120));
-            }
-            return result;
-          })()`) as string[]
-          onProgress(`${label} — no photos found. Debug: ${photoDebug.join(', ')}`)
+          onProgress(`${label} — no photos found on detail page`)
         }
 
-        // Download inspection sheet if present
+        // Download inspection sheet via canvas extraction (same session issue as photos)
         if (van.inspection_sheet) {
           try {
-            const response = await context.request.get(van.inspection_sheet)
-            if (response.ok()) {
-              const buffer = await response.body()
-              const contentType = response.headers()['content-type'] || 'image/jpeg'
-              const ext = contentType.includes('png') ? 'png' : 'jpg'
-              const filename = `inspection-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+            const sheetDataUrl = await page.evaluate(`(function() {
+              var exImgs = document.querySelectorAll('img[src*="get_ex_image"]');
+              if (exImgs.length === 0) return null;
+              var img = exImgs[0];
+              if (img.naturalWidth === 0 || img.naturalHeight === 0) return null;
+              try {
+                var canvas = document.createElement('canvas');
+                canvas.width = img.naturalWidth;
+                canvas.height = img.naturalHeight;
+                var ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                return canvas.toDataURL('image/jpeg', 0.92);
+              } catch (e) {
+                return null;
+              }
+            })()`) as string | null
+
+            if (sheetDataUrl) {
+              const base64 = sheetDataUrl.split(',')[1]
+              const buffer = Buffer.from(base64, 'base64')
+              const filename = `inspection-${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`
               const storagePath = `listings/${filename}`
 
               const { error: uploadErr } = await supabase.storage
                 .from('listing-images')
-                .upload(storagePath, buffer, { contentType, upsert: false })
+                .upload(storagePath, buffer, { contentType: 'image/jpeg', upsert: false })
 
               if (!uploadErr) {
                 const { data: { publicUrl } } = supabase.storage.from('listing-images').getPublicUrl(storagePath)
                 van.inspection_sheet = publicUrl
+                onProgress(`${label} — inspection sheet saved`)
               }
+            } else {
+              onProgress(`${label} — inspection sheet could not be extracted via canvas`)
+              van.inspection_sheet = null
             }
           } catch (sheetErr) {
             onProgress(`${label} — inspection sheet error: ${sheetErr}`)
@@ -805,16 +857,32 @@ async function extractDetailPage(page: Page, ref: NinjaListingRef): Promise<Scra
     var dispRaw = getTableVal('Displacement');
     var transRaw = getTableVal('Transmission');
 
-    // Photos from hidden inputs (photo1-photo6)
+    // Photos: get from rendered <img> tags in the gallery (class="vehicleDetailImage")
+    // These have working src URLs resolved by the browser with session cookies.
+    // Also grab the first large image (parent class="vehicleDetailImageBox") as fallback.
     var photos = [];
-    for (var i = 1; i <= 6; i++) {
-      var input = document.getElementById('photo' + i);
-      if (input && input.value) {
-        photos.push('https://www.ninja-cartrade.jp/ninja/cardetail.action?action=get_image&FilePath=' + encodeURIComponent(input.value) + '&carKindType=1');
+    var seenSrc = {};
+    var photoImgs = document.querySelectorAll('img.vehicleDetailImage, .vehicleDetailImageBox img.imgboder');
+    for (var i = 0; i < photoImgs.length; i++) {
+      var src = photoImgs[i].src;
+      if (src && src.indexOf('get_image') !== -1 && !seenSrc[src]) {
+        seenSrc[src] = true;
+        photos.push(src);
+      }
+    }
+    // Fallback: if no vehicleDetailImage found, try thumbnail strip
+    if (photos.length === 0) {
+      var thumbImgs = document.querySelectorAll('.photoThumb img');
+      for (var i = 0; i < thumbImgs.length; i++) {
+        var src = thumbImgs[i].src;
+        if (src && src.indexOf('get_image') !== -1 && !seenSrc[src]) {
+          seenSrc[src] = true;
+          photos.push(src);
+        }
       }
     }
 
-    // Inspection sheet: img with get_ex_image
+    // Inspection sheet: get rendered src from img[src*="get_ex_image"]
     var inspectionSheet = null;
     var exImgs = document.querySelectorAll('img[src*="get_ex_image"]');
     if (exImgs.length > 0) {
