@@ -11,6 +11,7 @@ const OPTIONAL_COLUMNS = [
   'location_status', 'fit_out_level', 'vehicle_model', 'conversion_video_url',
   'engine', 'has_power_steering', 'has_power_windows', 'has_rear_ac',
   'auction_time', 'auction_result', 'sold_price_jpy', 'top_bid_jpy', 'auction_time_zone',
+  'price_aud', 'price_type',
 ]
 
 export async function PATCH(

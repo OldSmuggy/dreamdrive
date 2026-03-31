@@ -32,48 +32,63 @@ export const MANA_AU_CONVERSION_AUD = 45_000       // $45,000 AUD (Australia bui
 const VAN_RANGE_LOW_AUD  = 23_000
 const VAN_RANGE_HIGH_AUD = 52_000
 
+/** Estimate landed AUD cost for a Japan-sourced van given a JPY price.
+ *  Returns price in CENTS, rounded to nearest $100.
+ *  Uses the full itemised import cost stack.
+ */
+export function estimateLandedAud(jpyPrice: number, jpyRate?: number | null): number {
+  const rate = jpyRate && jpyRate > 0 ? jpyRate : FALLBACK_RATE
+  const vehicleCents = Math.round(jpyPrice * rate * 100)
+  const shippingCents = SHIPPING_DEFAULT_CENTS
+  const gstCents = Math.round((vehicleCents + shippingCents) * GST_RATE)
+  const fixedCents = SOURCING_FEE_INC_GST_CENTS + CUSTOMS_ENTRY_CENTS + BMSB_CENTS
+    + DOLPHIN_INSPECT_CENTS + DOLPHIN_TRANSPORT_CENTS + COMPLIANCE_CENTS
+    + WHARF_TRANSPORT_CENTS + SAFETY_CERT_CENTS + REGO_STAMP_QLD_CENTS + REGO_ARRANGE_CENTS
+  const rawCents = vehicleCents + shippingCents + gstCents + fixedCents
+  return Math.round(rawCents / 10_000) * 10_000  // round to nearest $100
+}
+
 /** Calculate the customer-facing display price for a van listing.
  *
- * - AU stock: returns au_price_aud as-is (already all-in AUD, set by admin)
- * - Japan (auction/dealer): (JPY × rate) + $10,000 flat import fee, rounded to nearest $100
- * - Falls back to stored aud_estimate only if no JPY price available
- * - Returns priceCents=null for true "no data" → show POA
+ * Priority:
+ * 1. price_aud / price_type (explicit admin-set fields — single source of truth)
+ * 2. Legacy fallback: au_price_aud (AU stock), live JPY conversion, aud_estimate
+ * 3. null → show POA
  */
 export function listingDisplayPrice(
-  listing: Pick<Listing, 'source' | 'start_price_jpy' | 'buy_price_jpy' | 'aud_estimate' | 'au_price_aud'>,
+  listing: Pick<Listing, 'source' | 'start_price_jpy' | 'buy_price_jpy' | 'aud_estimate' | 'au_price_aud' | 'price_aud' | 'price_type'>,
   jpyRate?: number | null,
-): { priceCents: number | null; isEstimate: boolean } {
+): { priceCents: number | null; isEstimate: boolean; priceType: 'fixed' | 'estimate' | 'poa' } {
 
-  // AU stock — price is set manually by admin in AUD, already includes everything
-  if (listing.source === 'au_stock') {
+  // 1. If price_aud and price_type are explicitly set, use them
+  if (listing.price_aud && listing.price_aud > 0 && listing.price_type) {
     return {
-      priceCents: listing.au_price_aud && listing.au_price_aud > 0 ? listing.au_price_aud : null,
-      isEstimate: false,
+      priceCents: listing.price_type === 'poa' ? null : listing.price_aud,
+      isEstimate: listing.price_type === 'estimate',
+      priceType: listing.price_type,
     }
   }
 
-  // Japan-sourced — convert JPY to AUD and add real itemised import costs
-  const rate = jpyRate && jpyRate > 0 ? jpyRate : FALLBACK_RATE
+  // 2. Legacy: AU stock — price is set manually by admin in AUD
+  if (listing.source === 'au_stock') {
+    const cents = listing.au_price_aud && listing.au_price_aud > 0 ? listing.au_price_aud : null
+    return { priceCents: cents, isEstimate: false, priceType: cents ? 'fixed' : 'poa' }
+  }
+
+  // 3. Legacy: Japan-sourced — convert JPY to AUD and add real itemised import costs
   const jpyPrice = listing.start_price_jpy || listing.buy_price_jpy || null
 
   if (jpyPrice && jpyPrice > 0) {
-    const vehicleCents = Math.round(jpyPrice * rate * 100)
-    const shippingCents = SHIPPING_DEFAULT_CENTS
-    const gstCents = Math.round((vehicleCents + shippingCents) * GST_RATE)
-    const fixedCents = SOURCING_FEE_INC_GST_CENTS + CUSTOMS_ENTRY_CENTS + BMSB_CENTS
-      + DOLPHIN_INSPECT_CENTS + DOLPHIN_TRANSPORT_CENTS + COMPLIANCE_CENTS
-      + WHARF_TRANSPORT_CENTS + SAFETY_CERT_CENTS + REGO_STAMP_QLD_CENTS + REGO_ARRANGE_CENTS
-    const rawCents = vehicleCents + shippingCents + gstCents + fixedCents
-    const priceCents = Math.round(rawCents / 10_000) * 10_000  // round to nearest $100
-    return { priceCents, isEstimate: true }
+    const priceCents = estimateLandedAud(jpyPrice, jpyRate)
+    return { priceCents, isEstimate: true, priceType: 'estimate' }
   }
 
-  // Fallback: use pre-stored aud_estimate (stale but better than POA)
+  // 4. Fallback: use pre-stored aud_estimate (stale but better than POA)
   if (listing.aud_estimate && listing.aud_estimate > 0) {
-    return { priceCents: listing.aud_estimate, isEstimate: true }
+    return { priceCents: listing.aud_estimate, isEstimate: true, priceType: 'estimate' }
   }
 
-  return { priceCents: null, isEstimate: false }
+  return { priceCents: null, isEstimate: false, priceType: 'poa' }
 }
 
 // ── Import breakdown ──────────────────────────────────────────────────────────

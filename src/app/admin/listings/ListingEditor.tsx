@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { centsToAud, sourceLabel } from '@/lib/utils'
 import { getAuMarketPrice } from '@/lib/au-market-price'
+import { estimateLandedAud, listingDisplayPrice } from '@/lib/pricing'
 import type { Listing, Source } from '@/types'
 import PhotoUploadButton from '@/components/ui/PhotoUploadButton'
 
@@ -67,6 +68,8 @@ type EditState = {
   au_market_note: string
   notes_json: string
   inspiration_json: string
+  price_aud: string
+  price_type: string
 }
 
 function toEditState(l: Listing): EditState {
@@ -131,6 +134,8 @@ function toEditState(l: Listing): EditState {
     au_market_note: l.au_market_note ?? '',
     notes_json: l.notes ? JSON.stringify(l.notes, null, 2) : '',
     inspiration_json: l.inspiration ? JSON.stringify(l.inspiration, null, 2) : '',
+    price_aud: l.price_aud ? (l.price_aud / 100).toFixed(0) : '',
+    price_type: l.price_type ?? '',
   }
 }
 
@@ -742,11 +747,10 @@ function ListingRow({
   onSetNewPhotoUrl, onAddPhoto, onRemovePhoto, onMovePhoto, onClearPhotos, onUploadPhoto, onUploadingChange, photoUploading,
   newInteriorPhotoUrl, onSetNewInteriorPhotoUrl, onAddInteriorPhoto, onRemoveInteriorPhoto, onUploadInteriorPhoto,
 }: RowProps) {
-  const price = l.source === 'au_stock' && l.au_price_aud
-    ? centsToAud(l.au_price_aud)
-    : l.aud_estimate ? `~${centsToAud(l.aud_estimate)}`
-    : l.start_price_jpy ? `¥${l.start_price_jpy.toLocaleString()}`
-    : '—'
+  const { priceCents, priceType } = listingDisplayPrice(l)
+  const price = priceCents
+    ? `${priceType === 'estimate' ? '~' : ''}${centsToAud(priceCents)}`
+    : 'POA'
 
   return (
     <div className={`bg-white border rounded-xl overflow-hidden ${isEditing ? 'border-ocean shadow-md' : isSelected ? 'border-ocean' : 'border-gray-200'}`}>
@@ -1248,20 +1252,71 @@ function ListingRow({
 
             {/* Right — pricing + flags */}
             <div className="space-y-3">
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1.5">AUD Estimate ($)</label>
-                <div className="relative">
-                  <span className="absolute left-3 top-2 text-sm text-gray-400">$</span>
-                  <input type="number" value={editState.aud_estimate} onChange={e => onSet('aud_estimate', e.target.value)} className={`${inputClass} pl-6`} />
+              {/* ── Customer-facing price (primary) ── */}
+              {!editState.price_aud && (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                  <p className="text-xs text-amber-800 font-semibold">No AUD price set — will show as POA or use legacy fallback</p>
                 </div>
-              </div>
+              )}
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1.5">AU Price ($)</label>
-                <div className="relative">
-                  <span className="absolute left-3 top-2 text-sm text-gray-400">$</span>
-                  <input type="number" value={editState.au_price_aud} onChange={e => onSet('au_price_aud', e.target.value)} className={`${inputClass} pl-6`} />
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Display Price (AUD)</label>
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <span className="absolute left-3 top-2 text-sm text-gray-400">$</span>
+                    <input type="number" value={editState.price_aud} onChange={e => onSet('price_aud', e.target.value)} className={`${inputClass} pl-6`} placeholder="e.g. 38500" />
+                  </div>
+                  <select
+                    value={editState.price_type}
+                    onChange={e => onSet('price_type', e.target.value)}
+                    className="px-2 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ocean bg-white"
+                  >
+                    <option value="">— type —</option>
+                    <option value="fixed">Fixed</option>
+                    <option value="estimate">Estimate</option>
+                    <option value="poa">POA</option>
+                  </select>
                 </div>
+                {editState.start_price_jpy && !editState.price_aud && (
+                  <button
+                    type="button"
+                    className="mt-1.5 text-xs text-ocean hover:underline font-medium"
+                    onClick={() => {
+                      const jpyPrice = parseInt(editState.start_price_jpy)
+                      if (!jpyPrice || jpyPrice <= 0) return
+                      const cents = estimateLandedAud(jpyPrice)
+                      onSet('price_aud', (cents / 100).toFixed(0))
+                      onSet('price_type', 'estimate')
+                    }}
+                  >
+                    Calculate from ¥{parseInt(editState.start_price_jpy).toLocaleString()} → est. ${Math.round(estimateLandedAud(parseInt(editState.start_price_jpy)) / 100).toLocaleString()} AUD
+                  </button>
+                )}
+                <p className="text-[10px] text-gray-400 mt-0.5">This is the price customers see. Set type to &ldquo;Estimate&rdquo; for Japan-sourced vans.</p>
               </div>
+
+              <hr className="border-gray-200" />
+
+              {/* ── Legacy / source pricing ── */}
+              <details className="group">
+                <summary className="text-xs font-semibold text-gray-500 cursor-pointer hover:text-gray-700">Legacy price fields</summary>
+                <div className="mt-2 space-y-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">AUD Estimate ($)</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-2 text-sm text-gray-400">$</span>
+                      <input type="number" value={editState.aud_estimate} onChange={e => onSet('aud_estimate', e.target.value)} className={`${inputClass} pl-6`} />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">AU Price ($)</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-2 text-sm text-gray-400">$</span>
+                      <input type="number" value={editState.au_price_aud} onChange={e => onSet('au_price_aud', e.target.value)} className={`${inputClass} pl-6`} />
+                    </div>
+                  </div>
+                </div>
+              </details>
+
               <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-1.5">Market Comparison ($)</label>
                 <div className="relative">
@@ -1807,6 +1862,8 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
         au_market_note: editState.au_market_note || null,
         notes: editState.notes_json ? JSON.parse(editState.notes_json) : null,
         inspiration: editState.inspiration_json ? JSON.parse(editState.inspiration_json) : null,
+        price_aud: editState.price_aud ? Math.round(parseFloat(editState.price_aud) * 100) : null,
+        price_type: editState.price_type || null,
       }
 
       const res = await fetch(`/api/listings/${id}`, {

@@ -115,6 +115,8 @@ export interface Listing {
   // New listing enrichment fields
   curation_badge: CurationBadge | null
   notes: BuyerNote[]
+  price_aud: number | null
+  price_type: 'fixed' | 'estimate' | 'poa' | null
   au_market_price_low: number | null
   au_market_price_high: number | null
   au_market_source: string | null
