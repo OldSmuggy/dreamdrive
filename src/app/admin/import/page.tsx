@@ -406,6 +406,78 @@ export default function AdminImportPage() {
           {dealerResults.length > 0 && (
             <ResultsList results={dealerResults} showSource />
           )}
+
+          {/* Bulk Goo-net Scraper Guide */}
+          <div className="bg-white border border-gray-200 rounded-xl p-6 mt-8">
+            <h2 className="font-semibold text-charcoal text-lg mb-1">Bulk Import from Goo-net</h2>
+            <p className="text-sm text-gray-500 mb-4">
+              For importing many Goo-net listings at once with high-res photos, use the terminal scraper.
+              This downloads photos to our storage (so they persist after the listing expires) and extracts
+              full specs including engine type, condition scores, and equipment.
+            </p>
+
+            <div className="space-y-4 text-sm">
+              <div className="flex gap-3">
+                <div className="w-6 h-6 rounded-full bg-ocean text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">1</div>
+                <div>
+                  <p className="font-semibold text-gray-900">Browse Goo-net and open listings you want</p>
+                  <p className="text-gray-500 text-xs mt-0.5">
+                    Search on <a href="https://www.goo-net.com/usedcar/brand-TOYOTA/car-HIACE_VAN/" target="_blank" rel="noopener noreferrer" className="text-ocean underline">goo-net.com</a> and
+                    open each van you like in a new tab.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <div className="w-6 h-6 rounded-full bg-ocean text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">2</div>
+                <div>
+                  <p className="font-semibold text-gray-900">Copy all tab URLs to a file</p>
+                  <p className="text-gray-500 text-xs mt-0.5">
+                    In Chrome: select all tabs (click first, Shift+click last), right-click → &quot;Copy links for all tabs&quot;.
+                    Or use the &quot;Copy All URLs&quot; Chrome extension. Save to a text file (one URL per line).
+                  </p>
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 mt-2 font-mono text-xs text-gray-500">
+                    /tmp/goonet-urls.txt
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <div className="w-6 h-6 rounded-full bg-ocean text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">3</div>
+                <div>
+                  <p className="font-semibold text-gray-900">Run the scraper in Terminal</p>
+                  <p className="text-gray-500 text-xs mt-0.5">
+                    Takes ~15–30s per listing. Downloads up to 20 high-res photos each. Duplicates are automatically skipped.
+                  </p>
+                  <div className="bg-gray-950 text-green-400 rounded-lg p-3 mt-2 font-mono text-xs overflow-x-auto">
+                    cd ~/Desktop/&quot;DD App&quot;/dreamdrive && npx tsx scripts/run-goonet-scrape.ts --urls-file /tmp/goonet-urls.txt
+                  </div>
+                  <p className="text-gray-400 text-xs mt-1.5">
+                    Add <code className="bg-gray-100 px-1 rounded">--max 5</code> to test with just a few first.
+                    Full command builder available on the <a href="/admin/scrape" className="text-ocean underline">Scrape page</a>.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <div className="w-6 h-6 rounded-full bg-ocean text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">4</div>
+                <div>
+                  <p className="font-semibold text-gray-900">Review drafts and publish</p>
+                  <p className="text-gray-500 text-xs mt-0.5">
+                    Imported listings go to <strong>Draft</strong> status. Review them in{' '}
+                    <a href="/admin/listings" className="text-ocean underline">Listings</a>, check the photos and specs, then change status to &quot;available&quot; to publish.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-5 pt-4 border-t border-gray-100">
+              <p className="text-xs text-gray-400">
+                Requires <code className="bg-gray-100 px-1 rounded">ANTHROPIC_API_KEY</code> in <code className="bg-gray-100 px-1 rounded">.env.local</code> for AI translation.
+                First time setup: <code className="bg-gray-100 px-1 rounded">npx playwright install chromium</code>
+              </p>
+            </div>
+          </div>
         </>
       )}
 
