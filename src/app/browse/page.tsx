@@ -50,7 +50,11 @@ export default async function BrowsePage({ searchParams }: Props) {
     .limit(200)
 
   if (searchParams.source) {
-    const sources = searchParams.source.split(',')
+    let sources = searchParams.source.split(',')
+    // "dealer" is a UI shorthand for both dealer sources
+    if (sources.includes('dealer')) {
+      sources = sources.filter(s => s !== 'dealer').concat('dealer_goonet', 'dealer_carsensor')
+    }
     query = query.in('source', sources)
   }
 
