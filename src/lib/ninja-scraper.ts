@@ -340,6 +340,20 @@ export async function runNinjaScraper(options: {
 
         // Go to searchcondition via direct URL (session cookies keep us logged in)
         await page.goto(`${BASE}/ninja/searchcondition.action`, { waitUntil: 'networkidle', timeout: 15000 })
+        const scUrl = page.url()
+        onProgress(`${label} — landed on: ${scUrl}`)
+
+        // Handle session conflict page if we land on one
+        const bodyText2 = await page.textContent('body') || ''
+        if (bodyText2.includes('already logged in') || bodyText2.includes('seniToSearchcondition')) {
+          onProgress(`${label} — session conflict, confirming...`)
+          await Promise.all([
+            page.waitForNavigation({ waitUntil: 'load', timeout: 30000 }),
+            page.click('a[onclick*="seniToSearchcondition"]'),
+          ])
+          await page.waitForLoadState('networkidle').catch(() => {})
+        }
+
         await humanDelay(300, 800)
 
         // Set filters again on the searchcondition page
@@ -363,6 +377,16 @@ export async function runNinjaScraper(options: {
             const hid = document.getElementById('driveType_hid') as HTMLInputElement
             if (hid) hid.value = val
           }, { rid: radioId, val: filters.driveType })
+        }
+
+        // Check if brandGroupingCode exists before navigating
+        const hasBGC = await page.evaluate(() => !!document.getElementById('brandGroupingCode'))
+        if (!hasBGC) {
+          // Take a screenshot to see what page we're on
+          await page.screenshot({ path: `screenshots/debug-no-bgc-${i}.png`, fullPage: true }).catch(() => {})
+          onProgress(`${label} — brandGroupingCode not found on ${page.url()}, screenshot saved`)
+          errors++
+          continue
         }
 
         // Navigate to makersearch (Toyota)
