@@ -256,7 +256,7 @@ export async function runNinjaScraper(options: {
       // Click the car category on makersearch page
       await Promise.all([
         page.waitForNavigation({ waitUntil: 'load', timeout: 15000 }),
-        page.evaluate((no) => (window as any).makerListChoiceCarCat(no), catNo),
+        page.evaluate(`makerListChoiceCarCat('${catNo}')`),
       ])
       await page.waitForLoadState('networkidle').catch(() => {})
 
@@ -269,22 +269,20 @@ export async function runNinjaScraper(options: {
       if (totalResults === 0) continue
 
       // carListData contains ALL listing refs for the entire search (not per-page)
-      const pageRefs = await page.evaluate(() => {
-        const carListData = (document.getElementById('carListData') as HTMLInputElement)?.value || ''
-        const refs: Array<{ carKindType: string; KaijoCode: string; AuctionCount: string; BidNo: string }> = []
-        for (const entry of carListData.split(',').filter(e => e.trim())) {
-          const parts = entry.split('ж')
+      const pageRefs = await page.evaluate(`(function() {
+        var carListData = (document.getElementById('carListData') || {}).value || '';
+        var refs = [];
+        var entries = carListData.split(',');
+        for (var i = 0; i < entries.length; i++) {
+          var entry = entries[i].trim();
+          if (!entry) continue;
+          var parts = entry.split('\\u0436');
           if (parts.length >= 4) {
-            refs.push({
-              carKindType: parts[0],
-              KaijoCode: parts[1],
-              AuctionCount: parts[2],
-              BidNo: parts[3],
-            })
+            refs.push({ carKindType: parts[0], KaijoCode: parts[1], AuctionCount: parts[2], BidNo: parts[3] });
           }
         }
-        return refs
-      })
+        return refs;
+      })()`) as NinjaListingRef[]
 
       onProgress(`    Collected ${pageRefs.length} refs from carListData`)
       allRefs.push(...pageRefs)
@@ -331,15 +329,10 @@ export async function runNinjaScraper(options: {
     // ----------------------------------------------------------
     // 5. Fetch detail pages — sequential click-back-click pattern
     //
-    // NINJA is session-locked: one page at a time, no new tabs, no direct URLs.
-    // We must browse exactly like a human:
-    //   1. From the search results page, click a listing row
-    //   2. Scrape the detail page
-    //   3. Hit browser back to return to results
-    //   4. Click the next listing row
-    //
-    // After goBack(), the Struts form token is restored from browser cache,
-    // so seniCarDetail() continues to work for subsequent listings.
+    // After Step 3 we're already on a search results page.
+    // For each listing: seniCarDetail() → scrape → goBack() → next.
+    // goBack() restores the page from browser cache (bfcache).
+    // If seniCarDetail is lost after goBack, do full recovery.
     // ----------------------------------------------------------
     onProgress('Step 4: Fetching detail pages (click-back-click)...')
     const processed: ScrapedVan[] = []
@@ -349,64 +342,60 @@ export async function runNinjaScraper(options: {
     let duplicates = 0
     const visited = new Set<string>()
 
-    // We need to be on a search results page to start clicking into listings.
-    // After Step 3 we may be on any category results page. Navigate to the
-    // first category (HIACE VAN) to establish a known starting point.
-    onProgress('  Navigating to HIACE VAN results as starting point...')
+    // Helper: check if seniCarDetail function is available on the current page
+    const hasSeniCarDetail = () =>
+      page.evaluate('typeof seniCarDetail === "function"')
 
-    // Go back to searchcondition to start fresh
-    await page.goto(`${BASE}/ninja/searchcondition.action`, { waitUntil: 'networkidle', timeout: 15000 })
+    // Helper: full recovery — navigate from scratch to a search results page
+    const recoverToResultsPage = async (logLabel: string) => {
+      onProgress(`${logLabel} — recovering: navigating from login to results...`)
 
-    // Handle session conflict
-    const bodyCheck = await page.textContent('body') || ''
-    if (bodyCheck.includes('already logged in') || bodyCheck.includes('seniToSearchcondition')) {
+      // Step A: go to searchcondition via URL
+      await page.goto(`${BASE}/ninja/searchcondition.action`, {
+        waitUntil: 'networkidle', timeout: 30000,
+      })
+
+      // Handle session conflict
+      const bText = await page.textContent('body') || ''
+      if (bText.includes('already logged in') || bText.includes('seniToSearchcondition')) {
+        await Promise.all([
+          page.waitForNavigation({ waitUntil: 'load', timeout: 30000 }),
+          page.click('a[onclick*="seniToSearchcondition"]'),
+        ])
+        await page.waitForLoadState('networkidle').catch(() => {})
+      }
+      await humanDelay(500, 1000)
+
+      // Step B: submit to makersearch (no need to re-apply filters — we already have refs)
       await Promise.all([
         page.waitForNavigation({ waitUntil: 'load', timeout: 30000 }),
-        page.click('a[onclick*="seniToSearchcondition"]'),
+        page.evaluate(SUBMIT_TO_MAKERSEARCH_JS),
       ])
       await page.waitForLoadState('networkidle').catch(() => {})
+      await humanDelay(500, 1000)
+
+      // Step C: click HIACE VAN category
+      await Promise.all([
+        page.waitForNavigation({ waitUntil: 'load', timeout: 30000 }),
+        page.evaluate("makerListChoiceCarCat('146')"),
+      ])
+      await page.waitForLoadState('networkidle').catch(() => {})
+
+      const ok = await hasSeniCarDetail()
+      onProgress(`${logLabel} — recovery ${ok ? 'succeeded' : 'FAILED'}`)
+      return ok
     }
 
-    // Re-apply filters
-    if (filters?.yearFrom) {
-      await page.evaluate((y: number) => {
-        const el = document.getElementById('modelYearFrom') as HTMLSelectElement
-        if (el) el.value = String(y)
-      }, filters.yearFrom)
+    // After Step 3 we're on the last category's results page.
+    // Verify seniCarDetail is available before starting the loop.
+    let ready = await hasSeniCarDetail()
+    if (!ready) {
+      onProgress('  Not on a results page after Step 3, recovering...')
+      ready = await recoverToResultsPage('setup')
+      if (!ready) throw new Error('Cannot reach search results page')
     }
-    if (filters?.yearTo) {
-      await page.evaluate((y: number) => {
-        const el = document.getElementById('modelYearTo') as HTMLSelectElement
-        if (el) el.value = String(y)
-      }, filters.yearTo)
-    }
-    if (filters?.driveType && filters.driveType !== 'any') {
-      const radioId = filters.driveType === '4WD' ? 'driveType3' : 'driveType2'
-      await page.evaluate(({ rid, val }: { rid: string; val: string }) => {
-        const radio = document.getElementById(rid) as HTMLInputElement
-        if (radio) { radio.checked = true; radio.click() }
-        const hid = document.getElementById('driveType_hid') as HTMLInputElement
-        if (hid) hid.value = val
-      }, { rid: radioId, val: filters.driveType })
-    }
+    onProgress('  ✓ On search results page — starting detail scrape')
 
-    // Navigate to makersearch (Toyota)
-    await Promise.all([
-      page.waitForNavigation({ waitUntil: 'load', timeout: 15000 }),
-      page.evaluate(SUBMIT_TO_MAKERSEARCH_JS),
-    ])
-    await page.waitForLoadState('networkidle').catch(() => {})
-    await humanDelay(500, 1000)
-
-    // Click HIACE VAN category to get to search results
-    await Promise.all([
-      page.waitForNavigation({ waitUntil: 'load', timeout: 15000 }),
-      page.evaluate(() => (window as any).makerListChoiceCarCat('146')),
-    ])
-    await page.waitForLoadState('networkidle').catch(() => {})
-    onProgress('  ✓ On search results page')
-
-    // Now iterate through our collected refs and click into each one
     for (let i = 0; i < limitedRefs.length; i++) {
       const ref = limitedRefs[i]
       const refKey = `${ref.KaijoCode}|${ref.AuctionCount}|${ref.BidNo}`
@@ -419,65 +408,24 @@ export async function runNinjaScraper(options: {
 
       try {
         // Human-like delay between listings
-        if (i > 0) await humanDelay(1500, 4000)
+        if (i > 0) await humanDelay(2000, 5000)
 
-        // Verify we're on a search results page (should have carListData)
-        const hasCarList = await page.evaluate(() =>
-          !!(document.getElementById('carListData') as HTMLInputElement)?.value
-        )
-        if (!hasCarList) {
-          onProgress(`${label} — not on results page, recovering...`)
-          // Recovery: navigate back to search results from scratch
-          await page.goto(`${BASE}/ninja/searchcondition.action`, { waitUntil: 'networkidle', timeout: 15000 })
-          // Handle session conflict
-          const bText = await page.textContent('body') || ''
-          if (bText.includes('already logged in') || bText.includes('seniToSearchcondition')) {
-            await Promise.all([
-              page.waitForNavigation({ waitUntil: 'load', timeout: 30000 }),
-              page.click('a[onclick*="seniToSearchcondition"]'),
-            ])
-            await page.waitForLoadState('networkidle').catch(() => {})
+        // Verify seniCarDetail is available before clicking
+        const fnReady = await hasSeniCarDetail()
+        if (!fnReady) {
+          onProgress(`${label} — seniCarDetail not available, recovering...`)
+          const recovered = await recoverToResultsPage(label)
+          if (!recovered) {
+            onProgress(`${label} — recovery failed, skipping`)
+            errors++
+            continue
           }
-          // Re-apply filters
-          if (filters?.yearFrom) {
-            await page.evaluate((y: number) => {
-              const el = document.getElementById('modelYearFrom') as HTMLSelectElement
-              if (el) el.value = String(y)
-            }, filters.yearFrom)
-          }
-          if (filters?.yearTo) {
-            await page.evaluate((y: number) => {
-              const el = document.getElementById('modelYearTo') as HTMLSelectElement
-              if (el) el.value = String(y)
-            }, filters.yearTo)
-          }
-          if (filters?.driveType && filters.driveType !== 'any') {
-            const radioId = filters.driveType === '4WD' ? 'driveType3' : 'driveType2'
-            await page.evaluate(({ rid, val }: { rid: string; val: string }) => {
-              const radio = document.getElementById(rid) as HTMLInputElement
-              if (radio) { radio.checked = true; radio.click() }
-              const hid = document.getElementById('driveType_hid') as HTMLInputElement
-              if (hid) hid.value = val
-            }, { rid: radioId, val: filters.driveType })
-          }
-          await Promise.all([
-            page.waitForNavigation({ waitUntil: 'load', timeout: 15000 }),
-            page.evaluate(SUBMIT_TO_MAKERSEARCH_JS),
-          ])
-          await page.waitForLoadState('networkidle').catch(() => {})
-          await Promise.all([
-            page.waitForNavigation({ waitUntil: 'load', timeout: 15000 }),
-            page.evaluate(() => (window as any).makerListChoiceCarCat('146')),
-          ])
-          await page.waitForLoadState('networkidle').catch(() => {})
-          onProgress(`${label} — recovered to results page`)
         }
 
-        // CLICK INTO DETAIL: call seniCarDetail() — this is the same JS function
-        // that the listing rows call when clicked. It submits form1 to cardetail.action.
+        // CLICK INTO DETAIL PAGE
         onProgress(`${label} — clicking into detail...`)
         await Promise.all([
-          page.waitForNavigation({ waitUntil: 'load', timeout: 20000 }),
+          page.waitForNavigation({ waitUntil: 'load', timeout: 30000 }),
           page.evaluate(
             `seniCarDetail('${ref.carKindType}','${ref.KaijoCode}','${ref.AuctionCount}','${ref.BidNo}','')`
           ),
@@ -485,19 +433,25 @@ export async function runNinjaScraper(options: {
         await page.waitForLoadState('networkidle').catch(() => {})
         visited.add(refKey)
 
+        // Verify we actually landed on a detail page (not redirected)
+        const pageUrl = page.url()
+        if (pageUrl.includes('searchcondition') || pageUrl.includes('makersearch')) {
+          onProgress(`${label} — landed on ${pageUrl} instead of detail page, skipping`)
+          errors++
+          continue
+        }
+
         // Take a screenshot of the detail page
         const screenshotPath = `screenshots/ninja-${ref.KaijoCode}-${ref.BidNo}.png`
         await page.screenshot({ path: screenshotPath, fullPage: true }).catch(() => {})
-        onProgress(`${label} — screenshot saved: ${screenshotPath}`)
 
         // Extract van data from the detail page
         const van = await extractDetailPage(page, ref)
         if (!van) {
-          onProgress(`${label} — parse failed`)
+          onProgress(`${label} — parse failed (screenshot: ${screenshotPath})`)
           errors++
-          // Go back before continuing
-          await page.goBack({ waitUntil: 'networkidle', timeout: 15000 }).catch(() => {})
-          await humanDelay(500, 1500)
+          await page.goBack({ waitUntil: 'networkidle', timeout: 30000 }).catch(() => {})
+          await humanDelay(1000, 2000)
           continue
         }
 
@@ -507,13 +461,12 @@ export async function runNinjaScraper(options: {
         if (excluded) {
           onProgress(`${label} — excluded grade: ${van.grade}`)
           skipped++
-          // Go back before continuing
-          await page.goBack({ waitUntil: 'networkidle', timeout: 15000 }).catch(() => {})
-          await humanDelay(500, 1500)
+          await page.goBack({ waitUntil: 'networkidle', timeout: 30000 }).catch(() => {})
+          await humanDelay(1000, 2000)
           continue
         }
 
-        // Download photos (while still on the detail page so session is valid)
+        // Download photos while still on the detail page (session cookies needed)
         const originalPhotoCount = van.photos.length
         if (van.photos.length > 0) {
           onProgress(`${label} — downloading ${van.photos.length} photos...`)
@@ -548,20 +501,20 @@ export async function runNinjaScraper(options: {
           van.photos = uploadedPhotos
           onProgress(`${label} — ${uploadedPhotos.length}/${originalPhotoCount} photos saved`)
         } else {
-          // Debug: log what the photo hidden inputs contain
-          const photoDebug = await page.evaluate(() => {
-            const result: string[] = []
-            for (let i = 1; i <= 6; i++) {
-              const el = document.getElementById('photo' + i) as HTMLInputElement
-              result.push(`photo${i}: ${el ? (el.value || '(empty)') : '(not found)'}`)
+          // Debug: log what the photo elements contain
+          const photoDebug = await page.evaluate(`(function() {
+            var result = [];
+            for (var i = 1; i <= 6; i++) {
+              var el = document.getElementById('photo' + i);
+              result.push('photo' + i + ': ' + (el ? (el.value || '(empty)') : '(not found)'));
             }
-            const imgs = document.querySelectorAll('img[src*="get_image"]')
-            result.push(`img[get_image] tags: ${imgs.length}`)
-            imgs.forEach((img, idx) => {
-              if (idx < 3) result.push(`  img[${idx}]: ${(img as HTMLImageElement).src.substring(0, 120)}`)
-            })
-            return result
-          })
+            var imgs = document.querySelectorAll('img[src*="get_image"]');
+            result.push('img[get_image] tags: ' + imgs.length);
+            for (var j = 0; j < Math.min(imgs.length, 3); j++) {
+              result.push('  img[' + j + ']: ' + imgs[j].src.substring(0, 120));
+            }
+            return result;
+          })()`) as string[]
           onProgress(`${label} — no photos found. Debug: ${photoDebug.join(', ')}`)
         }
 
@@ -592,7 +545,7 @@ export async function runNinjaScraper(options: {
 
         processed.push(van)
         onProgress(
-          `${label} — ${van.grade || 'UNKNOWN'} ${van.model_year ?? '?'} ` +
+          `${label} ✓ ${van.grade || 'UNKNOWN'} ${van.model_year ?? '?'} ` +
           `${van.mileage_km ?? '?'}km score:${van.inspection_score ?? '-'} ¥${van.start_price_jpy ?? '?'} [${van.photos.length} photos]`
         )
 
@@ -615,17 +568,19 @@ export async function runNinjaScraper(options: {
           }
         }
 
-        // GO BACK to search results — browser back button restores the Struts form state
+        // GO BACK to search results
         onProgress(`${label} — going back to results...`)
-        await page.goBack({ waitUntil: 'networkidle', timeout: 15000 }).catch(() => {})
-        await humanDelay(800, 2000)
+        await page.goBack({ waitUntil: 'networkidle', timeout: 30000 }).catch(() => {})
+        // Wait for page JS to re-initialise (bfcache restore)
+        await page.waitForFunction('typeof seniCarDetail === "function"', { timeout: 10000 }).catch(() => {})
+        await humanDelay(1000, 2500)
 
       } catch (err) {
         onProgress(`${label} — error: ${err}`)
         errors++
-        // Try to recover by going back (might already be on results)
-        await page.goBack({ waitUntil: 'networkidle', timeout: 10000 }).catch(() => {})
-        await humanDelay(500, 1500)
+        // Try goBack, then check state at top of next iteration
+        await page.goBack({ waitUntil: 'networkidle', timeout: 15000 }).catch(() => {})
+        await humanDelay(1000, 2000)
       }
     }
 
