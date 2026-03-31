@@ -333,10 +333,39 @@ export async function runNinjaScraper(options: {
         // Human-like delay between detail pages
         if (i > 0) await humanDelay(1500, 4000)
 
-        // STEP A: Navigate to search results (makersearch → category click)
+        // STEP A: Navigate back to searchcondition → makersearch → search results
         // We must do this every time because Struts form tokens are single-use.
-        // After viewing a detail page, the server session has moved on.
+        // The detail page doesn't have brandGroupingCode, so we go to searchcondition first.
         onProgress(`${label} — navigating to search results...`)
+
+        // Go to searchcondition via direct URL (session cookies keep us logged in)
+        await page.goto(`${BASE}/ninja/searchcondition.action`, { waitUntil: 'networkidle', timeout: 15000 })
+        await humanDelay(300, 800)
+
+        // Set filters again on the searchcondition page
+        if (filters?.yearFrom) {
+          await page.evaluate((y: number) => {
+            const el = document.getElementById('modelYearFrom') as HTMLSelectElement
+            if (el) el.value = String(y)
+          }, filters.yearFrom)
+        }
+        if (filters?.yearTo) {
+          await page.evaluate((y: number) => {
+            const el = document.getElementById('modelYearTo') as HTMLSelectElement
+            if (el) el.value = String(y)
+          }, filters.yearTo)
+        }
+        if (filters?.driveType && filters.driveType !== 'any') {
+          const radioId = filters.driveType === '4WD' ? 'driveType3' : 'driveType2'
+          await page.evaluate(({ rid, val }: { rid: string; val: string }) => {
+            const radio = document.getElementById(rid) as HTMLInputElement
+            if (radio) { radio.checked = true; radio.click() }
+            const hid = document.getElementById('driveType_hid') as HTMLInputElement
+            if (hid) hid.value = val
+          }, { rid: radioId, val: filters.driveType })
+        }
+
+        // Navigate to makersearch (Toyota)
         await Promise.all([
           page.waitForNavigation({ waitUntil: 'load', timeout: 15000 }),
           page.evaluate(() => {
@@ -347,7 +376,7 @@ export async function runNinjaScraper(options: {
           }),
         ])
         await page.waitForLoadState('networkidle').catch(() => {})
-        await humanDelay(500, 1000)
+        await humanDelay(300, 800)
 
         // Click the HIACE VAN category to get to search results
         await Promise.all([
