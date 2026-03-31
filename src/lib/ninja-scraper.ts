@@ -36,6 +36,25 @@ function humanDelay(minMs = 800, maxMs = 2500): Promise<void> {
   return new Promise((r) => setTimeout(r, ms))
 }
 
+/**
+ * Browser-side JS to submit form1 to makersearch.action.
+ * Must be a plain string to avoid tsx/esbuild injecting __name helpers
+ * into function declarations inside page.evaluate().
+ */
+const SUBMIT_TO_MAKERSEARCH_JS = `(function() {
+  var form = document.getElementById('form1');
+  if (!form) return;
+  var setOrCreate = function(id, value) {
+    var el = document.getElementById(id);
+    if (!el) { el = document.createElement('input'); el.type = 'hidden'; el.id = id; el.name = id; form.appendChild(el); }
+    el.value = value;
+  };
+  setOrCreate('brandGroupingCode', '01');
+  setOrCreate('action', 'init');
+  form.action = 'makersearch.action';
+  form.submit();
+})()`
+
 // ============================================================
 // Types
 // ============================================================
@@ -209,19 +228,7 @@ export async function runNinjaScraper(options: {
 
     await Promise.all([
       page.waitForNavigation({ waitUntil: 'load', timeout: 15000 }),
-      page.evaluate(() => {
-        const form = document.getElementById('form1') as HTMLFormElement
-        if (!form) return
-        function setOrCreate(id: string, value: string) {
-          let el = document.getElementById(id) as HTMLInputElement
-          if (!el) { el = document.createElement('input'); el.type = 'hidden'; el.id = id; el.name = id; form.appendChild(el) }
-          el.value = value
-        }
-        setOrCreate('brandGroupingCode', '01')
-        setOrCreate('action', 'init')
-        form.action = 'makersearch.action'
-        form.submit()
-      }),
+      page.evaluate(SUBMIT_TO_MAKERSEARCH_JS),
     ])
     await page.waitForLoadState('networkidle').catch(() => {})
 
@@ -287,19 +294,7 @@ export async function runNinjaScraper(options: {
         onProgress(`  Going back to makersearch...`)
         await Promise.all([
           page.waitForNavigation({ waitUntil: 'load', timeout: 15000 }),
-          page.evaluate(() => {
-            const form = document.getElementById('form1') as HTMLFormElement
-            if (!form) return
-            function setOrCreate(id: string, value: string) {
-              let el = document.getElementById(id) as HTMLInputElement
-              if (!el) { el = document.createElement('input'); el.type = 'hidden'; el.id = id; el.name = id; form.appendChild(el) }
-              el.value = value
-            }
-            setOrCreate('brandGroupingCode', '01')
-            setOrCreate('action', 'init')
-            form.action = 'makersearch.action'
-            form.submit()
-          }),
+          page.evaluate(SUBMIT_TO_MAKERSEARCH_JS),
         ])
         await page.waitForLoadState('networkidle').catch(() => {})
       }
@@ -398,19 +393,7 @@ export async function runNinjaScraper(options: {
     // Navigate to makersearch (Toyota)
     await Promise.all([
       page.waitForNavigation({ waitUntil: 'load', timeout: 15000 }),
-      page.evaluate(() => {
-        const form = document.getElementById('form1') as HTMLFormElement
-        if (!form) return
-        function setOrCreate(id: string, value: string) {
-          let el = document.getElementById(id) as HTMLInputElement
-          if (!el) { el = document.createElement('input'); el.type = 'hidden'; el.id = id; el.name = id; form.appendChild(el) }
-          el.value = value
-        }
-        setOrCreate('brandGroupingCode', '01')
-        setOrCreate('action', 'init')
-        form.action = 'makersearch.action'
-        form.submit()
-      }),
+      page.evaluate(SUBMIT_TO_MAKERSEARCH_JS),
     ])
     await page.waitForLoadState('networkidle').catch(() => {})
     await humanDelay(500, 1000)
@@ -479,19 +462,7 @@ export async function runNinjaScraper(options: {
           }
           await Promise.all([
             page.waitForNavigation({ waitUntil: 'load', timeout: 15000 }),
-            page.evaluate(() => {
-              const form = document.getElementById('form1') as HTMLFormElement
-              if (!form) return
-              function setOrCreate(id: string, value: string) {
-                let el = document.getElementById(id) as HTMLInputElement
-                if (!el) { el = document.createElement('input'); el.type = 'hidden'; el.id = id; el.name = id; form.appendChild(el) }
-                el.value = value
-              }
-              setOrCreate('brandGroupingCode', '01')
-              setOrCreate('action', 'init')
-              form.action = 'makersearch.action'
-              form.submit()
-            }),
+            page.evaluate(SUBMIT_TO_MAKERSEARCH_JS),
           ])
           await page.waitForLoadState('networkidle').catch(() => {})
           await Promise.all([
