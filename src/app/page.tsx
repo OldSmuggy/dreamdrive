@@ -445,8 +445,11 @@ function FeaturedVanCard({ listing }: { listing: Listing }) {
       </div>
       <div className="p-8 flex flex-col justify-center">
         <h3 className="text-3xl text-charcoal mb-2 font-bold">{listing.model_name}</h3>
-        <p className="text-gray-500 mb-4">
+        <p className="text-gray-500 mb-2">
           {listing.model_year} · {listing.mileage_km ? `${listing.mileage_km.toLocaleString()} km` : '—'} · {listing.drive ?? '—'}
+        </p>
+        <p className="text-sm text-gray-400 mb-4">
+          {listing.source === 'au_stock' ? 'In Brisbane — drive it this weekend' : '$3,000 to reserve · Delivered to Brisbane in 6–8 weeks'}
         </p>
         <p className="text-ocean text-3xl mb-6 font-bold">
           {displayPrice}
@@ -457,7 +460,9 @@ function FeaturedVanCard({ listing }: { listing: Listing }) {
             Similar in AU: ${Math.round(listing.au_market_price_low / 1000)}–{Math.round(listing.au_market_price_high / 1000)}K
           </p>
         )}
-        <span className="btn-primary inline-block text-sm px-6 py-3 self-start">View &amp; Build →</span>
+        <span className="btn-primary inline-block text-sm px-6 py-3 self-start">
+          {listing.source === 'au_stock' ? 'View & Test Drive →' : listing.source === 'auction' ? 'View & Bid →' : 'View & Reserve →'}
+        </span>
       </div>
     </Link>
   )
