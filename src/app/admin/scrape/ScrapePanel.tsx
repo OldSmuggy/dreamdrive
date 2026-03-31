@@ -164,19 +164,34 @@ export default function ScrapePanel({ secret }: { secret: string }) {
           </label>
         </div>
 
-        {/* One-time setup */}
-        <div className="bg-gray-50 rounded-lg p-3 mb-3 text-xs text-gray-500 font-mono">
-          <div className="text-gray-400 mb-1"># First time setup</div>
-          <div>cd ~/Desktop/&quot;DD App&quot;/dreamdrive && npx playwright install chromium</div>
+        {/* How to run */}
+        <div className="bg-gray-50 rounded-lg p-4 mb-3 text-xs text-gray-600 space-y-3">
+          <div>
+            <span className="font-semibold text-gray-700">1. First time only</span>
+            <div className="font-mono text-gray-500 mt-1 bg-white border border-gray-200 rounded px-3 py-2">
+              cd ~/Desktop/&quot;DD App&quot;/dreamdrive && npx playwright install chromium
+            </div>
+          </div>
+          <div>
+            <span className="font-semibold text-gray-700">2. Open Terminal, paste the command below</span>
+            <p className="text-gray-400 mt-0.5">
+              Takes ~30–60s per listing (logs in, clicks through each van, downloads photos).
+              <code className="bg-gray-100 px-1 rounded">--max</code> = number of listings to <strong>process</strong> (skipped grades don&apos;t count).
+            </p>
+          </div>
         </div>
 
         {/* Generated command */}
         <div className="relative group">
           <div className="bg-gray-950 text-green-400 rounded-lg p-4 font-mono text-sm overflow-x-auto pr-16">
-            {buildCommand()}
+            cd ~/Desktop/&quot;DD App&quot;/dreamdrive && {buildCommand()}
           </div>
           <button
-            onClick={copyCommand}
+            onClick={() => {
+              navigator.clipboard.writeText(`cd ~/Desktop/"DD App"/dreamdrive && ${buildCommand()}`)
+              setCopied(true)
+              setTimeout(() => setCopied(false), 2000)
+            }}
             className="absolute top-2 right-2 px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-md text-xs font-medium transition-colors"
           >
             {copied ? '✓ Copied!' : '📋 Copy'}
@@ -184,8 +199,9 @@ export default function ScrapePanel({ secret }: { secret: string }) {
         </div>
 
         <p className="text-xs text-gray-400 mt-2">
-          Copy and paste into Terminal. Takes ~2–4s per listing.
-          Needs <code className="bg-gray-100 px-1 rounded">NINJA_LOGIN_ID</code> and <code className="bg-gray-100 px-1 rounded">NINJA_PASSWORD</code> in <code className="bg-gray-100 px-1 rounded">.env.local</code>.
+          Requires <code className="bg-gray-100 px-1 rounded">NINJA_LOGIN_ID</code> and <code className="bg-gray-100 px-1 rounded">NINJA_PASSWORD</code> in <code className="bg-gray-100 px-1 rounded">.env.local</code>.
+          New listings go to <strong>Draft</strong> — review and publish from{' '}
+          <a href="/admin/listings" className="text-ocean underline">Listings</a>.
         </p>
       </div>
 

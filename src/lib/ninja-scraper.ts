@@ -346,7 +346,7 @@ export async function runNinjaScraper(options: {
 
     // Helper: check if seniCarDetail function is available on the current page
     const hasSeniCarDetail = () =>
-      page.evaluate('typeof seniCarDetail === "function"')
+      page.evaluate('typeof seniCarDetail === "function"') as Promise<boolean>
 
     // Helper: check if we hit sessionTimeOut and need to re-login
     const isSessionTimedOut = async () => {
