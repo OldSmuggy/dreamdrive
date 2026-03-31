@@ -28,11 +28,13 @@ export default function ScrapePanel({ secret }: { secret: string }) {
   const [error, setError] = useState<string | null>(null)
 
   // Goo-net state
+  const [gMode, setGMode] = useState<'search' | 'urls'>('urls')
   const [gMax, setGMax] = useState('10')
   const [gYearFrom, setGYearFrom] = useState('2015')
   const [gYearTo, setGYearTo] = useState('2024')
   const [gDriveType, setGDriveType] = useState<'any' | '2WD' | '4WD'>('4WD')
   const [gMaxPrice, setGMaxPrice] = useState('')
+  const [gUrls, setGUrls] = useState('')
   const [gCopied, setGCopied] = useState(false)
 
   const buildNinjaCommand = () => {
@@ -44,13 +46,19 @@ export default function ScrapePanel({ secret }: { secret: string }) {
     return cmd
   }
 
+  const gUrlCount = gUrls.split('\n').filter(l => l.trim().includes('goo-net.com/usedcar/spread/')).length
+
   const buildGoonetCommand = () => {
     let cmd = 'npx tsx scripts/run-goonet-scrape.ts'
+    if (gMode === 'urls') {
+      cmd += ' --urls-file /tmp/goonet-urls.txt'
+    } else {
+      if (gYearFrom.trim()) cmd += ` --year-from ${gYearFrom.trim()}`
+      if (gYearTo.trim()) cmd += ` --year-to ${gYearTo.trim()}`
+      if (gDriveType !== 'any') cmd += ` --drive ${gDriveType}`
+      if (gMaxPrice.trim()) cmd += ` --max-price ${gMaxPrice.trim()}`
+    }
     if (gMax.trim()) cmd += ` --max ${gMax.trim()}`
-    if (gYearFrom.trim()) cmd += ` --year-from ${gYearFrom.trim()}`
-    if (gYearTo.trim()) cmd += ` --year-to ${gYearTo.trim()}`
-    if (gDriveType !== 'any') cmd += ` --drive ${gDriveType}`
-    if (gMaxPrice.trim()) cmd += ` --max-price ${gMaxPrice.trim()}`
     return cmd
   }
 
@@ -290,32 +298,84 @@ export default function ScrapePanel({ secret }: { secret: string }) {
           <div className="bg-white border border-gray-200 rounded-xl p-6 mb-5">
             <p className="font-semibold text-charcoal mb-4">Command Builder</p>
 
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-5">
-              <label className="flex flex-col gap-1">
-                <span className="text-xs font-medium text-gray-500">Year from</span>
-                <input type="number" value={gYearFrom} onChange={e => setGYearFrom(e.target.value)} placeholder="any" min={1990} max={2030} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ocean" />
-              </label>
-              <label className="flex flex-col gap-1">
-                <span className="text-xs font-medium text-gray-500">Year to</span>
-                <input type="number" value={gYearTo} onChange={e => setGYearTo(e.target.value)} placeholder="any" min={1990} max={2030} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ocean" />
-              </label>
-              <label className="flex flex-col gap-1">
-                <span className="text-xs font-medium text-gray-500">Drive type</span>
-                <select value={gDriveType} onChange={e => setGDriveType(e.target.value as 'any' | '2WD' | '4WD')} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ocean bg-white">
-                  <option value="any">Any</option>
-                  <option value="2WD">2WD</option>
-                  <option value="4WD">4WD</option>
-                </select>
-              </label>
-              <label className="flex flex-col gap-1">
-                <span className="text-xs font-medium text-gray-500">Max price (万円)</span>
-                <input type="number" value={gMaxPrice} onChange={e => setGMaxPrice(e.target.value)} placeholder="any" min={50} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ocean" />
-              </label>
-              <label className="flex flex-col gap-1">
-                <span className="text-xs font-medium text-gray-500">Max listings</span>
-                <input type="number" value={gMax} onChange={e => setGMax(e.target.value)} placeholder="all" min={1} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ocean" />
-              </label>
+            {/* Mode toggle */}
+            <div className="flex gap-2 mb-5">
+              <button onClick={() => setGMode('urls')} className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${gMode === 'urls' ? 'bg-ocean text-white' : 'bg-gray-100 text-gray-500 hover:text-gray-700'}`}>
+                Paste URLs
+              </button>
+              <button onClick={() => setGMode('search')} className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${gMode === 'search' ? 'bg-ocean text-white' : 'bg-gray-100 text-gray-500 hover:text-gray-700'}`}>
+                Search Goo-net
+              </button>
             </div>
+
+            {gMode === 'urls' ? (
+              <>
+                <label className="flex flex-col gap-1 mb-4">
+                  <span className="text-xs font-medium text-gray-500">
+                    Paste Goo-net listing URLs (one per line) — {gUrlCount > 0 ? <strong className="text-ocean">{gUrlCount} valid URLs</strong> : 'no URLs yet'}
+                  </span>
+                  <textarea
+                    value={gUrls}
+                    onChange={e => setGUrls(e.target.value)}
+                    rows={6}
+                    placeholder={'https://www.goo-net.com/usedcar/spread/goo/14/700120110630260219003.html\nhttps://www.goo-net.com/usedcar/spread/goo/11/700091029630260110002.html\n...'}
+                    className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ocean font-mono"
+                  />
+                </label>
+                <div className="grid grid-cols-2 gap-4 mb-5">
+                  <label className="flex flex-col gap-1">
+                    <span className="text-xs font-medium text-gray-500">Max listings</span>
+                    <input type="number" value={gMax} onChange={e => setGMax(e.target.value)} placeholder="all" min={1} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ocean" />
+                  </label>
+                  <div className="flex items-end">
+                    <button
+                      onClick={async () => {
+                        const urlLines = gUrls.split('\n').filter(l => l.trim().includes('goo-net.com/usedcar/spread/'))
+                        if (urlLines.length === 0) return
+                        const blob = new Blob([urlLines.join('\n')], { type: 'text/plain' })
+                        const url = URL.createObjectURL(blob)
+                        const a = document.createElement('a')
+                        a.href = url
+                        a.download = 'goonet-urls.txt'
+                        a.click()
+                        URL.revokeObjectURL(url)
+                      }}
+                      disabled={gUrlCount === 0}
+                      className="w-full py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 disabled:opacity-40 transition-colors text-sm"
+                    >
+                      Save URLs to file ({gUrlCount})
+                    </button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-5">
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-medium text-gray-500">Year from</span>
+                  <input type="number" value={gYearFrom} onChange={e => setGYearFrom(e.target.value)} placeholder="any" min={1990} max={2030} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ocean" />
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-medium text-gray-500">Year to</span>
+                  <input type="number" value={gYearTo} onChange={e => setGYearTo(e.target.value)} placeholder="any" min={1990} max={2030} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ocean" />
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-medium text-gray-500">Drive type</span>
+                  <select value={gDriveType} onChange={e => setGDriveType(e.target.value as 'any' | '2WD' | '4WD')} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ocean bg-white">
+                    <option value="any">Any</option>
+                    <option value="2WD">2WD</option>
+                    <option value="4WD">4WD</option>
+                  </select>
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-medium text-gray-500">Max price (万円)</span>
+                  <input type="number" value={gMaxPrice} onChange={e => setGMaxPrice(e.target.value)} placeholder="any" min={50} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ocean" />
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-medium text-gray-500">Max listings</span>
+                  <input type="number" value={gMax} onChange={e => setGMax(e.target.value)} placeholder="all" min={1} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ocean" />
+                </label>
+              </div>
+            )}
 
             <div className="bg-gray-50 rounded-lg p-4 mb-3 text-xs text-gray-600 space-y-3">
               <div>
@@ -325,7 +385,7 @@ export default function ScrapePanel({ secret }: { secret: string }) {
                 </div>
               </div>
               <div>
-                <span className="font-semibold text-gray-700">2. Open Terminal, paste the command below</span>
+                <span className="font-semibold text-gray-700">{gMode === 'urls' ? '2. Save the URL file, then paste the command below in Terminal' : '2. Open Terminal, paste the command below'}</span>
                 <p className="text-gray-400 mt-0.5">
                   Takes ~15–30s per listing (loads page, extracts specs, downloads photos).
                   Photos are saved to Supabase storage so they persist after the dealer listing expires.

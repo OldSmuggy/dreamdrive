@@ -98,10 +98,11 @@ export interface GoonetFilterOptions {
 
 export async function runGoonetScraper(options: {
   maxListings?: number
+  urls?: string[]           // Direct URL list mode — skip search, process these URLs
   filters?: GoonetFilterOptions
   onProgress?: (msg: string) => void
 }): Promise<ScrapeResult> {
-  const { maxListings, filters, onProgress = console.log } = options
+  const { maxListings, urls, filters, onProgress = console.log } = options
 
   if (filters?.yearFrom || filters?.yearTo || (filters?.driveType && filters.driveType !== 'any') || filters?.maxPrice) {
     onProgress(`Filters: year ${filters.yearFrom ?? 'any'}–${filters.yearTo ?? 'any'}, drive: ${filters.driveType ?? 'any'}, max price: ${filters.maxPrice ? filters.maxPrice + '万円' : 'any'}`)
@@ -139,75 +140,82 @@ export async function runGoonetScraper(options: {
     // Remove automation detection signals
     await page.addInitScript(`Object.defineProperty(navigator, 'webdriver', { get: () => false })`)
 
-    // ----------------------------------------------------------
-    // 1. Build search URL with filters
-    // ----------------------------------------------------------
-    onProgress('Step 1: Building search URL...')
-    const searchUrl = buildSearchUrl(filters)
-    onProgress(`  Search URL: ${searchUrl}`)
+    let allListingUrls: string[]
 
-    // ----------------------------------------------------------
-    // 2. Load search results and collect listing URLs
-    // ----------------------------------------------------------
-    onProgress('Step 2: Loading search results...')
-    await page.goto(searchUrl, { waitUntil: 'domcontentloaded', timeout: 30000 })
-    await page.waitForLoadState('networkidle').catch(() => {})
-    await humanDelay(1500, 3000)
+    if (urls && urls.length > 0) {
+      // ----------------------------------------------------------
+      // URL list mode — skip search, use provided URLs directly
+      // ----------------------------------------------------------
+      onProgress(`URL list mode: ${urls.length} URLs provided`)
+      allListingUrls = urls
+    } else {
+      // ----------------------------------------------------------
+      // Search mode — search Goo-net and paginate results
+      // ----------------------------------------------------------
+      onProgress('Step 1: Building search URL...')
+      const searchUrl = buildSearchUrl(filters)
+      onProgress(`  Search URL: ${searchUrl}`)
 
-    // Get total result count
-    const totalText = await page.textContent('.search_result_head .hit-num, .list_result_pager .hit-num, .num_result').catch(() => null)
-    const totalCount = totalText ? parseInt(totalText.replace(/[^\d]/g, '')) : 0
-    onProgress(`  Found ${totalCount} total Hiace Van listings on Goo-net`)
-
-    // Collect all listing URLs across pages
-    const allListingUrls: string[] = []
-    let pageNum = 1
-    const maxPages = 20 // safety limit
-
-    while (pageNum <= maxPages) {
-      const urls = await page.evaluate(`(function() {
-        var links = [];
-        var items = document.querySelectorAll('.box_item_detail .heading_inner a[href*="/usedcar/spread/"]');
-        if (items.length === 0) {
-          items = document.querySelectorAll('a[href*="/usedcar/spread/goo/"]');
-        }
-        items.forEach(function(a) {
-          var href = a.getAttribute('href');
-          if (href && href.includes('.html') && !links.includes(href)) {
-            links.push(href.startsWith('http') ? href : 'https://www.goo-net.com' + href);
-          }
-        });
-        return links;
-      })()`) as string[]
-
-      if (urls.length === 0) {
-        onProgress(`  Page ${pageNum}: no listings found, stopping pagination`)
-        break
-      }
-
-      allListingUrls.push(...urls)
-      onProgress(`  Page ${pageNum}: ${urls.length} listings (${allListingUrls.length} total)`)
-
-      // Check if we have enough
-      if (maxListings && allListingUrls.length >= maxListings) break
-
-      // Try next page
-      const nextLink = await page.$('a.next, .list_result_pager a:has-text("次へ"), a:has-text("次の")')
-      if (!nextLink) {
-        onProgress(`  No more pages`)
-        break
-      }
-
-      await nextLink.click()
-      await page.waitForLoadState('domcontentloaded', { timeout: 15000 }).catch(() => {})
+      onProgress('Step 2: Loading search results...')
+      await page.goto(searchUrl, { waitUntil: 'domcontentloaded', timeout: 30000 })
       await page.waitForLoadState('networkidle').catch(() => {})
       await humanDelay(1500, 3000)
-      pageNum++
+
+      // Get total result count
+      const totalText = await page.textContent('.search_result_head .hit-num, .list_result_pager .hit-num, .num_result').catch(() => null)
+      const totalCount = totalText ? parseInt(totalText.replace(/[^\d]/g, '')) : 0
+      onProgress(`  Found ${totalCount} total Hiace Van listings on Goo-net`)
+
+      // Collect all listing URLs across pages
+      allListingUrls = []
+      let pageNum = 1
+      const maxPages = 20 // safety limit
+
+      while (pageNum <= maxPages) {
+        const pageUrls = await page.evaluate(`(function() {
+          var links = [];
+          var items = document.querySelectorAll('.box_item_detail .heading_inner a[href*="/usedcar/spread/"]');
+          if (items.length === 0) {
+            items = document.querySelectorAll('a[href*="/usedcar/spread/goo/"]');
+          }
+          items.forEach(function(a) {
+            var href = a.getAttribute('href');
+            if (href && href.includes('.html') && !links.includes(href)) {
+              links.push(href.startsWith('http') ? href : 'https://www.goo-net.com' + href);
+            }
+          });
+          return links;
+        })()`) as string[]
+
+        if (pageUrls.length === 0) {
+          onProgress(`  Page ${pageNum}: no listings found, stopping pagination`)
+          break
+        }
+
+        allListingUrls.push(...pageUrls)
+        onProgress(`  Page ${pageNum}: ${pageUrls.length} listings (${allListingUrls.length} total)`)
+
+        // Check if we have enough
+        if (maxListings && allListingUrls.length >= maxListings) break
+
+        // Try next page
+        const nextLink = await page.$('a.next, .list_result_pager a:has-text("次へ"), a:has-text("次の")')
+        if (!nextLink) {
+          onProgress(`  No more pages`)
+          break
+        }
+
+        await nextLink.click()
+        await page.waitForLoadState('domcontentloaded', { timeout: 15000 }).catch(() => {})
+        await page.waitForLoadState('networkidle').catch(() => {})
+        await humanDelay(1500, 3000)
+        pageNum++
+      }
     }
 
     found = allListingUrls.length
     const toProcess = maxListings ? allListingUrls.slice(0, maxListings) : allListingUrls
-    onProgress(`\nStep 3: Processing ${toProcess.length} listings...`)
+    onProgress(`\nProcessing ${toProcess.length} listings...`)
 
     // ----------------------------------------------------------
     // 3. Visit each listing detail page

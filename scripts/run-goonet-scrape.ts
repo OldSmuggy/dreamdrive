@@ -3,17 +3,23 @@
  * Run the Goo-net dealer scraper from your local machine.
  *
  * Usage:
- *   npx tsx scripts/run-goonet-scrape.ts                # scrape → Supabase
+ *   npx tsx scripts/run-goonet-scrape.ts                # search & scrape → Supabase
  *   npx tsx scripts/run-goonet-scrape.ts --max 10       # limit to 10 listings
+ *   npx tsx scripts/run-goonet-scrape.ts --urls-file /tmp/goonet-urls.txt  # process specific URLs
  *
- * Filters:
+ * Filters (search mode only):
  *   --year-from 2015     # minimum model year
  *   --year-to 2024       # maximum model year
  *   --drive 4WD          # drive type: 2WD or 4WD
  *   --max-price 500      # max price in 万円 (e.g. 500 = ¥5,000,000)
  *
- * Example:
+ * URL file mode:
+ *   --urls-file path.txt  # one goo-net listing URL per line (skips search, processes these directly)
+ *   --max 10              # optional: limit how many URLs to process from the file
+ *
+ * Examples:
  *   npx tsx scripts/run-goonet-scrape.ts --max 10 --year-from 2015 --year-to 2024 --drive 4WD
+ *   npx tsx scripts/run-goonet-scrape.ts --urls-file /tmp/goonet-urls.txt --max 5
  *
  * Requirements:
  *   - Playwright + Chromium installed (npx playwright install chromium)
@@ -55,6 +61,23 @@ async function main() {
   const yearTo = getArg('--year-to') ? parseInt(getArg('--year-to')!) : undefined
   const driveType = getArg('--drive') as '2WD' | '4WD' | undefined
   const maxPrice = getArg('--max-price') ? parseInt(getArg('--max-price')!) : undefined
+  const urlsFile = getArg('--urls-file')
+
+  // Load URLs from file if provided
+  let urls: string[] | undefined
+  if (urlsFile) {
+    const { readFileSync } = await import('fs')
+    const { resolve } = await import('path')
+    const filePath = resolve(process.cwd(), urlsFile)
+    const content = readFileSync(filePath, 'utf-8')
+    urls = content
+      .split('\n')
+      .map(l => l.trim())
+      .filter(l => l && l.includes('goo-net.com/usedcar/spread/'))
+    console.log(`Loaded ${urls.length} URLs from ${urlsFile}`)
+  }
+
+  const mode = urls ? `📋 URL LIST (${urls.length} URLs)` : '🔍 SEARCH'
 
   console.log(`
 ╔══════════════════════════════════════════╗
@@ -62,16 +85,17 @@ async function main() {
 ║     Bare Camper — barecamper.com.au      ║
 ╚══════════════════════════════════════════╝
 
-Mode:         💾 LIVE (writing to Supabase)
-Max listings: ${maxListings ?? 'ALL'}
-Filters:      year ${yearFrom ?? 'any'}–${yearTo ?? 'any'}, drive: ${driveType ?? 'any'}, max price: ${maxPrice ? maxPrice + '万円' : 'any'}
+Mode:         ${mode}
+Max listings: ${maxListings ?? 'ALL'}${urls ? '' : `
+Filters:      year ${yearFrom ?? 'any'}–${yearTo ?? 'any'}, drive: ${driveType ?? 'any'}, max price: ${maxPrice ? maxPrice + '万円' : 'any'}`}
 `)
 
   const start = Date.now()
 
   const result = await runGoonetScraper({
     maxListings,
-    filters: { yearFrom, yearTo, driveType, maxPrice },
+    urls,
+    filters: urls ? undefined : { yearFrom, yearTo, driveType, maxPrice },
     onProgress: (msg) => console.log(msg),
   })
 
