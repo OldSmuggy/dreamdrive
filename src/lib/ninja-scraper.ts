@@ -178,64 +178,33 @@ export async function runNinjaScraper(options: {
     // ----------------------------------------------------------
     onProgress('Step 2: Setting filters & navigating to Toyota makersearch...')
 
-    // Debug: dump all form fields on searchcondition page to discover filter field names
-    const formFields = await page.evaluate(() => {
-      const fields: Array<{ id: string; name: string; tag: string; type: string; value: string }> = []
-      const inputs = document.querySelectorAll('input, select')
-      inputs.forEach(el => {
-        const inp = el as HTMLInputElement | HTMLSelectElement
-        // Only include fields with IDs that look like conditions/filters
-        if (inp.id || inp.name) {
-          const entry: any = { id: inp.id || '', name: inp.name || '', tag: el.tagName, value: inp.value || '' }
-          if (el.tagName === 'INPUT') entry.type = (el as HTMLInputElement).type
-          if (el.tagName === 'SELECT') {
-            entry.options = Array.from((el as HTMLSelectElement).options).map(o => ({ v: o.value, t: o.textContent?.trim() }))
-          }
-          fields.push(entry)
-        }
-      })
-      return fields
-    })
-    // Log fields that look like condition/filter fields
-    const conditionFields = formFields.filter(f =>
-      (f.id && f.id.toLowerCase().includes('condition')) ||
-      (f.name && f.name.toLowerCase().includes('condition')) ||
-      (f.id && (f.id.toLowerCase().includes('year') || f.id.toLowerCase().includes('drive') || f.id.toLowerCase().includes('model')))
-    )
-    if (conditionFields.length > 0) {
-      onProgress(`  Filter fields found: ${JSON.stringify(conditionFields, null, 2)}`)
-    } else {
-      onProgress(`  No condition filter fields found. All form fields (${formFields.length}):`)
-      // Log first 30 fields for debugging
-      formFields.slice(0, 30).forEach(f => onProgress(`    ${f.id || f.name}: ${f.tag}${f.value ? '=' + f.value : ''}`))
-    }
-
-    // Set year range filters if the fields exist
+    // Set year range filters (real field IDs: modelYearFrom, modelYearTo — SELECT elements)
     if (filters?.yearFrom) {
-      const set = await page.evaluate((y) => {
-        const el = document.getElementById('conditionModelYearFrom') as HTMLInputElement
-        if (el) { el.value = String(y); return true }
-        return false
+      await page.evaluate((y) => {
+        const el = document.getElementById('modelYearFrom') as HTMLSelectElement
+        if (el) el.value = String(y)
       }, filters.yearFrom)
-      onProgress(`  Year from ${filters.yearFrom}: ${set ? 'set' : 'field not found'}`)
+      onProgress(`  Set year from: ${filters.yearFrom}`)
     }
     if (filters?.yearTo) {
-      const set = await page.evaluate((y) => {
-        const el = document.getElementById('conditionModelYearTo') as HTMLInputElement
-        if (el) { el.value = String(y); return true }
-        return false
+      await page.evaluate((y) => {
+        const el = document.getElementById('modelYearTo') as HTMLSelectElement
+        if (el) el.value = String(y)
       }, filters.yearTo)
-      onProgress(`  Year to ${filters.yearTo}: ${set ? 'set' : 'field not found'}`)
+      onProgress(`  Set year to: ${filters.yearTo}`)
     }
 
-    // Set drive type filter if the field exists
+    // Set drive type filter (radio buttons: driveType1=99/any, driveType2=2WD, driveType3=4WD)
+    // Also set the hidden field driveType_hid which carries the value through
     if (filters?.driveType && filters.driveType !== 'any') {
-      const set = await page.evaluate((dt) => {
-        const el = document.getElementById('conditionDriveType') as HTMLInputElement | HTMLSelectElement
-        if (el) { el.value = dt === '4WD' ? '02' : '01'; return true }
-        return false
-      }, filters.driveType)
-      onProgress(`  Drive type ${filters.driveType}: ${set ? 'set' : 'field not found'}`)
+      const radioId = filters.driveType === '4WD' ? 'driveType3' : 'driveType2'
+      await page.evaluate(({ rid, val }: { rid: string; val: string }) => {
+        const radio = document.getElementById(rid) as HTMLInputElement
+        if (radio) { radio.checked = true; radio.click() }
+        const hid = document.getElementById('driveType_hid') as HTMLInputElement
+        if (hid) hid.value = val
+      }, { rid: radioId, val: filters.driveType })
+      onProgress(`  Set drive type: ${filters.driveType}`)
     }
 
     await page.evaluate(() => {
@@ -356,7 +325,7 @@ export async function runNinjaScraper(options: {
     let newInserts = 0
     let duplicates = 0
 
-    // Navigate to the search results page first (need valid form state)
+    // Navigate to the search results page (need valid form state for seniCarDetail)
     if (!page.url().includes('searchresultlist')) {
       await Promise.all([
         page.waitForNavigation({ waitUntil: 'load', timeout: 15000 }),
@@ -364,6 +333,12 @@ export async function runNinjaScraper(options: {
       ])
       await page.waitForLoadState('networkidle').catch(() => {})
     }
+
+    // Strategy: call seniCarDetail on the search results page, which opens
+    // the detail page via form submit. Then use a NEW TAB for each detail
+    // page so the search results page stays intact for the next call.
+    // seniCarDetail sets form fields and submits — we intercept the form
+    // submission by modifying form target to open in a new tab.
 
     for (let i = 0; i < limitedRefs.length; i++) {
       const ref = limitedRefs[i]
@@ -373,44 +348,37 @@ export async function runNinjaScraper(options: {
         // Human-like delay between detail pages
         if (i > 0) await humanDelay(1500, 4000)
 
-        // Navigate to detail page by directly setting form fields and submitting.
-        // This works from ANY NINJA page (search results OR another detail page)
-        // because form1 exists on all pages. Avoids the broken goBack() which
-        // loses Struts server-side form token state.
-        await Promise.all([
-          page.waitForNavigation({ waitUntil: 'load', timeout: 15000 }),
+        // Open detail page in a new tab by setting form1 target to _blank,
+        // calling seniCarDetail, then resetting the target.
+        const [detailPage] = await Promise.all([
+          context.waitForEvent('page', { timeout: 15000 }),
           page.evaluate(
             `(function() {
               var form = document.getElementById('form1');
-              if (!form) { window.location.href = '/ninja/searchcondition.action'; return; }
-              var s = function(id, v) { var el = document.getElementById(id); if (el) el.value = v; };
-              s('carKindType', '${ref.carKindType}');
-              s('KaijoCode', '${ref.KaijoCode}');
-              s('AuctionCount', '${ref.AuctionCount}');
-              s('BidNo', '${ref.BidNo}');
-              s('action', '');
-              form.action = 'cardetail.action';
-              form.submit();
+              form.target = '_blank';
+              seniCarDetail('${ref.carKindType}','${ref.KaijoCode}','${ref.AuctionCount}','${ref.BidNo}','');
+              form.target = '';
             })()`
           ),
         ])
-        await page.waitForLoadState('networkidle').catch(() => {})
+
+        await detailPage.waitForLoadState('networkidle').catch(() => {})
 
         // Check if we actually landed on a detail page
-        const pageUrl = page.url()
-        if (!pageUrl.includes('cardetail')) {
-          onProgress(`${label} — navigation failed (landed on ${pageUrl})`)
+        const detailUrl = detailPage.url()
+        if (!detailUrl.includes('cardetail')) {
+          onProgress(`${label} — navigation failed (landed on ${detailUrl})`)
           errors++
-          // Try to recover: go back to search results
-          await recoverToSearchResults(page, onProgress)
+          await detailPage.close()
           continue
         }
 
         // Extract van data from the detail page
-        const van = await extractDetailPage(page, ref)
+        const van = await extractDetailPage(detailPage, ref)
         if (!van) {
           onProgress(`${label} — parse failed`)
           errors++
+          await detailPage.close()
           continue
         }
 
@@ -420,10 +388,12 @@ export async function runNinjaScraper(options: {
         if (excluded) {
           onProgress(`${label} — excluded grade: ${van.grade}`)
           skipped++
+          await detailPage.close()
           continue
         }
 
         // Download photos from NINJA (requires session cookies) and upload to Supabase storage
+        const originalPhotoCount = van.photos.length
         if (van.photos.length > 0) {
           onProgress(`${label} — downloading ${van.photos.length} photos...`)
           const uploadedPhotos: string[] = []
@@ -447,13 +417,32 @@ export async function runNinjaScraper(options: {
                 } else {
                   onProgress(`${label} — photo upload error: ${uploadErr.message}`)
                 }
+              } else {
+                onProgress(`${label} — photo download failed: HTTP ${response.status()}`)
               }
             } catch (photoErr) {
               onProgress(`${label} — photo download error: ${photoErr}`)
             }
           }
           van.photos = uploadedPhotos
-          onProgress(`${label} — ${uploadedPhotos.length} photos saved`)
+          onProgress(`${label} — ${uploadedPhotos.length}/${originalPhotoCount} photos saved`)
+        } else {
+          // Debug: log what the photo hidden inputs contain
+          const photoDebug = await detailPage.evaluate(() => {
+            const result: string[] = []
+            for (let i = 1; i <= 6; i++) {
+              const el = document.getElementById('photo' + i) as HTMLInputElement
+              result.push(`photo${i}: ${el ? (el.value || '(empty)') : '(not found)'}`)
+            }
+            // Also check for img tags with photos
+            const imgs = document.querySelectorAll('.vehicleDetailPhotoBox img, .photo img, img[src*="get_image"]')
+            result.push(`img tags found: ${imgs.length}`)
+            imgs.forEach((img, idx) => {
+              if (idx < 3) result.push(`  img[${idx}]: ${(img as HTMLImageElement).src.substring(0, 100)}`)
+            })
+            return result
+          })
+          onProgress(`${label} — no photos found. Debug: ${photoDebug.join(', ')}`)
         }
 
         // Download inspection sheet if present
@@ -480,6 +469,9 @@ export async function runNinjaScraper(options: {
             onProgress(`${label} — inspection sheet error: ${sheetErr}`)
           }
         }
+
+        // Close the detail tab — search results page stays intact
+        await detailPage.close()
 
         processed.push(van)
         onProgress(
@@ -509,8 +501,6 @@ export async function runNinjaScraper(options: {
       } catch (err) {
         onProgress(`${label} — error: ${err}`)
         errors++
-        // Try to recover to a usable page state
-        await recoverToSearchResults(page, onProgress).catch(() => {})
       }
 
       await delay(250)
