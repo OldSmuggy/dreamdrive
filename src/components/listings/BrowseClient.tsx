@@ -243,7 +243,11 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
     if (sortBy === 'price_desc')  list.sort((a,b) => (b.aud_estimate ?? 0)   - (a.aud_estimate ?? 0))
     if (sortBy === 'year_desc')   list.sort((a,b) => (b.model_year ?? 0)     - (a.model_year ?? 0))
     if (sortBy === 'mileage_asc') list.sort((a,b) => (a.mileage_km ?? 9e9)  - (b.mileage_km ?? 9e9))
-    return list
+
+    // Sold listings always sort to end
+    const available = list.filter(l => l.status !== 'sold')
+    const sold = list.filter(l => l.status === 'sold')
+    return [...available, ...sold]
   }, [initialListings, locationFilter, sourceFilter, sizeFilter, driveFilterSingle, typeFilter, modelFilter, driveFilter, yearMin, mileageMax, sortBy, engineFilter, colourFilter, minPrice, maxPrice])
 
   // ── Active filter count ──
@@ -809,6 +813,12 @@ function ListingCard({ listing, userId, initialSaved, jpyRate }: { listing: List
               <p className="text-white/70 text-xs">Free account — takes 30 seconds</p>
             )}
             <span className="mt-2 bg-white text-charcoal text-xs font-semibold px-3 py-1 rounded-full">Sign Up Free</span>
+          </div>
+        )}
+        {/* SOLD overlay */}
+        {listing.status === 'sold' && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center" style={{ background: 'rgba(0, 0, 0, 0.55)' }}>
+            <span className="text-white font-bold text-2xl sm:text-3xl tracking-widest">SOLD</span>
           </div>
         )}
         {/* Top-left: location badge */}

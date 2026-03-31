@@ -44,7 +44,7 @@ export default async function BrowsePage({ searchParams }: Props) {
   let query = supabase
     .from('listings')
     .select('*')
-    .eq('status', 'available')
+    .in('status', ['available', 'sold'])
     .order('featured', { ascending: false })
     .order('auction_date', { ascending: true })
     .limit(200)

@@ -120,7 +120,7 @@ export default async function VanDetailPage({ params }: { params: { id: string }
         '@type': 'Offer',
         price: (priceCents / 100).toFixed(2),
         priceCurrency: 'AUD',
-        availability: 'https://schema.org/InStock',
+        availability: listing.status === 'sold' ? 'https://schema.org/SoldOut' : 'https://schema.org/InStock',
       },
     }),
   }
@@ -133,11 +133,13 @@ export default async function VanDetailPage({ params }: { params: { id: string }
         model_year={listing.model_year}
         price_cents={priceCents}
       />
-      <StickyMobileCTA
-        listingId={listing.id}
-        price={displayPrice}
-        ctaLabel="Build This Van →"
-      />
+      {listing.status !== 'sold' && (
+        <StickyMobileCTA
+          listingId={listing.id}
+          price={displayPrice}
+          ctaLabel="Build This Van →"
+        />
+      )}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(vehicleJsonLd) }}
@@ -162,6 +164,11 @@ export default async function VanDetailPage({ params }: { params: { id: string }
         <div className="grid lg:grid-cols-2 gap-10">
           {/* ---- Photos ---- */}
           <div>
+            {listing.status === 'sold' && (
+              <div className="bg-gray-800 text-white text-center py-3 px-4 rounded-xl mb-4 font-semibold tracking-wide">
+                This van has been sold
+              </div>
+            )}
             {/* Badges overlay (server-rendered, sits above the gallery) */}
             <div className="relative">
               <PhotoGallery
@@ -363,31 +370,42 @@ export default async function VanDetailPage({ params }: { params: { id: string }
             )}
 
             {/* CTAs */}
-            <div className="space-y-3">
-              <Link href={`/configurator?van=${listing.id}`}
-                className="btn-primary w-full text-center text-base py-4 block">
-                Build This Van →
-              </Link>
-              <DepositHoldButton
-                listing={listing}
-                userId={user?.id ?? null}
-              />
-              <Link href="/quiz"
-                className="text-ocean font-semibold hover:underline text-sm text-center block">
-                Not sure? Take the Van Match Quiz →
-              </Link>
-            </div>
+            {listing.status === 'sold' ? (
+              <div className="space-y-3">
+                <Link href="/browse"
+                  className="btn-primary w-full text-center text-base py-4 block">
+                  Browse Available Vans →
+                </Link>
+              </div>
+            ) : (
+              <>
+                <div className="space-y-3">
+                  <Link href={`/configurator?van=${listing.id}`}
+                    className="btn-primary w-full text-center text-base py-4 block">
+                    Build This Van →
+                  </Link>
+                  <DepositHoldButton
+                    listing={listing}
+                    userId={user?.id ?? null}
+                  />
+                  <Link href="/quiz"
+                    className="text-ocean font-semibold hover:underline text-sm text-center block">
+                    Not sure? Take the Van Match Quiz →
+                  </Link>
+                </div>
 
-            {/* Ask about this van — logged-in users */}
-            {user && (
-              <div className="mt-6">
-                <AskAboutVan listingId={listing.id} />
-              </div>
-            )}
-            {!user && (
-              <div className="mt-6 text-center text-sm text-gray-500">
-                <Link href="/login" className="text-ocean font-semibold hover:underline">Sign in</Link> to ask us about this van.
-              </div>
+                {/* Ask about this van — logged-in users */}
+                {user && (
+                  <div className="mt-6">
+                    <AskAboutVan listingId={listing.id} />
+                  </div>
+                )}
+                {!user && (
+                  <div className="mt-6 text-center text-sm text-gray-500">
+                    <Link href="/login" className="text-ocean font-semibold hover:underline">Sign in</Link> to ask us about this van.
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
