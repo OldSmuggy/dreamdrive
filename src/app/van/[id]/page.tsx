@@ -97,9 +97,9 @@ export default async function VanDetailPage({ params }: { params: { id: string }
     ['Grade Score',    listing.inspection_score ? `${listing.inspection_score} — ${scoreLabel(listing.inspection_score)}` : '—'],
   ]
 
-  const ctaLabel = listing.source === 'auction' ? 'Hold This Van — $2,750 Deposit'
-    : listing.source === 'au_stock' ? 'Reserve Now — $2,750 Deposit'
-    : 'Express Interest — Book a Call'
+  const ctaLabel = listing.source === 'auction' ? 'View & Bid — $3,000 Deposit'
+    : listing.source === 'au_stock' ? 'Reserve This Van — $3,000'
+    : 'Reserve This Van — $3,000'
 
   const vehicleJsonLd = {
     '@context': 'https://schema.org',
@@ -137,7 +137,7 @@ export default async function VanDetailPage({ params }: { params: { id: string }
         <StickyMobileCTA
           listingId={listing.id}
           price={displayPrice}
-          ctaLabel="Build This Van →"
+          ctaLabel={listing.source === 'au_stock' ? 'Reserve & Test Drive →' : 'Reserve This Van →'}
         />
       )}
       <script
@@ -288,6 +288,44 @@ export default async function VanDetailPage({ params }: { params: { id: string }
               <ImportEstimate lines={breakdown.lines} totalCents={breakdown.totalCents} />
             )}
 
+            {/* What You're Paying — transparency block */}
+            {isJapanListing && priceCents && (
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 mb-6">
+                <h3 className="text-sm font-bold text-charcoal mb-3">What You&apos;re Paying</h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Van price (Japan)</span>
+                    <span className="text-gray-800 font-medium">{displayPrice}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Shipping + compliance + rego</span>
+                    <span className="text-gray-800 font-medium">~$5,800–$6,200</span>
+                  </div>
+                  <div className="flex justify-between pt-2 border-t border-gray-200">
+                    <span className="text-charcoal font-semibold">Total landed in Brisbane</span>
+                    <span className="text-charcoal font-semibold">
+                      {priceCents ? centsToAud(priceCents + 600000) : '—'}
+                    </span>
+                  </div>
+                  {listing.au_market_price_low && listing.au_market_price_high && (
+                    <>
+                      <div className="flex justify-between pt-2 text-gray-400">
+                        <span>Same spec at a Brisbane dealer</span>
+                        <span>~${Math.round((listing.au_market_price_low + listing.au_market_price_high) / 200).toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between text-green-700 font-semibold">
+                        <span>You save</span>
+                        <span>~${Math.round(((listing.au_market_price_low + listing.au_market_price_high) / 2 - priceCents - 600000) / 100).toLocaleString()}</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+                <p className="text-xs text-gray-400 mt-3">
+                  $3,000 to reserve — fully refundable if we don&apos;t secure the van.
+                </p>
+              </div>
+            )}
+
             {/* Market comparison */}
             <MarketContext
               listingPriceCents={priceCents}
@@ -382,7 +420,7 @@ export default async function VanDetailPage({ params }: { params: { id: string }
                 <div className="space-y-3">
                   <Link href={`/configurator?van=${listing.id}`}
                     className="btn-primary w-full text-center text-base py-4 block">
-                    Build This Van →
+                    {listing.source === 'au_stock' ? 'Reserve & Test Drive →' : listing.source === 'auction' ? 'View & Bid →' : 'Reserve This Van →'}
                   </Link>
                   <DepositHoldButton
                     listing={listing}
@@ -409,6 +447,37 @@ export default async function VanDetailPage({ params }: { params: { id: string }
             )}
           </div>
         </div>
+
+        {/* Pop-top / conversion upsell — show on vans without fitout */}
+        {!listing.has_fitout && listing.status !== 'sold' && (
+          <div className="mt-10 space-y-4">
+            <h2 className="text-xl text-charcoal font-bold">Add a Conversion</h2>
+            <div className="border border-gray-200 rounded-xl p-5 hover:border-ocean/40 transition-colors">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h3 className="font-bold text-charcoal mb-1">+ Pop-Top Roof Conversion</h3>
+                  <p className="text-sm text-gray-500 leading-relaxed">Standing room. Ventilation. Bed platform.</p>
+                  <p className="text-xs text-gray-400 mt-1">From $13,090 inc GST · 10-day turnaround</p>
+                </div>
+                <Link href="/configurator?van={listing.id}&addon=poptop" className="text-ocean text-sm font-semibold whitespace-nowrap hover:underline shrink-0">
+                  Add to this build →
+                </Link>
+              </div>
+            </div>
+            <div className="border border-gray-200 rounded-xl p-5 hover:border-ocean/40 transition-colors">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h3 className="font-bold text-charcoal mb-1">+ Full Camper Build (MANA or TAMA)</h3>
+                  <p className="text-sm text-gray-500 leading-relaxed">Van + roof + electrical + furniture. Everything. Just hand me the keys.</p>
+                  <p className="text-xs text-gray-400 mt-1">From $25,000 on top of van price</p>
+                </div>
+                <a href="https://wa.me/61432182892?text=Hi!%20I'm%20interested%20in%20a%20full%20build%20for%20van%20${listing.id}" target="_blank" rel="noopener noreferrer" className="text-ocean text-sm font-semibold whitespace-nowrap hover:underline shrink-0">
+                  Talk to us →
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
 
         {listing.description && (
           <div className="mt-10 bg-cream rounded-2xl p-6">
