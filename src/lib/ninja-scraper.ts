@@ -207,13 +207,22 @@ export async function runNinjaScraper(options: {
       onProgress(`  Set drive type: ${filters.driveType}`)
     }
 
-    await page.evaluate(() => {
-      (document.getElementById('brandGroupingCode') as HTMLInputElement).value = '01';
-      (document.getElementById('action') as HTMLInputElement).value = 'init';
-      (document.getElementById('form1') as HTMLFormElement).action = 'makersearch.action';
-      (document.getElementById('form1') as HTMLFormElement).submit()
-    })
-    await page.waitForNavigation({ waitUntil: 'load', timeout: 15000 })
+    await Promise.all([
+      page.waitForNavigation({ waitUntil: 'load', timeout: 15000 }),
+      page.evaluate(() => {
+        const form = document.getElementById('form1') as HTMLFormElement
+        if (!form) return
+        function setOrCreate(id: string, value: string) {
+          let el = document.getElementById(id) as HTMLInputElement
+          if (!el) { el = document.createElement('input'); el.type = 'hidden'; el.id = id; el.name = id; form.appendChild(el) }
+          el.value = value
+        }
+        setOrCreate('brandGroupingCode', '01')
+        setOrCreate('action', 'init')
+        form.action = 'makersearch.action'
+        form.submit()
+      }),
+    ])
     await page.waitForLoadState('networkidle').catch(() => {})
 
     await humanDelay(1000, 2000)
@@ -276,13 +285,22 @@ export async function runNinjaScraper(options: {
       // Go back to makersearch for the next category
       if (CAR_CATEGORY_NOS.indexOf(catNo) < CAR_CATEGORY_NOS.length - 1) {
         onProgress(`  Going back to makersearch...`)
-        await page.evaluate(() => {
-          (document.getElementById('brandGroupingCode') as HTMLInputElement).value = '01';
-          (document.getElementById('action') as HTMLInputElement).value = 'init';
-          (document.getElementById('form1') as HTMLFormElement).action = 'makersearch.action';
-          (document.getElementById('form1') as HTMLFormElement).submit()
-        })
-        await page.waitForNavigation({ waitUntil: 'load', timeout: 15000 })
+        await Promise.all([
+          page.waitForNavigation({ waitUntil: 'load', timeout: 15000 }),
+          page.evaluate(() => {
+            const form = document.getElementById('form1') as HTMLFormElement
+            if (!form) return
+            function setOrCreate(id: string, value: string) {
+              let el = document.getElementById(id) as HTMLInputElement
+              if (!el) { el = document.createElement('input'); el.type = 'hidden'; el.id = id; el.name = id; form.appendChild(el) }
+              el.value = value
+            }
+            setOrCreate('brandGroupingCode', '01')
+            setOrCreate('action', 'init')
+            form.action = 'makersearch.action'
+            form.submit()
+          }),
+        ])
         await page.waitForLoadState('networkidle').catch(() => {})
       }
     }
@@ -379,24 +397,30 @@ export async function runNinjaScraper(options: {
           }, { rid: radioId, val: filters.driveType })
         }
 
-        // Check if brandGroupingCode exists before navigating
-        const hasBGC = await page.evaluate(() => !!document.getElementById('brandGroupingCode'))
-        if (!hasBGC) {
-          // Take a screenshot to see what page we're on
-          await page.screenshot({ path: `screenshots/debug-no-bgc-${i}.png`, fullPage: true }).catch(() => {})
-          onProgress(`${label} — brandGroupingCode not found on ${page.url()}, screenshot saved`)
-          errors++
-          continue
-        }
-
-        // Navigate to makersearch (Toyota)
+        // Navigate to makersearch (Toyota) — create hidden fields if they don't exist
         await Promise.all([
           page.waitForNavigation({ waitUntil: 'load', timeout: 15000 }),
           page.evaluate(() => {
-            (document.getElementById('brandGroupingCode') as HTMLInputElement).value = '01';
-            (document.getElementById('action') as HTMLInputElement).value = 'init';
-            (document.getElementById('form1') as HTMLFormElement).action = 'makersearch.action';
-            (document.getElementById('form1') as HTMLFormElement).submit()
+            const form = document.getElementById('form1') as HTMLFormElement
+            if (!form) return
+
+            // Helper: set or create a hidden input on the form
+            function setOrCreate(id: string, value: string) {
+              let el = document.getElementById(id) as HTMLInputElement
+              if (!el) {
+                el = document.createElement('input')
+                el.type = 'hidden'
+                el.id = id
+                el.name = id
+                form.appendChild(el)
+              }
+              el.value = value
+            }
+
+            setOrCreate('brandGroupingCode', '01')
+            setOrCreate('action', 'init')
+            form.action = 'makersearch.action'
+            form.submit()
           }),
         ])
         await page.waitForLoadState('networkidle').catch(() => {})
@@ -826,34 +850,7 @@ async function extractDetailPage(page: Page, ref: NinjaListingRef): Promise<Scra
 // Helpers
 // ============================================================
 
-/** Try to recover to a usable page state after navigation failure */
-async function recoverToSearchResults(page: Page, onProgress: (msg: string) => void) {
-  try {
-    // Try submitting form1 back to makersearch
-    await Promise.all([
-      page.waitForNavigation({ waitUntil: 'load', timeout: 10000 }),
-      page.evaluate(() => {
-        const form = document.getElementById('form1') as HTMLFormElement
-        if (form) {
-          (document.getElementById('brandGroupingCode') as HTMLInputElement).value = '01';
-          (document.getElementById('action') as HTMLInputElement).value = 'init';
-          form.action = 'makersearch.action'
-          form.submit()
-        }
-      }),
-    ])
-    await page.waitForLoadState('networkidle').catch(() => {})
-    // Then navigate to search results
-    await Promise.all([
-      page.waitForNavigation({ waitUntil: 'load', timeout: 10000 }),
-      page.evaluate(() => (window as any).makerListChoiceCarCat('146')),
-    ])
-    await page.waitForLoadState('networkidle').catch(() => {})
-    onProgress('  Recovered to search results')
-  } catch {
-    onProgress('  Recovery failed — continuing anyway')
-  }
-}
+// (recoverToSearchResults removed — no longer needed with goto approach)
 
 function delay(ms: number) {
   return new Promise((r) => setTimeout(r, ms))
