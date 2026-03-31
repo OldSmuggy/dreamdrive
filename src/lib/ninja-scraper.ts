@@ -308,7 +308,8 @@ export async function runNinjaScraper(options: {
     })
 
     onProgress(`Total unique refs: ${uniqueRefs.length}`)
-    const limitedRefs = maxListings ? uniqueRefs.slice(0, maxListings) : uniqueRefs
+    // Don't pre-slice refs — iterate all and stop when we've processed enough
+    const limitedRefs = uniqueRefs
 
     // ----------------------------------------------------------
     // 4. Log scrape start
@@ -321,20 +322,21 @@ export async function runNinjaScraper(options: {
 
     const { data: log } = await supabase
       .from('scrape_logs')
-      .insert({ source: 'ninja', status: 'running', listings_found: limitedRefs.length })
+      .insert({ source: 'ninja', status: 'running', listings_found: uniqueRefs.length })
       .select('id')
       .single()
     logId = log?.id ?? null
 
     // ----------------------------------------------------------
-    // 5. Fetch detail pages — sequential click-back-click pattern
+    // 5. Fetch detail pages — click detail → scrape → recover
     //
-    // After Step 3 we're already on a search results page.
-    // For each listing: seniCarDetail() → scrape → goBack() → next.
-    // goBack() restores the page from browser cache (bfcache).
-    // If seniCarDetail is lost after goBack, do full recovery.
+    // After Step 3 we're on a search results page.
+    // For each listing: seniCarDetail() → scrape → back-to-list or re-login.
+    // Struts form tokens are single-use, so after visiting a detail page
+    // we try the "Back to the list" link first, then fall back to
+    // full re-login → searchcondition → makersearch → category.
     // ----------------------------------------------------------
-    onProgress('Step 4: Fetching detail pages (click-back-click)...')
+    onProgress('Step 4: Fetching detail pages...')
     const processed: ScrapedVan[] = []
     let skipped = 0
     let errors = 0
@@ -346,14 +348,27 @@ export async function runNinjaScraper(options: {
     const hasSeniCarDetail = () =>
       page.evaluate('typeof seniCarDetail === "function"')
 
-    // Helper: full recovery — navigate from scratch to a search results page
-    const recoverToResultsPage = async (logLabel: string) => {
-      onProgress(`${logLabel} — recovering: navigating from login to results...`)
+    // Helper: check if we hit sessionTimeOut and need to re-login
+    const isSessionTimedOut = async () => {
+      const text = await page.textContent('body') || ''
+      return text.includes('sessionTimeOut') || text.includes('Back to login')
+    }
 
-      // Step A: go to searchcondition via URL
-      await page.goto(`${BASE}/ninja/searchcondition.action`, {
-        waitUntil: 'networkidle', timeout: 30000,
-      })
+    // Helper: re-login from scratch (when session times out)
+    const reLogin = async (logLabel: string) => {
+      onProgress(`${logLabel} — session timed out, re-logging in...`)
+      await page.goto(`${BASE}/ninja/`, { waitUntil: 'networkidle', timeout: 30000 })
+      await humanDelay(500, 1000)
+      await page.fill('#loginId', loginId)
+      await humanDelay(200, 500)
+      await page.fill('#password', password)
+      await humanDelay(200, 500)
+      await page.evaluate(`(function() {
+        document.getElementById('loginId').value = '${loginId}';
+        document.getElementById('password').value = '${password}';
+        login();
+      })()`)
+      await page.waitForTimeout(3000)
 
       // Handle session conflict
       const bText = await page.textContent('body') || ''
@@ -364,9 +379,75 @@ export async function runNinjaScraper(options: {
         ])
         await page.waitForLoadState('networkidle').catch(() => {})
       }
+
+      const url = page.url()
+      if (!url.includes('searchcondition')) {
+        onProgress(`${logLabel} — re-login failed, ended on ${url}`)
+        return false
+      }
+      onProgress(`${logLabel} — re-login succeeded`)
+      return true
+    }
+
+    // Helper: navigate back to results from a detail page using the "Back to the list" link
+    // This uses the proper Struts form flow, keeping tokens valid
+    const goBackToList = async (logLabel: string): Promise<boolean> => {
+      // Try the "Back to the list" link first — it's a proper Struts navigation
+      const backLink = await page.$('a[href*="javascript:seniBackToList"]')
+        || await page.$('a:has-text("Back to the list")')
+        || await page.$('a:has-text("back to the list")')
+
+      if (backLink) {
+        onProgress(`${logLabel} — clicking "Back to the list"...`)
+        await Promise.all([
+          page.waitForNavigation({ waitUntil: 'load', timeout: 30000 }),
+          backLink.click(),
+        ])
+        await page.waitForLoadState('networkidle').catch(() => {})
+        const ok = await hasSeniCarDetail()
+        if (ok) return true
+      }
+
+      // Fallback: try evaluating seniBackToList() directly
+      const hasFn = await page.evaluate('typeof seniBackToList === "function"')
+      if (hasFn) {
+        onProgress(`${logLabel} — calling seniBackToList()...`)
+        await Promise.all([
+          page.waitForNavigation({ waitUntil: 'load', timeout: 30000 }),
+          page.evaluate('seniBackToList()'),
+        ])
+        await page.waitForLoadState('networkidle').catch(() => {})
+        const ok = await hasSeniCarDetail()
+        if (ok) return true
+      }
+
+      // Fallback: try goBack()
+      onProgress(`${logLabel} — no back-to-list found, trying goBack()...`)
+      await page.goBack({ waitUntil: 'networkidle', timeout: 30000 }).catch(() => {})
+      await page.waitForFunction('typeof seniCarDetail === "function"', { timeout: 5000 }).catch(() => {})
+      return await hasSeniCarDetail()
+    }
+
+    // Helper: full recovery — re-login and navigate from scratch to a search results page
+    let recoveryCount = 0
+    const recoverToResultsPage = async (logLabel: string) => {
+      recoveryCount++
+      onProgress(`${logLabel} — full recovery #${recoveryCount}: re-login → results...`)
+
+      // Always re-login since direct URL navigation doesn't work with Struts
+      const loggedIn = await reLogin(logLabel)
+      if (!loggedIn) return false
+
+      // We're on searchcondition now. Set up form1 and submit to makersearch
+      const hasForm = await page.evaluate('!!document.getElementById("form1")')
+      if (!hasForm) {
+        onProgress(`${logLabel} — no form1 on searchcondition, recovery failed`)
+        return false
+      }
+
       await humanDelay(500, 1000)
 
-      // Step B: submit to makersearch (no need to re-apply filters — we already have refs)
+      // Submit to makersearch
       await Promise.all([
         page.waitForNavigation({ waitUntil: 'load', timeout: 30000 }),
         page.evaluate(SUBMIT_TO_MAKERSEARCH_JS),
@@ -374,7 +455,7 @@ export async function runNinjaScraper(options: {
       await page.waitForLoadState('networkidle').catch(() => {})
       await humanDelay(500, 1000)
 
-      // Step C: click HIACE VAN category
+      // Click HIACE VAN category
       await Promise.all([
         page.waitForNavigation({ waitUntil: 'load', timeout: 30000 }),
         page.evaluate("makerListChoiceCarCat('146')"),
@@ -397,9 +478,12 @@ export async function runNinjaScraper(options: {
     onProgress('  ✓ On search results page — starting detail scrape')
 
     for (let i = 0; i < limitedRefs.length; i++) {
+      // Stop when we've processed enough listings
+      if (maxListings && processed.length >= maxListings) break
+
       const ref = limitedRefs[i]
       const refKey = `${ref.KaijoCode}|${ref.AuctionCount}|${ref.BidNo}`
-      const label = `[${i + 1}/${limitedRefs.length}] ${ref.KaijoCode}-${ref.AuctionCount}-${ref.BidNo}`
+      const label = `[${processed.length + 1}/${maxListings ?? limitedRefs.length}] ${ref.KaijoCode}-${ref.AuctionCount}-${ref.BidNo}`
 
       if (visited.has(refKey)) {
         onProgress(`${label} — already visited, skipping`)
@@ -433,8 +517,13 @@ export async function runNinjaScraper(options: {
         await page.waitForLoadState('networkidle').catch(() => {})
         visited.add(refKey)
 
-        // Verify we actually landed on a detail page (not redirected)
+        // Verify we actually landed on a detail page (not redirected/timed out)
         const pageUrl = page.url()
+        if (await isSessionTimedOut()) {
+          onProgress(`${label} — session timed out on detail navigation, will recover`)
+          errors++
+          continue
+        }
         if (pageUrl.includes('searchcondition') || pageUrl.includes('makersearch')) {
           onProgress(`${label} — landed on ${pageUrl} instead of detail page, skipping`)
           errors++
@@ -450,7 +539,10 @@ export async function runNinjaScraper(options: {
         if (!van) {
           onProgress(`${label} — parse failed (screenshot: ${screenshotPath})`)
           errors++
-          await page.goBack({ waitUntil: 'networkidle', timeout: 30000 }).catch(() => {})
+          // Try back-to-list, then full recovery if that fails
+          if (!await goBackToList(label)) {
+            await recoverToResultsPage(label)
+          }
           await humanDelay(1000, 2000)
           continue
         }
@@ -461,7 +553,9 @@ export async function runNinjaScraper(options: {
         if (excluded) {
           onProgress(`${label} — excluded grade: ${van.grade}`)
           skipped++
-          await page.goBack({ waitUntil: 'networkidle', timeout: 30000 }).catch(() => {})
+          if (!await goBackToList(label)) {
+            await recoverToResultsPage(label)
+          }
           await humanDelay(1000, 2000)
           continue
         }
@@ -568,18 +662,19 @@ export async function runNinjaScraper(options: {
           }
         }
 
-        // GO BACK to search results
-        onProgress(`${label} — going back to results...`)
-        await page.goBack({ waitUntil: 'networkidle', timeout: 30000 }).catch(() => {})
-        // Wait for page JS to re-initialise (bfcache restore)
-        await page.waitForFunction('typeof seniCarDetail === "function"', { timeout: 10000 }).catch(() => {})
+        // Navigate back to results using "Back to the list" link
+        onProgress(`${label} — navigating back to results...`)
+        if (!await goBackToList(label)) {
+          await recoverToResultsPage(label)
+        }
         await humanDelay(1000, 2500)
 
       } catch (err) {
         onProgress(`${label} — error: ${err}`)
         errors++
-        // Try goBack, then check state at top of next iteration
-        await page.goBack({ waitUntil: 'networkidle', timeout: 15000 }).catch(() => {})
+        // Try back-to-list, then full recovery
+        const backOk = await goBackToList(label).catch(() => false)
+        if (!backOk) await recoverToResultsPage(label).catch(() => {})
         await humanDelay(1000, 2000)
       }
     }
@@ -592,20 +687,21 @@ export async function runNinjaScraper(options: {
         .from('scrape_logs')
         .update({
           completed_at: new Date().toISOString(),
-          listings_found: limitedRefs.length,
+          listings_found: uniqueRefs.length,
           listings_new: newInserts,
           status: 'success',
         })
         .eq('id', logId)
     }
 
+    const attempted = processed.length + skipped + errors
     onProgress(
-      `Done. found=${limitedRefs.length} processed=${processed.length} new=${newInserts} ` +
+      `Done. found=${uniqueRefs.length} attempted=${attempted} processed=${processed.length} new=${newInserts} ` +
       `dupes=${duplicates} skipped=${skipped} errors=${errors}`
     )
 
     return {
-      found: limitedRefs.length,
+      found: uniqueRefs.length,
       processed: processed.length,
       skipped,
       errors,
