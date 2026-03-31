@@ -325,21 +325,6 @@ export async function runNinjaScraper(options: {
     let newInserts = 0
     let duplicates = 0
 
-    // Navigate to the search results page (need valid form state for seniCarDetail)
-    if (!page.url().includes('searchresultlist')) {
-      await Promise.all([
-        page.waitForNavigation({ waitUntil: 'load', timeout: 15000 }),
-        page.evaluate(() => (window as any).makerListChoiceCarCat('146')),
-      ])
-      await page.waitForLoadState('networkidle').catch(() => {})
-    }
-
-    // Strategy: call seniCarDetail on the search results page, which opens
-    // the detail page via form submit. Then use a NEW TAB for each detail
-    // page so the search results page stays intact for the next call.
-    // seniCarDetail sets form fields and submits — we intercept the form
-    // submission by modifying form target to open in a new tab.
-
     for (let i = 0; i < limitedRefs.length; i++) {
       const ref = limitedRefs[i]
       const label = `[${i + 1}/${limitedRefs.length}] ${ref.KaijoCode}-${ref.AuctionCount}-${ref.BidNo}`
@@ -348,37 +333,48 @@ export async function runNinjaScraper(options: {
         // Human-like delay between detail pages
         if (i > 0) await humanDelay(1500, 4000)
 
-        // Open detail page in a new tab by setting form1 target to _blank,
-        // calling seniCarDetail, then resetting the target.
-        const [detailPage] = await Promise.all([
-          context.waitForEvent('page', { timeout: 15000 }),
+        // STEP A: Navigate to search results (makersearch → category click)
+        // We must do this every time because Struts form tokens are single-use.
+        // After viewing a detail page, the server session has moved on.
+        onProgress(`${label} — navigating to search results...`)
+        await Promise.all([
+          page.waitForNavigation({ waitUntil: 'load', timeout: 15000 }),
+          page.evaluate(() => {
+            (document.getElementById('brandGroupingCode') as HTMLInputElement).value = '01';
+            (document.getElementById('action') as HTMLInputElement).value = 'init';
+            (document.getElementById('form1') as HTMLFormElement).action = 'makersearch.action';
+            (document.getElementById('form1') as HTMLFormElement).submit()
+          }),
+        ])
+        await page.waitForLoadState('networkidle').catch(() => {})
+        await humanDelay(500, 1000)
+
+        // Click the HIACE VAN category to get to search results
+        await Promise.all([
+          page.waitForNavigation({ waitUntil: 'load', timeout: 15000 }),
+          page.evaluate(() => (window as any).makerListChoiceCarCat('146')),
+        ])
+        await page.waitForLoadState('networkidle').catch(() => {})
+
+        // STEP B: Navigate to the detail page using seniCarDetail
+        await Promise.all([
+          page.waitForNavigation({ waitUntil: 'load', timeout: 15000 }),
           page.evaluate(
-            `(function() {
-              var form = document.getElementById('form1');
-              form.target = '_blank';
-              seniCarDetail('${ref.carKindType}','${ref.KaijoCode}','${ref.AuctionCount}','${ref.BidNo}','');
-              form.target = '';
-            })()`
+            `seniCarDetail('${ref.carKindType}','${ref.KaijoCode}','${ref.AuctionCount}','${ref.BidNo}','')`
           ),
         ])
+        await page.waitForLoadState('networkidle').catch(() => {})
 
-        await detailPage.waitForLoadState('networkidle').catch(() => {})
+        // Take a screenshot of the detail page for debugging
+        const screenshotPath = `screenshots/ninja-${ref.KaijoCode}-${ref.BidNo}.png`
+        await page.screenshot({ path: screenshotPath, fullPage: true }).catch(() => {})
+        onProgress(`${label} — screenshot saved: ${screenshotPath}`)
 
-        // Check if we actually landed on a detail page
-        const detailUrl = detailPage.url()
-        if (!detailUrl.includes('cardetail')) {
-          onProgress(`${label} — navigation failed (landed on ${detailUrl})`)
-          errors++
-          await detailPage.close()
-          continue
-        }
-
-        // Extract van data from the detail page
-        const van = await extractDetailPage(detailPage, ref)
+        // STEP C: Extract van data from the detail page
+        const van = await extractDetailPage(page, ref)
         if (!van) {
           onProgress(`${label} — parse failed`)
           errors++
-          await detailPage.close()
           continue
         }
 
@@ -388,11 +384,10 @@ export async function runNinjaScraper(options: {
         if (excluded) {
           onProgress(`${label} — excluded grade: ${van.grade}`)
           skipped++
-          await detailPage.close()
           continue
         }
 
-        // Download photos from NINJA (requires session cookies) and upload to Supabase storage
+        // STEP D: Download photos from NINJA (requires session cookies) and upload to Supabase
         const originalPhotoCount = van.photos.length
         if (van.photos.length > 0) {
           onProgress(`${label} — downloading ${van.photos.length} photos...`)
@@ -428,17 +423,16 @@ export async function runNinjaScraper(options: {
           onProgress(`${label} — ${uploadedPhotos.length}/${originalPhotoCount} photos saved`)
         } else {
           // Debug: log what the photo hidden inputs contain
-          const photoDebug = await detailPage.evaluate(() => {
+          const photoDebug = await page.evaluate(() => {
             const result: string[] = []
             for (let i = 1; i <= 6; i++) {
               const el = document.getElementById('photo' + i) as HTMLInputElement
               result.push(`photo${i}: ${el ? (el.value || '(empty)') : '(not found)'}`)
             }
-            // Also check for img tags with photos
-            const imgs = document.querySelectorAll('.vehicleDetailPhotoBox img, .photo img, img[src*="get_image"]')
-            result.push(`img tags found: ${imgs.length}`)
+            const imgs = document.querySelectorAll('img[src*="get_image"]')
+            result.push(`img[get_image] tags: ${imgs.length}`)
             imgs.forEach((img, idx) => {
-              if (idx < 3) result.push(`  img[${idx}]: ${(img as HTMLImageElement).src.substring(0, 100)}`)
+              if (idx < 3) result.push(`  img[${idx}]: ${(img as HTMLImageElement).src.substring(0, 120)}`)
             })
             return result
           })
@@ -470,16 +464,13 @@ export async function runNinjaScraper(options: {
           }
         }
 
-        // Close the detail tab — search results page stays intact
-        await detailPage.close()
-
         processed.push(van)
         onProgress(
           `${label} — ${van.grade || 'UNKNOWN'} ${van.model_year ?? '?'} ` +
           `${van.mileage_km ?? '?'}km score:${van.inspection_score ?? '-'} ¥${van.start_price_jpy ?? '?'} [${van.photos.length} photos]`
         )
 
-        // Write to Supabase
+        // STEP E: Write to Supabase
         const { data: existing } = await supabase
           .from('listings')
           .select('id')
