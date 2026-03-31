@@ -12,7 +12,6 @@ interface ScrapeResult {
 }
 
 export default function ScrapePanel({ secret }: { secret: string }) {
-  const [dryRun, setDryRun] = useState(true)
   const [max, setMax] = useState('')
   const [yearFrom, setYearFrom] = useState('2015')
   const [yearTo, setYearTo] = useState('2024')
@@ -25,7 +24,6 @@ export default function ScrapePanel({ secret }: { secret: string }) {
 
   const buildCommand = () => {
     let cmd = 'npx tsx scripts/run-ninja-scrape.ts'
-    if (dryRun) cmd += ' --dry-run'
     if (max.trim()) cmd += ` --max ${max.trim()}`
     if (yearFrom.trim()) cmd += ` --year-from ${yearFrom.trim()}`
     if (yearTo.trim()) cmd += ` --year-to ${yearTo.trim()}`
@@ -46,7 +44,6 @@ export default function ScrapePanel({ secret }: { secret: string }) {
     setError(null)
 
     const params = new URLSearchParams()
-    if (dryRun) params.set('dryRun', 'true')
     if (max.trim()) params.set('max', max.trim())
 
     const url = `/api/scrape${params.toString() ? `?${params}` : ''}`
@@ -167,34 +164,34 @@ export default function ScrapePanel({ secret }: { secret: string }) {
           </label>
         </div>
 
-        {/* Options row */}
-        <div className="flex items-center gap-6 mb-5">
-          <label className="flex items-center gap-2 cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={dryRun}
-              onChange={e => setDryRun(e.target.checked)}
-              className="w-4 h-4 accent-ocean"
-            />
-            <span className="text-sm font-medium text-gray-700">
-              Dry run <span className="text-gray-400 font-normal">(preview only, no DB writes)</span>
-            </span>
-          </label>
-        </div>
-
-        {/* One-time setup */}
-        <div className="bg-gray-50 rounded-lg p-3 mb-3 text-xs text-gray-500 font-mono">
-          <div className="text-gray-400 mb-1"># First time setup</div>
-          <div>cd ~/Desktop/&quot;DD App&quot;/dreamdrive && npx playwright install chromium</div>
+        {/* How to run */}
+        <div className="bg-gray-50 rounded-lg p-4 mb-3 text-xs text-gray-600 space-y-3">
+          <div>
+            <span className="font-semibold text-gray-700">1. First time only</span>
+            <div className="font-mono text-gray-500 mt-1 bg-white border border-gray-200 rounded px-3 py-2">
+              cd ~/Desktop/&quot;DD App&quot;/dreamdrive && npx playwright install chromium
+            </div>
+          </div>
+          <div>
+            <span className="font-semibold text-gray-700">2. Open Terminal, paste the command below</span>
+            <p className="text-gray-400 mt-0.5">
+              Takes ~30–60s per listing (logs in, clicks through each van, downloads photos).
+              <code className="bg-gray-100 px-1 rounded">--max</code> = number of listings to <strong>process</strong> (skipped grades don&apos;t count).
+            </p>
+          </div>
         </div>
 
         {/* Generated command */}
         <div className="relative group">
           <div className="bg-gray-950 text-green-400 rounded-lg p-4 font-mono text-sm overflow-x-auto pr-16">
-            {buildCommand()}
+            cd ~/Desktop/&quot;DD App&quot;/dreamdrive && {buildCommand()}
           </div>
           <button
-            onClick={copyCommand}
+            onClick={() => {
+              navigator.clipboard.writeText(`cd ~/Desktop/"DD App"/dreamdrive && ${buildCommand()}`)
+              setCopied(true)
+              setTimeout(() => setCopied(false), 2000)
+            }}
             className="absolute top-2 right-2 px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-md text-xs font-medium transition-colors"
           >
             {copied ? '✓ Copied!' : '📋 Copy'}
@@ -202,8 +199,9 @@ export default function ScrapePanel({ secret }: { secret: string }) {
         </div>
 
         <p className="text-xs text-gray-400 mt-2">
-          Run this command in Terminal. Takes ~2–4s per listing.
-          Needs <code className="bg-gray-100 px-1 rounded">NINJA_LOGIN_ID</code> and <code className="bg-gray-100 px-1 rounded">NINJA_PASSWORD</code> in <code className="bg-gray-100 px-1 rounded">.env.local</code>.
+          Requires <code className="bg-gray-100 px-1 rounded">NINJA_LOGIN_ID</code> and <code className="bg-gray-100 px-1 rounded">NINJA_PASSWORD</code> in <code className="bg-gray-100 px-1 rounded">.env.local</code>.
+          New listings go to <strong>Draft</strong> — review and publish from{' '}
+          <a href="/admin/listings" className="text-ocean underline">Listings</a>.
         </p>
       </div>
 
@@ -234,9 +232,7 @@ export default function ScrapePanel({ secret }: { secret: string }) {
       {/* Result summary */}
       {result && (
         <div className="bg-green-50 border border-green-200 rounded-xl p-5">
-          <p className="font-semibold text-green-800 mb-3">
-            {dryRun ? 'Dry run complete' : 'Scrape complete'}
-          </p>
+          <p className="font-semibold text-green-800 mb-3">Scrape complete</p>
           <div className="grid grid-cols-3 gap-3 text-center">
             {[
               { label: 'Found', value: result.found },
@@ -252,7 +248,7 @@ export default function ScrapePanel({ secret }: { secret: string }) {
               </div>
             ))}
           </div>
-          {!dryRun && result.newInserts > 0 && (
+          {result.newInserts > 0 && (
             <div className="mt-4 text-center">
               <a href="/admin/listings" className="text-ocean text-sm font-semibold underline">
                 → View listings

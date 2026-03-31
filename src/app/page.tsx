@@ -3,6 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { createSupabaseServer } from '@/lib/supabase-server'
 import { centsToAud } from '@/lib/utils'
+import { listingDisplayPrice } from '@/lib/pricing'
 import { getSiteSettings } from '@/lib/site-settings'
 import { generateMeta } from '@/lib/seo'
 import type { Metadata } from 'next'
@@ -426,6 +427,9 @@ function FeaturedVanCard({ listing }: { listing: Listing }) {
   const badge = isAuStock ? 'IN STOCK AU' : listing.source === 'auction' ? 'AUCTION' : 'DEALER'
   const badgeColor = isAuStock ? 'bg-ocean' : listing.source === 'auction' ? 'bg-amber-500' : 'bg-blue-600'
 
+  const { priceCents, isEstimate, priceType } = listingDisplayPrice(listing)
+  const displayPrice = priceCents ? centsToAud(priceCents) : 'POA'
+
   return (
     <Link
       href={`/van/${listing.id}`}
@@ -445,14 +449,14 @@ function FeaturedVanCard({ listing }: { listing: Listing }) {
           {listing.model_year} · {listing.mileage_km ? `${listing.mileage_km.toLocaleString()} km` : '—'} · {listing.drive ?? '—'}
         </p>
         <p className="text-ocean text-3xl mb-6 font-bold">
-          {isAuStock && listing.au_price_aud
-            ? centsToAud(listing.au_price_aud)
-            : listing.aud_estimate
-            ? `~${centsToAud(listing.aud_estimate)}`
-            : listing.start_price_jpy
-            ? `¥${listing.start_price_jpy.toLocaleString()}`
-            : 'POA'}
+          {displayPrice}
+          {isEstimate && priceCents && <span className="text-lg text-gray-400 font-normal ml-2">est.</span>}
         </p>
+        {priceType === 'poa' && listing.au_market_price_low && listing.au_market_price_high && (
+          <p className="text-sm text-gray-400 -mt-4 mb-4">
+            Similar in AU: ${Math.round(listing.au_market_price_low / 1000)}–{Math.round(listing.au_market_price_high / 1000)}K
+          </p>
+        )}
         <span className="btn-primary inline-block text-sm px-6 py-3 self-start">View &amp; Build →</span>
       </div>
     </Link>

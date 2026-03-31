@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { createAdminClient } from '@/lib/supabase'
 import Link from 'next/link'
+import WeeklyPicksButton from './WeeklyPicksButton'
 
 export const metadata = { title: 'Dashboard | Admin' }
 
@@ -390,31 +391,7 @@ function ActionButton({ href, label, icon, count }: { href: string; label: strin
   )
 }
 
-function WeeklyPicksButton() {
-  return (
-    <form action="/api/admin/weekly-picks" method="POST">
-      <input type="hidden" name="preview" value="false" />
-      <button
-        type="button"
-        onClick={async (e) => {
-          e.preventDefault()
-          if (!confirm('Send the weekly auction picks email to all stock alert subscribers?')) return
-          const res = await fetch('/api/admin/weekly-picks', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ preview: false }),
-          })
-          const data = await res.json()
-          alert(data.ok ? `Sent! ${data.picks} vans to ${data.sent} subscribers` : data.message || 'No vans this week')
-        }}
-        className="flex items-center gap-2 px-4 py-2.5 bg-ocean text-white rounded-lg text-sm font-medium hover:bg-ocean/90 transition-colors"
-      >
-        <span>📧</span>
-        <span>Send Weekly Picks</span>
-      </button>
-    </form>
-  )
-}
+// WeeklyPicksButton is imported as a client component from ./WeeklyPicksButton.tsx
 
 // ── Helpers ─────────────────────────────────────────────────────
 

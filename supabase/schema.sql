@@ -78,6 +78,10 @@ create table if not exists listings (
   photos              text[] default '{}',
   inspection_sheet    text null,       -- CDN URL
   -- AU market price comparison
+  -- Customer-facing price (single source of truth)
+  price_aud            int null,       -- cents, display price
+  price_type           text null,      -- 'fixed' | 'estimate' | 'poa'
+  -- AU market price comparison
   au_market_price_low  int null,       -- AUD whole dollars
   au_market_price_high int null,       -- AUD whole dollars
   au_market_source     text default 'Carsales, CarsGuide, Autotrader — March 2026',

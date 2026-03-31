@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { centsToAud, sourceLabel } from '@/lib/utils'
 import { getAuMarketPrice } from '@/lib/au-market-price'
+import { estimateLandedAud, listingDisplayPrice } from '@/lib/pricing'
 import type { Listing, Source } from '@/types'
 import PhotoUploadButton from '@/components/ui/PhotoUploadButton'
 
@@ -65,8 +66,13 @@ type EditState = {
   au_market_price_high: string
   au_market_source: string
   au_market_note: string
-  notes_json: string
-  inspiration_json: string
+  notes: Array<{ id: string; author: string; date: string; sentiment: string; type: string; content: string }>
+  inspiration_title: string
+  inspiration_description: string
+  inspiration_link: string
+  inspiration_link_text: string
+  price_aud: string
+  price_type: string
 }
 
 function toEditState(l: Listing): EditState {
@@ -129,8 +135,16 @@ function toEditState(l: Listing): EditState {
     au_market_price_high: l.au_market_price_high?.toString() ?? '',
     au_market_source: l.au_market_source ?? '',
     au_market_note: l.au_market_note ?? '',
-    notes_json: l.notes ? JSON.stringify(l.notes, null, 2) : '',
-    inspiration_json: l.inspiration ? JSON.stringify(l.inspiration, null, 2) : '',
+    notes: (l.notes ?? []).map(n => ({
+      id: n.id, author: n.author, date: n.date,
+      sentiment: n.sentiment, type: n.type, content: n.content,
+    })),
+    inspiration_title: l.inspiration?.title ?? '',
+    inspiration_description: l.inspiration?.description ?? '',
+    inspiration_link: l.inspiration?.link ?? '',
+    inspiration_link_text: l.inspiration?.link_text ?? '',
+    price_aud: l.price_aud ? (l.price_aud / 100).toFixed(0) : '',
+    price_type: l.price_type ?? '',
   }
 }
 
@@ -720,7 +734,7 @@ interface RowProps {
   onSave: () => void
   onDelete: () => void
   onRetranslate: () => void
-  onSet: (field: keyof EditState, value: string | boolean | string[]) => void
+  onSet: (field: keyof EditState, value: EditState[keyof EditState]) => void
   onSetNewPhotoUrl: (v: string) => void
   onAddPhoto: () => void
   onRemovePhoto: (i: number) => void
@@ -742,11 +756,10 @@ function ListingRow({
   onSetNewPhotoUrl, onAddPhoto, onRemovePhoto, onMovePhoto, onClearPhotos, onUploadPhoto, onUploadingChange, photoUploading,
   newInteriorPhotoUrl, onSetNewInteriorPhotoUrl, onAddInteriorPhoto, onRemoveInteriorPhoto, onUploadInteriorPhoto,
 }: RowProps) {
-  const price = l.source === 'au_stock' && l.au_price_aud
-    ? centsToAud(l.au_price_aud)
-    : l.aud_estimate ? `~${centsToAud(l.aud_estimate)}`
-    : l.start_price_jpy ? `¥${l.start_price_jpy.toLocaleString()}`
-    : '—'
+  const { priceCents, priceType } = listingDisplayPrice(l)
+  const price = priceCents
+    ? `${priceType === 'estimate' ? '~' : ''}${centsToAud(priceCents)}`
+    : 'POA'
 
   return (
     <div className={`bg-white border rounded-xl overflow-hidden ${isEditing ? 'border-ocean shadow-md' : isSelected ? 'border-ocean' : 'border-gray-200'}`}>
@@ -1248,20 +1261,71 @@ function ListingRow({
 
             {/* Right — pricing + flags */}
             <div className="space-y-3">
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1.5">AUD Estimate ($)</label>
-                <div className="relative">
-                  <span className="absolute left-3 top-2 text-sm text-gray-400">$</span>
-                  <input type="number" value={editState.aud_estimate} onChange={e => onSet('aud_estimate', e.target.value)} className={`${inputClass} pl-6`} />
+              {/* ── Customer-facing price (primary) ── */}
+              {!editState.price_aud && (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                  <p className="text-xs text-amber-800 font-semibold">No AUD price set — will show as POA or use legacy fallback</p>
                 </div>
-              </div>
+              )}
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1.5">AU Price ($)</label>
-                <div className="relative">
-                  <span className="absolute left-3 top-2 text-sm text-gray-400">$</span>
-                  <input type="number" value={editState.au_price_aud} onChange={e => onSet('au_price_aud', e.target.value)} className={`${inputClass} pl-6`} />
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Display Price (AUD)</label>
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <span className="absolute left-3 top-2 text-sm text-gray-400">$</span>
+                    <input type="number" value={editState.price_aud} onChange={e => onSet('price_aud', e.target.value)} className={`${inputClass} pl-6`} placeholder="e.g. 38500" />
+                  </div>
+                  <select
+                    value={editState.price_type}
+                    onChange={e => onSet('price_type', e.target.value)}
+                    className="px-2 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ocean bg-white"
+                  >
+                    <option value="">— type —</option>
+                    <option value="fixed">Fixed</option>
+                    <option value="estimate">Estimate</option>
+                    <option value="poa">POA</option>
+                  </select>
                 </div>
+                {editState.start_price_jpy && !editState.price_aud && (
+                  <button
+                    type="button"
+                    className="mt-1.5 text-xs text-ocean hover:underline font-medium"
+                    onClick={() => {
+                      const jpyPrice = parseInt(editState.start_price_jpy)
+                      if (!jpyPrice || jpyPrice <= 0) return
+                      const cents = estimateLandedAud(jpyPrice)
+                      onSet('price_aud', (cents / 100).toFixed(0))
+                      onSet('price_type', 'estimate')
+                    }}
+                  >
+                    Calculate from ¥{parseInt(editState.start_price_jpy).toLocaleString()} → est. ${Math.round(estimateLandedAud(parseInt(editState.start_price_jpy)) / 100).toLocaleString()} AUD
+                  </button>
+                )}
+                <p className="text-[10px] text-gray-400 mt-0.5">This is the price customers see. Set type to &ldquo;Estimate&rdquo; for Japan-sourced vans.</p>
               </div>
+
+              <hr className="border-gray-200" />
+
+              {/* ── Legacy / source pricing ── */}
+              <details className="group">
+                <summary className="text-xs font-semibold text-gray-500 cursor-pointer hover:text-gray-700">Legacy price fields</summary>
+                <div className="mt-2 space-y-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">AUD Estimate ($)</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-2 text-sm text-gray-400">$</span>
+                      <input type="number" value={editState.aud_estimate} onChange={e => onSet('aud_estimate', e.target.value)} className={`${inputClass} pl-6`} />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">AU Price ($)</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-2 text-sm text-gray-400">$</span>
+                      <input type="number" value={editState.au_price_aud} onChange={e => onSet('au_price_aud', e.target.value)} className={`${inputClass} pl-6`} />
+                    </div>
+                  </div>
+                </div>
+              </details>
+
               <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-1.5">Market Comparison ($)</label>
                 <div className="relative">
@@ -1436,32 +1500,121 @@ function ListingRow({
             </div>
           </div>
 
-          {/* Buyer Notes (JSON) */}
+          {/* Buyer Agent Notes */}
           <div className="border-t border-gray-200 pt-4 mb-4">
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
-              Buyer Agent Notes <span className="text-gray-400 font-normal">(JSON array)</span>
-            </label>
-            <textarea
-              value={editState.notes_json}
-              onChange={e => onSet('notes_json', e.target.value)}
-              className={`${inputClass} font-mono text-xs`}
-              rows={4}
-              placeholder={'[\n  { "id": "1", "author": "Jared", "date": "2026-03-30", "sentiment": "positive", "type": "general", "content": "Great condition..." }\n]'}
-            />
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-xs font-semibold text-gray-600">Buyer Agent Notes</label>
+              <button
+                type="button"
+                className="text-xs text-ocean hover:underline font-medium"
+                onClick={() => {
+                  const next = [...editState.notes, {
+                    id: String(Date.now()),
+                    author: 'Jared',
+                    date: new Date().toISOString().slice(0, 10),
+                    sentiment: 'positive',
+                    type: 'agent_comment',
+                    content: '',
+                  }]
+                  onSet('notes', next)
+                }}
+              >
+                + Add note
+              </button>
+            </div>
+            {editState.notes.length === 0 && (
+              <p className="text-xs text-gray-400 italic">No notes yet. Click &ldquo;+ Add note&rdquo; to add one.</p>
+            )}
+            <div className="space-y-3">
+              {editState.notes.map((note, idx) => (
+                <div key={note.id} className="border border-gray-200 rounded-lg p-3 bg-gray-50">
+                  <div className="flex gap-2 mb-2">
+                    <input
+                      value={note.author}
+                      onChange={e => {
+                        const next = [...editState.notes]
+                        next[idx] = { ...next[idx], author: e.target.value }
+                        onSet('notes', next)
+                      }}
+                      className={`${inputClass} flex-1`}
+                      placeholder="Author name"
+                    />
+                    <select
+                      value={note.sentiment}
+                      onChange={e => {
+                        const next = [...editState.notes]
+                        next[idx] = { ...next[idx], sentiment: e.target.value }
+                        onSet('notes', next)
+                      }}
+                      className="px-2 py-2 border border-gray-300 rounded-lg text-sm bg-white"
+                    >
+                      <option value="positive">Positive</option>
+                      <option value="neutral">Neutral</option>
+                      <option value="caution">Caution</option>
+                    </select>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const next = editState.notes.filter((_, j) => j !== idx)
+                        onSet('notes', next)
+                      }}
+                      className="text-red-400 hover:text-red-600 text-sm px-1"
+                      title="Remove note"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <textarea
+                    value={note.content}
+                    onChange={e => {
+                      const next = [...editState.notes]
+                      next[idx] = { ...next[idx], content: e.target.value }
+                      onSet('notes', next)
+                    }}
+                    className={`${inputClass} text-sm`}
+                    rows={2}
+                    placeholder="Write your note here..."
+                  />
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Inspiration (JSON) */}
+          {/* Inspiration Block */}
           <div className="border-t border-gray-200 pt-4 mb-4">
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
-              Inspiration Block <span className="text-gray-400 font-normal">(JSON object)</span>
-            </label>
-            <textarea
-              value={editState.inspiration_json}
-              onChange={e => onSet('inspiration_json', e.target.value)}
-              className={`${inputClass} font-mono text-xs`}
-              rows={4}
-              placeholder={'{ "title": "What this van could become", "description": "...", "images": [], "link": "", "link_text": "" }'}
-            />
+            <label className="block text-xs font-semibold text-gray-600 mb-2">Inspiration Block</label>
+            <div className="space-y-2">
+              <input
+                value={editState.inspiration_title}
+                onChange={e => onSet('inspiration_title', e.target.value)}
+                className={inputClass}
+                placeholder="Title — e.g. What this van could become"
+              />
+              <textarea
+                value={editState.inspiration_description}
+                onChange={e => onSet('inspiration_description', e.target.value)}
+                className={`${inputClass} text-sm`}
+                rows={2}
+                placeholder="Description — e.g. This Hiace is the perfect base for a weekend adventurer build..."
+              />
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  value={editState.inspiration_link}
+                  onChange={e => onSet('inspiration_link', e.target.value)}
+                  className={inputClass}
+                  placeholder="Link URL (optional)"
+                />
+                <input
+                  value={editState.inspiration_link_text}
+                  onChange={e => onSet('inspiration_link_text', e.target.value)}
+                  className={inputClass}
+                  placeholder="Link text — e.g. See the build"
+                />
+              </div>
+              {!editState.inspiration_title && (
+                <p className="text-[10px] text-gray-400">Leave title empty to hide this block on the listing page.</p>
+              )}
+            </div>
           </div>
 
           {/* Photos */}
@@ -1676,7 +1829,7 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
     setError(null)
   }
 
-  const set = (field: keyof EditState, value: string | boolean | string[]) =>
+  const set = (field: keyof EditState, value: EditState[keyof EditState]) =>
     setEditState(s => s ? { ...s, [field]: value } : s)
 
   const addPhoto = () => {
@@ -1805,8 +1958,16 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
         au_market_price_high: editState.au_market_price_high ? parseInt(editState.au_market_price_high) : null,
         au_market_source: editState.au_market_source || null,
         au_market_note: editState.au_market_note || null,
-        notes: editState.notes_json ? JSON.parse(editState.notes_json) : null,
-        inspiration: editState.inspiration_json ? JSON.parse(editState.inspiration_json) : null,
+        notes: editState.notes.length > 0 ? editState.notes : null,
+        inspiration: editState.inspiration_title.trim() ? {
+          title: editState.inspiration_title.trim(),
+          description: editState.inspiration_description.trim(),
+          images: [],
+          link: editState.inspiration_link.trim() || undefined,
+          link_text: editState.inspiration_link_text.trim() || undefined,
+        } : null,
+        price_aud: editState.price_aud ? Math.round(parseFloat(editState.price_aud) * 100) : null,
+        price_type: editState.price_type || null,
       }
 
       const res = await fetch(`/api/listings/${id}`, {
