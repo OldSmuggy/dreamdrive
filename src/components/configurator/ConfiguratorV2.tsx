@@ -758,44 +758,43 @@ export default function ConfiguratorV2({
           )}
 
           {/* Van listing cards */}
-          {!isBYO && (
-            <>
-              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">
-                {isJapanBuild ? 'Matching Japan Vans' : 'Available Vans'}
-              </p>
-              {suggestedVans.length > 0 ? (
-                <div className="space-y-3">
-                  {suggestedVans.slice(0, 6).map(van => (
-                    <div
-                      key={van.id}
-                      onClick={() => setSelectedVan(prev => prev?.id === van.id ? null : van)}
-                      className={`border-2 rounded-xl p-4 cursor-pointer transition-colors flex items-center gap-4 ${
-                        selectedVan?.id === van.id
-                          ? 'border-ocean bg-cream'
-                          : 'border-gray-200 hover:border-gray-300 bg-white'
-                      }`}
-                    >
+          {!isBYO && (() => {
+            // Get price of currently selected van for savings comparison
+            const selectedPrice = selectedVan ? listingDisplayPrice(selectedVan, jpyRate).priceCents : null
+            // Sort alternatives by price (cheapest first), exclude selected van
+            const alternatives = suggestedVans
+              .filter(v => v.id !== selectedVan?.id)
+              .map(v => ({ ...v, _price: listingDisplayPrice(v, jpyRate).priceCents }))
+              .sort((a, b) => (a._price ?? Infinity) - (b._price ?? Infinity))
+
+            return (
+              <>
+                {/* Currently selected van */}
+                {selectedVan && (
+                  <>
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Your Selected Van</p>
+                    <div className="border-2 border-ocean bg-cream rounded-xl p-4 flex items-center gap-4 mb-6">
                       <div className="w-16 h-12 bg-gray-200 rounded-lg overflow-hidden shrink-0">
-                        {van.photos[0]
-                          ? <img src={van.photos[0]} alt="" className="w-full h-full object-cover" />
+                        {selectedVan.photos[0]
+                          ? <img src={selectedVan.photos[0]} alt="" className="w-full h-full object-cover" />
                           : <div className="w-full h-full flex items-center justify-center text-lg">🚐</div>
                         }
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-sm truncate">{van.model_name}</p>
+                        <p className="font-semibold text-sm truncate">{selectedVan.model_name}</p>
                         <p className="text-xs text-gray-500">
-                          {van.model_year} · {van.drive} · {van.mileage_km?.toLocaleString() ?? '—'} km
+                          {selectedVan.model_year} · {selectedVan.drive} · {selectedVan.mileage_km?.toLocaleString() ?? '—'} km
                         </p>
-                        <span className={`inline-block mt-1 text-white text-xs font-bold px-1.5 py-0.5 rounded ${sourceBadgeColor(van.source)}`}>
-                          {sourceLabel(van.source)}
+                        <span className={`inline-block mt-1 text-white text-xs font-bold px-1.5 py-0.5 rounded ${sourceBadgeColor(selectedVan.source)}`}>
+                          {sourceLabel(selectedVan.source)}
                         </span>
                       </div>
                       <div className="text-right shrink-0">
                         {(() => {
-                          const { priceCents, isEstimate } = listingDisplayPrice(van, jpyRate)
+                          const { priceCents, isEstimate } = listingDisplayPrice(selectedVan, jpyRate)
                           return (
                             <>
-                              <p className="text-ocean text-base">
+                              <p className="text-ocean text-base font-semibold">
                                 {priceCents ? `${isEstimate ? '~' : ''}${centsToAud(priceCents)}` : 'POA'}
                               </p>
                               {isEstimate && priceCents && (
@@ -806,23 +805,80 @@ export default function ConfiguratorV2({
                         })()}
                       </div>
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-gray-500 text-sm py-4">No matching vans right now.</p>
-              )}
-              <div className="mt-4 flex flex-wrap gap-3">
-                <Link href={`/browse${isJapanBuild ? '?source=auction' : ''}`} className="btn-secondary text-sm px-4 py-2.5">
-                  Browse All Vans →
-                </Link>
-                {!selectedVan && (
-                  <button onClick={() => setStep(5)} className="text-gray-400 text-sm hover:underline">
-                    Skip — find a van later
-                  </button>
+                  </>
                 )}
-              </div>
-            </>
-          )}
+
+                {/* Alternative vans with savings */}
+                {alternatives.length > 0 && (
+                  <>
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
+                      {selectedVan ? 'Swap Vehicle — Save on Your Build' : (isJapanBuild ? 'Matching Japan Vans' : 'Available Vans')}
+                    </p>
+                    <div className="space-y-3">
+                      {alternatives.slice(0, 6).map(van => {
+                        const { priceCents, isEstimate } = listingDisplayPrice(van, jpyRate)
+                        const savingsCents = (selectedPrice && priceCents && priceCents < selectedPrice)
+                          ? selectedPrice - priceCents
+                          : null
+
+                        return (
+                          <div
+                            key={van.id}
+                            onClick={() => setSelectedVan(van)}
+                            className="border-2 rounded-xl p-4 cursor-pointer transition-colors flex items-center gap-4 border-gray-200 hover:border-ocean/40 bg-white"
+                          >
+                            <div className="w-16 h-12 bg-gray-200 rounded-lg overflow-hidden shrink-0">
+                              {van.photos[0]
+                                ? <img src={van.photos[0]} alt="" className="w-full h-full object-cover" />
+                                : <div className="w-full h-full flex items-center justify-center text-lg">🚐</div>
+                              }
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-sm truncate">{van.model_name}</p>
+                              <p className="text-xs text-gray-500">
+                                {van.model_year} · {van.drive} · {van.mileage_km?.toLocaleString() ?? '—'} km
+                              </p>
+                              <span className={`inline-block mt-1 text-white text-xs font-bold px-1.5 py-0.5 rounded ${sourceBadgeColor(van.source)}`}>
+                                {sourceLabel(van.source)}
+                              </span>
+                            </div>
+                            <div className="text-right shrink-0">
+                              <p className="text-ocean text-base">
+                                {priceCents ? `${isEstimate ? '~' : ''}${centsToAud(priceCents)}` : 'POA'}
+                              </p>
+                              {isEstimate && priceCents && (
+                                <p className="text-xs text-gray-400">est. incl. import</p>
+                              )}
+                              {savingsCents && (
+                                <p className="text-xs font-bold text-green-600 mt-0.5">
+                                  Save {centsToAud(savingsCents)}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </>
+                )}
+
+                {alternatives.length === 0 && !selectedVan && (
+                  <p className="text-gray-500 text-sm py-4">No matching vans right now.</p>
+                )}
+
+                <div className="mt-4 flex flex-wrap gap-3">
+                  <Link href={`/browse${isJapanBuild ? '?source=auction' : ''}`} className="btn-secondary text-sm px-4 py-2.5">
+                    Browse All Vans →
+                  </Link>
+                  {!selectedVan && (
+                    <button onClick={() => setStep(5)} className="text-gray-400 text-sm hover:underline">
+                      Skip — find a van later
+                    </button>
+                  )}
+                </div>
+              </>
+            )
+          })()}
         </StepPanel>
       )}
 
@@ -849,6 +905,7 @@ export default function ConfiguratorV2({
           onLeadSubmit={handleLeadSubmit}
           onBack={() => setStep(4)}
           onReset={() => { handleFitoutChange(null); setStep(0); saveAttempted.current = false; setSavedBuild(null) }}
+          onSwapVan={() => setStep(4)}
         />
       )}
 
@@ -1013,7 +1070,7 @@ function SummaryStep({
   priceLines, totalCents, selectedVan, isBYO, buildLocation, isVanFirst, fitoutSlug,
   manaLocation, electrical, popTop, manaIncludesPopTop, selectedAddons,
   savedBuild, saving, shareToast, onShare,
-  leadSent, onLeadSubmit, onBack, onReset,
+  leadSent, onLeadSubmit, onBack, onReset, onSwapVan,
 }: {
   priceLines: PriceLine[]
   totalCents: number
@@ -1035,6 +1092,7 @@ function SummaryStep({
   onLeadSubmit: (e: React.FormEvent<HTMLFormElement>) => void
   onBack: () => void
   onReset: () => void
+  onSwapVan?: () => void
 }) {
   const isDepositCTA = selectedVan?.source === 'auction' || selectedVan?.source === 'au_stock'
   const depositLeadType = isDepositCTA ? 'deposit_intent' : 'consultation'
@@ -1111,6 +1169,14 @@ function SummaryStep({
                 </div>
               ) : (
                 <p className="text-sm text-gray-400 italic">No van selected yet — to be sourced.</p>
+              )}
+              {onSwapVan && (selectedVan || !isBYO) && (
+                <button
+                  onClick={onSwapVan}
+                  className="mt-3 text-ocean text-sm font-semibold hover:underline"
+                >
+                  {selectedVan ? '↻ Swap Vehicle — find a better price' : '+ Choose a van'}
+                </button>
               )}
             </div>
           </div>
