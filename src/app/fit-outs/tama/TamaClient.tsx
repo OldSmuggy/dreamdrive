@@ -88,7 +88,7 @@ export default function TamaClient({ jpyApprox, content: initial }: { jpyApprox:
               Fit-out price is separate from the base van. Van price depends on the specific vehicle and exchange rate at time of purchase.
             </p>
           </div>
-          <Link href="/build" className="btn-primary shrink-0 text-center px-8 py-3.5">Build With TAMA →</Link>
+          <a href="https://dreamdrive-configurator-3d.vercel.app/?model=tama" target="_blank" rel="noopener noreferrer" className="btn-primary shrink-0 text-center px-8 py-3.5">Customise in 3D →</a>
         </div>
       </section>
 
@@ -232,7 +232,7 @@ export default function TamaClient({ jpyApprox, content: initial }: { jpyApprox:
           <h2 className="text-4xl text-white mb-3">Ready to build your TAMA?</h2>
           <p className="text-white/60 mb-8">Configure your dream build or book a test drive to see it in person.</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link href="/build" className="bg-sand text-charcoal font-semibold px-8 py-3.5 rounded-xl hover:bg-sand transition-colors text-base text-center">Configure Your Build →</Link>
+            <a href="https://dreamdrive-configurator-3d.vercel.app/?model=tama" target="_blank" rel="noopener noreferrer" className="bg-sand text-charcoal font-semibold px-8 py-3.5 rounded-xl hover:bg-sand transition-colors text-base text-center">Customise in 3D →</a>
             <a href="tel:0432182892" className="border border-white/30 text-white font-semibold px-8 py-3.5 rounded-xl hover:bg-white/10 transition-colors text-base text-center">Book a Test Drive</a>
           </div>
         </div>

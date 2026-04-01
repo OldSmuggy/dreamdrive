@@ -171,7 +171,7 @@ export default function TamaProductClient({ conversionAud, low, high, jpyRate, c
           <h2 className="text-4xl md:text-5xl mb-4">Ready to build your TAMA?</h2>
           <p className="text-gray-300 text-lg mb-10 leading-relaxed">Browse available vans, start your build, or talk to us about what&apos;s right for your family.</p>
           <div className="flex flex-wrap gap-4 justify-center">
-            <Link href="/configurator?fitout=tama" className="btn-primary text-base px-8 py-4">Start My TAMA Build</Link>
+            <a href="https://dreamdrive-configurator-3d.vercel.app/?model=tama" target="_blank" rel="noopener noreferrer" className="btn-primary text-base px-8 py-4">Customise in 3D</a>
             <LeadFormModal trigger="Book a Free Consultation" source="product_page_tama" className="btn-ghost text-base px-8 py-4" />
           </div>
           <p className="mt-10 text-gray-400 text-sm">
