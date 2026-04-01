@@ -402,8 +402,8 @@ export default function ConfiguratorV2({
               Explore TAMA (6-seat family) or MANA (2-person campervan) — choose your conversion, then add your van.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Link href="/configurator?fitout=tama" className="btn-primary text-sm px-5 py-2.5">Explore TAMA</Link>
-              <Link href="/configurator?fitout=mana" className="btn-secondary text-sm px-5 py-2.5">Explore MANA</Link>
+              <Link href={`/configurator?fitout=tama${preSelectedVan ? `&van=${preSelectedVan.id}` : ''}`} className="btn-primary text-sm px-5 py-2.5">Explore TAMA</Link>
+              <Link href={`/configurator?fitout=mana${preSelectedVan ? `&van=${preSelectedVan.id}` : ''}`} className="btn-secondary text-sm px-5 py-2.5">Explore MANA</Link>
             </div>
           </div>
         </StepPanel>
