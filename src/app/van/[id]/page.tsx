@@ -451,28 +451,33 @@ export default async function VanDetailPage({ params }: { params: { id: string }
         {/* Pop-top / conversion upsell — show on vans without fitout */}
         {!listing.has_fitout && listing.status !== 'sold' && (
           <div className="mt-10 space-y-4">
-            <h2 className="text-xl text-charcoal font-bold">Add a Conversion</h2>
+            <h2 className="text-xl text-charcoal font-bold">Add to Your Van</h2>
+
+            {/* Pop Top */}
             <div className="border border-gray-200 rounded-xl p-5 hover:border-ocean/40 transition-colors">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h3 className="font-bold text-charcoal mb-1">+ Pop-Top Roof Conversion</h3>
-                  <p className="text-sm text-gray-500 leading-relaxed">Standing room. Ventilation. Bed platform.</p>
-                  <p className="text-xs text-gray-400 mt-1">From $13,090 inc GST · 10-day turnaround</p>
+                  <h3 className="font-bold text-charcoal mb-1">Pop Top Roof Conversion</h3>
+                  <p className="text-sm text-gray-500 leading-relaxed">+600mm standing height. Fits in your garage when lowered.</p>
+                  <p className="text-xs text-gray-400 mt-1">$13,090 Ex GST · Fitted in Brisbane. 10 business day turnaround.</p>
                 </div>
-                <Link href="/configurator?van={listing.id}&addon=poptop" className="text-ocean text-sm font-semibold whitespace-nowrap hover:underline shrink-0">
-                  Add to this build →
+                <Link href={`/configurator?van=${listing.id}&addon=poptop`} className="text-ocean text-sm font-semibold whitespace-nowrap hover:underline shrink-0">
+                  Add to this van →
                 </Link>
               </div>
             </div>
-            <div className="border border-gray-200 rounded-xl p-5 hover:border-ocean/40 transition-colors">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h3 className="font-bold text-charcoal mb-1">+ Full Camper Build (MANA or TAMA)</h3>
-                  <p className="text-sm text-gray-500 leading-relaxed">Van + roof + electrical + furniture. Everything. Just hand me the keys.</p>
-                  <p className="text-xs text-gray-400 mt-1">From $25,000 on top of van price</p>
-                </div>
-                <a href="https://wa.me/61432182892?text=Hi!%20I'm%20interested%20in%20a%20full%20build%20for%20van%20${listing.id}" target="_blank" rel="noopener noreferrer" className="text-ocean text-sm font-semibold whitespace-nowrap hover:underline shrink-0">
-                  Talk to us →
+
+            {/* Full camper conversion */}
+            <div className="bg-cream border border-sand rounded-2xl p-6">
+              <p className="font-semibold text-charcoal mb-1">Want a full campervan conversion?</p>
+              <p className="text-sm text-gray-500 mb-4 leading-relaxed">
+                Explore TAMA (6-seat family) or MANA (2-person campervan) — choose your conversion, then add your van.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Link href={`/configurator?fitout=tama&van=${listing.id}`} className="btn-primary text-sm px-5 py-2.5">Explore TAMA</Link>
+                <Link href={`/configurator?fitout=mana&van=${listing.id}`} className="btn-secondary text-sm px-5 py-2.5">Explore MANA</Link>
+                <a href={`https://dreamdrive-configurator-3d.vercel.app/?model=tama`} target="_blank" rel="noopener noreferrer" className="text-ocean text-sm font-semibold px-5 py-2.5 border border-ocean/30 rounded-lg hover:bg-ocean/5 transition-colors">
+                  Customise TAMA in 3D ↗
                 </a>
               </div>
             </div>
