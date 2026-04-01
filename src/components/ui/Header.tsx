@@ -125,7 +125,7 @@ export default function Header({ logoUrl }: { logoUrl?: string }) {
                   onMouseEnter={() => setOpenDropdown(item.label)}
                   onMouseLeave={() => setOpenDropdown(null)}
                 >
-                  <button className="flex items-center gap-1 px-3 py-2 text-white/70 hover:text-white rounded-lg hover:bg-white/10 transition-colors">
+                  <button className="flex items-center gap-1 px-3 py-2 pb-4 text-white/70 hover:text-white rounded-lg hover:bg-white/10 transition-colors">
                     {item.label}
                     <svg
                       className={`w-3 h-3 transition-transform duration-150 ${openDropdown === item.label ? 'rotate-180' : ''}`}
@@ -135,7 +135,7 @@ export default function Header({ logoUrl }: { logoUrl?: string }) {
                     </svg>
                   </button>
                   {openDropdown === item.label && (
-                    <div className="dd-enter absolute top-full left-0 mt-1.5 bg-white border border-gray-200/80 rounded-xl shadow-lg py-1.5 min-w-[200px] z-50">
+                    <div className="dd-enter absolute top-full left-0 bg-white border border-gray-200/80 rounded-xl shadow-lg py-1.5 min-w-[200px] z-50">
                       {item.dropdown.map(sub => (
                         <Link
                           key={sub.href}
