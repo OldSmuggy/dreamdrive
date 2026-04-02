@@ -131,7 +131,7 @@ export function importBreakdown(
 
   const lines: ImportBreakdownLine[] = [
     { label: 'Vehicle purchase price', cents: vehicleCents, note: `¥${jpyPrice.toLocaleString()} × ${rate.toFixed(4)}` },
-    { label: 'Bare Camper fee (Japan + AU)', cents: SOURCING_FEE_INC_GST_CENTS, note: '$2,500 + GST' },
+    { label: 'Japan Import Service Fee', cents: SOURCING_FEE_INC_GST_CENTS, note: '$2,500 + GST' },
     { label: `Shipping (Japan → Australia${isSlwb ? ', SLWB' : ''})`, cents: shippingCents },
     { label: 'GST (10% on vehicle + shipping)', cents: gstCents },
     { label: 'Customs entry + BMSB inspection', cents: CUSTOMS_ENTRY_CENTS + BMSB_CENTS },
