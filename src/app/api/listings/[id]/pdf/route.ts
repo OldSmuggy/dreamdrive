@@ -79,7 +79,7 @@ export async function GET(
       isDealer:    listing.source === 'dealer_goonet' || listing.source === 'dealer_carsensor',
     })
 
-    const buffer = await renderToBuffer(doc)
+    const buffer = await renderToBuffer(doc as React.ReactElement<any>)
 
     const slug = listing.model_name
       .toLowerCase()
