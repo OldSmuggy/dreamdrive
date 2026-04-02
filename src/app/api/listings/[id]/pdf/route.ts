@@ -87,7 +87,7 @@ export async function GET(
       .replace(/^-|-$/g, '')
       .slice(0, 60)
 
-    return new NextResponse(buffer, {
+    return new NextResponse(new Uint8Array(buffer), {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
