@@ -241,7 +241,7 @@ export default function VehiclePDF({
               </Text>
             )}
             {isDealer && (
-              <Text style={[s.badge, s.badgeToyota]}>✓ Toyota Verified Dealer</Text>
+              <Text style={[s.badge, s.badgeToyota]}>✓ Toyota Partner — Japan</Text>
             )}
             {locationLabel(location) && (
               <Text style={[s.badge, s.badgeOcean]}>{locationLabel(location)}</Text>

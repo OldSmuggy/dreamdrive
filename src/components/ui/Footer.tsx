@@ -22,7 +22,7 @@ export default function Footer() {
       {/* Trust credentials */}
       <div className="flex flex-wrap items-center justify-center gap-2">
         <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-white px-2.5 py-1 rounded" style={{ background: '#EB0A1E' }}>
-          ✓ Official Toyota Dealer
+          ✓ Toyota Partner — Japan
         </span>
         <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-gray-100 text-gray-600 px-2.5 py-1 rounded">
           🤝 JRVA Member

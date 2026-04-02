@@ -225,7 +225,7 @@ export default async function VanDetailPage({ params }: { params: { id: string }
               )}
               {(listing.source === 'dealer_goonet' || listing.source === 'dealer_carsensor') && (
                 <div className="inline-flex items-center text-white text-xs font-bold px-2.5 py-1 rounded gap-1" style={{ background: '#EB0A1E' }}>
-                  ✓ Toyota Verified Dealer
+                  ✓ Toyota Partner — Japan
                 </div>
               )}
               <div className="ml-auto flex items-center gap-3">
