@@ -223,7 +223,22 @@ export default async function VanDetailPage({ params }: { params: { id: string }
                   {curBadge.label}
                 </div>
               )}
+              {(listing.source === 'dealer_goonet' || listing.source === 'dealer_carsensor') && (
+                <div className="inline-flex items-center text-white text-xs font-bold px-2.5 py-1 rounded gap-1" style={{ background: '#EB0A1E' }}>
+                  ✓ Toyota Verified Dealer
+                </div>
+              )}
               <div className="ml-auto flex items-center gap-3">
+                <a
+                  href={`/api/listings/${listing.id}/pdf`}
+                  download
+                  title="Download PDF info sheet"
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17a4 4 0 004 4h10a4 4 0 004-4V7a4 4 0 00-4-4H7L3 7v10z" />
+                  </svg>
+                </a>
                 <ShareButtons url={`/van/${listing.id}`} title={`${listing.model_year} ${listing.model_name} — Bare Camper`} />
                 <SaveVanButton listingId={listing.id} userId={user?.id ?? null} initialSaved={isSaved} />
               </div>

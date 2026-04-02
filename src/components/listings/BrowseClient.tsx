@@ -963,6 +963,11 @@ function ListingCard({ listing, userId, initialSaved, jpyRate }: { listing: List
           {listing.is_community_find && (
             <span className="bg-driftwood text-white text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 sm:px-2 rounded">COMMUNITY FIND</span>
           )}
+          {(listing.source === 'dealer_goonet' || listing.source === 'dealer_carsensor') && (
+            <span className="text-white text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 sm:px-2 rounded flex items-center gap-0.5" style={{ background: '#EB0A1E' }}>
+              ✓ Toyota Verified
+            </span>
+          )}
         </div>
         {/* Top-right: grade + badges */}
         <div className="absolute top-2 right-2 sm:top-3 sm:right-3 flex flex-col items-end gap-0.5 sm:gap-1">

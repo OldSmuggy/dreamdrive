@@ -19,6 +19,15 @@ export default function Footer() {
         <a href="tel:0432182892" className="hover:text-gray-600">0432 182 892</a>
       </p>
       <p>Workshop: 1/10 Jones Road, Capalaba QLD 4157</p>
+      {/* Trust credentials */}
+      <div className="flex flex-wrap items-center justify-center gap-2">
+        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-white px-2.5 py-1 rounded" style={{ background: '#EB0A1E' }}>
+          ✓ Official Toyota Dealer
+        </span>
+        <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-gray-100 text-gray-600 px-2.5 py-1 rounded">
+          🤝 JRVA Member
+        </span>
+      </div>
       <p className="text-gray-300">
         Dream Drive Pty Ltd · ABN 13 030 224 315 · Motor Dealer Licence 4816576
       </p>

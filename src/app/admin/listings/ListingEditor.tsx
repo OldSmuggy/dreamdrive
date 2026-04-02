@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { centsToAud, sourceLabel } from '@/lib/utils'
 import { getAuMarketPrice } from '@/lib/au-market-price'
 import { estimateLandedAud, listingDisplayPrice } from '@/lib/pricing'
@@ -761,6 +761,9 @@ function ListingRow({
     ? `${priceType === 'estimate' ? '~' : ''}${centsToAud(priceCents)}`
     : 'POA'
 
+  const dragFromRef = useRef<number | null>(null)
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
+
   return (
     <div className={`bg-white border rounded-xl overflow-hidden ${isEditing ? 'border-ocean shadow-md' : isSelected ? 'border-ocean' : 'border-gray-200'}`}>
       {/* Row summary */}
@@ -1450,11 +1453,13 @@ function ListingRow({
                 <label className="block text-xs font-semibold text-gray-600 mb-1.5">Curation Badge</label>
                 <select value={editState.curation_badge} onChange={e => onSet('curation_badge', e.target.value)} className={inputClass}>
                   <option value="">— none —</option>
+                  <option value="hot_this_week">🔥 Hot This Week</option>
                   <option value="staff_pick">⭐ Staff Pick</option>
-                  <option value="best_value">💰 Best Value</option>
                   <option value="rare_find">🔍 Rare Find</option>
                   <option value="low_km">🏆 Low KM</option>
-                  <option value="adventure_ready">🏕 Adventure Ready</option>
+                  <option value="budget_entry">💰 Budget Entry</option>
+                  <option value="adventure_spec">🏕 Adventure Spec</option>
+                  <option value="arriving_soon">🚢 Arriving Soon</option>
                 </select>
               </div>
               <div>
@@ -1634,17 +1639,27 @@ function ListingRow({
             </div>
             <div className="flex flex-wrap gap-2 mb-3">
               {editState.photos.map((url, i) => (
-                <div key={i} className="relative group">
+                <div
+                  key={url}
+                  draggable
+                  onDragStart={() => { dragFromRef.current = i }}
+                  onDragOver={e => { e.preventDefault(); setDragOverIndex(i) }}
+                  onDragLeave={() => setDragOverIndex(null)}
+                  onDrop={e => {
+                    e.preventDefault()
+                    if (dragFromRef.current !== null && dragFromRef.current !== i) {
+                      onMovePhoto(dragFromRef.current, i)
+                    }
+                    dragFromRef.current = null
+                    setDragOverIndex(null)
+                  }}
+                  onDragEnd={() => { dragFromRef.current = null; setDragOverIndex(null) }}
+                  className={`relative group cursor-grab active:cursor-grabbing transition-all ${dragOverIndex === i ? 'ring-2 ring-ocean ring-offset-1 scale-105' : ''}`}
+                >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={url} alt="" className="w-24 h-16 object-cover rounded-lg border border-gray-200" />
+                  <img src={url} alt="" className="w-24 h-16 object-cover rounded-lg border border-gray-200 pointer-events-none" />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-1">
-                    {i > 0 && (
-                      <button onClick={() => onMovePhoto(i, i - 1)} className="text-white text-xs bg-black/60 rounded px-1 py-0.5">←</button>
-                    )}
                     <button onClick={() => onRemovePhoto(i)} className="text-white text-xs bg-red-600/80 rounded px-1.5 py-0.5">✕</button>
-                    {i < editState.photos.length - 1 && (
-                      <button onClick={() => onMovePhoto(i, i + 1)} className="text-white text-xs bg-black/60 rounded px-1 py-0.5">→</button>
-                    )}
                   </div>
                   {i === 0 && (
                     <span className="absolute top-1 left-1 bg-ocean text-white text-[10px] font-bold px-1 rounded">COVER</span>
