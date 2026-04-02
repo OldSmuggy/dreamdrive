@@ -116,14 +116,12 @@ export async function generateMetadata(
   }
 }
 
-export default async function ProductPage({ params }: { params: { slug: string } }) {
+export default async function ProductPage({ params, searchParams }: { params: { slug: string }; searchParams: Promise<{ van?: string }> }) {
   const supabase = createAdminClient()
-  const { data } = await supabase
-    .from('products')
-    .select('*')
-    .eq('slug', params.slug)
-    .eq('visible', true)
-    .single()
+  const [{ data }, resolvedSearchParams] = await Promise.all([
+    supabase.from('products').select('*').eq('slug', params.slug).eq('visible', true).single(),
+    searchParams,
+  ])
 
   if (!data) notFound()
   const product = data as Product
@@ -132,6 +130,13 @@ export default async function ProductPage({ params }: { params: { slug: string }
   const isSpecial = activeSpecial(product)
   const price = effectivePrice(product)
   const categoryLabel = CATEGORY_LABEL[product.category] ?? product.category
+
+  const isFitout = product.category === 'fitout' || product.slug === 'tama' || product.slug === 'mana'
+  const vanParam = resolvedSearchParams.van
+  const configuratorBase = `https://dreamdrive-configurator-3d.vercel.app/?model=${product.slug === 'mana' ? 'mana' : 'tama'}`
+  const configuratorUrl = vanParam
+    ? `${configuratorBase}&source=barecamper&van_id=${vanParam}`
+    : configuratorBase
 
   return (
     <div className="min-h-screen">
@@ -237,9 +242,16 @@ export default async function ProductPage({ params }: { params: { slug: string }
             <Link href="/build" className="btn-primary text-base px-8 py-4">
               Start My Build →
             </Link>
-            <Link href="/browse" className="btn-secondary text-base px-8 py-4">
-              Browse Vans First
-            </Link>
+            {isFitout && (
+              <a href={configuratorUrl} target="_blank" rel="noopener noreferrer" className="btn-secondary text-base px-8 py-4">
+                Customise in 3D ↗
+              </a>
+            )}
+            {!isFitout && (
+              <Link href="/browse" className="btn-secondary text-base px-8 py-4">
+                Browse Vans First
+              </Link>
+            )}
           </div>
         </div>
       </section>
