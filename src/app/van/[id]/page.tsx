@@ -491,7 +491,11 @@ export default async function VanDetailPage({ params }: { params: { id: string }
               <div className="flex flex-wrap gap-3">
                 <Link href={`/configurator?fitout=tama&van=${listing.id}`} className="btn-primary text-sm px-5 py-2.5">Explore TAMA</Link>
                 <Link href={`/configurator?fitout=mana&van=${listing.id}`} className="btn-secondary text-sm px-5 py-2.5">Explore MANA</Link>
-                <a href={`https://dreamdrive-configurator-3d.vercel.app/?model=tama`} target="_blank" rel="noopener noreferrer" className="text-ocean text-sm font-semibold px-5 py-2.5 border border-ocean/30 rounded-lg hover:bg-ocean/5 transition-colors">
+                <a
+                  href={`https://dreamdrive-configurator-3d.vercel.app/?model=tama&source=barecamper&van_id=${listing.id}&van_name=${encodeURIComponent(listing.model_name)}&van_price=${priceCents ? Math.round(priceCents / 100) : ''}`}
+                  target="_blank" rel="noopener noreferrer"
+                  className="text-ocean text-sm font-semibold px-5 py-2.5 border border-ocean/30 rounded-lg hover:bg-ocean/5 transition-colors"
+                >
                   Customise TAMA in 3D ↗
                 </a>
               </div>
