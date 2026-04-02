@@ -229,16 +229,31 @@ export default async function VanDetailPage({ params }: { params: { id: string }
                 </div>
               )}
               <div className="ml-auto flex items-center gap-3">
-                <a
-                  href={`/api/listings/${listing.id}/pdf`}
-                  download
-                  title="Download PDF info sheet"
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17a4 4 0 004 4h10a4 4 0 004-4V7a4 4 0 00-4-4H7L3 7v10z" />
-                  </svg>
-                </a>
+                {user ? (
+                  <a
+                    href={`/api/listings/${listing.id}/pdf`}
+                    download
+                    title="Download PDF info sheet"
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17a4 4 0 004 4h10a4 4 0 004-4V7a4 4 0 00-4-4H7L3 7v10z" />
+                    </svg>
+                  </a>
+                ) : (
+                  <Link
+                    href="/login"
+                    title="Sign in to download PDF info sheet"
+                    className="text-gray-300 hover:text-ocean transition-colors relative group"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17a4 4 0 004 4h10a4 4 0 004-4V7a4 4 0 00-4-4H7L3 7v10z" />
+                    </svg>
+                    <span className="absolute bottom-full right-0 mb-1.5 whitespace-nowrap text-xs bg-charcoal text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                      Sign in to download
+                    </span>
+                  </Link>
+                )}
                 <ShareButtons url={`/van/${listing.id}`} title={`${listing.model_year} ${listing.model_name} — Bare Camper`} />
                 <SaveVanButton listingId={listing.id} userId={user?.id ?? null} initialSaved={isSaved} />
               </div>

@@ -35,7 +35,7 @@ const s = StyleSheet.create({
   headerTagline: { fontSize: 8, color: C.sand, letterSpacing: 0.5 },
 
   // Hero photo
-  heroPhoto: { width: '100%', height: 240, objectFit: 'cover' },
+  heroPhoto: { width: '100%', height: 240, objectFit: 'fill' },
 
   // Content area
   content: { paddingHorizontal: 28, paddingTop: 18 },
@@ -125,13 +125,18 @@ const s = StyleSheet.create({
   },
   photoPageTitle: { color: C.white, fontSize: 10, fontFamily: 'Helvetica-Bold' },
   photoGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flex: 1,
+    flexDirection: 'column',
     padding: 12,
     gap: 8,
   },
-  photoCell: { width: '31.8%', aspectRatio: 1.5 },
-  photo: { width: '100%', height: '100%', objectFit: 'cover', borderRadius: 3 },
+  photoRow: {
+    flexDirection: 'row',
+    flex: 1,
+    gap: 8,
+  },
+  photoCell: { flex: 1 },
+  photo: { width: '100%', height: '100%', objectFit: 'contain', borderRadius: 3 },
 })
 
 export interface VehiclePDFProps {
@@ -291,9 +296,17 @@ export default function VehiclePDF({
           </View>
 
           <View style={s.photoGrid}>
-            {batch.map((src, i) => (
-              <View key={i} style={s.photoCell}>
-                <Image src={src} style={s.photo} />
+            {[0, 2, 4].map(rowStart => (
+              <View key={rowStart} style={s.photoRow}>
+                {batch.slice(rowStart, rowStart + 2).map((src, i) => (
+                  <View key={i} style={s.photoCell}>
+                    <Image src={src} style={s.photo} />
+                  </View>
+                ))}
+                {/* Fill empty slot if odd number of photos */}
+                {batch.slice(rowStart, rowStart + 2).length < 2 && (
+                  <View style={s.photoCell} />
+                )}
               </View>
             ))}
           </View>
