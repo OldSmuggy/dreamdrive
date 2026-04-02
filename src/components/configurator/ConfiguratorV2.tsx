@@ -431,6 +431,9 @@ export default function ConfiguratorV2({
           onLeadSubmit={handleLeadSubmit}
           onBack={() => setStep(0)}
           onReset={() => { handleFitoutChange(null); setStep(0); saveAttempted.current = false; setSavedBuild(null) }}
+          jpyRate={jpyRate}
+          fitoutProduct={fitoutProduct}
+          poptopProduct={poptopProduct}
         />
       )}
 
@@ -906,6 +909,9 @@ export default function ConfiguratorV2({
           onBack={() => setStep(4)}
           onReset={() => { handleFitoutChange(null); setStep(0); saveAttempted.current = false; setSavedBuild(null) }}
           onSwapVan={() => setStep(4)}
+          jpyRate={jpyRate}
+          fitoutProduct={fitoutProduct}
+          poptopProduct={poptopProduct}
         />
       )}
 
@@ -1070,7 +1076,8 @@ function SummaryStep({
   priceLines, totalCents, selectedVan, isBYO, buildLocation, isVanFirst, fitoutSlug,
   manaLocation, electrical, popTop, manaIncludesPopTop, selectedAddons,
   savedBuild, saving, shareToast, onShare,
-  leadSent, onLeadSubmit, onBack, onReset, onSwapVan,
+  leadSent, onLeadSubmit, onBack, onReset, onSwapVan, jpyRate,
+  fitoutProduct, poptopProduct,
 }: {
   priceLines: PriceLine[]
   totalCents: number
@@ -1093,6 +1100,9 @@ function SummaryStep({
   onBack: () => void
   onReset: () => void
   onSwapVan?: () => void
+  jpyRate: number
+  fitoutProduct: Product | null
+  poptopProduct: Product | null
 }) {
   const isDepositCTA = selectedVan?.source === 'auction' || selectedVan?.source === 'au_stock'
   const depositLeadType = isDepositCTA ? 'deposit_intent' : 'consultation'
@@ -1332,9 +1342,52 @@ function SummaryStep({
                 )}
               </div>
               <form onSubmit={onLeadSubmit} className="px-5 py-4 space-y-3">
+
+                {/* Van being enquired about */}
+                {selectedVan ? (
+                  <div className="bg-cream border border-ocean/30 rounded-xl p-3 flex items-center gap-3">
+                    {selectedVan.photos?.[0] && (
+                      <img
+                        src={selectedVan.photos[0]}
+                        alt=""
+                        className="w-14 h-10 object-cover rounded-lg shrink-0"
+                      />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-0.5">Van you&apos;re enquiring about</p>
+                      <p className="font-semibold text-charcoal text-sm truncate leading-tight">{selectedVan.model_name}</p>
+                      <p className="text-xs text-gray-500">
+                        {[selectedVan.model_year, selectedVan.mileage_km ? `${selectedVan.mileage_km.toLocaleString()} km` : null].filter(Boolean).join(' · ')}
+                      </p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      {(() => {
+                        const { priceCents, isEstimate } = listingDisplayPrice(selectedVan, jpyRate)
+                        return priceCents ? (
+                          <p className="text-ocean text-base font-semibold">
+                            {isEstimate ? '~' : ''}{centsToAud(priceCents)}
+                          </p>
+                        ) : null
+                      })()}
+                    </div>
+                    <input type="hidden" name="listing_id" value={selectedVan.id} />
+                  </div>
+                ) : !isBYO && (
+                  <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-0.5">Van</p>
+                    <p className="text-sm text-gray-600">To be selected — we&apos;ll help you find the right one.</p>
+                  </div>
+                )}
+
                 <input name="name"  required placeholder="Your name"     className="input-field" />
                 <input name="email" type="email" required placeholder="Email address"  className="input-field" />
                 <input name="phone" type="tel"   placeholder="Phone (optional)" className="input-field" />
+                <textarea
+                  name="notes"
+                  rows={3}
+                  placeholder="Requests or notes — colours, timeline, specific requirements…"
+                  className="input-field resize-none"
+                />
                 <button type="submit" className="btn-primary w-full py-3">
                   {ctaLabel} →
                 </button>
@@ -1347,12 +1400,104 @@ function SummaryStep({
               </form>
             </div>
           ) : (
-            <div className="bg-cream border border-ocean-light rounded-2xl p-6 text-center">
-              <div className="text-3xl mb-2">✅</div>
-              <h3 className="text-lg text-charcoal">We&apos;ll be in touch!</h3>
-              <p className="text-ocean text-sm mt-1">
-                Jared will reach out within 24 hours to confirm your build and next steps.
-              </p>
+            <div className="space-y-4">
+              <div className="bg-cream border border-ocean-light rounded-2xl p-5 text-center">
+                <div className="text-3xl mb-2">✅</div>
+                <h3 className="text-lg text-charcoal">We&apos;ll be in touch!</h3>
+                <p className="text-gray-500 text-sm mt-1">
+                  Jared will reach out within 24 hours to confirm your build and next steps.
+                </p>
+              </div>
+
+              {/* Full selection review with images */}
+              <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+                <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                  <h4 className="font-semibold text-sm text-gray-500 uppercase tracking-wide">Your Build Summary</h4>
+                </div>
+                <div className="divide-y divide-gray-100">
+                  {/* Van */}
+                  {selectedVan && (
+                    <div className="flex items-center gap-3 px-4 py-3">
+                      {selectedVan.photos?.[0] && (
+                        <img src={selectedVan.photos[0]} alt="" className="w-16 h-11 object-cover rounded-lg shrink-0" />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Van</p>
+                        <p className="font-semibold text-charcoal text-sm truncate">{selectedVan.model_name}</p>
+                        <p className="text-xs text-gray-500">{selectedVan.model_year} · {selectedVan.mileage_km?.toLocaleString() ?? '—'} km</p>
+                      </div>
+                    </div>
+                  )}
+                  {/* Fitout */}
+                  {fitoutSlug && (
+                    <div className="flex items-center gap-3 px-4 py-3">
+                      {fitoutProduct?.images?.[0] && (
+                        <img src={fitoutProduct.images[0]} alt="" className="w-16 h-11 object-cover rounded-lg shrink-0" />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Conversion</p>
+                        <p className="font-semibold text-charcoal text-sm">{fitoutLabel}</p>
+                        {buildLocation && <p className="text-xs text-gray-500">{buildLocation === 'japan' ? 'Japan build' : 'AU build'}</p>}
+                      </div>
+                    </div>
+                  )}
+                  {/* Electrical */}
+                  {electrical && (
+                    <div className="flex items-center gap-3 px-4 py-3">
+                      {electrical.images?.[0] && (
+                        <img src={electrical.images[0]} alt="" className="w-16 h-11 object-cover rounded-lg shrink-0" />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Electrical</p>
+                        <p className="font-semibold text-charcoal text-sm">{electrical.name}</p>
+                      </div>
+                    </div>
+                  )}
+                  {/* Pop Top */}
+                  {(popTop || manaIncludesPopTop) && (
+                    <div className="flex items-center gap-3 px-4 py-3">
+                      {poptopProduct?.images?.[0] && (
+                        <img src={poptopProduct.images[0]} alt="" className="w-16 h-11 object-cover rounded-lg shrink-0" />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Pop Top</p>
+                        <p className="font-semibold text-charcoal text-sm">Pop Top Roof Conversion</p>
+                        {manaIncludesPopTop && <p className="text-xs text-gray-500">Included with MANA</p>}
+                      </div>
+                    </div>
+                  )}
+                  {/* Add-ons */}
+                  {selectedAddons.map(slug => {
+                    const addon = ADDON_CATALOG.find(a => a.slug === slug)
+                    return addon ? (
+                      <div key={slug} className="flex items-center gap-3 px-4 py-3">
+                        <div className="w-16 h-11 bg-gray-100 rounded-lg shrink-0 flex items-center justify-center text-xl">🔧</div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Add-On</p>
+                          <p className="font-semibold text-charcoal text-sm">{addon.name}</p>
+                          <p className="text-xs text-ocean">{centsToAud(addon.priceCents)}</p>
+                        </div>
+                      </div>
+                    ) : null
+                  })}
+                  {/* Total */}
+                  <div className="flex justify-between items-center px-4 py-3 bg-cream">
+                    <span className="font-semibold text-charcoal">Estimated Total</span>
+                    <span className="text-ocean text-lg font-semibold">{totalCents > 0 ? centsToAud(totalCents) : '—'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Order form PDF download */}
+              {savedBuild && (
+                <a
+                  href={`/api/builds/${savedBuild.id}/pdf`}
+                  download
+                  className="btn-secondary w-full py-3 text-sm text-center block"
+                >
+                  ↓ Download Order Form PDF
+                </a>
+              )}
             </div>
           )}
 

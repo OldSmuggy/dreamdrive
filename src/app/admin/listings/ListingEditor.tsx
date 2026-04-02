@@ -687,6 +687,25 @@ function StartDealButton({ listing }: { listing: Listing }) {
 }
 
 // Try to upgrade a Goo-net / Car Sensor thumbnail URL to the largest available version
+function CopyConfigLink({ listingId }: { listingId: string }) {
+  const [copied, setCopied] = useState(false)
+  const copy = async () => {
+    const url = `${window.location.origin}/configurator?van=${listingId}`
+    try { await navigator.clipboard.writeText(url) } catch { /* ignore */ }
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+  return (
+    <button
+      onClick={copy}
+      title="Copy campaign link (pre-selects this van in the configurator)"
+      className="text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 shrink-0 transition-colors"
+    >
+      {copied ? '✓ Copied' : '🔗 Campaign'}
+    </button>
+  )
+}
+
 function upgradeImageUrl(url: string): string {
   try {
     const u = new URL(url)
@@ -802,6 +821,9 @@ function ListingRow({
             l.status === 'available' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
           }`}>{l.status}</span>
           {isSaved && <span className="text-xs text-ocean font-semibold shrink-0">✓ Saved</span>}
+          {!isEditing && (
+            <CopyConfigLink listingId={l.id} />
+          )}
           <button
             onClick={() => isEditing ? onCancelEdit() : onStartEdit()}
             className={`text-xs font-semibold px-3 py-1.5 rounded-lg border shrink-0 ${
