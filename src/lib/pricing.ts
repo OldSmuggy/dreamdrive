@@ -23,7 +23,7 @@ export const GST_RATE             = 0.10
 // ── Conversion fee constants ───────────────────────────────────────────────────
 // Separation from van price: customer sees conversion fee + van estimate separately
 export const TAMA_CONVERSION_JPY    = 4_800_000   // ¥4,800,000 (Japan build)
-export const KUMA_Q_CONVERSION_JPY  = 5_395_000   // ¥5,395,000 (Japan build — SLWB Hiace)
+export const KUMA_Q_CONVERSION_JPY  = 5_400_000   // ¥5,400,000 (Japan build — SLWB Hiace)
 export const MANA_JP_CONVERSION_JPY = 4_500_000   // ¥4,500,000 (Japan build)
 export const MANA_AU_CONVERSION_AUD = 45_000       // $45,000 AUD (Australia build)
 

@@ -12,18 +12,45 @@ import OptionsList from '@/components/options/OptionsList'
 interface Props { conversionAud: number; low: number; high: number; jpyRate: number; content: Record<string, string>; vanId?: string | null; vanName?: string | null; vanPriceCents?: number | null }
 
 const KUMA_INCLUSIONS = [
-  'Queen-size bed with premium mattress', 'Galley kitchen with deep sink & faucet',
-  'Walnut countertop', 'High pressure water pump', 'Quick release shower hose',
-  '38L fresh water tank', '2 x 100AH lithium battery', 'D/C charger',
-  'LED down lights', 'Dimmable LED light bar', '2000W inverter',
-  'A/C charging outlets x2', '40L refrigerator', 'Shore power charger',
-  'Handcrafted furniture with quality hardware', 'Full-length interior fit-out',
-  '4-seat dining layout with table', 'Under-bed storage throughout',
+  'Transforming rear seat with ISOFIX (except 2-seater options)',
+  'Walnut countertop',
+  'Table with adjustable attachment',
+  'Modular queen-size bed kit or low bed with storage beneath',
+  'Handcrafted furniture',
+  'Quality hardware & hinges',
+  'Deep sink & faucet',
+  'High pressure pump',
+  'Quick release shower hose',
+  '38L fresh water tank',
+  '2 x 100AH lithium battery',
+  'D/C charger',
+  'LED down lights',
+  'Dimmable LED light bar',
+  '2000W inverter',
+  'A/C charging outlets x2',
+  '40L refrigerator',
+  'Shore power charger',
 ]
 
-const KUMA_FEATURES = [
-  { name: 'QUEEN BED', key: 'feature_bed', fallback: '/images/tama/bed-blue.jpg', desc: 'Full queen-size bed that spans the entire width of the SLWB Hiace. No compromises on sleep quality — wake up refreshed and ready for the next adventure.' },
-  { name: 'GALLEY KITCHEN', key: 'feature_kitchen', fallback: '/images/tama/kitchen-walnut.jpg', desc: 'Full galley kitchen with walnut countertop, deep sink, 40L fridge, and ample storage. Everything you need to cook a proper meal on the road.' },
+const KUMA_VEHICLE_SPECS = {
+  dimensions: '5,380mm L x 1,880mm W x 2,400mm H',
+  transmission: 'Automatic',
+  options: [
+    { name: '2WD, 2.7L Unleaded Engine (3 front seats)', price: '$120,000' },
+    { name: '4x4, 2.8L Turbo Diesel (2 front seats)', price: '$127,000' },
+  ],
+}
+
+const KUMA_MID_LAYOUTS = [
+  { name: 'FAMILY', key: 'layout_family', fallback: '/images/tama/interior-overview.jpg', desc: 'Rear folding seat (2 extra seatbelts, ISOFIX) with high bed. The ideal layout for families who need seating capacity alongside camping facilities.' },
+  { name: 'VANLIFE', key: 'layout_vanlife', fallback: '/images/tama/storage-underseat.jpg', desc: 'Rear bench seat with slide-out drawer. Optimised for couples or solo adventurers wanting maximum storage and living space.' },
+  { name: 'STORAGE+', key: 'layout_storage', fallback: '/images/tama/kitchen-walnut.jpg', desc: 'Rear bench, slide-out kitchen, 85L fridge/freezer with open door. +$2,000. Maximum kitchen and storage for extended trips.' },
+]
+
+const KUMA_BED_LAYOUTS = [
+  { name: 'LOW BED', key: 'bed_low', fallback: '/images/tama/bed-blue.jpg', desc: 'Fixed bed with drawer storage underneath. Easy access and practical for everyday use.' },
+  { name: 'HIGH BED', key: 'bed_high', fallback: '/images/tama/bed-green.jpg', desc: 'Stow-away panels and open space under the bed. Great for storing bikes, surfboards, or bulky gear.' },
+  { name: 'STORAGE+', key: 'bed_storage', fallback: '/images/tama/drawer-slideout.jpg', desc: 'High bed with upper cabinet storage, toilet, and extra cabinet under bed. +$750. The ultimate storage solution.' },
 ]
 
 export default function KumaQProductClient({ conversionAud, low, high, jpyRate, content: initial, vanId, vanName, vanPriceCents }: Props) {
@@ -33,7 +60,10 @@ export default function KumaQProductClient({ conversionAud, low, high, jpyRate, 
     ? `https://configure.barecamper.com.au/?model=kuma-q&source=barecamper&van_id=${vanId}&van_name=${encodeURIComponent(vanName ?? '')}&van_price=${vanPriceCents ? Math.round(vanPriceCents / 100) : ''}`
     : 'https://configure.barecamper.com.au/?model=kuma-q'
 
-  const extraImages = KUMA_FEATURES.map(f => ({ key: f.key + '_image', label: f.name + ' Photo' }))
+  const extraImages = [
+    ...KUMA_MID_LAYOUTS.map(l => ({ key: l.key + '_image', label: l.name + ' Photo' })),
+    ...KUMA_BED_LAYOUTS.map(b => ({ key: b.key + '_image', label: b.name + ' Photo' })),
+  ]
 
   return (
     <div className="min-h-screen bg-white">
@@ -44,8 +74,8 @@ export default function KumaQProductClient({ conversionAud, low, high, jpyRate, 
         <div className="pt-16">
           <p className="text-sand text-xs font-semibold tracking-[0.25em] uppercase mb-3">Bare Camper</p>
           <h1 className="text-7xl md:text-9xl text-white leading-none mb-3">KUMA-Q</h1>
-          <p className="text-white/80 text-xl md:text-2xl font-light mb-2">The Full-Length Adventure Van</p>
-          <p className="text-white/60 text-base md:text-lg max-w-xl">Super Long Wheelbase Hiace. Queen bed. Full kitchen. Room to move.</p>
+          <p className="text-white/80 text-xl md:text-2xl font-light mb-2">The Ultimate Road Trip Campervan</p>
+          <p className="text-white/60 text-base md:text-lg max-w-xl">Toyota Hiace H200 Super Long Wheelbase. Seating and sleeping for up to 4. Everything you need to hit the road in style.</p>
         </div>
       </FitoutHero>
 
@@ -53,10 +83,10 @@ export default function KumaQProductClient({ conversionAud, low, high, jpyRate, 
       <section className="max-w-6xl mx-auto px-6 py-12">
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {[
-            { src: '/images/tama/interior-overview.jpg', alt: 'KUMA-Q interior with full kitchen and bed' },
-            { src: '/images/tama/bed-blue.jpg', alt: 'Queen bed spanning full width' },
-            { src: '/images/tama/kitchen-walnut.jpg', alt: 'Walnut countertop and galley kitchen' },
-            { src: '/images/tama/drawer-slideout.jpg', alt: 'Slide-out storage drawers' },
+            { src: '/images/tama/interior-overview.jpg', alt: 'KUMA-Q interior with bench seat and kitchen' },
+            { src: '/images/tama/bed-blue.jpg', alt: 'KUMA-Q queen bed spanning full width' },
+            { src: '/images/tama/kitchen-walnut.jpg', alt: 'Walnut countertop detail' },
+            { src: '/images/tama/drawer-slideout.jpg', alt: 'Slide-out kitchen drawer' },
             { src: '/images/tama/electrical-outlets.jpg', alt: 'Power outlets and USB charging' },
             { src: '/images/tama/hero-side-open.jpg', alt: 'KUMA-Q side view with doors open' },
           ].map((img, i) => (
@@ -67,32 +97,22 @@ export default function KumaQProductClient({ conversionAud, low, high, jpyRate, 
         </div>
       </section>
 
-      {/* Pricing */}
+      {/* Vehicle Specs */}
       <section className="max-w-6xl mx-auto px-6 py-20">
-        <p className="text-driftwood text-xs font-semibold tracking-widest uppercase mb-3">Pricing</p>
-        <h2 className="text-4xl text-charcoal mb-4">What Does a KUMA-Q Cost?</h2>
-        <p className="text-gray-500 max-w-2xl mb-10 leading-relaxed">The van and conversion are priced separately. The KUMA-Q is built on the Super Long Wheelbase HiAce — more space, more comfort.</p>
-        <div className="grid md:grid-cols-3 gap-6 mb-10">
-          <div className="border border-gray-200 rounded-2xl p-8 hover:shadow-md transition-shadow">
-            <p className="text-xs font-semibold tracking-widest text-driftwood uppercase mb-2">Conversion Fee</p>
-            <p className="text-3xl text-ocean mb-1">{formatAud(conversionAud)}</p>
-            <p className="text-gray-400 text-sm">5,395,000 at today&apos;s rate</p>
-          </div>
-          <div className="border border-gray-200 rounded-2xl p-8 hover:shadow-md transition-shadow">
-            <p className="text-xs font-semibold tracking-widest text-driftwood uppercase mb-2">Base Vehicle + Import</p>
-            <p className="text-3xl text-ocean mb-1">$25,000 -- $55,000</p>
-            <p className="text-gray-400 text-sm">SLWB Hiace from Japan (+$2k shipping)</p>
-          </div>
-          <div className="border border-gray-200 rounded-2xl p-8 bg-cream border-ocean-light hover:shadow-md transition-shadow">
-            <p className="text-xs font-semibold tracking-widest text-ocean uppercase mb-2">Total Estimate</p>
-            <p className="text-3xl text-ocean mb-1">~{formatAud(low)} -- {formatAud(high)}</p>
-            <p className="text-gray-500 text-sm">+ $13,090 for pop top (optional)</p>
-          </div>
+        <p className="text-driftwood text-xs font-semibold tracking-widest uppercase mb-3">Choice of Vehicle</p>
+        <h2 className="text-4xl text-charcoal mb-4">Toyota Hiace H200 — Super Long Wheelbase</h2>
+        <p className="text-gray-500 max-w-2xl mb-10 leading-relaxed">The H200 is the only model Hiace sold in Japan where the cabin-over-engine design maximises space in the cabin. SLWB dimensions: {KUMA_VEHICLE_SPECS.dimensions}. Automatic transmission.</p>
+        <div className="grid md:grid-cols-2 gap-4">
+          {KUMA_VEHICLE_SPECS.options.map(opt => (
+            <div key={opt.name} className="flex items-center justify-between border border-gray-200 rounded-2xl p-6 hover:shadow-md transition-shadow">
+              <span className="text-gray-700">{opt.name}</span>
+              <span className="text-2xl font-bold text-ocean">{opt.price}</span>
+            </div>
+          ))}
         </div>
-        <p className="text-xs text-gray-400 leading-relaxed max-w-2xl">Conversion fee based on today&apos;s JPY/AUD rate ({jpyRate.toFixed(4)}). Final pricing confirmed at consultation.</p>
       </section>
 
-      {/* Included */}
+      {/* Included Standard */}
       <section className="bg-cream py-20">
         <div className="max-w-6xl mx-auto px-6">
           <p className="text-driftwood text-xs font-semibold tracking-widest uppercase mb-3">Everything in the box</p>
@@ -108,15 +128,15 @@ export default function KumaQProductClient({ conversionAud, low, high, jpyRate, 
         </div>
       </section>
 
-      {/* Features */}
+      {/* Mid Section Layout */}
       <section className="max-w-6xl mx-auto px-6 py-20">
-        <p className="text-driftwood text-xs font-semibold tracking-widest uppercase mb-3">Built for living</p>
-        <h2 className="text-4xl text-charcoal mb-10">Key Features</h2>
-        <div className="grid md:grid-cols-2 gap-8">
-          {KUMA_FEATURES.map(opt => (
+        <p className="text-driftwood text-xs font-semibold tracking-widest uppercase mb-3">Tailored for you</p>
+        <h2 className="text-4xl text-charcoal mb-10">Choice of Mid Section Layout</h2>
+        <div className="grid md:grid-cols-3 gap-6">
+          {KUMA_MID_LAYOUTS.map(opt => (
             <div key={opt.name} className="border border-gray-200 rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
-              <EditableImage src={content[opt.key + '_image'] || opt.fallback} alt={opt.name} className="h-52" placeholderText={`${opt.name} photo coming soon`} />
-              <div className="p-6">
+              <EditableImage src={content[opt.key + '_image'] || opt.fallback} alt={opt.name} className="h-48" placeholderText={`${opt.name} photo coming soon`} />
+              <div className="p-5">
                 <p className="text-xs font-semibold tracking-widest text-driftwood uppercase mb-2">{opt.name}</p>
                 <p className="text-gray-600 text-sm leading-relaxed">{opt.desc}</p>
               </div>
@@ -125,13 +145,30 @@ export default function KumaQProductClient({ conversionAud, low, high, jpyRate, 
         </div>
       </section>
 
-      {/* Options */}
+      {/* Bed Layout */}
       <section className="bg-cream py-20">
         <div className="max-w-6xl mx-auto px-6">
-          <p className="text-driftwood text-xs font-semibold tracking-widest uppercase mb-3">Make it yours</p>
-          <h2 className="text-4xl text-charcoal mb-10">Select Options</h2>
-          <OptionsList source="kuma-q" />
+          <p className="text-driftwood text-xs font-semibold tracking-widest uppercase mb-3">Sleep your way</p>
+          <h2 className="text-4xl text-charcoal mb-10">Choice of Bed Layout</h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            {KUMA_BED_LAYOUTS.map(opt => (
+              <div key={opt.name} className="border border-gray-200 rounded-2xl overflow-hidden hover:shadow-md transition-shadow bg-white">
+                <EditableImage src={content[opt.key + '_image'] || opt.fallback} alt={opt.name} className="h-48" placeholderText={`${opt.name} photo coming soon`} />
+                <div className="p-5">
+                  <p className="text-xs font-semibold tracking-widest text-driftwood uppercase mb-2">{opt.name}</p>
+                  <p className="text-gray-600 text-sm leading-relaxed">{opt.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
+      </section>
+
+      {/* Options */}
+      <section className="max-w-6xl mx-auto px-6 py-20">
+        <p className="text-driftwood text-xs font-semibold tracking-widest uppercase mb-3">Make it yours</p>
+        <h2 className="text-4xl text-charcoal mb-10">Select Options</h2>
+        <OptionsList source="kuma-q" />
       </section>
 
       {/* CTA */}
@@ -139,7 +176,7 @@ export default function KumaQProductClient({ conversionAud, low, high, jpyRate, 
         <div className="max-w-2xl mx-auto px-6">
           <p className="text-sand text-xs font-semibold tracking-widest uppercase mb-4">Get started</p>
           <h2 className="text-4xl md:text-5xl mb-4">Ready to build your KUMA-Q?</h2>
-          <p className="text-gray-300 text-lg mb-10 leading-relaxed">The ultimate Super Long Wheelbase campervan. Browse available SLWB Hiaces, customise your build, or book a free consultation.</p>
+          <p className="text-gray-300 text-lg mb-10 leading-relaxed">The ultimate Super Long Wheelbase campervan. Over 1,000 colour combinations. Customise your build in 3D or book a free consultation.</p>
           <div className="flex flex-wrap gap-4 justify-center">
             <a href={configuratorUrl} target="_blank" rel="noopener noreferrer" className="btn-primary text-base px-8 py-4">Customise in 3D</a>
             <LeadFormModal trigger="Book a Free Consultation" source="product_page_kuma_q" className="btn-ghost text-base px-8 py-4" />
