@@ -35,8 +35,8 @@ export default function TamaProductClient({ conversionAud, low, high, jpyRate, c
   const [content, setContent] = useState(initial)
 
   const configuratorUrl = vanId
-    ? `https://dreamdrive-configurator-3d.vercel.app/?model=tama&source=barecamper&van_id=${vanId}&van_name=${encodeURIComponent(vanName ?? '')}&van_price=${vanPriceCents ? Math.round(vanPriceCents / 100) : ''}`
-    : 'https://dreamdrive-configurator-3d.vercel.app/?model=tama'
+    ? `https://configure.barecamper.com.au/?model=tama&source=barecamper&van_id=${vanId}&van_name=${encodeURIComponent(vanName ?? '')}&van_price=${vanPriceCents ? Math.round(vanPriceCents / 100) : ''}`
+    : 'https://configure.barecamper.com.au/?model=tama'
   const gallery: string[] = (() => { try { return JSON.parse(content.gallery_images || '[]') } catch { return [] } })()
 
   const extraImages = [

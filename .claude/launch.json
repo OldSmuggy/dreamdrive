@@ -6,6 +6,13 @@
       "runtimeExecutable": "/bin/bash",
       "runtimeArgs": ["-c", "PATH=/usr/local/bin:$PATH npm run dev"],
       "port": 3000
+    },
+    {
+      "name": "configurator-dev",
+      "runtimeExecutable": "/bin/bash",
+      "runtimeArgs": ["-c", "cd '/Users/jaredcampion/Desktop/DD App/dreamdrive-configurator-3d' && /usr/local/bin/npm run dev"],
+      "port": 5173,
+      "autoPort": true
     }
   ]
 }

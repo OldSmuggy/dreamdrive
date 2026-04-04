@@ -20,6 +20,17 @@ const EXTRAS: Record<string, { icon: string; tagline: string; features: string[]
       'Dual-zone climate compatibility ready',
     ],
   },
+  'kuma-q': {
+    icon: '🚐',
+    tagline: 'Full-length SLWB campervan conversion',
+    features: [
+      'Queen-size bed spanning the full width of the SLWB Hiace',
+      'Galley kitchen with walnut countertop and 40L fridge',
+      '4-seat dining layout with adjustable table',
+      '2 x 100AH lithium battery with 2000W inverter',
+      'Full-length interior fit-out with under-bed storage',
+    ],
+  },
   'mana': {
     icon: '🏕️',
     tagline: 'Your complete home on the road',
@@ -133,7 +144,9 @@ export default async function ProductPage({ params, searchParams }: { params: { 
 
   const isFitout = product.category === 'fitout' || product.slug === 'tama' || product.slug === 'mana'
   const vanParam = resolvedSearchParams.van
-  const configuratorBase = `https://dreamdrive-configurator-3d.vercel.app/?model=${product.slug === 'mana' ? 'mana' : 'tama'}`
+  const modelMap: Record<string, string> = { tama: 'tama', 'kuma-q': 'kuma-q', mana: 'mana' }
+  const configuratorModel = modelMap[product.slug] ?? 'tama'
+  const configuratorBase = `https://configure.barecamper.com.au/?model=${configuratorModel}`
   const configuratorUrl = vanParam
     ? `${configuratorBase}&source=barecamper&van_id=${vanParam}`
     : configuratorBase
