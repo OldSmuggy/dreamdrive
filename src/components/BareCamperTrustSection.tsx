@@ -294,14 +294,11 @@ export default function BareCamperTrustSection() {
         </p>
       </div>
 
-      {/* Top row: Callback + Workshop */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+      {/* Callback + Workshop */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <CallbackForm />
         <WorkshopCTA />
       </div>
-
-      {/* Brochure downloads */}
-      <BrochureDownloads />
     </section>
   )
 }

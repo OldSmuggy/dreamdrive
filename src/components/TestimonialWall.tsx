@@ -27,7 +27,6 @@ const CUSTOMERS = [
   { src: '/images/testimonials/jack_sam.jpg', name: 'Jack & Sam' },
   { src: '/images/testimonials/brad.jpg', name: 'Brad' },
   { src: '/images/testimonials/joel_mis.jpg', name: 'Joel & Mis' },
-  { src: '/images/testimonials/japan_customer.jpg', name: 'Dream Drive Japan' },
 ]
 
 // Distribute photos across 3 columns for masonry effect

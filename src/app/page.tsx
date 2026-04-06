@@ -171,11 +171,8 @@ export default async function HomePage() {
           <h1 className="text-3xl leading-tight mb-1 text-charcoal font-bold">
             Just what you need.
           </h1>
-          <p className="text-sm text-gray-500 mb-2">
+          <p className="text-sm text-gray-500">
             Auction-graded vans from Japan. Professional fiberglass conversions in Brisbane. Your call how far you go.
-          </p>
-          <p className="text-[10px] text-stone-400 uppercase tracking-[1px]">
-            Sourced by Dream Drive Japan · Built by DIY RV Solutions · Delivered by Bare Camper
           </p>
         </div>
 
@@ -197,11 +194,8 @@ export default async function HomePage() {
             <h1 className="text-5xl lg:text-6xl leading-tight mb-2 text-charcoal font-bold">
               Just what you need.
             </h1>
-            <p className="text-base text-gray-600 max-w-md mx-auto leading-relaxed mb-2">
+            <p className="text-base text-gray-600 max-w-md mx-auto leading-relaxed">
               Auction-graded Toyota Hiace vans from Japan. Professional fiberglass conversions in Brisbane. Your call how far you go.
-            </p>
-            <p className="text-[11px] text-stone-400 uppercase tracking-[1px]">
-              Sourced by Dream Drive Japan · Built by DIY RV Solutions · Delivered by Bare Camper
             </p>
           </div>
 
@@ -400,146 +394,24 @@ export default async function HomePage() {
 
           {/* Dream Drive */}
           <div className="mb-16">
-            <h3 className="text-2xl font-bold mb-4 text-sand">Dream Drive — sourcing, conversion, delivery</h3>
-            <div className="text-gray-300 leading-relaxed space-y-4 max-w-3xl">
-              <p>Dream Drive has been building and sourcing Toyota Hiace campervans since 2018. With a team of 20+ in Tokyo — including auction buyers, conversion craftsmen, compliance specialists, and logistics coordinators — they handle everything from bidding at Japanese auctions to fitting out interiors at their Tokyo facility. Hundreds of vehicles delivered across Japan, Australia, and New Zealand.</p>
-              <p className="text-gray-400">This isn&apos;t a broker with a laptop. Dream Drive is a registered Japanese company (Dream Drive KK) with its own workshop, its own team, and years of direct relationships with auction houses and shipping lines. Jared Campion founded it in 2018 and runs Bare Camper as the Australian-facing platform.</p>
-            </div>
-            <div className="grid grid-cols-3 gap-4 mt-8 max-w-2xl">
-              {[
-                { value: 'Hundreds', label: 'Vans delivered across 3 countries' },
-                { value: '20+', label: 'Full-time team in Tokyo' },
-                { value: '7+ years', label: 'Operating since 2018' },
-              ].map(s => (
-                <div key={s.value} className="bg-white/5 rounded-xl p-4 text-center">
-                  <p className="text-2xl font-bold text-white mb-1">{s.value}</p>
-                  <p className="text-gray-400 text-xs leading-tight">{s.label}</p>
-                </div>
-              ))}
-            </div>
+            <h3 className="text-2xl font-bold mb-4 text-sand">Dream Drive — conversion experts</h3>
+            <p className="text-gray-300 leading-relaxed max-w-3xl">
+              Dream Drive has been building and sourcing Toyota Hiace campervans since 2018. With a team of 20+ in Tokyo — including auction buyers, conversion craftsmen, compliance specialists, and logistics coordinators — they handle everything from bidding at Japanese auctions to fitting out interiors at their Tokyo facility. Hundreds of vehicles delivered across Japan, Australia, and New Zealand.
+            </p>
           </div>
 
           {/* DIY RV Solutions */}
           <div>
-            <h3 className="text-2xl font-bold mb-4 text-sand">DIY RV Solutions — Brisbane manufacturing</h3>
-            <div className="text-gray-300 leading-relaxed space-y-4 max-w-3xl">
-              <p>Andrew Taylor runs DIY RV Solutions out of Capalaba, Brisbane — a workshop that&apos;s been manufacturing fiberglass pop tops, hi-tops, and full campervan interiors for over 25 years. The team builds mould platforms for the H200, H300, Coaster, Sprinter, Transit, and Crafter. If it goes on a van, they&apos;ve built it.</p>
-              <p className="text-gray-400">Every Bare Camper conversion — from a simple pop-top cut to a full MANA or TAMA build — is made here. Same factory, same team, same quality whether you&apos;re getting the roof done or handing over the keys to a finished camper.</p>
-            </div>
-            <div className="grid grid-cols-3 gap-4 mt-8 max-w-2xl">
-              {[
-                { value: '25+ years', label: 'Fiberglass manufacturing' },
-                { value: '6 platforms', label: 'H200, H300, Coaster, Sprinter, Transit, Crafter' },
-                { value: 'Capalaba QLD', label: 'Visit the workshop anytime' },
-              ].map(s => (
-                <div key={s.value} className="bg-white/5 rounded-xl p-4 text-center">
-                  <p className="text-2xl font-bold text-white mb-1">{s.value}</p>
-                  <p className="text-gray-400 text-xs leading-tight">{s.label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── 6. STATS STRIP ──────────────────────────────────── */}
-      <section className="bg-stone-100 py-12">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
-            {[
-              { value: 'Hundreds', label: 'Vans delivered' },
-              { value: '25+ years', label: 'Fiberglass manufacturing' },
-              { value: '20+ staff', label: 'Our own team in Tokyo' },
-              { value: 'JP + AU + NZ', label: 'Three countries, one supply chain' },
-              { value: '6 moulds', label: 'H200 to Crafter' },
-              { value: '100%', label: 'Every van SEVS-approved & registered' },
-            ].map(s => (
-              <div key={s.label} className="bg-white rounded-xl p-4 text-center">
-                <p className="text-lg font-bold text-stone-900 mb-1">{s.value}</p>
-                <p className="text-stone-500 text-[11px] leading-tight">{s.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── 8. TESTIMONIALS ──────────────────────────────── */}
-      <section className="py-20 bg-cream">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <p className="text-driftwood text-sm font-semibold tracking-widest uppercase mb-4">Real Customers</p>
-            <h2 className="text-4xl text-charcoal font-bold">What our customers say</h2>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              { name: 'Luke', location: 'Brisbane, QLD', van: 'H200 SLWB', quote: 'I love my new home.' },
-              { name: 'Josh', location: 'Brisbane, QLD', van: 'H200 Pop Top', quote: 'No more rent — I happily live in my camper.' },
-              { name: 'Michael', location: 'QLD', van: 'H200 SLWB', quote: 'This is the perfect weekender for my family.' },
-              { name: 'Kate', location: 'QLD', van: 'H200 SLWB', quote: 'Goober van is part of the family.' },
-              { name: 'Tom', location: 'QLD', van: 'H200 LWB', quote: 'The perfect size for me to travel in comfort.' },
-              { name: 'Sharon', location: 'QLD', van: 'H200 Pop Top', quote: 'Could not be happier with our camper.' },
-            ].map(t => (
-              <div key={t.name} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col">
-                <div className="flex gap-0.5 mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <svg key={i} className="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                  ))}
-                </div>
-                <p className="text-charcoal text-lg leading-relaxed flex-1">&ldquo;{t.quote}&rdquo;</p>
-                <div className="mt-4 pt-4 border-t border-gray-100">
-                  <p className="font-semibold text-charcoal text-sm">{t.name}</p>
-                  <p className="text-gray-400 text-xs">{t.van} · {t.location}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── 8b. SELL A VAN / COMMUNITY ──────────────────── */}
-      <section className="py-20 bg-white">
-        <div className="max-w-5xl mx-auto px-4">
-          <div className="text-center mb-10">
-            <p className="text-driftwood text-sm font-semibold tracking-widest uppercase mb-4">Got a Van to Sell?</p>
-            <h2 className="text-3xl text-charcoal font-bold mb-3">Earn money from a van you&apos;ve spotted</h2>
-            <p className="text-gray-500 text-lg max-w-2xl mx-auto leading-relaxed">
-              Know someone selling a great Hiace? Seen one on Facebook or Gumtree? Let us know — we&apos;ll do the legwork and pay you a <strong className="text-charcoal">$200 finders fee</strong> for Japanese vans bought by a customer, or Aussie vans that lead to a Bare Camper conversion.
+            <h3 className="text-2xl font-bold mb-4 text-sand">DIY RV Solutions — fiberglass experts</h3>
+            <p className="text-gray-300 leading-relaxed max-w-3xl">
+              DIY RV Solutions operates out of Capalaba, Brisbane — a workshop that&apos;s been manufacturing fiberglass pop tops, hi-tops, and full campervan interiors for over 25 years. The team builds mould platforms for the H200, H300, Coaster, Sprinter, Transit, and Crafter. If it goes on a van, they&apos;ve built it.
             </p>
           </div>
-          <div className="grid sm:grid-cols-2 gap-6">
-            <Link
-              href="/tip-a-van"
-              className="group flex gap-5 items-start bg-cream rounded-2xl p-6 border border-transparent hover:border-ocean/20 hover:shadow-md transition-all"
-            >
-              <div className="text-4xl shrink-0">💡</div>
-              <div>
-                <h3 className="font-bold text-charcoal text-lg mb-1 group-hover:text-ocean transition-colors">Tip a Van — Earn $200</h3>
-                <p className="text-gray-500 text-sm leading-relaxed">
-                  Spotted a van online? Drop us the link. If it sells through Bare Camper, we&apos;ll pay you $200. Takes 60 seconds.
-                </p>
-                <span className="mt-3 inline-block text-ocean text-sm font-semibold group-hover:underline">Send a tip →</span>
-              </div>
-            </Link>
-            <Link
-              href="/account/my-listings"
-              className="group flex gap-5 items-start bg-cream rounded-2xl p-6 border border-transparent hover:border-ocean/20 hover:shadow-md transition-all"
-            >
-              <div className="text-4xl shrink-0">📬</div>
-              <div>
-                <h3 className="font-bold text-charcoal text-lg mb-1 group-hover:text-ocean transition-colors">List Your Van</h3>
-                <p className="text-gray-500 text-sm leading-relaxed">
-                  Selling a van yourself? List it on Bare Camper for free. We&apos;ll show it to our buyer network and pay you a $200 fee if a customer buys it.
-                </p>
-                <span className="mt-3 inline-block text-ocean text-sm font-semibold group-hover:underline">Create a listing →</span>
-              </div>
-            </Link>
-          </div>
         </div>
       </section>
 
-      {/* ─── 9. TESTIMONIAL WALL ────────────────────────────── */}
+
+      {/* ─── 8. TESTIMONIAL WALL ────────────────────────────── */}
       <TestimonialWall />
 
       {/* ─── 10. TRUST & CONVERSION ────────────────────────── */}
