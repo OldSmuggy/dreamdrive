@@ -50,6 +50,8 @@ const NAV_SECTIONS: NavSection[] = [
     label: 'MARKETING',
     items: [
       { href: '/admin/share', label: '🔗 Share Links' },
+      { href: 'https://clarity.microsoft.com/projects/view/w7b92jh0lr/dashboard', label: '🔥 Clarity Heatmaps ↗' },
+      { href: 'https://analytics.google.com', label: '📊 Google Analytics ↗' },
     ],
   },
   {
