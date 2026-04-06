@@ -40,9 +40,23 @@ export async function middleware(request: NextRequest) {
   const isMyVan   = request.nextUrl.pathname.startsWith('/my-van')
   const isAgent   = request.nextUrl.pathname.startsWith('/agent')
 
+  // Redirect unauthenticated users to login
   if ((isAdmin || isAccount || isMyVan || isAgent) && !user) {
     const dest = encodeURIComponent(request.nextUrl.pathname)
     return NextResponse.redirect(new URL(`/login?next=${dest}`, request.url))
+  }
+
+  // Admin pages require admin email domain (API routes have their own requireAdmin() check)
+  if (isAdmin && user && !user.email?.endsWith('@dreamdrive.life')) {
+    // Check if user has is_admin flag via a lightweight query
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', user.id)
+      .single()
+    if (!profile?.is_admin) {
+      return NextResponse.redirect(new URL('/', request.url))
+    }
   }
 
   return response

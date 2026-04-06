@@ -2,8 +2,12 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
+import { requireAdmin } from '@/lib/api-auth'
 
 export async function GET() {
+  const { error } = await requireAdmin()
+  if (error) return error
+
   const supabase = createAdminClient()
   const { data, error } = await supabase
     .from('trusted_submitters')
@@ -14,6 +18,9 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const { error: authError } = await requireAdmin()
+  if (authError) return authError
+
   try {
     const { email, name, notes } = await req.json()
     if (!email) return NextResponse.json({ error: 'Email is required' }, { status: 400 })
@@ -33,6 +40,9 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const { error: authError } = await requireAdmin()
+  if (authError) return authError
+
   try {
     const { id } = await req.json()
     if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 })

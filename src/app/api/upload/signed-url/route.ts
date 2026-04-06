@@ -2,10 +2,14 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
+import { requireAuth } from '@/lib/api-auth'
 
 const BUCKET = 'listing-images'
 
 export async function POST(req: NextRequest) {
+  const { error } = await requireAuth()
+  if (error) return error
+
   try {
     const { filename, contentType } = await req.json()
     if (!filename || !contentType) {

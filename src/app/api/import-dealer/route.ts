@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
+import { requireAdmin } from '@/lib/api-auth'
 import {
   detectSource,
   extractExternalId,
@@ -22,6 +23,9 @@ import { scrapeUrl } from '@/lib/firecrawl'
 // ============================================================
 
 export async function POST(req: NextRequest) {
+  const { error } = await requireAdmin()
+  if (error) return error
+
   try {
     const { url } = await req.json()
     if (!url?.trim()) return NextResponse.json({ error: 'No URL provided' }, { status: 400 })

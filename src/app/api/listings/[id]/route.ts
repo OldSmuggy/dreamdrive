@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
+import { requireAdmin } from '@/lib/api-auth'
 
 // Columns that require a DB migration and may not exist yet.
 // If the update fails because of one of these, we strip them and retry
@@ -18,6 +19,9 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const { error } = await requireAdmin()
+  if (error) return error
+
   try {
     const body = await req.json()
     const supabase = createAdminClient()
@@ -63,6 +67,9 @@ export async function DELETE(
   _req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const { error } = await requireAdmin()
+  if (error) return error
+
   try {
     const supabase = createAdminClient()
     const { error } = await supabase.from('listings').delete().eq('id', params.id)

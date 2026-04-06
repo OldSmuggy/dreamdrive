@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
 import { sendEmail, emailTemplates } from '@/lib/email'
 import { rateLimit } from '@/lib/rate-limit'
+import { requireAdmin } from '@/lib/api-auth'
 
 // Columns that require a DB migration — strip and retry if missing
 const OPTIONAL_LEAD_COLS = ['state', 'build_slug', 'lead_type']
@@ -87,12 +88,15 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET() {
+  const { error } = await requireAdmin()
+  if (error) return error
+
   const supabase = createAdminClient()
-  const { data, error } = await supabase
+  const { data, error: dbError } = await supabase
     .from('leads')
     .select('*')
     .order('created_at', { ascending: false })
     .limit(200)
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (dbError) return NextResponse.json({ error: dbError.message }, { status: 500 })
   return NextResponse.json(data)
 }

@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
+import { requireAdmin } from '@/lib/api-auth'
 
 export async function GET(
   _req: NextRequest,
@@ -28,6 +29,9 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ slug: string }> },
 ) {
+  const { error } = await requireAdmin()
+  if (error) return error
+
   const { slug } = await params
   try {
     const body = await req.json() as Record<string, string>

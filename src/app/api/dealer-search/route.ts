@@ -3,6 +3,7 @@ export const maxDuration = 300
 
 import { NextRequest, NextResponse } from 'next/server'
 import { runDealerSearch, type DealerSearchFilters } from '@/lib/dealer-search-scraper'
+import { requireAdmin } from '@/lib/api-auth'
 
 // ============================================================
 // POST /api/dealer-search
@@ -13,6 +14,9 @@ import { runDealerSearch, type DealerSearchFilters } from '@/lib/dealer-search-s
 // ============================================================
 
 export async function POST(req: NextRequest) {
+  const { error } = await requireAdmin()
+  if (error) return error
+
   try {
     const body = await req.json()
 

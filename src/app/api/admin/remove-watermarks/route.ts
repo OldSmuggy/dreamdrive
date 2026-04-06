@@ -4,6 +4,7 @@ export const maxDuration = 120
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
 import { GoogleGenAI } from '@google/genai'
+import { requireAdmin } from '@/lib/api-auth'
 
 const BUCKET = 'listing-images'
 
@@ -52,6 +53,9 @@ async function removeWatermark(ai: GoogleGenAI, imageBase64: string, mimeType: s
 }
 
 export async function POST(req: NextRequest) {
+  const { error } = await requireAdmin()
+  if (error) return error
+
   try {
     const apiKey = process.env.GEMINI_API_KEY
     if (!apiKey) return NextResponse.json({ error: 'GEMINI_API_KEY not configured' }, { status: 500 })

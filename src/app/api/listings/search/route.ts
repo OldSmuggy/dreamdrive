@@ -4,7 +4,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
 
 export async function GET(req: NextRequest) {
-  const q = req.nextUrl.searchParams.get('q')?.trim() ?? ''
+  const raw = req.nextUrl.searchParams.get('q')?.trim() ?? ''
+  if (!raw) return NextResponse.json([])
+  // Sanitize: remove characters that could manipulate PostgREST filter syntax
+  const q = raw.replace(/[(),.*\\]/g, '')
   if (!q) return NextResponse.json([])
 
   const supabase = createAdminClient()

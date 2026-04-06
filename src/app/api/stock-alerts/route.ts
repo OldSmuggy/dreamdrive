@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
 import { sendEmail } from '@/lib/email'
+import { requireAdmin } from '@/lib/api-auth'
 
 export async function POST(req: NextRequest) {
   try {
@@ -49,12 +50,15 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET() {
+  const { error } = await requireAdmin()
+  if (error) return error
+
   const admin = createAdminClient()
-  const { data, error } = await admin
+  const { data, error: dbError } = await admin
     .from('stock_alerts')
     .select('*')
     .order('created_at', { ascending: false })
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (dbError) return NextResponse.json({ error: dbError.message }, { status: 500 })
   return NextResponse.json(data)
 }

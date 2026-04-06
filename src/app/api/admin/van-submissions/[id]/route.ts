@@ -3,11 +3,15 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
 import { sendEmail, emailTemplates } from '@/lib/email'
+import { requireAdmin } from '@/lib/api-auth'
 
 export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const { error } = await requireAdmin()
+  if (error) return error
+
   try {
     const body = await req.json()
     const { action, admin_notes, publish } = body
