@@ -17,17 +17,17 @@ const PARTNERS = [
 
 // ── Customer photos ─────────────────────────────────────────────────────────
 const CUSTOMERS = [
-  { src: '/testimonials/eric.jpg', name: 'Eric' },
-  { src: '/testimonials/liam.jpg', name: 'Liam & family' },
-  { src: '/testimonials/hana_josiah.jpg', name: 'Hana & Josiah' },
-  { src: '/testimonials/sal.jpg', name: 'Sal & family' },
-  { src: '/testimonials/luke.jpg', name: 'Luke' },
-  { src: '/testimonials/richard_trish.jpg', name: 'Richard & Trish' },
-  { src: '/testimonials/kate_luke.jpg', name: 'Kate & Luke' },
-  { src: '/testimonials/jack_sam.jpg', name: 'Jack & Sam' },
-  { src: '/testimonials/brad.jpg', name: 'Brad' },
-  { src: '/testimonials/joel_mis.jpg', name: 'Joel & Mis' },
-  { src: '/testimonials/japan_customer.jpg', name: 'Dream Drive Japan' },
+  { src: '/images/testimonials/eric.jpg', name: 'Eric' },
+  { src: '/images/testimonials/liam.jpg', name: 'Liam & family' },
+  { src: '/images/testimonials/hana_josiah.jpg', name: 'Hana & Josiah' },
+  { src: '/images/testimonials/sal.jpg', name: 'Sal & family' },
+  { src: '/images/testimonials/luke.jpg', name: 'Luke' },
+  { src: '/images/testimonials/richard_trish.jpg', name: 'Richard & Trish' },
+  { src: '/images/testimonials/kate_luke.jpg', name: 'Kate & Luke' },
+  { src: '/images/testimonials/jack_sam.jpg', name: 'Jack & Sam' },
+  { src: '/images/testimonials/brad.jpg', name: 'Brad' },
+  { src: '/images/testimonials/joel_mis.jpg', name: 'Joel & Mis' },
+  { src: '/images/testimonials/japan_customer.jpg', name: 'Dream Drive Japan' },
 ]
 
 // Distribute photos across 3 columns for masonry effect
