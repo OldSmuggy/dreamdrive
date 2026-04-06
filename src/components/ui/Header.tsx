@@ -8,9 +8,9 @@ import { useRouter, usePathname } from 'next/navigation'
 const NAV = [
   { label: 'Buy a Van', href: '/browse' },
   { label: 'Roof Conversion', href: '/pop-top' },
-  { label: 'Full Build', href: '/tama' },
+  { label: 'Full Build', href: '/full-build' },
   { label: 'Pricing', href: '/import-costs' },
-  { label: 'Sell', href: '/tip-a-van' },
+  { label: 'Sell', href: '/sell' },
 ]
 
 export default function Header({ logoUrl }: { logoUrl?: string }) {
