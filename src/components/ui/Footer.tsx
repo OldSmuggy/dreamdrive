@@ -83,6 +83,21 @@ export default function Footer() {
         </div>
       </div>
 
+      {/* Powered by badge */}
+      <div className="border-t border-white/10 py-6 text-center">
+        <p className="text-[10px] text-white/30 uppercase tracking-widest mb-1">Bare Camper is powered by</p>
+        <p className="text-sm text-white/50">
+          <a href="https://dreamdrive.life" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-white transition-colors">Dream Drive</a>
+          <span className="text-white/30 mx-2">+</span>
+          <a href="https://diyrvsolutions.com.au" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-white transition-colors">DIY RV Solutions</a>
+        </p>
+        <p className="text-[10px] text-white/20 mt-1">
+          <a href="https://dreamdrive.life" target="_blank" rel="noopener noreferrer" className="hover:text-white/40">dreamdrive.life</a>
+          {' · '}
+          <a href="https://diyrvsolutions.com.au" target="_blank" rel="noopener noreferrer" className="hover:text-white/40">diyrvsolutions.com.au</a>
+        </p>
+      </div>
+
       {/* Bottom bar */}
       <div className="border-t border-white/10">
         <div className="max-w-7xl mx-auto px-4 py-6">
@@ -91,9 +106,6 @@ export default function Footer() {
             <div className="flex items-center gap-4">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/barecamper-logo-dark-400.png" alt="Bare Camper" className="h-6 w-auto invert opacity-40" />
-              <span className="text-xs text-white/30">
-                A joint venture — <span className="text-white/50">Dream Drive</span> x <span className="text-white/50">DIY RV Solutions</span>
-              </span>
             </div>
 
             {/* Trust badges */}

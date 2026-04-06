@@ -171,8 +171,11 @@ export default async function HomePage() {
           <h1 className="text-3xl leading-tight mb-1 text-charcoal font-bold">
             Just what you need.
           </h1>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 mb-2">
             Auction-graded vans from Japan. Professional fiberglass conversions in Brisbane. Your call how far you go.
+          </p>
+          <p className="text-[10px] text-stone-400 uppercase tracking-[1px]">
+            Sourced by Dream Drive Japan · Built by DIY RV Solutions · Delivered by Bare Camper
           </p>
         </div>
 
@@ -194,8 +197,11 @@ export default async function HomePage() {
             <h1 className="text-5xl lg:text-6xl leading-tight mb-2 text-charcoal font-bold">
               Just what you need.
             </h1>
-            <p className="text-base text-gray-600 max-w-md mx-auto leading-relaxed">
+            <p className="text-base text-gray-600 max-w-md mx-auto leading-relaxed mb-2">
               Auction-graded Toyota Hiace vans from Japan. Professional fiberglass conversions in Brisbane. Your call how far you go.
+            </p>
+            <p className="text-[11px] text-stone-400 uppercase tracking-[1px]">
+              Sourced by Dream Drive Japan · Built by DIY RV Solutions · Delivered by Bare Camper
             </p>
           </div>
 
@@ -381,62 +387,76 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* ─── 5. WHO WE ARE ────────────────────────────────── */}
+      {/* ─── 5. THE TEAM BEHIND IT ──────────────────────────── */}
       <section className="bg-charcoal text-white py-20">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <p className="text-sand text-sm font-semibold tracking-widest uppercase mb-4">The Team Behind It</p>
-            <h2 className="text-4xl mb-4 font-bold">Two blokes. Two businesses. One platform.</h2>
+          <div className="text-center mb-14">
+            <p className="text-sand text-xs font-semibold tracking-widest uppercase mb-4">The Team Behind It</p>
+            <h2 className="text-4xl md:text-5xl mb-4 font-bold">Two specialist businesses. Three countries. One platform.</h2>
             <p className="text-gray-400 text-lg max-w-2xl mx-auto leading-relaxed">
-              Australia has a campervan supply problem. Great vans exist — they&apos;re just in Japan. And the best fiberglass work in the country has been happening in one Brisbane factory for 25 years. Bare Camper brings both together to get more vans on the road and solve the supply issue.
+              Australia has a campervan supply problem. Great vans exist — they&apos;re just in Japan. And the best fiberglass work in the country has been happening in one Brisbane factory for 25 years. Bare Camper brings both together.
             </p>
           </div>
-          <div className="grid md:grid-cols-2 gap-12 mt-12">
-            <div>
-              <h3 className="text-2xl font-bold mb-3 text-sand">Jared Campion — Dream Drive</h3>
-              <p className="text-gray-300 leading-relaxed">
-                Jared&apos;s been importing vehicles from Japan since 2018. His team in Tokyo sources vans from auctions and trusted dealers, and handles everything from bidding to compliance to delivery. He knows which Hiace models actually work for conversions and which ones will give you grief. Over 50 vans delivered.
-              </p>
+
+          {/* Dream Drive */}
+          <div className="mb-16">
+            <h3 className="text-2xl font-bold mb-4 text-sand">Dream Drive — sourcing, conversion, delivery</h3>
+            <div className="text-gray-300 leading-relaxed space-y-4 max-w-3xl">
+              <p>Dream Drive has been building and sourcing Toyota Hiace campervans since 2018. With a team of 20+ in Tokyo — including auction buyers, conversion craftsmen, compliance specialists, and logistics coordinators — they handle everything from bidding at Japanese auctions to fitting out interiors at their Tokyo facility. Hundreds of vehicles delivered across Japan, Australia, and New Zealand.</p>
+              <p className="text-gray-400">This isn&apos;t a broker with a laptop. Dream Drive is a registered Japanese company (Dream Drive KK) with its own workshop, its own team, and years of direct relationships with auction houses and shipping lines. Jared Campion founded it in 2018 and runs Bare Camper as the Australian-facing platform.</p>
             </div>
-            <div>
-              <h3 className="text-2xl font-bold mb-3 text-sand">Andrew Taylor — DIY RV Solutions</h3>
-              <p className="text-gray-300 leading-relaxed">
-                Andrew runs DIY RV Solutions out of Capalaba, Brisbane — a workshop that&apos;s been building fiberglass pop tops and campervan components for over 25 years. If it goes on a Hiace, his team has built it. Pop tops, hi-tops, electrical systems, furniture — the lot.
-              </p>
+            <div className="grid grid-cols-3 gap-4 mt-8 max-w-2xl">
+              {[
+                { value: 'Hundreds', label: 'Vans delivered across 3 countries' },
+                { value: '20+', label: 'Full-time team in Tokyo' },
+                { value: '7+ years', label: 'Operating since 2018' },
+              ].map(s => (
+                <div key={s.value} className="bg-white/5 rounded-xl p-4 text-center">
+                  <p className="text-2xl font-bold text-white mb-1">{s.value}</p>
+                  <p className="text-gray-400 text-xs leading-tight">{s.label}</p>
+                </div>
+              ))}
             </div>
           </div>
-          <p className="text-gray-400 text-center mt-12 text-lg max-w-2xl mx-auto leading-relaxed">
-            We built Bare Camper together so you can get the van, the fiberglass, the parts, and the know-how from one place. No middlemen. Just two teams who do this every day.
-          </p>
+
+          {/* DIY RV Solutions */}
+          <div>
+            <h3 className="text-2xl font-bold mb-4 text-sand">DIY RV Solutions — Brisbane manufacturing</h3>
+            <div className="text-gray-300 leading-relaxed space-y-4 max-w-3xl">
+              <p>Andrew Taylor runs DIY RV Solutions out of Capalaba, Brisbane — a workshop that&apos;s been manufacturing fiberglass pop tops, hi-tops, and full campervan interiors for over 25 years. The team builds mould platforms for the H200, H300, Coaster, Sprinter, Transit, and Crafter. If it goes on a van, they&apos;ve built it.</p>
+              <p className="text-gray-400">Every Bare Camper conversion — from a simple pop-top cut to a full MANA or TAMA build — is made here. Same factory, same team, same quality whether you&apos;re getting the roof done or handing over the keys to a finished camper.</p>
+            </div>
+            <div className="grid grid-cols-3 gap-4 mt-8 max-w-2xl">
+              {[
+                { value: '25+ years', label: 'Fiberglass manufacturing' },
+                { value: '6 platforms', label: 'H200, H300, Coaster, Sprinter, Transit, Crafter' },
+                { value: 'Capalaba QLD', label: 'Visit the workshop anytime' },
+              ].map(s => (
+                <div key={s.value} className="bg-white/5 rounded-xl p-4 text-center">
+                  <p className="text-2xl font-bold text-white mb-1">{s.value}</p>
+                  <p className="text-gray-400 text-xs leading-tight">{s.label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* ─── 6. WHY BARE CAMPER ───────────────────────────── */}
-      <section className="py-20">
+      {/* ─── 6. STATS STRIP ──────────────────────────────────── */}
+      <section className="bg-stone-100 py-12">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl text-charcoal font-bold">Just what you need. Nothing you don&apos;t.</h2>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {WHY_US.map(item => (
-              <div key={item.title} className="text-center">
-                <div className="text-4xl mb-4">{item.icon}</div>
-                <h3 className="text-charcoal font-bold text-lg mb-2">{item.title}</h3>
-                <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── 7. TRUST BAR ─────────────────────────────────── */}
-      <section className="border-y border-gray-100 py-10">
-        <div className="max-w-5xl mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            {TRUST.map(t => (
-              <div key={t.label}>
-                <p className="text-3xl text-charcoal mb-1 font-bold">{t.value}</p>
-                <p className="text-gray-500 text-sm">{t.label}</p>
+          <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
+            {[
+              { value: 'Hundreds', label: 'Vans delivered' },
+              { value: '25+ years', label: 'Fiberglass manufacturing' },
+              { value: '20+ staff', label: 'Our own team in Tokyo' },
+              { value: 'JP + AU + NZ', label: 'Three countries, one supply chain' },
+              { value: '6 moulds', label: 'H200 to Crafter' },
+              { value: '100%', label: 'Every van SEVS-approved & registered' },
+            ].map(s => (
+              <div key={s.label} className="bg-white rounded-xl p-4 text-center">
+                <p className="text-lg font-bold text-stone-900 mb-1">{s.value}</p>
+                <p className="text-stone-500 text-[11px] leading-tight">{s.label}</p>
               </div>
             ))}
           </div>
@@ -609,16 +629,3 @@ const PATHS: { image: string; tag: string; name: string; desc: string; tags: str
   },
 ]
 
-const TRUST = [
-  { value: '100+',   label: 'Vans delivered' },
-  { value: '25+',    label: 'Years of fiberglass' },
-  { value: 'JP + AU + NZ', label: 'Teams on the ground' },
-  { value: '100%',   label: 'Aus compliant' },
-]
-
-const WHY_US = [
-  { icon: '🌏', title: 'Our team in Japan, Australia & NZ', desc: "We're the only campervan brand with a physical presence in Japan, Australia, and New Zealand. Our own buyer in Japan, our own workshop in Brisbane. Not outsourced — ours." },
-  { icon: '🔓', title: 'No lock-in', desc: "Buy just the van. Add the roof next month. Fit it out next year. Or get everything now. Your timeline, your call." },
-  { icon: '🏭', title: '25 years of fiberglass', desc: "Our Brisbane factory has been manufacturing pop tops since before van life was a hashtag. This is what we do." },
-  { icon: '🤝', title: 'Real people', desc: "You're dealing with Jared and Andrew — not a call centre. The same people who import the vans and build the roofs are the ones answering your questions." },
-]
