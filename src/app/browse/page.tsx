@@ -9,8 +9,8 @@ import BrowseGuide from '@/components/listings/BrowseGuide'
 import type { Listing } from '@/types'
 
 export const metadata = generateMeta({
-  title: 'Toyota Hiace Vans for Import from Japan | Browse Stock | Bare Camper',
-  description: 'Browse Toyota Hiace H200 and H300 vans available from Japanese auction and dealers. Auction-graded, verified kms, all-in AUD pricing. Import direct — no dealer markup.',
+  title: 'Buy a Toyota Hiace Van | Japan Import & Australian Stock | Bare Camper',
+  description: 'Browse auction-graded Toyota Hiace vans from Japan and Australian stock. Verified kms, transparent AUD pricing. Reserve from $3,000. Delivered to Brisbane in 6-8 weeks.',
   url: '/browse',
 })
 
