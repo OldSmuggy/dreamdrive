@@ -6,6 +6,7 @@ import Image from 'next/image'
 import PageEditToolbar from '@/components/admin/PageEditToolbar'
 import FitoutHero from '@/components/admin/FitoutHero'
 import LeadFormModal from '@/components/leads/LeadFormModal'
+import EnquiryCTA from '@/components/EnquiryCTA'
 
 const STATIC_HERO = '/images/poptop/300-slwb-poptop-side.jpg'
 
@@ -258,36 +259,9 @@ export default function PopTopClient({ content: initial }: { content: Record<str
       </section>
 
       {/* CTA */}
-      <section className="bg-charcoal text-white py-20 text-center">
-        <div className="max-w-2xl mx-auto px-6">
-          <p className="text-sand text-xs font-semibold tracking-widest uppercase mb-4">Ready to stand up in your van?</p>
-          <h2 className="text-4xl md:text-5xl mb-4">Book Your Build Slot</h2>
-          <p className="text-gray-300 text-lg mb-10 leading-relaxed">
-            $5,000 deposit locks in your 10-business-day turnaround. We&apos;ll contact you to schedule your drop-off date.
-          </p>
-          <div className="flex flex-wrap gap-4 justify-center">
-            <LeadFormModal
-              trigger="Get in Touch"
-              source="product_page_standing_room"
-              leadType="pop_top_booking"
-              className="btn-primary text-base px-8 py-4"
-            />
-            <Link href="/vans" className="btn-ghost text-base px-8 py-4">
-              Browse Vans
-            </Link>
-          </div>
-          <div className="mt-10 space-y-1 text-sm text-gray-400">
-            <p>
-              Jared Campion
-              {' · '}
-              <a href="tel:0432182892" className="text-sand hover:text-sand">0432 182 892</a>
-              {' · '}
-              <a href="mailto:hello@barecamper.com.au" className="text-sand hover:text-sand">hello@barecamper.com.au</a>
-            </p>
-            <p>DIY RV Solutions · 1/10 Jones Road, Capalaba, QLD 4157</p>
-          </div>
-        </div>
-      </section>
+      <div className="max-w-6xl mx-auto px-6 py-16">
+        <EnquiryCTA defaultModel="roof-only" />
+      </div>
     </div>
   )
 }

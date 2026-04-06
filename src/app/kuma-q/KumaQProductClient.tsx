@@ -8,6 +8,7 @@ import PageEditToolbar, { EditableImage } from '@/components/admin/PageEditToolb
 import FitoutHero from '@/components/admin/FitoutHero'
 import { formatAud } from '@/lib/pricing'
 import OptionsList from '@/components/options/OptionsList'
+import EnquiryCTA from '@/components/EnquiryCTA'
 
 interface Props { conversionAud: number; low: number; high: number; jpyRate: number; content: Record<string, string>; vanId?: string | null; vanName?: string | null; vanPriceCents?: number | null }
 
@@ -172,21 +173,9 @@ export default function KumaQProductClient({ conversionAud, low, high, jpyRate, 
       </section>
 
       {/* CTA */}
-      <section className="bg-charcoal text-white py-20 text-center">
-        <div className="max-w-2xl mx-auto px-6">
-          <p className="text-sand text-xs font-semibold tracking-widest uppercase mb-4">Get started</p>
-          <h2 className="text-4xl md:text-5xl mb-4">Ready to build your KUMA-Q?</h2>
-          <p className="text-gray-300 text-lg mb-10 leading-relaxed">The ultimate Super Long Wheelbase campervan. Over 1,000 colour combinations. Customise your build in 3D or book a free consultation.</p>
-          <div className="flex flex-wrap gap-4 justify-center">
-            <a href={configuratorUrl} target="_blank" rel="noopener noreferrer" className="btn-primary text-base px-8 py-4">Customise in 3D</a>
-            <LeadFormModal trigger="Book a Free Consultation" source="product_page_kuma_q" className="btn-ghost text-base px-8 py-4" />
-          </div>
-          <p className="mt-10 text-gray-400 text-sm">
-            <a href="mailto:hello@barecamper.com.au" className="text-sand hover:text-sand">hello@barecamper.com.au</a>
-            {' . '}<a href="tel:0432182892" className="text-sand hover:text-sand">0432 182 892</a>
-          </p>
-        </div>
-      </section>
+      <div className="max-w-6xl mx-auto px-6 py-16">
+        <EnquiryCTA defaultModel="kuma-q" />
+      </div>
     </div>
   )
 }

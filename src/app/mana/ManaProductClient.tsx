@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import EnquiryCTA from '@/components/EnquiryCTA'
 import LeadFormModal from '@/components/leads/LeadFormModal'
 import PageEditToolbar from '@/components/admin/PageEditToolbar'
 import FitoutHero from '@/components/admin/FitoutHero'
@@ -150,20 +151,8 @@ export default function ManaProductClient({ jpyRate, content: initial }: Props) 
       </section>
 
       {/* CTA */}
-      <section className="bg-charcoal text-white py-20 text-center">
-        <div className="max-w-2xl mx-auto px-6">
-          <p className="text-sand text-xs font-semibold tracking-widest uppercase mb-4">Get started</p>
-          <h2 className="text-4xl md:text-5xl mb-4">Ready to build your MANA?</h2>
-          <p className="text-gray-300 text-lg mb-10 leading-relaxed">Browse available vans, start your build, or get in touch to discuss your needs.</p>
-          <div className="flex flex-wrap gap-4 justify-center">
-            <a href="https://configure.barecamper.com.au/?model=mana" target="_blank" rel="noopener noreferrer" className="btn-primary text-base px-8 py-4">Customise in 3D</a>
-            <LeadFormModal trigger="Book a Free Consultation" source="product_page_mana" className="btn-ghost text-base px-8 py-4" />
-          </div>
-          <p className="mt-10 text-gray-400 text-sm">
-            <a href="mailto:hello@barecamper.com.au" className="text-sand hover:text-sand">hello@barecamper.com.au</a>
-            {' · '}<a href="tel:0432182892" className="text-sand hover:text-sand">0432 182 892</a>
-          </p>
-        </div>
+      <div className="max-w-6xl mx-auto px-6 py-16">
+        <EnquiryCTA defaultModel="mana" />
       </section>
     </div>
   )
