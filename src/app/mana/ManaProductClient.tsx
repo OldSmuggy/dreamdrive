@@ -151,7 +151,7 @@ export default function ManaProductClient({ jpyRate, content: initial }: Props) 
       {/* CTA */}
       <div className="max-w-6xl mx-auto px-6 py-16">
         <EnquiryCTA defaultModel="mana" />
-      </section>
+      </div>
     </div>
   )
 }
