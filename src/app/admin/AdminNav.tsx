@@ -47,6 +47,12 @@ const NAV_SECTIONS: NavSection[] = [
     ],
   },
   {
+    label: 'MARKETING',
+    items: [
+      { href: '/admin/share', label: '🔗 Share Links' },
+    ],
+  },
+  {
     label: 'SYSTEM',
     items: [
       { href: '/admin/settings', label: '⚙️ Settings' },
