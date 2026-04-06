@@ -11,6 +11,7 @@ import AuctionBanner from '@/components/ui/AuctionBanner'
 import VehicleSelector from '@/components/ui/VehicleSelector'
 import BareCamperTrustSection from '@/components/BareCamperTrustSection'
 import TestimonialWall from '@/components/TestimonialWall'
+import EnquiryCTA from '@/components/EnquiryCTA'
 import type { Listing } from '@/types'
 
 export const metadata = generateMeta({
@@ -413,6 +414,11 @@ export default async function HomePage() {
 
       {/* ─── 8. TESTIMONIAL WALL ────────────────────────────── */}
       <TestimonialWall />
+
+      {/* ─── 9. ENQUIRY CTA ────────────────────────────────── */}
+      <div className="max-w-6xl mx-auto px-4 py-16">
+        <EnquiryCTA />
+      </div>
 
       {/* ─── 10. TRUST & CONVERSION ────────────────────────── */}
       <BareCamperTrustSection />
