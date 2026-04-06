@@ -2,10 +2,7 @@
 const nextConfig = {
   images: {
     remotePatterns: [
-      { protocol: 'https', hostname: 'www.ninja-cartrade.jp' },
-      { protocol: 'https', hostname: '*.r2.cloudflarestorage.com' },
-      { protocol: 'https', hostname: 'pub-*.r2.dev' },
-      { protocol: 'https', hostname: '*.supabase.co' },
+      { protocol: 'https', hostname: '**' },
     ],
   },
   // Prevent webpack from bundling Playwright and Chromium — they are
