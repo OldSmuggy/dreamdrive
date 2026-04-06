@@ -33,7 +33,7 @@ const BUILDS = [
     name: 'KUMA-Q',
     tag: 'The Full-Length SLWB',
     desc: 'Queen bed, full galley kitchen, 4-seat dining. Maximum space on the Super Long Wheelbase HiAce H200.',
-    image: '/images/tama/bed-blue.jpg',
+    image: '/images/kuma/interior-dining.jpg',
     price: 'From ~$76,000',
     vehicle: 'H200 SLWB HiAce',
     href: '/kuma-q',

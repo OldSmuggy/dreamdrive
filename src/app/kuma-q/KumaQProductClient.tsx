@@ -70,7 +70,7 @@ export default function KumaQProductClient({ conversionAud, low, high, jpyRate, 
       <PageEditToolbar pageSlug="kuma-q-product" pageName="KUMA-Q Product" content={content} onContentChange={setContent} extraImages={extraImages} />
 
       {/* Hero */}
-      <FitoutHero fallbackImage="/images/tama/hero-exterior.jpg" heroImage={content.hero_image} heroVideo={content.hero_video}>
+      <FitoutHero fallbackImage="/images/kuma/exterior-side.jpg" heroImage={content.hero_image} heroVideo={content.hero_video}>
         <div className="pt-16">
           <p className="text-sand text-xs font-semibold tracking-[0.25em] uppercase mb-3">Bare Camper</p>
           <h1 className="text-7xl md:text-9xl text-white leading-none mb-3">KUMA-Q</h1>
@@ -83,12 +83,12 @@ export default function KumaQProductClient({ conversionAud, low, high, jpyRate, 
       <section className="max-w-6xl mx-auto px-6 py-12">
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {[
-            { src: '/images/tama/interior-overview.jpg', alt: 'KUMA-Q interior with bench seat and kitchen' },
-            { src: '/images/tama/bed-blue.jpg', alt: 'KUMA-Q queen bed spanning full width' },
-            { src: '/images/tama/kitchen-walnut.jpg', alt: 'Walnut countertop detail' },
-            { src: '/images/tama/drawer-slideout.jpg', alt: 'Slide-out kitchen drawer' },
-            { src: '/images/tama/electrical-outlets.jpg', alt: 'Power outlets and USB charging' },
-            { src: '/images/tama/hero-side-open.jpg', alt: 'KUMA-Q side view with doors open' },
+            { src: '/images/kuma/interior-dining.jpg', alt: 'KUMA-Q interior with dining table and seats' },
+            { src: '/images/kuma/interior-kitchen.jpg', alt: 'KUMA-Q galley kitchen with walnut countertop' },
+            { src: '/images/kuma/interior-bed.jpg', alt: 'KUMA-Q queen bed layout' },
+            { src: '/images/kuma/exterior-front.jpg', alt: 'KUMA-Q front exterior with khaki wrap' },
+            { src: '/images/kuma/interior-rear.jpg', alt: 'KUMA-Q rear interior view' },
+            { src: '/images/kuma/exterior-rear.jpg', alt: 'KUMA-Q rear exterior view' },
           ].map((img, i) => (
             <div key={i} className="relative h-48 md:h-64 rounded-xl overflow-hidden">
               <Image src={img.src} alt={img.alt} fill className="object-cover" sizes="(max-width: 768px) 50vw, 33vw" />

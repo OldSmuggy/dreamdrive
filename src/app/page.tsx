@@ -62,8 +62,13 @@ export default async function HomePage() {
       .not('price_aud', 'is', null)
       .gt('price_aud', 0)
       .order('price_aud', { ascending: true })
-      .limit(3)
-    if (quickData) quickBrowseVans = quickData as Listing[]
+      .limit(20)
+    // Only show vans with a valid first photo URL
+    if (quickData) {
+      quickBrowseVans = (quickData as Listing[])
+        .filter(v => v.photos?.[0] && v.photos[0].startsWith('http'))
+        .slice(0, 3)
+    }
   } catch {
     // Supabase unreachable — render page without listings
   }
