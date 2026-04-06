@@ -1,11 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
 import Image from 'next/image'
 import PageEditToolbar from '@/components/admin/PageEditToolbar'
 import FitoutHero from '@/components/admin/FitoutHero'
-import LeadFormModal from '@/components/leads/LeadFormModal'
 import EnquiryCTA from '@/components/EnquiryCTA'
 
 const STATIC_HERO = '/images/poptop/300-slwb-poptop-side.jpg'

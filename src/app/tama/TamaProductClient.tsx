@@ -1,9 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
 import Image from 'next/image'
-import LeadFormModal from '@/components/leads/LeadFormModal'
 import EnquiryCTA from '@/components/EnquiryCTA'
 import PageEditToolbar, { EditableImage } from '@/components/admin/PageEditToolbar'
 import FitoutHero from '@/components/admin/FitoutHero'
