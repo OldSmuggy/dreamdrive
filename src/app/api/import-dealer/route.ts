@@ -23,8 +23,8 @@ import { scrapeUrl } from '@/lib/firecrawl'
 // ============================================================
 
 export async function POST(req: NextRequest) {
-  const { error } = await requireAdmin()
-  if (error) return error
+  const { error: authErr } = await requireAdmin()
+  if (authErr) return authErr
 
   try {
     const { url } = await req.json()

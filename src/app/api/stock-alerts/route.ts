@@ -50,8 +50,8 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET() {
-  const { error } = await requireAdmin()
-  if (error) return error
+  const { error: authErr } = await requireAdmin()
+  if (authErr) return authErr
 
   const admin = createAdminClient()
   const { data, error: dbError } = await admin

@@ -5,8 +5,8 @@ import { createAdminClient } from '@/lib/supabase'
 import { requireAdmin } from '@/lib/api-auth'
 
 export async function PATCH(req: NextRequest) {
-  const { error } = await requireAdmin()
-  if (error) return error
+  const { error: authErr } = await requireAdmin()
+  if (authErr) return authErr
 
   try {
     const { key, value } = await req.json()

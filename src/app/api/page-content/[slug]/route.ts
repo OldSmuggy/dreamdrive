@@ -29,8 +29,8 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ slug: string }> },
 ) {
-  const { error } = await requireAdmin()
-  if (error) return error
+  const { error: authErr } = await requireAdmin()
+  if (authErr) return authErr
 
   const { slug } = await params
   try {

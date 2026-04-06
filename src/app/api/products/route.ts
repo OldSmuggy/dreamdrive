@@ -16,8 +16,8 @@ export async function GET() {
 }
 
 export async function PATCH(req: NextRequest) {
-  const { error } = await requireAdmin()
-  if (error) return error
+  const { error: authErr } = await requireAdmin()
+  if (authErr) return authErr
 
   const body = await req.json()
   const { id, ...fields } = body

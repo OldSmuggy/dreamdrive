@@ -14,8 +14,8 @@ import { requireAdmin } from '@/lib/api-auth'
 // ============================================================
 
 export async function POST(req: NextRequest) {
-  const { error } = await requireAdmin()
-  if (error) return error
+  const { error: authErr } = await requireAdmin()
+  if (authErr) return authErr
 
   try {
     const body = await req.json()

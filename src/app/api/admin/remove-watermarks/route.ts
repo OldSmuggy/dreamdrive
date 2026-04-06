@@ -53,8 +53,8 @@ async function removeWatermark(ai: GoogleGenAI, imageBase64: string, mimeType: s
 }
 
 export async function POST(req: NextRequest) {
-  const { error } = await requireAdmin()
-  if (error) return error
+  const { error: authErr } = await requireAdmin()
+  if (authErr) return authErr
 
   try {
     const apiKey = process.env.GEMINI_API_KEY

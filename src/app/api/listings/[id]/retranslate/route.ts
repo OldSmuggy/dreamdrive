@@ -13,8 +13,8 @@ export async function POST(
   _req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const { error } = await requireAdmin()
-  if (error) return error
+  const { error: authErr } = await requireAdmin()
+  if (authErr) return authErr
 
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) {

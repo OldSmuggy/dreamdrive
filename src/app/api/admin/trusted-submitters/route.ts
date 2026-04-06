@@ -5,8 +5,8 @@ import { createAdminClient } from '@/lib/supabase'
 import { requireAdmin } from '@/lib/api-auth'
 
 export async function GET() {
-  const { error } = await requireAdmin()
-  if (error) return error
+  const { error: authErr } = await requireAdmin()
+  if (authErr) return authErr
 
   const supabase = createAdminClient()
   const { data, error } = await supabase
