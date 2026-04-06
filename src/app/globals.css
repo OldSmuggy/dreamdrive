@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Infinite scrolling ticker for partner logos */
+@keyframes ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-ticker {
+  animation: ticker 30s linear infinite;
+}
+
 @layer base {
   :root {
     --ocean: #3D6B73;

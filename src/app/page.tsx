@@ -10,6 +10,7 @@ import type { Metadata } from 'next'
 import AuctionBanner from '@/components/ui/AuctionBanner'
 import VehicleSelector from '@/components/ui/VehicleSelector'
 import BareCamperTrustSection from '@/components/BareCamperTrustSection'
+import TestimonialWall from '@/components/TestimonialWall'
 import type { Listing } from '@/types'
 
 export const metadata = generateMeta({
@@ -518,7 +519,10 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ─── 9. TRUST & CONVERSION ─────────────────────────── */}
+      {/* ─── 9. TESTIMONIAL WALL ────────────────────────────── */}
+      <TestimonialWall />
+
+      {/* ─── 10. TRUST & CONVERSION ────────────────────────── */}
       <BareCamperTrustSection />
 
     </div>
