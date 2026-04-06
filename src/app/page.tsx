@@ -9,6 +9,7 @@ import { generateMeta } from '@/lib/seo'
 import type { Metadata } from 'next'
 import AuctionBanner from '@/components/ui/AuctionBanner'
 import VehicleSelector from '@/components/ui/VehicleSelector'
+import BareCamperTrustSection from '@/components/BareCamperTrustSection'
 import type { Listing } from '@/types'
 
 export const metadata = generateMeta({
@@ -517,25 +518,8 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ─── 9. CTA FOOTER ────────────────────────────────── */}
-      <section className="bg-charcoal text-white py-20 text-center">
-        <div className="max-w-2xl mx-auto px-4">
-          <p className="text-sand text-sm font-semibold tracking-widest uppercase mb-4">Get Started</p>
-          <h2 className="text-4xl md:text-5xl mb-4 font-bold">Ready when you are.</h2>
-          <p className="text-gray-300 text-lg mb-10 leading-relaxed">
-            Browse available vans, price up a build, or just have a yarn about what you&apos;re thinking. No commitment, no pressure — just what you need.
-          </p>
-          <div className="flex flex-wrap gap-4 justify-center">
-            <Link href="/browse" className="btn-ghost text-base px-8 py-4">Browse Vans</Link>
-            <a href="https://wa.me/61432182892?text=Hi!%20I'm%20interested%20in%20a%20campervan%20from%20Bare%20Camper." className="btn-primary text-base px-8 py-4" target="_blank" rel="noopener noreferrer">Book a Free Chat</a>
-          </div>
-          <p className="mt-10 text-gray-400 text-sm">
-            <a href="mailto:hello@barecamper.com.au" className="text-sand hover:text-sand-light">hello@barecamper.com.au</a>
-            {' · '}
-            <a href="tel:0432182892" className="text-sand hover:text-sand-light">0432 182 892</a>
-          </p>
-        </div>
-      </section>
+      {/* ─── 9. TRUST & CONVERSION ─────────────────────────── */}
+      <BareCamperTrustSection />
 
     </div>
   )
