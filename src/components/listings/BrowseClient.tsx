@@ -1,5 +1,5 @@
 'use client'
-import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -584,14 +584,31 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
       ) : (
         <>
           <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
-            {filtered.slice(0, 12).map(listing => (
-              <ListingCard
-                key={listing.id}
-                listing={listing}
-                userId={userId}
-                initialSaved={initialSavedIds.includes(listing.id)}
-                jpyRate={jpyRate}
-              />
+            {filtered.slice(0, 12).map((listing, idx) => (
+              <React.Fragment key={listing.id}>
+                <ListingCard
+                  listing={listing}
+                  userId={userId}
+                  initialSaved={initialSavedIds.includes(listing.id)}
+                  jpyRate={jpyRate}
+                />
+                {/* Configurator upsell card after 6th listing */}
+                {idx === 5 && (
+                  <a
+                    href="https://configure.barecamper.com.au/?model=tama"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="col-span-2 flex items-center gap-6 bg-brand-charcoal text-white rounded-2xl p-6 hover:ring-2 hover:ring-brand-teal transition-all"
+                  >
+                    <div className="flex-1">
+                      <p className="text-brand-gold text-[10px] font-bold uppercase tracking-widest mb-1">Only at Bare Camper</p>
+                      <p className="text-lg font-bold mb-1">See what this van could become</p>
+                      <p className="text-gray-400 text-sm">Design a full build in our 3D configurator — seats, cabinets, floor, wrap, and more.</p>
+                    </div>
+                    <span className="shrink-0 bg-brand-teal text-white text-sm font-semibold px-4 py-2 rounded-lg">Build in 3D →</span>
+                  </a>
+                )}
+              </React.Fragment>
             ))}
           </div>
 
