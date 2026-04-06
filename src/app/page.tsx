@@ -20,6 +20,7 @@ export const metadata = generateMeta({
 
 export default async function HomePage() {
   let featuredVan: Listing | null = null
+  let quickBrowseVans: Listing[] = []
 
   const [{ hero_video_url, hero_video_poster }] = await Promise.all([
     getSiteSettings(),
@@ -52,6 +53,17 @@ export default async function HomePage() {
       data = fallback.data
     }
     if (data) featuredVan = data as Listing
+
+    // Fetch 3 vans for quick browse below the hero
+    const { data: quickData } = await supabase
+      .from('listings')
+      .select('id, model_name, model_year, photos, price_aud, mileage_km, grade, source')
+      .eq('status', 'available')
+      .not('photos', 'eq', '{}')
+      .order('featured', { ascending: false })
+      .order('created_at', { ascending: false })
+      .limit(3)
+    if (quickData) quickBrowseVans = quickData as Listing[]
   } catch {
     // Supabase unreachable — render page without listings
   }
@@ -191,6 +203,52 @@ export default async function HomePage() {
           <VehicleSelector />
         </div>
       </section>
+
+      {/* ─── Quick Browse — 3 vans right below vehicle selector ── */}
+      {quickBrowseVans.length > 0 && (
+        <section className="bg-charcoal py-6 md:pt-2 md:pb-8">
+          <div className="max-w-6xl mx-auto px-4">
+            <div className="grid grid-cols-3 gap-3 md:gap-5">
+              {quickBrowseVans.map(van => {
+                const photo = van.photos?.[0]
+                const price = van.price_aud ? `$${Math.round(van.price_aud / 100).toLocaleString()}` : null
+                return (
+                  <Link key={van.id} href={`/van/${van.id}`} className="group block rounded-xl overflow-hidden bg-charcoal-light hover:ring-2 hover:ring-ocean transition-all">
+                    <div className="relative aspect-[4/3] bg-gray-800">
+                      {photo && <Image src={photo} alt={van.model_name ?? ''} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 768px) 33vw, 320px" />}
+                      {price && (
+                        <span className="absolute bottom-2 right-2 bg-black/70 text-white text-xs font-bold px-2 py-1 rounded-md backdrop-blur-sm">
+                          {price}
+                        </span>
+                      )}
+                      {van.source === 'auction' && (
+                        <span className="absolute top-2 left-2 bg-dirt text-white text-[10px] font-bold px-2 py-0.5 rounded-md uppercase">Auction</span>
+                      )}
+                      {van.source?.startsWith('dealer') && (
+                        <span className="absolute top-2 left-2 bg-ocean text-white text-[10px] font-bold px-2 py-0.5 rounded-md uppercase">Dealer</span>
+                      )}
+                    </div>
+                    <div className="p-3">
+                      <p className="text-white text-xs md:text-sm font-semibold leading-tight line-clamp-1">
+                        {van.model_year ? `${van.model_year} ` : ''}{van.model_name}
+                      </p>
+                      <div className="flex gap-2 text-[10px] text-gray-400 mt-1">
+                        {van.mileage_km && <span>{van.mileage_km.toLocaleString()} km</span>}
+                        {van.grade && <span>Grade {van.grade}</span>}
+                      </div>
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
+            <div className="text-center mt-4">
+              <Link href="/browse" className="text-sand text-sm font-semibold hover:underline">
+                Browse all vans →
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ─── 2. THE CONCEPT ───────────────────────────────── */}
       <section className="max-w-4xl mx-auto px-4 py-20 text-center">
