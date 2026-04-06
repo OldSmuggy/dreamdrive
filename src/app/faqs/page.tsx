@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import Footer from '@/components/ui/Footer'
 import { generateMeta } from '@/lib/seo'
 import FaqAccordion from './FaqAccordion'
 
@@ -268,7 +267,6 @@ export default function FaqsPage() {
         </div>
       </section>
 
-      <Footer />
     </div>
   )
 }

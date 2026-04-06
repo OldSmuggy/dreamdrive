@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import Footer from '@/components/ui/Footer'
 import { generateMeta } from '@/lib/seo'
 
 export const metadata = generateMeta({
@@ -308,7 +307,6 @@ export default function Hiace4x4() {
         </section>
 
       </div>
-      <Footer />
     </div>
   )
 }

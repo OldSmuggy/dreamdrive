@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { DM_Sans } from 'next/font/google'
 import './globals.css'
 import Header from '@/components/ui/Header'
+import Footer from '@/components/ui/Footer'
 import { GoogleAnalytics } from '@/components/GoogleAnalytics'
 import { MetaPixel } from '@/components/MetaPixel'
 import WhatsAppButton from '@/components/ui/WhatsAppButton'
@@ -48,6 +49,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <MetaPixel />
         <Header logoUrl={logo_url} />
         {children}
+        <Footer />
         <WhatsAppButton />
       </body>
     </html>

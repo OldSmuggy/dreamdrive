@@ -129,6 +129,7 @@ export function curationBadgeInfo(badge: CurationBadge | null | undefined): {
     budget_entry:   { label: 'Budget Entry',   bg: 'bg-blue-100',   text: 'text-blue-800' },
     adventure_spec: { label: 'Adventure Spec', bg: 'bg-stone-200',  text: 'text-stone-800' },
     arriving_soon:  { label: 'Arriving Soon',  bg: 'bg-orange-100', text: 'text-orange-800' },
+    hot_this_week:  { label: '🔥 Hot This Week', bg: 'bg-red-50',    text: 'text-red-700' },
   }
   return map[badge] ?? null
 }

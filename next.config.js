@@ -21,6 +21,18 @@ const nextConfig = {
       bodySizeLimit: '4mb',
     },
   },
+  async rewrites() {
+    return [
+      {
+        source: '/camperdesigner',
+        destination: 'https://dreamdrive-configurator-3d.vercel.app/',
+      },
+      {
+        source: '/camperdesigner/:path*',
+        destination: 'https://dreamdrive-configurator-3d.vercel.app/:path*',
+      },
+    ]
+  },
   async headers() {
     return [
       {
@@ -44,8 +56,8 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: blob: https: http:",
-              "connect-src 'self' https://*.supabase.co https://www.google-analytics.com https://www.facebook.com https://region1.google-analytics.com",
-              "frame-src 'self' https://www.facebook.com https://*.supabase.co",
+              "connect-src 'self' https://*.supabase.co https://www.google-analytics.com https://www.facebook.com https://region1.google-analytics.com https://sketchfab.com https://*.sketchfab.com",
+              "frame-src 'self' https://www.facebook.com https://*.supabase.co https://sketchfab.com https://*.sketchfab.com",
               "object-src 'self' https://*.supabase.co",
               "media-src 'self' https: blob:",
             ].join('; '),

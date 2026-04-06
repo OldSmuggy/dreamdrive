@@ -2,7 +2,6 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { createAdminClient } from '@/lib/supabase'
-import Footer from '@/components/ui/Footer'
 import { centsToAud, effectivePrice, activeSpecial } from '@/lib/utils'
 import type { Product } from '@/types'
 import ImageCarousel from '@/components/ui/ImageCarousel'
@@ -18,6 +17,17 @@ const EXTRAS: Record<string, { icon: string; tagline: string; features: string[]
       'Galley kitchen with sink, fridge space & overhead storage',
       'Full carpet lining and acoustic insulation throughout',
       'Dual-zone climate compatibility ready',
+    ],
+  },
+  'kuma-q': {
+    icon: '🚐',
+    tagline: 'Full-length SLWB campervan conversion',
+    features: [
+      'Queen-size bed spanning the full width of the SLWB Hiace',
+      'Galley kitchen with walnut countertop and 40L fridge',
+      '4-seat dining layout with adjustable table',
+      '2 x 100AH lithium battery with 2000W inverter',
+      'Full-length interior fit-out with under-bed storage',
     ],
   },
   'mana': {
@@ -116,14 +126,12 @@ export async function generateMetadata(
   }
 }
 
-export default async function ProductPage({ params }: { params: { slug: string } }) {
+export default async function ProductPage({ params, searchParams }: { params: { slug: string }; searchParams: Promise<{ van?: string }> }) {
   const supabase = createAdminClient()
-  const { data } = await supabase
-    .from('products')
-    .select('*')
-    .eq('slug', params.slug)
-    .eq('visible', true)
-    .single()
+  const [{ data }, resolvedSearchParams] = await Promise.all([
+    supabase.from('products').select('*').eq('slug', params.slug).eq('visible', true).single(),
+    searchParams,
+  ])
 
   if (!data) notFound()
   const product = data as Product
@@ -132,6 +140,15 @@ export default async function ProductPage({ params }: { params: { slug: string }
   const isSpecial = activeSpecial(product)
   const price = effectivePrice(product)
   const categoryLabel = CATEGORY_LABEL[product.category] ?? product.category
+
+  const isFitout = product.category === 'fitout' || product.slug === 'tama' || product.slug === 'mana'
+  const vanParam = resolvedSearchParams.van
+  const modelMap: Record<string, string> = { tama: 'tama', 'kuma-q': 'kuma-q', mana: 'mana' }
+  const configuratorModel = modelMap[product.slug] ?? 'tama'
+  const configuratorBase = `https://configure.barecamper.com.au/?model=${configuratorModel}`
+  const configuratorUrl = vanParam
+    ? `${configuratorBase}&source=barecamper&van_id=${vanParam}`
+    : configuratorBase
 
   return (
     <div className="min-h-screen">
@@ -237,14 +254,20 @@ export default async function ProductPage({ params }: { params: { slug: string }
             <Link href="/build" className="btn-primary text-base px-8 py-4">
               Start My Build →
             </Link>
-            <Link href="/browse" className="btn-secondary text-base px-8 py-4">
-              Browse Vans First
-            </Link>
+            {isFitout && (
+              <a href={configuratorUrl} target="_blank" rel="noopener noreferrer" className="btn-secondary text-base px-8 py-4">
+                Customise in 3D ↗
+              </a>
+            )}
+            {!isFitout && (
+              <Link href="/browse" className="btn-secondary text-base px-8 py-4">
+                Browse Vans First
+              </Link>
+            )}
           </div>
         </div>
       </section>
 
-      <Footer />
 
     </div>
   )

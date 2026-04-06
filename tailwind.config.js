@@ -4,6 +4,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        // Legacy colours (keep for existing pages)
         ocean: {
           DEFAULT: '#3D6B73',
           light:   '#4d7d85',
@@ -30,7 +31,17 @@ module.exports = {
         },
         slate: {
           950: '#0a0e13',
-        }
+        },
+        // New brand colours
+        'brand-dark':     '#1A1A1A',
+        'brand-charcoal': '#2A3A32',
+        'brand-forest':   '#4A5A52',
+        'brand-teal':     '#5B8A7A',
+        'brand-sage':     '#8BAA9D',
+        'brand-cream':    '#F5F2EC',
+        'brand-gold':     '#C4B99A',
+        'brand-text':     '#333333',
+        'brand-muted':    '#777777',
       },
       fontFamily: {
         body: ['var(--font-body)', 'sans-serif'],

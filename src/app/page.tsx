@@ -8,18 +8,18 @@ import { getSiteSettings } from '@/lib/site-settings'
 import { generateMeta } from '@/lib/seo'
 import type { Metadata } from 'next'
 import AuctionBanner from '@/components/ui/AuctionBanner'
-import Footer from '@/components/ui/Footer'
 import VehicleSelector from '@/components/ui/VehicleSelector'
 import type { Listing } from '@/types'
 
 export const metadata = generateMeta({
-  title: 'Import Japanese Hiace Vans to Australia | Bare Camper',
-  description: "Australia's only end-to-end Hiace import service. Source direct from Japanese auction, shipped and complied to your door, then convert it — pop top, hi-top or full turnkey. By Dream Drive & DIY RV Solutions.",
+  title: 'Toyota Hiace Campervans for Sale Brisbane | Import from Japan | Bare Camper',
+  description: "Australia's complete Toyota Hiace platform. Import auction-graded vans from Japan, professional fiberglass pop top & hi-top conversions, full turnkey builds. Design yours in 3D. Brisbane workshop.",
   url: '/',
 })
 
 export default async function HomePage() {
   let featuredVan: Listing | null = null
+  let quickBrowseVans: Listing[] = []
 
   const [{ hero_video_url, hero_video_poster }] = await Promise.all([
     getSiteSettings(),
@@ -52,6 +52,18 @@ export default async function HomePage() {
       data = fallback.data
     }
     if (data) featuredVan = data as Listing
+
+    // Fetch 3 cheapest vans with photos for quick browse below the hero
+    const { data: quickData } = await supabase
+      .from('listings')
+      .select('id, model_name, model_year, photos, price_aud, mileage_km, grade, source')
+      .eq('status', 'available')
+      .not('photos', 'eq', '{}')
+      .not('price_aud', 'is', null)
+      .gt('price_aud', 0)
+      .order('price_aud', { ascending: true })
+      .limit(3)
+    if (quickData) quickBrowseVans = quickData as Listing[]
   } catch {
     // Supabase unreachable — render page without listings
   }
@@ -153,7 +165,7 @@ export default async function HomePage() {
             Just what you need.
           </h1>
           <p className="text-sm text-gray-500">
-            Auction-graded vans. Verified kms. Fixed price. Professional roof conversion. Ready for your build.
+            Auction-graded vans from Japan. Professional fiberglass conversions in Brisbane. Your call how far you go.
           </p>
         </div>
 
@@ -176,7 +188,7 @@ export default async function HomePage() {
               Just what you need.
             </h1>
             <p className="text-base text-gray-600 max-w-md mx-auto leading-relaxed">
-              Auction-graded vans. Verified kms. Fixed price. Professional roof conversion. Ready for your build.
+              Auction-graded Toyota Hiace vans from Japan. Professional fiberglass conversions in Brisbane. Your call how far you go.
             </p>
           </div>
 
@@ -191,6 +203,52 @@ export default async function HomePage() {
           <VehicleSelector />
         </div>
       </section>
+
+      {/* ─── Quick Browse — 3 vans right below vehicle selector ── */}
+      {quickBrowseVans.length > 0 && (
+        <section className="bg-charcoal py-6 md:pt-2 md:pb-8">
+          <div className="max-w-6xl mx-auto px-4">
+            <div className="grid grid-cols-3 gap-3 md:gap-5">
+              {quickBrowseVans.map(van => {
+                const photo = van.photos?.[0]
+                const price = van.price_aud ? `$${Math.round(van.price_aud / 100).toLocaleString()}` : null
+                return (
+                  <Link key={van.id} href={`/van/${van.id}`} className="group block rounded-xl overflow-hidden bg-charcoal-light hover:ring-2 hover:ring-ocean transition-all">
+                    <div className="relative aspect-[4/3] bg-gray-800">
+                      {photo && <Image src={photo} alt={van.model_name ?? ''} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 768px) 33vw, 320px" />}
+                      {price && (
+                        <span className="absolute bottom-2 right-2 bg-black/70 text-white text-xs font-bold px-2 py-1 rounded-md backdrop-blur-sm">
+                          {price}
+                        </span>
+                      )}
+                      {van.source === 'auction' && (
+                        <span className="absolute top-2 left-2 bg-dirt text-white text-[10px] font-bold px-2 py-0.5 rounded-md uppercase">Auction</span>
+                      )}
+                      {van.source?.startsWith('dealer') && (
+                        <span className="absolute top-2 left-2 bg-ocean text-white text-[10px] font-bold px-2 py-0.5 rounded-md uppercase">Dealer</span>
+                      )}
+                    </div>
+                    <div className="p-3">
+                      <p className="text-white text-xs md:text-sm font-semibold leading-tight line-clamp-1">
+                        {van.model_year ? `${van.model_year} ` : ''}{van.model_name}
+                      </p>
+                      <div className="flex gap-2 text-[10px] text-gray-400 mt-1">
+                        {van.mileage_km && <span>{van.mileage_km.toLocaleString()} km</span>}
+                        {van.grade && <span>Grade {van.grade}</span>}
+                      </div>
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
+            <div className="text-center mt-4">
+              <Link href="/browse" className="text-sand text-sm font-semibold hover:underline">
+                Browse all vans →
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ─── 2. THE CONCEPT ───────────────────────────────── */}
       <section className="max-w-4xl mx-auto px-4 py-20 text-center">
@@ -239,7 +297,66 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ─── 4. FEATURED VAN ──────────────────────────────── */}
+      {/* ─── 4. 3D CONFIGURATOR SHOWCASE ─────────────────── */}
+      <section className="bg-brand-charcoal text-white py-20">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <p className="text-brand-gold text-xs font-semibold tracking-widest uppercase mb-4">Only at Bare Camper</p>
+              <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">Design yours in 3D.</h2>
+              <p className="text-gray-300 text-lg leading-relaxed mb-6">
+                Spin the van. Open the pop top. Choose your seats, cabinets, ceiling, wheels, and wrap. See the price update in real time.
+              </p>
+              <p className="text-gray-400 text-sm mb-8">
+                No other campervan company in Australia offers this.
+              </p>
+              <div className="flex flex-wrap gap-4 mb-8">
+                <a
+                  href="https://configure.barecamper.com.au/?model=tama"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 bg-brand-teal text-white font-semibold px-6 py-3 rounded-xl hover:bg-brand-sage transition-colors"
+                >
+                  Launch 3D Configurator
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                </a>
+                <Link href="/tama" className="inline-flex items-center gap-2 border border-white/30 text-white font-semibold px-6 py-3 rounded-xl hover:bg-white/10 transition-colors">
+                  See build options
+                </Link>
+              </div>
+              <div className="flex gap-4 text-sm text-gray-400">
+                <Link href="/tama" className="hover:text-brand-gold transition-colors">TAMA (Family)</Link>
+                <span className="text-gray-600">·</span>
+                <Link href="/kuma-q" className="hover:text-brand-gold transition-colors">KUMA-Q (SLWB)</Link>
+                <span className="text-gray-600">·</span>
+                <Link href="/mana" className="hover:text-brand-gold transition-colors">MANA (Couples)</Link>
+              </div>
+            </div>
+            <a
+              href="https://configure.barecamper.com.au/?model=tama"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group relative rounded-2xl overflow-hidden border border-white/10 hover:border-brand-gold/40 transition-all"
+            >
+              <Image
+                src="/images/configurator/config-exterior.png"
+                alt="3D campervan configurator showing TAMA with pop top open, side awning, and full build visible"
+                width={800}
+                height={500}
+                className="w-full h-auto group-hover:scale-105 transition-transform duration-500"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+              <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
+                <span className="bg-brand-gold text-brand-dark text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">
+                  Click to explore in 3D
+                </span>
+              </div>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── 5. FEATURED VAN ──────────────────────────────── */}
       {featuredVan && (
         <section className="py-16">
           <div className="max-w-6xl mx-auto px-4">
@@ -415,7 +532,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <Footer />
     </div>
   )
 }
@@ -490,10 +606,10 @@ const PATHS: { image: string; tag: string; name: string; desc: string; tags: str
     highlight: true,
   },
   {
-    image: '/images/path-diy.jpg',
+    image: '/images/configurator/config-seats.png',
     tag: 'Just hand me the keys.',
     name: 'The Full Build',
-    desc: "Van, roof, full interior — we do everything. Choose from our TAMA (family), MANA (couples), or a custom spec. Every build includes fiberglass roof work, furniture, electrical, plumbing, and a quality check before handover.",
+    desc: "Van, roof, full interior — we do everything. Choose from our TAMA (family), KUMA-Q (SLWB), or MANA (couples). Every build includes fiberglass roof work, furniture, electrical, plumbing, and a quality check before handover. Design yours in our 3D configurator.",
     tags: 'From ~$71k all-in | Van + import + full conversion',
     href: '/tama',
     cta: 'See fit-outs',

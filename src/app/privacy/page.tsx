@@ -1,5 +1,4 @@
 import { generateMeta } from '@/lib/seo'
-import Footer from '@/components/ui/Footer'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = generateMeta({
@@ -116,7 +115,6 @@ export default function PrivacyPage() {
           </section>
         </div>
       </div>
-      <Footer />
     </div>
   )
 }

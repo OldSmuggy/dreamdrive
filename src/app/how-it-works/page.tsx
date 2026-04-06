@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import Footer from '@/components/ui/Footer'
 import { generateMeta } from '@/lib/seo'
 
 export const metadata = generateMeta({
@@ -193,7 +192,7 @@ export default function HowItWorksPage() {
                 <div className="space-y-0">
                   {[
                     { label: 'Vehicle purchase (¥4,394,000 @ ¥97/$1)', value: '$45,565', note: 'Actual auction price, converted at customs valuation rate' },
-                    { label: 'Bare Camper sourcing fee ($2,500 + GST)', value: '$2,750', note: 'Our Japan buyer + AU broker — one fee, both countries' },
+                    { label: 'Japan Import Service Fee ($2,500 + GST)', value: '$2,750', note: 'Our Japan buyer + AU broker — one fee, both countries' },
                     { label: 'Shipping — RORO Yokohama → Brisbane (LWB)', value: '$1,711', note: 'SLWB vans are +$2,000 due to size' },
                     { label: 'GST (10% on landed value)', value: '$4,729', note: '10% on vehicle + shipping. 0% import duty under JAEPA.' },
                     { label: 'Customs entry + processing', value: '$109', note: 'Australian customs entry fee' },
@@ -303,7 +302,6 @@ export default function HowItWorksPage() {
         </div>
       </section>
 
-      <Footer />
     </div>
   )
 }

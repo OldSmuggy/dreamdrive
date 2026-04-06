@@ -9,7 +9,7 @@ import FitoutHero from '@/components/admin/FitoutHero'
 import { formatAud } from '@/lib/pricing'
 import OptionsList, { UNIVERSAL_OPTIONS } from '@/components/options/OptionsList'
 
-interface Props { conversionAud: number; low: number; high: number; jpyRate: number; content: Record<string, string> }
+interface Props { conversionAud: number; low: number; high: number; jpyRate: number; content: Record<string, string>; vanId?: string | null; vanName?: string | null; vanPriceCents?: number | null }
 
 const TAMA_INCLUSIONS = [
   'Transforming rear seat with ISOFIX (except 2-seater options)', 'Walnut countertop',
@@ -31,8 +31,12 @@ const TAMA_BEDS = [
 ]
 
 
-export default function TamaProductClient({ conversionAud, low, high, jpyRate, content: initial }: Props) {
+export default function TamaProductClient({ conversionAud, low, high, jpyRate, content: initial, vanId, vanName, vanPriceCents }: Props) {
   const [content, setContent] = useState(initial)
+
+  const configuratorUrl = vanId
+    ? `https://configure.barecamper.com.au/?model=tama&source=barecamper&van_id=${vanId}&van_name=${encodeURIComponent(vanName ?? '')}&van_price=${vanPriceCents ? Math.round(vanPriceCents / 100) : ''}`
+    : 'https://configure.barecamper.com.au/?model=tama'
   const gallery: string[] = (() => { try { return JSON.parse(content.gallery_images || '[]') } catch { return [] } })()
 
   const extraImages = [
@@ -171,7 +175,7 @@ export default function TamaProductClient({ conversionAud, low, high, jpyRate, c
           <h2 className="text-4xl md:text-5xl mb-4">Ready to build your TAMA?</h2>
           <p className="text-gray-300 text-lg mb-10 leading-relaxed">Browse available vans, start your build, or talk to us about what&apos;s right for your family.</p>
           <div className="flex flex-wrap gap-4 justify-center">
-            <a href="https://dreamdrive-configurator-3d.vercel.app/?model=tama" target="_blank" rel="noopener noreferrer" className="btn-primary text-base px-8 py-4">Customise in 3D</a>
+            <a href={configuratorUrl} target="_blank" rel="noopener noreferrer" className="btn-primary text-base px-8 py-4">Customise in 3D</a>
             <LeadFormModal trigger="Book a Free Consultation" source="product_page_tama" className="btn-ghost text-base px-8 py-4" />
           </div>
           <p className="mt-10 text-gray-400 text-sm">

@@ -1,6 +1,5 @@
 import FinanceCalculator from './FinanceCalculator'
 import LeadForm from './LeadForm'
-import Footer from '@/components/ui/Footer'
 import { generateMeta } from '@/lib/seo'
 
 export const metadata = generateMeta({
@@ -202,7 +201,6 @@ export default function FinancePage() {
         </div>
       </section>
 
-      <Footer />
 
     </div>
   )

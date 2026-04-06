@@ -52,7 +52,7 @@ function VanCard({ v, isHovered, isSiblingHovered, onHover, onLeave }: {
       : isSiblingHovered
       ? 'scale(0.92)'
       : 'scale(1)',
-    opacity: isSiblingHovered ? 0.5 : 1,
+    opacity: isSiblingHovered ? 0.7 : 1,
     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
     filter: isHovered
       ? 'drop-shadow(0 12px 24px rgba(0,0,0,0.5))'
@@ -70,7 +70,7 @@ function VanCard({ v, isHovered, isSiblingHovered, onHover, onLeave }: {
       )}
       <div
         className="relative w-full aspect-[2/1]"
-        style={{ opacity: v.comingSoon ? 0.5 : 1, transform: `scale(${v.iconScale})` }}
+        style={{ opacity: v.comingSoon ? 0.7 : 1, transform: `scale(${v.iconScale})` }}
       >
         <Image
           src={v.image}
