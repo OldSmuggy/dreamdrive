@@ -435,8 +435,8 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
           <span className="text-gray-500 text-sm">Showing {filtered.length} van{filtered.length !== 1 ? 's' : ''}</span>
         </div>
         <p className="text-gray-500 mt-2 text-sm max-w-2xl">
-          Reserve from $3,000. Delivered to Brisbane in 6–8 weeks.<br />
-          Every van is auction-graded with verified kilometres. Track your purchase at every stage.
+          Japanese auction vans and verified dealer stock — all graded with verified kilometres.<br />
+          Reserve from $3,000. Delivered to Brisbane in 6–8 weeks. Track your purchase at every stage.
         </p>
       </div>
 
@@ -499,92 +499,6 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
           </div>
         </div>
       )}
-
-      {/* ── How It Works Strip ── */}
-      <div className="mb-8 bg-white border border-gray-200 rounded-2xl p-6">
-        <h2 className="text-lg font-bold text-charcoal mb-4 text-center">How It Works</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-          <div>
-            <div className="text-2xl mb-2">🔍</div>
-            <p className="text-xs font-bold text-charcoal uppercase tracking-wider mb-1">1. Browse</p>
-            <p className="text-xs text-gray-500">Pick your van from auction-graded stock in Japan</p>
-          </div>
-          <div>
-            <div className="text-2xl mb-2">🔒</div>
-            <p className="text-xs font-bold text-charcoal uppercase tracking-wider mb-1">2. Reserve</p>
-            <p className="text-xs text-gray-500">Lock it in for $3,000 — fully refundable if we don&apos;t secure the van</p>
-          </div>
-          <div>
-            <div className="text-2xl mb-2">📦</div>
-            <p className="text-xs font-bold text-charcoal uppercase tracking-wider mb-1">3. Track</p>
-            <p className="text-xs text-gray-500">Follow your van from purchase to port to Brisbane</p>
-          </div>
-          <div>
-            <div className="text-2xl mb-2">🚐</div>
-            <p className="text-xs font-bold text-charcoal uppercase tracking-wider mb-1">4. Collect</p>
-            <p className="text-xs text-gray-500">Pick up in Brisbane — drive it home or book a conversion</p>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Social Proof ── */}
-      <div className="mb-8 bg-charcoal text-white rounded-2xl p-6 text-center">
-        <p className="text-sand text-xs font-semibold tracking-widest uppercase mb-3">100+ vans delivered from Japan to Australia</p>
-        <p className="text-lg leading-relaxed max-w-xl mx-auto">
-          &ldquo;Reserved my van on a Tuesday. Had auction photos by Thursday. Picked it up in Brisbane 7 weeks later.&rdquo;
-        </p>
-        <p className="text-gray-400 text-sm mt-2">— Luke, H200 SLWB</p>
-        <Link href="/about" className="text-sand text-sm font-semibold mt-4 inline-block hover:underline">
-          See customer stories →
-        </Link>
-      </div>
-
-      {/* ── Why Bare Camper — Competitive Comparison ── */}
-      <details className="mb-8 bg-white border border-gray-200 rounded-2xl overflow-hidden group">
-        <summary className="px-6 py-4 cursor-pointer flex items-center justify-between hover:bg-gray-50 transition-colors">
-          <h2 className="text-lg font-bold text-charcoal">Why buy through Bare Camper?</h2>
-          <svg className="w-5 h-5 text-gray-400 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-          </svg>
-        </summary>
-        <div className="px-6 pb-6">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-2 pr-4 text-gray-500 font-medium"></th>
-                  <th className="py-2 px-4 text-ocean font-bold text-center">Bare Camper</th>
-                  <th className="py-2 px-4 text-gray-500 font-medium text-center">Brisbane Dealer</th>
-                  <th className="py-2 px-4 text-gray-500 font-medium text-center">Private Sale</th>
-                </tr>
-              </thead>
-              <tbody className="text-gray-600">
-                {[
-                  ['Auction-graded', true, false, false],
-                  ['Verified km', true, false, false],
-                  ['Transparent pricing', true, false, false],
-                  ['Pop-top conversion', true, false, false],
-                  ['Track your purchase', true, false, false],
-                  ['After-sale support', true, 'varies', false],
-                ].map(([label, bc, dealer, priv], i) => (
-                  <tr key={i} className={i % 2 === 0 ? 'bg-gray-50' : ''}>
-                    <td className="py-2 pr-4 font-medium text-gray-700">{label as string}</td>
-                    <td className="py-2 px-4 text-center">{bc === true ? <span className="text-green-600 font-bold">✓</span> : bc === 'varies' ? <span className="text-gray-400">varies</span> : <span className="text-gray-300">✗</span>}</td>
-                    <td className="py-2 px-4 text-center">{dealer === true ? <span className="text-green-600 font-bold">✓</span> : dealer === 'varies' ? <span className="text-gray-400">varies</span> : <span className="text-gray-300">✗</span>}</td>
-                    <td className="py-2 px-4 text-center">{priv === true ? <span className="text-green-600 font-bold">✓</span> : priv === 'varies' ? <span className="text-gray-400">varies</span> : <span className="text-gray-300">✗</span>}</td>
-                  </tr>
-                ))}
-                <tr className="border-t border-gray-200">
-                  <td className="py-2 pr-4 font-medium text-gray-700">Avg saving vs dealer</td>
-                  <td className="py-2 px-4 text-center text-green-700 font-bold">$3,000–$8,000</td>
-                  <td className="py-2 px-4 text-center text-gray-300">—</td>
-                  <td className="py-2 px-4 text-center text-gray-300">—</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </details>
 
       {/* ── Sell a Van banner ── */}
       {!hasActiveFilters && (
@@ -709,6 +623,92 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
           )}
         </>
       )}
+
+      {/* ── Social Proof (below vehicles) ── */}
+      <div className="mt-10 mb-8 bg-charcoal text-white rounded-2xl p-6 text-center">
+        <p className="text-sand text-xs font-semibold tracking-widest uppercase mb-3">100+ vans delivered from Japan to Australia</p>
+        <p className="text-lg leading-relaxed max-w-xl mx-auto">
+          &ldquo;Reserved my van on a Tuesday. Had auction photos by Thursday. Picked it up in Brisbane 7 weeks later.&rdquo;
+        </p>
+        <p className="text-gray-400 text-sm mt-2">— Luke, H200 SLWB</p>
+        <Link href="/about" className="text-sand text-sm font-semibold mt-4 inline-block hover:underline">
+          See customer stories →
+        </Link>
+      </div>
+
+      {/* ── How It Works Strip ── */}
+      <div className="mb-8 bg-white border border-gray-200 rounded-2xl p-6">
+        <h2 className="text-lg font-bold text-charcoal mb-4 text-center">How It Works</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+          <div>
+            <div className="text-2xl mb-2">🔍</div>
+            <p className="text-xs font-bold text-charcoal uppercase tracking-wider mb-1">1. Browse</p>
+            <p className="text-xs text-gray-500">Pick your van from auction or dealer stock in Japan</p>
+          </div>
+          <div>
+            <div className="text-2xl mb-2">🔒</div>
+            <p className="text-xs font-bold text-charcoal uppercase tracking-wider mb-1">2. Reserve</p>
+            <p className="text-xs text-gray-500">Lock it in for $3,000 — fully refundable if we don&apos;t secure the van</p>
+          </div>
+          <div>
+            <div className="text-2xl mb-2">📦</div>
+            <p className="text-xs font-bold text-charcoal uppercase tracking-wider mb-1">3. Track</p>
+            <p className="text-xs text-gray-500">Follow your van from purchase to port to Brisbane</p>
+          </div>
+          <div>
+            <div className="text-2xl mb-2">🚐</div>
+            <p className="text-xs font-bold text-charcoal uppercase tracking-wider mb-1">4. Collect</p>
+            <p className="text-xs text-gray-500">Pick up in Brisbane — drive it home or book a conversion</p>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Why Bare Camper — Competitive Comparison ── */}
+      <details className="mb-8 bg-white border border-gray-200 rounded-2xl overflow-hidden group">
+        <summary className="px-6 py-4 cursor-pointer flex items-center justify-between hover:bg-gray-50 transition-colors">
+          <h2 className="text-lg font-bold text-charcoal">Why buy through Bare Camper?</h2>
+          <svg className="w-5 h-5 text-gray-400 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </summary>
+        <div className="px-6 pb-6">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left py-2 pr-4 text-gray-500 font-medium"></th>
+                  <th className="py-2 px-4 text-ocean font-bold text-center">Bare Camper</th>
+                  <th className="py-2 px-4 text-gray-500 font-medium text-center">Brisbane Dealer</th>
+                  <th className="py-2 px-4 text-gray-500 font-medium text-center">Private Sale</th>
+                </tr>
+              </thead>
+              <tbody className="text-gray-600">
+                {[
+                  ['Auction-graded', true, false, false],
+                  ['Verified km', true, false, false],
+                  ['Transparent pricing', true, false, false],
+                  ['Pop-top conversion', true, false, false],
+                  ['Track your purchase', true, false, false],
+                  ['After-sale support', true, 'varies', false],
+                ].map(([label, bc, dealer, priv], i) => (
+                  <tr key={i} className={i % 2 === 0 ? 'bg-gray-50' : ''}>
+                    <td className="py-2 pr-4 font-medium text-gray-700">{label as string}</td>
+                    <td className="py-2 px-4 text-center">{bc === true ? <span className="text-green-600 font-bold">✓</span> : bc === 'varies' ? <span className="text-gray-400">varies</span> : <span className="text-gray-300">✗</span>}</td>
+                    <td className="py-2 px-4 text-center">{dealer === true ? <span className="text-green-600 font-bold">✓</span> : dealer === 'varies' ? <span className="text-gray-400">varies</span> : <span className="text-gray-300">✗</span>}</td>
+                    <td className="py-2 px-4 text-center">{priv === true ? <span className="text-green-600 font-bold">✓</span> : priv === 'varies' ? <span className="text-gray-400">varies</span> : <span className="text-gray-300">✗</span>}</td>
+                  </tr>
+                ))}
+                <tr className="border-t border-gray-200">
+                  <td className="py-2 pr-4 font-medium text-gray-700">Avg saving vs dealer</td>
+                  <td className="py-2 px-4 text-center text-green-700 font-bold">$3,000–$8,000</td>
+                  <td className="py-2 px-4 text-center text-gray-300">—</td>
+                  <td className="py-2 px-4 text-center text-gray-300">—</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </details>
     </div>
   )
 }
