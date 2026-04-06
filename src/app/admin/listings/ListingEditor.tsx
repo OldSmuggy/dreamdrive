@@ -32,6 +32,7 @@ type EditState = {
   conversion_video_url: string
   spin_video: string
   featured: boolean
+  toyota_verified: boolean
   has_nav: boolean
   has_leather: boolean
   has_sunroof: boolean
@@ -101,6 +102,7 @@ function toEditState(l: Listing): EditState {
     conversion_video_url: l.conversion_video_url ?? '',
     spin_video: l.spin_video ?? '',
     featured: l.featured,
+    toyota_verified: l.toyota_verified ?? false,
     has_nav: l.has_nav,
     has_leather: l.has_leather,
     has_sunroof: l.has_sunroof,
@@ -1423,6 +1425,7 @@ function ListingRow({
                 <label className="block text-xs font-semibold text-gray-600 mb-1">Features & Flags</label>
                 {([
                   ['featured',    '⭐ Featured on homepage'],
+                  ['toyota_verified', '🔴 Toyota Partner — Japan'],
                   ['has_nav',     '🗺 Navigation'],
                   ['has_leather', '🪑 Leather seats'],
                   ['has_sunroof', '☀️ Sunroof'],
@@ -1961,6 +1964,7 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
         conversion_video_url: editState.conversion_video_url || null,
         spin_video: editState.spin_video || null,
         featured: editState.featured,
+        toyota_verified: editState.toyota_verified,
         has_nav: editState.has_nav,
         has_leather: editState.has_leather,
         has_sunroof: editState.has_sunroof,
