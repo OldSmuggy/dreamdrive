@@ -70,6 +70,7 @@ export interface Listing {
   au_status: AuStockStatus | null
   eta_date: string | null
   featured: boolean
+  toyota_verified: boolean
   description: string | null
   has_nav: boolean
   has_leather: boolean
