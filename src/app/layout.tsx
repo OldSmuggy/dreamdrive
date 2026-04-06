@@ -4,6 +4,7 @@ import './globals.css'
 import Header from '@/components/ui/Header'
 import Footer from '@/components/ui/Footer'
 import { GoogleAnalytics } from '@/components/GoogleAnalytics'
+import { MicrosoftClarity } from '@/components/MicrosoftClarity'
 import { MetaPixel } from '@/components/MetaPixel'
 import WhatsAppButton from '@/components/ui/WhatsAppButton'
 import { getSiteSettings } from '@/lib/site-settings'
@@ -46,6 +47,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       <body className="font-body bg-white text-gray-900 antialiased">
         <GoogleAnalytics />
+        <MicrosoftClarity />
         <MetaPixel />
         <Header logoUrl={logo_url} />
         {children}

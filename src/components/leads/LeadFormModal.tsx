@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { trackLead } from '@/lib/pixel-events'
+import { trackEvent } from '@/lib/analytics'
 
 const AU_STATES = ['QLD', 'NSW', 'VIC', 'SA', 'WA', 'TAS', 'NT', 'ACT']
 
@@ -61,6 +62,7 @@ export default function LeadFormModal({
     } catch { /* swallow — show success anyway */ }
 
     trackLead(source)
+    trackEvent('submit_lead', { source })
     setSent(true)
     setSubmitting(false)
   }

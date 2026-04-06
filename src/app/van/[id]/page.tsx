@@ -7,6 +7,7 @@ import { listingDisplayPrice, importBreakdown } from '@/lib/pricing'
 import { generateMeta } from '@/lib/seo'
 import { centsToAud, scoreColor, scoreLabel, sourceLabel, sourceBadgeColor, auctionUrgency, locationBadgeInfo, fitOutLevelInfo, curationBadgeInfo } from '@/lib/utils'
 import AuctionBanner from '@/components/ui/AuctionBanner'
+import { TrackPageView } from '@/components/TrackPageView'
 import AuctionCountdownBanner from '@/components/van/AuctionCountdownBanner'
 import PhotoGallery from '@/components/van/PhotoGallery'
 import ConversionDetails from '@/components/van/ConversionDetails'
@@ -127,6 +128,7 @@ export default async function VanDetailPage({ params }: { params: { id: string }
 
   return (
     <div className="min-h-screen">
+      <TrackPageView event="browse_van" params={{ van_id: listing.id, model: listing.model_name, source: listing.source }} />
       <ViewContentTracker
         id={listing.id}
         model_name={listing.model_name}
