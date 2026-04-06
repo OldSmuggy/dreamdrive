@@ -129,7 +129,7 @@ export default function TestimonialWall() {
         </div>
 
         {/* Fade overlay — makes it look like there are more photos below */}
-        <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-white to-transparent pointer-events-none" />
+        <div className="absolute bottom-0 left-0 right-0 h-80 bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none" />
       </div>
     </section>
   )
