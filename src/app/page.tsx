@@ -8,7 +8,6 @@ import { getSiteSettings } from '@/lib/site-settings'
 import { generateMeta } from '@/lib/seo'
 import type { Metadata } from 'next'
 import AuctionBanner from '@/components/ui/AuctionBanner'
-import Footer from '@/components/ui/Footer'
 import VehicleSelector from '@/components/ui/VehicleSelector'
 import type { Listing } from '@/types'
 
@@ -54,14 +53,15 @@ export default async function HomePage() {
     }
     if (data) featuredVan = data as Listing
 
-    // Fetch 3 vans for quick browse below the hero
+    // Fetch 3 cheapest vans with photos for quick browse below the hero
     const { data: quickData } = await supabase
       .from('listings')
       .select('id, model_name, model_year, photos, price_aud, mileage_km, grade, source')
       .eq('status', 'available')
       .not('photos', 'eq', '{}')
-      .order('featured', { ascending: false })
-      .order('created_at', { ascending: false })
+      .not('price_aud', 'is', null)
+      .gt('price_aud', 0)
+      .order('price_aud', { ascending: true })
       .limit(3)
     if (quickData) quickBrowseVans = quickData as Listing[]
   } catch {
@@ -164,13 +164,9 @@ export default async function HomePage() {
           <h1 className="text-3xl leading-tight mb-1 text-charcoal font-bold">
             Just what you need.
           </h1>
-          <p className="text-sm text-gray-500 mb-4">
+          <p className="text-sm text-gray-500">
             Auction-graded vans from Japan. Professional fiberglass conversions in Brisbane. Your call how far you go.
           </p>
-          <div className="flex gap-3 justify-center">
-            <Link href="/browse" className="btn-primary text-sm px-5 py-2.5">Browse Vans</Link>
-            <a href="https://configure.barecamper.com.au/?model=tama" target="_blank" rel="noopener noreferrer" className="btn-secondary text-sm px-5 py-2.5">Design in 3D</a>
-          </div>
         </div>
 
         {/* Video */}
@@ -191,13 +187,9 @@ export default async function HomePage() {
             <h1 className="text-5xl lg:text-6xl leading-tight mb-2 text-charcoal font-bold">
               Just what you need.
             </h1>
-            <p className="text-base text-gray-600 max-w-md mx-auto leading-relaxed mb-6">
+            <p className="text-base text-gray-600 max-w-md mx-auto leading-relaxed">
               Auction-graded Toyota Hiace vans from Japan. Professional fiberglass conversions in Brisbane. Your call how far you go.
             </p>
-            <div className="flex gap-4 justify-center">
-              <Link href="/browse" className="btn-primary text-base px-8 py-3">Browse Vans</Link>
-              <a href="https://configure.barecamper.com.au/?model=tama" target="_blank" rel="noopener noreferrer" className="btn-secondary text-base px-8 py-3">Design in 3D</a>
-            </div>
           </div>
 
           {/* Desktop icons — overlaid at bottom */}
@@ -540,7 +532,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <Footer />
     </div>
   )
 }

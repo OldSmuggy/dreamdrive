@@ -238,7 +238,11 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
       list = list.filter(l => (l.aud_estimate ?? Infinity) <= maxCents)
     }
 
-    // Sort
+    // Sort — default puts dealer vans first so visitors see available stock immediately
+    if (sortBy === 'default' || !sortBy) {
+      const sourcePriority = (s: string | null) => s?.startsWith('dealer') ? 0 : s === 'au_stock' ? 1 : 2
+      list.sort((a, b) => sourcePriority(a.source) - sourcePriority(b.source))
+    }
     if (sortBy === 'price_asc')   list.sort((a,b) => (a.aud_estimate ?? 9e9) - (b.aud_estimate ?? 9e9))
     if (sortBy === 'price_desc')  list.sort((a,b) => (b.aud_estimate ?? 0)   - (a.aud_estimate ?? 0))
     if (sortBy === 'year_desc')   list.sort((a,b) => (b.model_year ?? 0)     - (a.model_year ?? 0))

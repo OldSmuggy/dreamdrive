@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { generateMeta } from '@/lib/seo'
-import Footer from '@/components/ui/Footer'
 
 export const metadata = generateMeta({
   title: 'Custom Campervan Conversion Brisbane | TAMA, KUMA-Q & MANA Builds | Bare Camper',
@@ -11,10 +10,20 @@ export const metadata = generateMeta({
 
 const BUILDS = [
   {
+    name: 'MANA',
+    tag: 'The Compact Adventurer',
+    desc: 'Built for two. Pop top roof, full kitchen, toilet, 200AH lithium. Everything you need for extended trips in a compact package.',
+    image: '/images/mana/interior-full.jpg',
+    price: 'From ~$68,000',
+    vehicle: 'H200 LWB HiAce',
+    href: '/mana',
+    configUrl: 'https://configure.barecamper.com.au/?model=mana',
+  },
+  {
     name: 'TAMA',
     tag: 'The Family Adventure Van',
     desc: '6-seat people mover by day. Fully equipped campervan by night. ISOFIX, galley kitchen, walnut countertops, full electrical.',
-    image: '/images/tama/hero-exterior.jpg',
+    image: '/images/tama/interior-overview.jpg',
     price: 'From ~$71,000',
     vehicle: 'H200 LWB HiAce',
     href: '/tama',
@@ -24,21 +33,11 @@ const BUILDS = [
     name: 'KUMA-Q',
     tag: 'The Full-Length SLWB',
     desc: 'Queen bed, full galley kitchen, 4-seat dining. Maximum space on the Super Long Wheelbase HiAce H200.',
-    image: '/images/tama/interior-overview.jpg',
+    image: '/images/tama/bed-blue.jpg',
     price: 'From ~$76,000',
     vehicle: 'H200 SLWB HiAce',
     href: '/kuma-q',
     configUrl: 'https://configure.barecamper.com.au/?model=kuma-q',
-  },
-  {
-    name: 'MANA',
-    tag: 'The Compact Adventurer',
-    desc: 'Built for two. Pop top roof, full kitchen, toilet, 200AH lithium. Everything you need for extended trips in a compact package.',
-    image: '/images/mana/interior-full.jpg',
-    price: 'From ~$68,000',
-    vehicle: 'H200 LWB HiAce',
-    href: '/mana',
-    configUrl: 'https://configure.barecamper.com.au/?model=mana',
   },
 ]
 
@@ -151,7 +150,6 @@ export default function FullBuildPage() {
         </div>
       </section>
 
-      <Footer />
     </div>
   )
 }

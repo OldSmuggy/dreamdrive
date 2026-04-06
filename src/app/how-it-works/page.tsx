@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import Footer from '@/components/ui/Footer'
 import { generateMeta } from '@/lib/seo'
 
 export const metadata = generateMeta({
@@ -303,7 +302,6 @@ export default function HowItWorksPage() {
         </div>
       </section>
 
-      <Footer />
     </div>
   )
 }

@@ -2,7 +2,6 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { createAdminClient } from '@/lib/supabase'
-import Footer from '@/components/ui/Footer'
 import { centsToAud, effectivePrice, activeSpecial } from '@/lib/utils'
 import type { Product } from '@/types'
 import ImageCarousel from '@/components/ui/ImageCarousel'
@@ -269,7 +268,6 @@ export default async function ProductPage({ params, searchParams }: { params: { 
         </div>
       </section>
 
-      <Footer />
 
     </div>
   )

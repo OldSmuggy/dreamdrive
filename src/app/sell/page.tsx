@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import { generateMeta } from '@/lib/seo'
-import Footer from '@/components/ui/Footer'
 
 export const metadata = generateMeta({
   title: 'Sell or Tip a Van | Earn $200 Finders Fee | Bare Camper',
@@ -63,7 +62,6 @@ export default function SellPage() {
         </div>
       </section>
 
-      <Footer />
     </div>
   )
 }
