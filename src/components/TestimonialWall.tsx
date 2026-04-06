@@ -17,8 +17,8 @@ const PARTNERS = [
 
 // ── Customer photos ─────────────────────────────────────────────────────────
 const CUSTOMERS = [
-  { src: '/images/testimonials/eric.jpg', name: 'Eric' },
-  { src: '/images/testimonials/liam.jpg', name: 'Liam & family' },
+  { src: '/images/testimonials/mary_frank.jpg', name: 'Mary & Frank' },
+  { src: '/images/testimonials/peggy.jpg', name: 'Peggy' },
   { src: '/images/testimonials/hana_josiah.jpg', name: 'Hana & Josiah' },
   { src: '/images/testimonials/sal.jpg', name: 'Sal & family' },
   { src: '/images/testimonials/luke.jpg', name: 'Luke' },
@@ -27,6 +27,8 @@ const CUSTOMERS = [
   { src: '/images/testimonials/jack_sam.jpg', name: 'Jack & Sam' },
   { src: '/images/testimonials/brad.jpg', name: 'Brad' },
   { src: '/images/testimonials/joel_mis.jpg', name: 'Joel & Mis' },
+  { src: '/images/testimonials/eric.jpg', name: 'Eric' },
+  { src: '/images/testimonials/liam.jpg', name: 'Liam & family' },
 ]
 
 // Distribute photos across 3 columns for masonry effect
@@ -103,7 +105,7 @@ export default function TestimonialWall() {
       <LogoTicker />
 
       {/* Photo grid — desktop: 3 cols, mobile: 2 cols */}
-      <div className="max-w-6xl mx-auto px-4 mt-10">
+      <div className="max-w-6xl mx-auto px-4 mt-10 relative">
         {/* Desktop */}
         <div className="hidden md:grid grid-cols-3 gap-3">
           {desktopCols.map((col, colIdx) => (
@@ -125,6 +127,9 @@ export default function TestimonialWall() {
             </div>
           ))}
         </div>
+
+        {/* Fade overlay — makes it look like there are more photos below */}
+        <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-white to-transparent pointer-events-none" />
       </div>
     </section>
   )

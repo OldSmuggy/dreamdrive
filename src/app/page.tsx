@@ -200,13 +200,13 @@ export default async function HomePage() {
           </div>
 
           {/* Desktop icons — overlaid at bottom */}
-          <div className="hidden md:block absolute bottom-0 left-0 right-0 z-10 bg-gradient-to-t from-charcoal/90 via-charcoal/60 to-transparent pt-16 pb-4">
+          <div className="hidden md:block absolute bottom-0 left-0 right-0 z-10 bg-gradient-to-t from-charcoal/90 via-charcoal/60 to-transparent pt-24 pb-6">
             <VehicleSelector />
           </div>
         </div>
 
         {/* Mobile icons — below video */}
-        <div className="md:hidden bg-charcoal py-4">
+        <div className="md:hidden bg-charcoal py-6">
           <VehicleSelector />
         </div>
       </section>
