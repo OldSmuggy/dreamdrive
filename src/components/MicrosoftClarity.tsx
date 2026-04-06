@@ -2,8 +2,7 @@
 import Script from 'next/script'
 
 export function MicrosoftClarity() {
-  const CLARITY_ID = process.env.NEXT_PUBLIC_CLARITY_ID
-  if (!CLARITY_ID) return null
+  const CLARITY_ID = process.env.NEXT_PUBLIC_CLARITY_ID || 'w7b92jh0lr'
 
   return (
     <Script id="microsoft-clarity" strategy="afterInteractive">
