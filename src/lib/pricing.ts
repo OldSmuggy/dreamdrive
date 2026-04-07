@@ -108,6 +108,28 @@ export interface ImportBreakdown {
   jpyRate: number
 }
 
+/** Fixed import costs (no vehicle price needed) — for auction listings without a starting bid. */
+export function importFixedCosts(isSlwb = false): { lines: ImportBreakdownLine[]; totalFixedCents: number; gstRate: number } {
+  const shippingCents = isSlwb ? SHIPPING_SLWB_CENTS : SHIPPING_LWB_CENTS
+  const dolphinCents = DOLPHIN_INSPECT_CENTS + DOLPHIN_TRANSPORT_CENTS
+  const complianceCents = COMPLIANCE_CENTS + WHARF_TRANSPORT_CENTS + SAFETY_CERT_CENTS
+  const regoStampCents = REGO_STAMP_QLD_CENTS + REGO_ARRANGE_CENTS
+
+  const totalFixedCents = SOURCING_FEE_INC_GST_CENTS + shippingCents
+    + CUSTOMS_ENTRY_CENTS + BMSB_CENTS + dolphinCents + complianceCents + regoStampCents
+
+  const lines: ImportBreakdownLine[] = [
+    { label: 'Japan Import Service Fee', cents: SOURCING_FEE_INC_GST_CENTS, note: '$2,500 + GST' },
+    { label: `Shipping (Japan → Australia${isSlwb ? ', SLWB' : ''})`, cents: shippingCents },
+    { label: 'Customs entry + BMSB inspection', cents: CUSTOMS_ENTRY_CENTS + BMSB_CENTS },
+    { label: 'Port handling + transport', cents: dolphinCents },
+    { label: 'Compliance (RAWS + safety cert)', cents: complianceCents },
+    { label: 'Registration + stamp duty (QLD est.)', cents: regoStampCents },
+  ]
+
+  return { lines, totalFixedCents, gstRate: GST_RATE }
+}
+
 /** Return an itemised import cost breakdown for a Japan-sourced listing. */
 export function importBreakdown(
   listing: Pick<Listing, 'source' | 'start_price_jpy' | 'buy_price_jpy' | 'aud_estimate' | 'au_price_aud'>,
