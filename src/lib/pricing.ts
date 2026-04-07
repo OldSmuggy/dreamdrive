@@ -6,9 +6,9 @@ const FALLBACK_RATE     = 0.0095     // 1 JPY = 0.0095 AUD
 // ── Itemised import cost constants (in cents) ────────────────────────────────
 export const SOURCING_FEE_EX_GST_CENTS = 250_000  // $2,500 ex GST
 export const SOURCING_FEE_INC_GST_CENTS = 275_000 // $2,750 inc GST
-export const SHIPPING_LWB_CENTS   = 170_000  // ~$1,700 RORO (LWB)
-export const SHIPPING_SLWB_CENTS  = 370_000  // ~$3,700 RORO (SLWB — +$2,000)
-export const SHIPPING_DEFAULT_CENTS = 170_000 // use LWB as default
+export const SHIPPING_LWB_CENTS   = 300_000  // $3,000 RORO (LWB)
+export const SHIPPING_SLWB_CENTS  = 420_000  // $4,200 RORO (SLWB)
+export const SHIPPING_DEFAULT_CENTS = 300_000 // use LWB as default
 export const CUSTOMS_ENTRY_CENTS  = 11_000   // $110
 export const BMSB_CENTS           = 25_000   // $250
 export const DOLPHIN_INSPECT_CENTS = 27_500  // $275 inc GST (inspection at Cargo Clear)
