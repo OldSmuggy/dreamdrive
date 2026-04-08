@@ -1,5 +1,5 @@
 import FinanceCalculator from './FinanceCalculator'
-import LeadForm from './LeadForm'
+import FinanceApplicationForm from '@/components/FinanceApplicationForm'
 import { generateMeta } from '@/lib/seo'
 
 export const metadata = generateMeta({
@@ -186,18 +186,16 @@ export default function FinancePage() {
         </div>
       </section>
 
-      {/* ---- Lead capture form (client component) ---- */}
+      {/* ---- Finance Application Form ---- */}
       <section id="get-finance" className="bg-cream py-16">
-        <div className="max-w-2xl mx-auto px-4">
+        <div className="max-w-5xl mx-auto px-4">
           <div className="text-center mb-10">
-            <h2 className="text-4xl text-charcoal mb-3">Get Finance Options</h2>
-            <p className="text-gray-500">
-              No credit check. No commitment. Stratton will be in touch with tailored options within 24 hours.
+            <h2 className="text-4xl text-charcoal mb-3">Apply for Finance</h2>
+            <p className="text-gray-500 max-w-xl mx-auto">
+              Answer a few quick questions and we&apos;ll match you with the best rate from 40+ lenders. No credit check at this stage.
             </p>
           </div>
-          <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm">
-            <LeadForm />
-          </div>
+          <FinanceApplicationForm />
         </div>
       </section>
 

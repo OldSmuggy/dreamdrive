@@ -596,6 +596,69 @@ export const emailTemplates = {
     `,
   }),
 
+  financeApplicationEmail: (data: {
+    firstName: string; middleName: string; lastName: string; email: string; phone: string; dob: string;
+    purpose: string; vehicleType: string; buyingFrom: string; vehicleYear: string; condition: string;
+    businessUse: string; vehiclePrice: string; deposit: string; loanAmount: string; loanTerm: string;
+    balloonPct: string; balloonAmount: string; employmentType: string; employmentYears: string;
+    employmentMonths: string; residencyStatus: string; livingSituation: string; address: string;
+  }) => ({
+    subject: `New Finance Application — ${data.firstName} ${data.lastName} — $${Number(data.loanAmount).toLocaleString()}`,
+    html: `
+      <div style="font-family: sans-serif; max-width: 640px; margin: 0 auto;">
+        ${EMAIL_HEADER}
+        <div style="padding: 2rem;">
+          <h2 style="color: #2C2C2A; margin: 0 0 0.5rem;">New Finance Application</h2>
+          <p style="color: #888; font-size: 0.85rem; margin: 0 0 1.5rem;">Submitted via barecamper.com.au/finance</p>
+
+          <h3 style="color: #3D6B73; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; margin: 1.5rem 0 0.5rem; border-bottom: 1px solid #eee; padding-bottom: 0.35rem;">Applicant</h3>
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+            <tr><td style="padding: 0.35rem 0; color: #888; width: 150px;">Name</td><td style="padding: 0.35rem 0; color: #222;">${data.firstName}${data.middleName ? ` ${data.middleName}` : ''} ${data.lastName}</td></tr>
+            <tr><td style="padding: 0.35rem 0; color: #888;">Email</td><td style="padding: 0.35rem 0;"><a href="mailto:${data.email}" style="color: #3D6B73;">${data.email}</a></td></tr>
+            <tr><td style="padding: 0.35rem 0; color: #888;">Phone</td><td style="padding: 0.35rem 0; color: #222;">${data.phone}</td></tr>
+            <tr><td style="padding: 0.35rem 0; color: #888;">Date of Birth</td><td style="padding: 0.35rem 0; color: #222;">${data.dob || '—'}</td></tr>
+            <tr><td style="padding: 0.35rem 0; color: #888;">Address</td><td style="padding: 0.35rem 0; color: #222;">${data.address || '—'}</td></tr>
+          </table>
+
+          <h3 style="color: #3D6B73; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; margin: 1.5rem 0 0.5rem; border-bottom: 1px solid #eee; padding-bottom: 0.35rem;">Vehicle</h3>
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+            <tr><td style="padding: 0.35rem 0; color: #888; width: 150px;">Purpose</td><td style="padding: 0.35rem 0; color: #222;">${data.purpose}</td></tr>
+            <tr><td style="padding: 0.35rem 0; color: #888;">Vehicle Type</td><td style="padding: 0.35rem 0; color: #222;">${data.vehicleType}</td></tr>
+            <tr><td style="padding: 0.35rem 0; color: #888;">Buying From</td><td style="padding: 0.35rem 0; color: #222;">${data.buyingFrom}</td></tr>
+            <tr><td style="padding: 0.35rem 0; color: #888;">Year</td><td style="padding: 0.35rem 0; color: #222;">${data.vehicleYear}</td></tr>
+            <tr><td style="padding: 0.35rem 0; color: #888;">Condition</td><td style="padding: 0.35rem 0; color: #222;">${data.condition}</td></tr>
+            <tr><td style="padding: 0.35rem 0; color: #888;">Business Use</td><td style="padding: 0.35rem 0; color: #222;">${data.businessUse}</td></tr>
+          </table>
+
+          <h3 style="color: #3D6B73; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; margin: 1.5rem 0 0.5rem; border-bottom: 1px solid #eee; padding-bottom: 0.35rem;">Loan</h3>
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+            <tr><td style="padding: 0.35rem 0; color: #888; width: 150px;">Vehicle Price</td><td style="padding: 0.35rem 0; color: #222; font-weight: 600;">$${Number(data.vehiclePrice).toLocaleString()}</td></tr>
+            <tr><td style="padding: 0.35rem 0; color: #888;">Deposit</td><td style="padding: 0.35rem 0; color: #222;">$${Number(data.deposit).toLocaleString()}</td></tr>
+            <tr><td style="padding: 0.35rem 0; color: #888;">Loan Amount</td><td style="padding: 0.35rem 0; color: #222; font-weight: 600; font-size: 1rem;">$${Number(data.loanAmount).toLocaleString()}</td></tr>
+            <tr><td style="padding: 0.35rem 0; color: #888;">Term</td><td style="padding: 0.35rem 0; color: #222;">${data.loanTerm} years</td></tr>
+            <tr><td style="padding: 0.35rem 0; color: #888;">Balloon</td><td style="padding: 0.35rem 0; color: #222;">${data.balloonPct}% ($${Number(data.balloonAmount).toLocaleString()})</td></tr>
+          </table>
+
+          <h3 style="color: #3D6B73; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; margin: 1.5rem 0 0.5rem; border-bottom: 1px solid #eee; padding-bottom: 0.35rem;">Employment & Residency</h3>
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+            <tr><td style="padding: 0.35rem 0; color: #888; width: 150px;">Employment</td><td style="padding: 0.35rem 0; color: #222;">${data.employmentType}</td></tr>
+            <tr><td style="padding: 0.35rem 0; color: #888;">Duration</td><td style="padding: 0.35rem 0; color: #222;">${data.employmentYears} years${data.employmentMonths ? `, ${data.employmentMonths} months` : ''}</td></tr>
+            <tr><td style="padding: 0.35rem 0; color: #888;">Residency</td><td style="padding: 0.35rem 0; color: #222;">${data.residencyStatus}</td></tr>
+            <tr><td style="padding: 0.35rem 0; color: #888;">Living Situation</td><td style="padding: 0.35rem 0; color: #222;">${data.livingSituation}</td></tr>
+          </table>
+
+          <div style="margin-top: 1.5rem;">
+            <a href="https://barecamper.com.au/admin/leads" style="display: inline-block; background: #3D6B73; color: white; padding: 0.6rem 1.25rem; border-radius: 8px; text-decoration: none; font-size: 0.9rem;">
+              View in Admin
+            </a>
+          </div>
+
+          ${EMAIL_FOOTER}
+        </div>
+      </div>
+    `,
+  }),
+
   financeEnquiryEmail: (name: string, email: string, phone: string, budget: string, financeType: string, notes: string) => ({
     subject: `New finance enquiry — ${name}`,
     html: `

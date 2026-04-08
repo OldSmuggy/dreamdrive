@@ -55,7 +55,12 @@ export async function POST(req: NextRequest) {
 
     // Send notification email to admin (fire-and-forget)
     const leadType = body.type ?? 'consultation'
-    if (leadType === 'finance_enquiry') {
+    if (leadType === 'finance_application' && body.finance_data) {
+      sendEmail({
+        to: 'jared@dreamdrive.life',
+        ...emailTemplates.financeApplicationEmail(body.finance_data),
+      }).catch(() => {})
+    } else if (leadType === 'finance_enquiry') {
       sendEmail({
         to: 'jared@dreamdrive.life',
         ...emailTemplates.financeEnquiryEmail(

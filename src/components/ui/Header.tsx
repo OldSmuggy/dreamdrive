@@ -11,6 +11,7 @@ const NAV = [
   { label: 'Full Build', href: '/full-build' },
   { label: 'Pricing', href: '/import-costs' },
   { label: 'Sell', href: '/sell' },
+  { label: 'Finance', href: '/finance' },
 ]
 
 export default function Header({ logoUrl }: { logoUrl?: string }) {
