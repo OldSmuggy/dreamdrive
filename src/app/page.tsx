@@ -456,7 +456,7 @@ function FeaturedVanCard({ listing }: { listing: Listing }) {
           {listing.model_year} · {listing.mileage_km ? `${listing.mileage_km.toLocaleString()} km` : '—'} · {listing.drive ?? '—'}
         </p>
         <p className="text-sm text-gray-400 mb-4">
-          {listing.source === 'au_stock' ? 'In Brisbane — drive it this weekend' : '$3,000 to reserve · Delivered to Brisbane in 6–8 weeks'}
+          {listing.source === 'au_stock' ? 'In Brisbane — drive it this weekend' : '$2,750 to reserve · Delivered to Brisbane in 6–8 weeks'}
         </p>
         <p className="text-ocean text-3xl mb-6 font-bold">
           {displayPrice}

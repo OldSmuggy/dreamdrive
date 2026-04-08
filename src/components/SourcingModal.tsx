@@ -124,7 +124,7 @@ export default function SourcingModal({ open, onClose, vanTitle, vanId }: Props)
               <div className="bg-stone-50 rounded-xl p-5 space-y-3">
                 <div className="flex gap-3 items-start">
                   <span className="bg-stone-900 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5">1</span>
-                  <div><p className="text-sm font-semibold text-stone-900">Pay $3,000 deposit</p><p className="text-xs text-stone-500">Goes toward your vehicle purchase. Includes our $2,750 sourcing fee.</p></div>
+                  <div><p className="text-sm font-semibold text-stone-900">Pay $2,750 sourcing fee</p><p className="text-xs text-stone-500">One fixed fee for searching, bidding, and coordinating your import.</p></div>
                 </div>
                 <div className="flex gap-3 items-start">
                   <span className="bg-stone-900 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5">2</span>
@@ -146,7 +146,7 @@ export default function SourcingModal({ open, onClose, vanTitle, vanId }: Props)
 
               <div className="bg-green-50 border border-green-200 rounded-xl p-4">
                 <p className="text-sm text-green-800 font-semibold mb-1">30-day money-back guarantee</p>
-                <p className="text-xs text-green-700">If we can&apos;t find a suitable vehicle within 30 days, we refund the full $3,000 minus $250. No questions asked.</p>
+                <p className="text-xs text-green-700">If we can&apos;t find a suitable vehicle within 30 days, we refund the full $2,750. No questions asked.</p>
               </div>
             </div>
 
@@ -199,7 +199,7 @@ export default function SourcingModal({ open, onClose, vanTitle, vanId }: Props)
               <button type="submit" disabled={submitting} className="w-full bg-stone-900 text-white font-semibold py-3.5 rounded-lg hover:bg-stone-800 active:scale-[0.98] transition text-sm disabled:opacity-50">
                 {submitting ? 'Submitting...' : 'Submit Sourcing Request'}
               </button>
-              <p className="text-xs text-stone-400 mt-3 text-center">We&apos;ll send you an invoice for the $3,000 deposit to get started.</p>
+              <p className="text-xs text-stone-400 mt-3 text-center">We&apos;ll send you an invoice for the $2,750 sourcing fee to get started.</p>
             </form>
           </div>
         )}
@@ -210,13 +210,13 @@ export default function SourcingModal({ open, onClose, vanTitle, vanId }: Props)
             <div className="text-4xl mb-4">🔍</div>
             <h2 className="text-2xl font-bold text-stone-900 mb-2">We&apos;re on it!</h2>
             <p className="text-stone-500 text-sm mb-4 max-w-md mx-auto">
-              Jared will review your requirements and send you an invoice for the $3,000 deposit within 24 hours. Once paid, we start searching immediately.
+              Jared will review your requirements and send you an invoice for the $2,750 sourcing fee within 24 hours. Once paid, we start searching immediately.
             </p>
             <div className="bg-stone-50 rounded-xl p-4 text-left max-w-sm mx-auto mb-6">
               <p className="text-xs font-semibold text-stone-400 uppercase tracking-widest mb-2">What happens next</p>
               <ol className="text-sm text-stone-600 space-y-1.5">
                 <li>1. We send you a deposit invoice</li>
-                <li>2. You pay $3,000 via bank transfer</li>
+                <li>2. You pay $2,750 via bank transfer</li>
                 <li>3. We start searching Japanese auctions</li>
                 <li>4. We send you options to approve</li>
               </ol>

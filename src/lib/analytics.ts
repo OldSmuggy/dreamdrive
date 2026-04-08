@@ -4,7 +4,7 @@
  *
  * Events tracked:
  * - browse_van:          User views a van listing detail page
- * - reserve_van:         User places a $3,000 hold on a van
+ * - reserve_van:         User places a $2,750 sourcing fee on a van
  * - launch_configurator: User clicks through to the 3D configurator
  * - submit_lead:         User submits a contact/enquiry form
  * - tip_van:             User submits a van tip

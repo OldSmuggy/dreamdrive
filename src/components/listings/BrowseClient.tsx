@@ -440,7 +440,7 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
         </div>
         <p className="text-gray-500 mt-2 text-sm max-w-2xl">
           Japanese auction vans and verified dealer stock — all graded with verified kilometres.<br />
-          Reserve from $3,000. Delivered to Brisbane in 6–8 weeks. Track your purchase at every stage.
+          Reserve from $2,750. Delivered to Brisbane in 6–8 weeks. Track your purchase at every stage.
         </p>
       </div>
 
@@ -669,7 +669,7 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
           <div>
             <div className="text-2xl mb-2">🔒</div>
             <p className="text-xs font-bold text-charcoal uppercase tracking-wider mb-1">2. Reserve</p>
-            <p className="text-xs text-gray-500">Lock it in for $3,000 — fully refundable if we don&apos;t secure the van</p>
+            <p className="text-xs text-gray-500">$2,750 sourcing fee — fully refundable if we don&apos;t secure the van</p>
           </div>
           <div>
             <div className="text-2xl mb-2">📦</div>
@@ -1029,7 +1029,7 @@ function ListingCard({ listing, userId, initialSaved, jpyRate }: { listing: List
             ? 'In Brisbane — drive it this weekend'
             : effectiveLocation(listing) === 'on_ship'
             ? `On the water — arriving ${listing.eta_date ? new Date(listing.eta_date).toLocaleDateString('en-AU', { month: 'long' }) : 'soon'}`
-            : '$3,000 to reserve · Delivered to Brisbane in 6–8 weeks'}
+            : '$2,750 to reserve · Delivered to Brisbane in 6–8 weeks'}
         </p>
 
         {/* Location sub-text */}

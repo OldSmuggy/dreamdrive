@@ -100,9 +100,9 @@ export default async function VanDetailPage({ params }: { params: { id: string }
     ['Grade Score',    listing.inspection_score ? `${listing.inspection_score} — ${scoreLabel(listing.inspection_score)}` : '—'],
   ]
 
-  const ctaLabel = listing.source === 'auction' ? 'View & Bid — $3,000 Deposit'
-    : listing.source === 'au_stock' ? 'Reserve This Van — $3,000'
-    : 'Reserve This Van — $3,000'
+  const ctaLabel = listing.source === 'auction' ? 'Start Sourcing — $2,750'
+    : listing.source === 'au_stock' ? 'Reserve This Van — $2,750'
+    : 'Reserve This Van — $2,750'
 
   const vehicleJsonLd = {
     '@context': 'https://schema.org',
@@ -418,7 +418,7 @@ export default async function VanDetailPage({ params }: { params: { id: string }
                   )}
                 </div>
                 <p className="text-xs text-gray-400 mt-3">
-                  $3,000 to reserve — fully refundable if we don&apos;t secure the van.
+                  $2,750 sourcing fee — fully refundable if we don&apos;t secure the van.
                 </p>
               </div>
             )}
@@ -517,7 +517,7 @@ export default async function VanDetailPage({ params }: { params: { id: string }
                 <div className="space-y-3">
                   {listing.source === 'auction' ? (
                     <SourcingButton
-                      label="Start Sourcing — $3,000 Deposit"
+                      label="Start Sourcing — $2,750"
                       vanTitle={`${listing.model_year ?? ''} ${listing.model_name}`.trim()}
                       vanId={listing.id}
                       className="btn-primary w-full text-center text-base py-4 block"

@@ -275,7 +275,7 @@ export default function VehiclePDF({
             <Text style={s.ctaText}>Workshop: 1/10 Jones Road, Capalaba QLD 4157</Text>
           </View>
           <View style={{ alignItems: 'flex-end' }}>
-            <Text style={{ color: C.sand, fontSize: 9, fontFamily: 'Helvetica-Bold' }}>Reserve from $3,000</Text>
+            <Text style={{ color: C.sand, fontSize: 9, fontFamily: 'Helvetica-Bold' }}>Reserve from $2,750</Text>
             <Text style={{ color: '#9CA3AF', fontSize: 7 }}>Delivered to Brisbane in 6–8 weeks</Text>
           </View>
         </View>
