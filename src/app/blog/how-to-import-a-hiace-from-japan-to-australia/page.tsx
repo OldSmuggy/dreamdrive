@@ -66,7 +66,7 @@ export default function BlogPost() {
 
           <h2>Step 4 — Customs and GST</h2>
           <p>
-            You&apos;ll pay <strong>5% customs duty</strong> plus <strong>10% GST</strong> on the customs value of the vehicle. The customs value is based on the Japanese purchase price converted to AUD. On a $25,000 AUD purchase, that&apos;s around $3,750 in taxes.
+            Japanese-built vehicles qualify for <strong>0% import duty</strong> under the Japan-Australia Economic Partnership Agreement (JEPA). You&apos;ll pay <strong>10% GST</strong> on the customs value (vehicle purchase price + shipping). On a $25,000 AUD purchase with $3,000 shipping, that&apos;s around $2,800 in GST.
           </p>
           <p>
             A licensed customs broker handles this for you — at Bare Camper we include this in our quoted landed cost so there are no surprises.
