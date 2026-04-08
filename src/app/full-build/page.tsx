@@ -6,6 +6,7 @@ export const metadata = generateMeta({
   title: 'Custom Campervan Conversion Brisbane | TAMA, KUMA-Q & MANA Builds | Bare Camper',
   description: 'Full turnkey campervan conversions on Toyota Hiace. Choose TAMA (family), KUMA-Q (SLWB), or MANA (couples). Design yours in our 3D configurator. Brisbane workshop.',
   url: '/full-build',
+  image: 'https://barecamper.com.au/images/og-full-build.png',
 })
 
 const BUILDS = [
