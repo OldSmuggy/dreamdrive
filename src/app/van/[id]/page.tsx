@@ -8,6 +8,7 @@ import { generateMeta } from '@/lib/seo'
 import { centsToAud, scoreColor, scoreLabel, sourceLabel, sourceBadgeColor, auctionUrgency, locationBadgeInfo, fitOutLevelInfo, curationBadgeInfo } from '@/lib/utils'
 import AuctionBanner from '@/components/ui/AuctionBanner'
 import { TrackPageView } from '@/components/TrackPageView'
+import SourcingButton from '@/components/van/SourcingButton'
 import AuctionCountdownBanner from '@/components/van/AuctionCountdownBanner'
 import PhotoGallery from '@/components/van/PhotoGallery'
 import ConversionDetails from '@/components/van/ConversionDetails'
@@ -514,10 +515,19 @@ export default async function VanDetailPage({ params }: { params: { id: string }
             ) : (
               <>
                 <div className="space-y-3">
-                  <Link href={`/configurator?van=${listing.id}`}
-                    className="btn-primary w-full text-center text-base py-4 block">
-                    {listing.source === 'au_stock' ? 'Reserve & Test Drive →' : listing.source === 'auction' ? 'View & Bid →' : 'Reserve This Van →'}
-                  </Link>
+                  {listing.source === 'auction' ? (
+                    <SourcingButton
+                      label="Start Sourcing — $3,000 Deposit"
+                      vanTitle={`${listing.model_year ?? ''} ${listing.model_name}`.trim()}
+                      vanId={listing.id}
+                      className="btn-primary w-full text-center text-base py-4 block"
+                    />
+                  ) : (
+                    <Link href={`/configurator?van=${listing.id}`}
+                      className="btn-primary w-full text-center text-base py-4 block">
+                      {listing.source === 'au_stock' ? 'Reserve & Test Drive →' : 'Reserve This Van →'}
+                    </Link>
+                  )}
                   <DepositHoldButton
                     listing={listing}
                     userId={user?.id ?? null}
