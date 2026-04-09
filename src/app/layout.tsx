@@ -20,7 +20,7 @@ const body = DM_Sans({
 export const metadata: Metadata = {
   title: { default: 'Bare Camper — Toyota Hiace Campervans, Australia', template: '%s | Bare Camper' },
   description: "Australia's complete Toyota Hiace campervan platform. Source from Japan or convert your own. Pop tops, TAMA & MANA fitouts, DIY kits. Brisbane workshop.",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://barecamper.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://barecamper.com.au'),
   openGraph: {
     siteName: 'Bare Camper',
     type: 'website',

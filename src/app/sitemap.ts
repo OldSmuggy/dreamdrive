@@ -3,7 +3,7 @@ import { createAdminClient } from '@/lib/supabase'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ||
-    'https://barecamper.com'
+    'https://barecamper.com.au'
 
   const supabase = createAdminClient()
 
@@ -11,7 +11,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .from('listings')
     .select('id, updated_at')
     .eq('is_active', true)
-    .eq('status', 'published')
+    .in('status', ['published', 'available', 'live'])
 
   const { data: posts } = await supabase
     .from('blog_posts')
@@ -29,10 +29,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/submit-a-van`, priority: 0.8 },
     { url: `${baseUrl}/tip-a-van`, priority: 0.7 },
     { url: `${baseUrl}/about`, priority: 0.8 },
+    { url: `${baseUrl}/full-build`, priority: 0.9 },
     { url: `${baseUrl}/tama`, priority: 0.8 },
     { url: `${baseUrl}/mana`, priority: 0.8 },
+    { url: `${baseUrl}/kuma-q`, priority: 0.8 },
     { url: `${baseUrl}/pop-top`, priority: 0.7 },
     { url: `${baseUrl}/diy`, priority: 0.7 },
+    { url: `${baseUrl}/sell`, priority: 0.7 },
+    { url: `${baseUrl}/pricing`, priority: 0.8 },
     { url: `${baseUrl}/compare`, priority: 0.5 },
     { url: `${baseUrl}/blog`, priority: 0.8 },
     { url: `${baseUrl}/blog/how-to-import-a-hiace-from-japan-to-australia`, priority: 0.8 },
