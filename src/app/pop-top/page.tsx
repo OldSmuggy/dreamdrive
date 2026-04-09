@@ -1,11 +1,12 @@
 import { createAdminClient } from '@/lib/supabase'
 import PopTopClient from './PopTopClient'
+import { generateMeta } from '@/lib/seo'
 
-export const metadata = {
-  title: 'Standing Room — Pop Top & Hi-Top Roof Conversions | Bare Camper',
-  description:
-    'Professional fiberglass pop top and hi-top roof conversions for Toyota Hiace H200 and 300 Series. $13,090 installed. 10 business day turnaround. Brisbane factory.',
-}
+export const metadata = generateMeta({
+  title: 'Pop Top & Hi-Top Roof Conversions | Bare Camper',
+  description: 'Professional fiberglass pop top and hi-top roof conversions for Toyota Hiace H200 and 300 Series. $13,090 installed. 10 business day turnaround. Brisbane factory.',
+  url: '/pop-top',
+})
 export const dynamic = 'force-dynamic'
 
 export default async function PopTopPage() {

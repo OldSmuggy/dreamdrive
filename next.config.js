@@ -18,6 +18,13 @@ const nextConfig = {
       bodySizeLimit: '4mb',
     },
   },
+  async redirects() {
+    return [
+      { source: '/fit-outs/tama', destination: '/tama', permanent: true },
+      { source: '/fit-outs/mana', destination: '/mana', permanent: true },
+      { source: '/fit-outs/kumaq', destination: '/kuma-q', permanent: true },
+    ]
+  },
   async rewrites() {
     return [
       {

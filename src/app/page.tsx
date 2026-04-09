@@ -168,10 +168,10 @@ export default async function HomePage() {
       {/* Mobile: stacked layout. Desktop: overlaid */}
       <section className="relative w-full overflow-hidden bg-white">
         {/* Mobile tagline — above video */}
-        <div className="md:hidden text-center px-4 pt-6 pb-4">
-          <h1 className="text-3xl leading-tight mb-1 text-charcoal font-bold">
+        <div className="md:hidden text-center px-4 pt-6 pb-4" aria-hidden="true">
+          <p className="text-3xl leading-tight mb-1 text-charcoal font-bold">
             Just what you need.
-          </h1>
+          </p>
           <p className="text-sm text-gray-500">
             Auction-graded vans from Japan. Professional fiberglass conversions in Brisbane. Your call how far you go.
           </p>

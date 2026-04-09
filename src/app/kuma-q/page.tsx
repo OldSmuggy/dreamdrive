@@ -2,12 +2,14 @@ import { createAdminClient } from '@/lib/supabase'
 import { getJpyRate } from '@/lib/settings'
 import { kumaQConversionAud, conversionPriceRange } from '@/lib/pricing'
 import KumaQProductClient from './KumaQProductClient'
+import { generateMeta } from '@/lib/seo'
 
 export const dynamic = 'force-dynamic'
-export const metadata = {
-  title: 'KUMA-Q — Super Long Wheelbase Campervan | Bare Camper',
+export const metadata = generateMeta({
+  title: 'KUMA-Q — Super Long Wheelbase Campervan Conversion | Bare Camper',
   description: 'The KUMA-Q converts your Toyota Hiace Super Long into a full-length campervan with queen bed, galley kitchen, and 4-seat dining. From $120,000.',
-}
+  url: '/kuma-q',
+})
 
 export default async function KumaQPage({ searchParams }: { searchParams: Promise<{ van?: string }> }) {
   const supabase = createAdminClient()
@@ -27,16 +29,37 @@ export default async function KumaQPage({ searchParams }: { searchParams: Promis
 
   const van = vanRes.data
   const vanDisplayName = van ? `${van.model_year ?? ''} ${van.model_name}`.trim() : null
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: 'KUMA-Q — Super Long Wheelbase Campervan Conversion',
+    description: 'Full-length campervan conversion on Toyota Hiace Super Long. Queen bed, galley kitchen, 4-seat dining, 200AH lithium, full electrical.',
+    brand: { '@type': 'Brand', name: 'Bare Camper' },
+    url: 'https://barecamper.com.au/kuma-q',
+    offers: {
+      '@type': 'AggregateOffer',
+      priceCurrency: 'AUD',
+      lowPrice: low,
+      highPrice: high,
+      offerCount: 1,
+      availability: 'https://schema.org/InStock',
+    },
+    category: 'Campervan Conversion',
+  }
+
   return (
-    <KumaQProductClient
-      conversionAud={conversionAud}
-      low={low}
-      high={high}
-      jpyRate={jpyRate}
-      content={content}
-      vanId={van?.id ?? null}
-      vanName={vanDisplayName}
-      vanPriceCents={van?.price_aud ?? null}
-    />
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <KumaQProductClient
+        conversionAud={conversionAud}
+        low={low}
+        high={high}
+        jpyRate={jpyRate}
+        content={content}
+        vanId={van?.id ?? null}
+        vanName={vanDisplayName}
+        vanPriceCents={van?.price_aud ?? null}
+      />
+    </>
   )
 }
