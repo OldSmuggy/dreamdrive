@@ -73,6 +73,7 @@ export default function KumaQProductClient({ conversionAud, low, high, jpyRate, 
         <div className="pt-16">
           <p className="text-sand text-xs font-semibold tracking-[0.25em] uppercase mb-3">Bare Camper</p>
           <h1 className="text-7xl md:text-9xl text-white leading-none mb-3">KUMA-Q</h1>
+          <p className="sr-only">KUMA-Q Super Long Campervan Conversion — Toyota Hiace</p>
           <p className="text-white/80 text-xl md:text-2xl font-light mb-2">The Ultimate Road Trip Campervan</p>
           <p className="text-white/60 text-base md:text-lg max-w-xl">Toyota Hiace H200 Super Long Wheelbase. Seating and sleeping for up to 4. Everything you need to hit the road in style.</p>
         </div>

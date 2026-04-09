@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import { generateMeta } from '@/lib/seo'
+import BlogArticleJsonLd from '@/components/BlogArticleJsonLd'
+import RelatedPosts from '@/components/RelatedPosts'
 
 export const metadata = generateMeta({
   title: 'Pop Top vs Hi-Top Roof Conversion — Which Is Right for Your Hiace?',
@@ -10,6 +12,7 @@ export const metadata = generateMeta({
 export default function PopTopVsHiTopPost() {
   return (
     <div className="min-h-screen bg-cream">
+      <BlogArticleJsonLd title="Pop Top vs Hi-Top Roof Conversion — Which Is Right for Your Hiace Campervan?" description="Comparing pop top and hi-top roof conversions for Toyota Hiace campervans." slug="pop-top-vs-hi-top-campervan-roof-conversion" datePublished="2026-03-28" category="Buyer Guide" />
       <article className="max-w-3xl mx-auto px-4 py-16">
         {/* Header */}
         <div className="mb-10">
@@ -200,6 +203,8 @@ export default function PopTopVsHiTopPost() {
             </div>
           </div>
         </div>
+
+        <RelatedPosts currentSlug="pop-top-vs-hi-top-campervan-roof-conversion" />
 
         {/* Back to blog */}
         <div className="mt-10 pt-6 border-t border-gray-200">

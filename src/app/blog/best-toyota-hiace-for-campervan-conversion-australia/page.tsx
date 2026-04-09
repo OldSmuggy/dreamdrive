@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import { generateMeta } from '@/lib/seo'
+import BlogArticleJsonLd from '@/components/BlogArticleJsonLd'
+import RelatedPosts from '@/components/RelatedPosts'
 
 export const metadata = generateMeta({
   title: 'Best Toyota Hiace for Campervan Conversion in Australia (2024)',
@@ -10,6 +12,7 @@ export const metadata = generateMeta({
 export default function BlogPost() {
   return (
     <div className="min-h-screen bg-cream">
+      <BlogArticleJsonLd title="Best Toyota Hiace for Campervan Conversion in Australia (2024)" description="H200 vs 300 series, LWB vs SLWB, diesel vs petrol — choosing the right Hiace for your campervan build." slug="best-toyota-hiace-for-campervan-conversion-australia" datePublished="2024-11-15" category="Buyer Guide" />
       <div className="max-w-2xl mx-auto px-4 py-16">
         <Link href="/blog" className="text-ocean text-sm font-medium hover:underline">← All guides</Link>
 
@@ -116,6 +119,8 @@ export default function BlogPost() {
             </div>
           </div>
         </div>
+
+        <RelatedPosts currentSlug="best-toyota-hiace-for-campervan-conversion-australia" />
       </div>
     </div>
   )

@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import { generateMeta } from '@/lib/seo'
+import BlogArticleJsonLd from '@/components/BlogArticleJsonLd'
+import RelatedPosts from '@/components/RelatedPosts'
 
 export const metadata = generateMeta({
   title: 'What\'s Included in a TAMA Campervan Build — Full Spec Breakdown',
@@ -89,6 +91,7 @@ const SPEC_SECTIONS = [
 export default function TamaBuildPost() {
   return (
     <div className="min-h-screen bg-cream">
+      <BlogArticleJsonLd title="What's Included in a TAMA Campervan Build — Full Spec Breakdown" description="Complete breakdown of the Bare Camper TAMA conversion for Toyota Hiace." slug="what-is-included-in-a-tama-campervan-build" datePublished="2026-03-28" category="Build Guide" />
       <article className="max-w-3xl mx-auto px-4 py-16">
         {/* Header */}
         <div className="mb-10">
@@ -251,6 +254,8 @@ export default function TamaBuildPost() {
             </div>
           </div>
         </div>
+
+        <RelatedPosts currentSlug="what-is-included-in-a-tama-campervan-build" />
 
         {/* Back to blog */}
         <div className="mt-10 pt-6 border-t border-gray-200">

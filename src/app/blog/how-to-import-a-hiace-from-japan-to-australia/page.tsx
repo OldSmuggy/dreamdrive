@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import { generateMeta } from '@/lib/seo'
+import BlogArticleJsonLd from '@/components/BlogArticleJsonLd'
+import RelatedPosts from '@/components/RelatedPosts'
 
 export const metadata = generateMeta({
   title: 'How to Import a Toyota Hiace from Japan to Australia (2024 Guide)',
@@ -10,6 +12,7 @@ export const metadata = generateMeta({
 export default function BlogPost() {
   return (
     <div className="min-h-screen bg-cream">
+      <BlogArticleJsonLd title="How to Import a Toyota Hiace from Japan to Australia (2024 Guide)" description="Step-by-step guide to importing a Toyota Hiace from Japan to Australia." slug="how-to-import-a-hiace-from-japan-to-australia" datePublished="2024-11-01" category="Import Guide" />
       <div className="max-w-2xl mx-auto px-4 py-16">
         <Link href="/blog" className="text-ocean text-sm font-medium hover:underline">← All guides</Link>
 
@@ -113,6 +116,8 @@ export default function BlogPost() {
             </div>
           </div>
         </div>
+
+        <RelatedPosts currentSlug="how-to-import-a-hiace-from-japan-to-australia" />
       </div>
     </div>
   )

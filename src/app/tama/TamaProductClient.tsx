@@ -52,6 +52,7 @@ export default function TamaProductClient({ conversionAud, low, high, jpyRate, c
         <div className="pt-16">
           <p className="text-sand text-xs font-semibold tracking-[0.25em] uppercase mb-3">Bare Camper</p>
           <h1 className="text-7xl md:text-9xl text-white leading-none mb-3">TAMA</h1>
+          <p className="sr-only">TAMA Family Campervan Conversion — Toyota Hiace</p>
           <p className="text-white/80 text-xl md:text-2xl font-light mb-2">The Family Adventure Van</p>
           <p className="text-white/60 text-base md:text-lg max-w-xl">6-seat people mover by day. Fully equipped campervan by night.</p>
         </div>

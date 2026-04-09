@@ -49,7 +49,7 @@ export default function VanGallery({ photos, modelName, focalPoint }: Props) {
             <img
               key={i}
               src={p}
-              alt=""
+              alt={`${modelName} photo ${i + 1}`}
               onClick={() => setActiveIndex(i)}
               className={`rounded-lg object-cover cursor-pointer shrink-0 transition-opacity ${
                 i === activeIndex ? 'ring-2 ring-ocean opacity-100' : 'opacity-75 hover:opacity-100'

@@ -28,6 +28,7 @@ export default function DiyClient({ content: initial }: { content: Record<string
         <div className="pt-16">
           <p className="text-sand text-xs font-semibold tracking-[0.25em] uppercase mb-3">Bare Camper</p>
           <h1 className="text-7xl md:text-9xl text-white leading-none mb-3">DIY</h1>
+          <p className="sr-only">DIY Campervan Build — Toyota Hiace Pop Top and Base Van</p>
           <p className="text-white/80 text-xl md:text-2xl font-light mb-2">We handle the hard stuff. You make it yours.</p>
           <p className="text-white/60 text-base md:text-lg max-w-xl">Professional pop top conversion + modular bed kit. Your interior, your rules.</p>
         </div>

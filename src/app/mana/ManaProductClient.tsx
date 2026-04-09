@@ -44,6 +44,7 @@ export default function ManaProductClient({ jpyRate, content: initial }: Props) 
         <div className="pt-16">
           <p className="text-sand text-xs font-semibold tracking-[0.25em] uppercase mb-3">Bare Camper</p>
           <h1 className="text-7xl md:text-9xl text-white leading-none mb-3">MANA</h1>
+          <p className="sr-only">MANA Compact Campervan Conversion — Toyota Hiace</p>
           <p className="text-white/80 text-xl md:text-2xl font-light mb-2">Liveable Compact Campervan</p>
           <p className="text-white/60 text-base md:text-lg max-w-xl">Built for two. Designed for the long road.</p>
         </div>

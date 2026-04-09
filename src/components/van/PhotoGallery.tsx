@@ -149,7 +149,7 @@ export default function PhotoGallery({ photos, modelName, focalPoint, isAuction,
             <img
               key={i}
               src={p}
-              alt=""
+              alt={`${modelName} photo ${i + 1}`}
               onClick={() => setActiveIndex(i)}
               className="w-full rounded-lg object-cover cursor-pointer transition-opacity"
               style={{
