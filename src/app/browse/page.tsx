@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase'
 import { getJpyRate } from '@/lib/settings'
 import { generateMeta } from '@/lib/seo'
 import AuctionBanner from '@/components/ui/AuctionBanner'
+import AdQuoteBar from '@/components/listings/AdQuoteBar'
 import BrowseClient from '@/components/listings/BrowseClient'
 import BrowseGuide from '@/components/listings/BrowseGuide'
 import type { Listing } from '@/types'
@@ -134,6 +135,7 @@ export default async function BrowsePage({ searchParams }: Props) {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <AdQuoteBar />
       <AuctionBanner nextAuctionTime={nextAuctionTime} auctionCount={auctionCount} />
       <BrowseClient
         initialListings={listings}
