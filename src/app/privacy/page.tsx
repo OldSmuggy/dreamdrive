@@ -18,7 +18,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-2xl font-bold text-charcoal">Who we are</h2>
             <p className="text-gray-600 leading-relaxed">
-              Bare Camper is a joint venture between Dream Drive (ABN to be confirmed) and DIY RV Solutions,
+              Bare Camper is a joint venture between Dream Drive and DIY RV Solutions (ABN 13 030 224 315),
               operating from 1/10 Jones Road, Capalaba QLD 4157. When we say &ldquo;we&rdquo;, &ldquo;us&rdquo;,
               or &ldquo;our&rdquo; in this policy, we mean Bare Camper and its associated entities.
             </p>
