@@ -1,14 +1,17 @@
+export const dynamic = 'force-dynamic'
 import { createSupabaseServer } from '@/lib/supabase-server'
 import { createAdminClient } from '@/lib/supabase'
 import { getJpyRate } from '@/lib/settings'
 import { generateMeta } from '@/lib/seo'
 import AuctionBanner from '@/components/ui/AuctionBanner'
+import AdQuoteBar from '@/components/listings/AdQuoteBar'
 import BrowseClient from '@/components/listings/BrowseClient'
+import BrowseGuide from '@/components/listings/BrowseGuide'
 import type { Listing } from '@/types'
 
 export const metadata = generateMeta({
-  title: 'Browse Toyota Hiace Vans from Japan',
-  description: 'Browse available Toyota Hiace H200 vans from Japan auction and dealers. Filter by year, mileage, grade and drive type. All-in AUD price estimates shown.',
+  title: 'Buy a Toyota Hiace Van | Japan Import & Australian Stock | Bare Camper',
+  description: 'Browse auction-graded Toyota Hiace vans from Japan and Australian stock. Verified kms, transparent AUD pricing. Reserve from $2,750. Delivered to Brisbane in 6-8 weeks.',
   url: '/browse',
 })
 
@@ -42,13 +45,17 @@ export default async function BrowsePage({ searchParams }: Props) {
   let query = supabase
     .from('listings')
     .select('*')
-    .eq('status', 'available')
+    .in('status', ['available', 'live', 'sold'])
     .order('featured', { ascending: false })
     .order('auction_date', { ascending: true })
     .limit(200)
 
   if (searchParams.source) {
-    const sources = searchParams.source.split(',')
+    let sources = searchParams.source.split(',')
+    // "dealer" is a UI shorthand for both dealer sources
+    if (sources.includes('dealer')) {
+      sources = sources.filter(s => s !== 'dealer').concat('dealer_goonet', 'dealer_carsensor')
+    }
     query = query.in('source', sources)
   }
 
@@ -128,6 +135,7 @@ export default async function BrowsePage({ searchParams }: Props) {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <AdQuoteBar />
       <AuctionBanner nextAuctionTime={nextAuctionTime} auctionCount={auctionCount} />
       <BrowseClient
         initialListings={listings}
@@ -138,6 +146,7 @@ export default async function BrowsePage({ searchParams }: Props) {
         forSaleVehicles={forSaleVehicles}
         colourCounts={colourCounts}
       />
+      <BrowseGuide />
     </div>
   )
 }

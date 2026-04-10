@@ -43,7 +43,7 @@ const SHIPPING_SLWB = 320000   // $3,200
 const COMPLIANCE    = 220000   // $2,200
 const REG_MIN       = 50000    // $500
 const REG_MAX       = 100000   // $1,000
-const DUTY_RATE     = 0.05
+const DUTY_RATE     = 0  // 0% under JEPA (Japan-Australia free trade)
 
 export default function ConfiguratorClient({
   initialListing, fitouts, electricals, poptop, poptopOnly, rearACProduct, openDeposit, jpyRate,
@@ -388,8 +388,8 @@ export default function ConfiguratorClient({
             {vanFobCents !== null && (
               <ImportRow label="Japan purchase price" value={centsToAud(vanFobCents)} note="Based on listed price" />
             )}
-            {duty !== null && (
-              <ImportRow label="Import duty (5%)" value={centsToAud(duty)} note="Applied to Japan purchase price" />
+            {duty !== null && duty > 0 && (
+              <ImportRow label="Import duty" value={centsToAud(duty)} note="0% under JEPA free trade agreement" />
             )}
             <ImportRow
               label="RORO shipping"
@@ -466,7 +466,7 @@ export default function ConfiguratorClient({
               <SummaryRow
                 label="Import Costs (est.)"
                 value={`${centsToAud(importMin)} – ${centsToAud(importMax)}`}
-                sub={`Shipping · Duty · Compliance · Rego`}
+                sub={`Shipping · GST · Compliance · Rego`}
               />
             )}
 

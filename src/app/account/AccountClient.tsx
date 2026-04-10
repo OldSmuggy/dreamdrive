@@ -1,9 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { centsToAud, scoreLabel, scoreColor, sourceBadgeColor, sourceLabel } from '@/lib/utils'
 import type { Listing, Product } from '@/types'
+import OptionsList from '@/components/options/OptionsList'
+import AuctionCountdown from '@/components/ui/AuctionCountdown'
+import ChatThread from '@/components/ui/ChatThread'
 
 // ── Stage definitions ─────────────────────────────────────────────────────────
 
@@ -81,7 +85,7 @@ function getMainStageIdx(stageKey: string): number {
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type Tab = 'saved' | 'builds' | 'deposits' | 'imports'
+type Tab = 'saved' | 'builds' | 'deposits' | 'imports' | 'upgrade' | 'auctions'
 
 interface SavedVanRow { id: string; listing_id: string; created_at: string; listing: Listing | null }
 
@@ -171,6 +175,8 @@ export default function AccountClient({
     { key: 'builds',   label: 'My Builds',      count: builds.length },
     { key: 'deposits', label: 'Deposit Holds',  count: depositHolds.length },
     { key: 'imports',  label: 'Track My Order', count: importOrders.length },
+    { key: 'upgrade',  label: 'Upgrade Your Van' },
+    { key: 'auctions', label: 'Auctions' },
   ]
 
   return (
@@ -180,6 +186,16 @@ export default function AccountClient({
           <p className="text-white/50 text-sm mb-1">My Account</p>
           <h1 className="text-3xl">{name}</h1>
           <p className="text-white/60 text-sm mt-1">{user.email}</p>
+          <div className="mt-5">
+            <Link
+              href="/account/my-listings"
+              className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors border border-white/20"
+            >
+              <span>🚐</span>
+              <span>My Listings</span>
+              <span className="text-white/50">→</span>
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -206,9 +222,9 @@ export default function AccountClient({
                 if (!l) return null
                 return (
                   <div key={sv.id} className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-                    <div className="relative h-44">
+                    <div className="relative h-44 overflow-hidden">
                       {l.photos?.[0]
-                        ? <img src={l.photos[0]} alt={l.model_name} className="w-full h-full object-cover" /> // eslint-disable-line @next/next/no-img-element
+                        ? <Image src={l.photos[0]} alt={l.model_name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 50vw" />
                         : <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-300 text-4xl">🚐</div>}
                     </div>
                     <div className="p-4">
@@ -247,9 +263,9 @@ export default function AccountClient({
                   <div key={b.id} className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
                     <div className="p-6">
                       <div className="flex items-start gap-4 mb-5">
-                        <div className="w-20 h-14 rounded-xl overflow-hidden bg-gray-100 shrink-0">
+                        <div className="relative w-20 h-14 rounded-xl overflow-hidden bg-gray-100 shrink-0">
                           {l?.photos?.[0]
-                            ? <img src={l.photos[0]} alt="" className="w-full h-full object-cover" /> // eslint-disable-line @next/next/no-img-element
+                            ? <Image src={l.photos[0]} alt="" fill className="object-cover" sizes="80px" />
                             : <div className="w-full h-full flex items-center justify-center text-gray-300 text-2xl">🚐</div>}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -308,7 +324,7 @@ export default function AccountClient({
         {/* ── DEPOSIT HOLDS ── */}
         {tab === 'deposits' && (
           depositHolds.length === 0 ? (
-            <EmptyState icon="💰" title="No deposit holds yet" desc="Place a $3,000 refundable deposit to hold any van for up to 7 days.">
+            <EmptyState icon="💰" title="No deposit holds yet" desc="Place a $2,750 refundable deposit to hold any van for up to 7 days.">
               <Link href="/browse" className="btn-primary inline-block mt-4">Browse Vans</Link>
             </EmptyState>
           ) : (
@@ -317,7 +333,7 @@ export default function AccountClient({
                 <div key={d.id} className="bg-white border border-gray-200 rounded-2xl p-5">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-center gap-3">
-                      {d.listing?.photos?.[0] && <img src={d.listing.photos[0]} alt="" className="w-16 h-12 object-cover rounded-lg shrink-0" />} {/* eslint-disable-line @next/next/no-img-element */}
+                      {d.listing?.photos?.[0] && <Image src={d.listing.photos[0]} alt="" width={64} height={48} className="object-cover rounded-lg shrink-0" />}
                       <div>
                         <p className="font-semibold text-gray-900 text-sm">{d.listing ? `${d.listing.model_year ?? ''} ${d.listing.model_name}` : d.listing_id}</p>
                         <p className="text-xs text-gray-500 mt-0.5">${(d.amount_aud / 100).toLocaleString()} AUD · {new Date(d.created_at).toLocaleDateString('en-AU')}</p>
@@ -338,7 +354,7 @@ export default function AccountClient({
         {tab === 'imports' && (
           importOrders.length === 0 ? (
             <EmptyState icon="🚢" title="No active orders" desc="Contact us to begin your van import journey.">
-              <a href="mailto:hello@dreamdrive.life" className="btn-primary inline-block mt-4">Contact Us</a>
+              <a href="mailto:jared@dreamdrive.life" className="btn-primary inline-block mt-4">Contact Us</a>
             </EmptyState>
           ) : (
             <div className="space-y-8">
@@ -428,13 +444,13 @@ export default function AccountClient({
                         {/* Stage notes from admin */}
                         {order.stage_notes?.[order.current_stage] && (
                           <div className="mt-3 bg-cream border border-sand rounded-xl px-4 py-3 text-xs text-gray-700">
-                            <span className="font-semibold">Note from Dream Drive: </span>
+                            <span className="font-semibold">Note from Bare Camper: </span>
                             {order.stage_notes[order.current_stage]}
                           </div>
                         )}
                         {order.admin_notes && !order.stage_notes && (
                           <div className="mt-3 bg-cream border border-sand rounded-xl px-4 py-3 text-sm text-gray-700">
-                            <span className="font-semibold text-gray-800">Message from Dream Drive: </span>{order.admin_notes}
+                            <span className="font-semibold text-gray-800">Message from Bare Camper: </span>{order.admin_notes}
                           </div>
                         )}
 
@@ -442,8 +458,7 @@ export default function AccountClient({
                         {(order.progress_photos ?? []).length > 0 && (
                           <div className="mt-4 flex gap-2 flex-wrap">
                             {(order.progress_photos ?? []).map((ph, pi) => (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img key={pi} src={ph} alt={`Progress ${pi + 1}`} className="w-20 h-14 object-cover rounded-lg border border-gray-200" />
+                              <Image key={pi} src={ph} alt={`Progress ${pi + 1}`} width={80} height={56} className="object-cover rounded-lg border border-gray-200" />
                             ))}
                           </div>
                         )}
@@ -533,6 +548,22 @@ export default function AccountClient({
             </div>
           )
         )}
+
+        {/* ── UPGRADE YOUR VAN ── */}
+        {tab === 'upgrade' && (
+          <div>
+            <div className="mb-8">
+              <h2 className="text-2xl text-charcoal mb-2">Upgrade Your Van</h2>
+              <p className="text-gray-500 text-sm leading-relaxed max-w-2xl">
+                These options can be added to any van at any time. Click on an option to learn more and enquire.
+              </p>
+            </div>
+            <OptionsList source="account_upgrade" />
+          </div>
+        )}
+
+        {/* ── AUCTIONS ── */}
+        {tab === 'auctions' && <AuctionsTab />}
       </div>
     </div>
   )
@@ -619,6 +650,84 @@ function EmptyState({ icon, title, desc, children }: { icon: string | React.Reac
       <h3 className="text-xl text-gray-700 mb-2">{title}</h3>
       <p className="text-gray-500 text-sm max-w-xs mx-auto">{desc}</p>
       {children}
+    </div>
+  )
+}
+
+function AuctionsTab() {
+  const [vehicles, setVehicles] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [expandedId, setExpandedId] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch('/api/account/auctions')
+      .then(r => r.json())
+      .then(d => setVehicles(d.vehicles ?? []))
+      .finally(() => setLoading(false))
+  }, [])
+
+  if (loading) return <p className="text-gray-400 text-center py-12">Loading...</p>
+
+  if (vehicles.length === 0) {
+    return (
+      <EmptyState icon="🏴" title="No auction vehicles" desc="When you're interested in a vehicle at auction, your agent will appear here with live updates and chat.">
+        <Link href="/browse" className="btn-primary btn-sm inline-block mt-4">Browse Vans</Link>
+      </EmptyState>
+    )
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="mb-6">
+        <h2 className="text-2xl text-charcoal mb-2">Your Auctions</h2>
+        <p className="text-gray-500 text-sm">Track your vehicles at auction. Chat directly with your agent in Japan.</p>
+      </div>
+      {vehicles.map((v: any) => (
+        <div key={v.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <button
+            onClick={() => setExpandedId(expandedId === v.id ? null : v.id)}
+            className="w-full text-left p-5 hover:bg-gray-50 transition-colors"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex gap-4">
+                {v.listing?.photos?.[0] && (
+                  <div className="relative w-20 h-16 rounded-lg overflow-hidden shrink-0">
+                    <Image src={v.listing.photos[0]} alt={v.listing?.model_name ?? 'Vehicle'} fill className="object-cover" sizes="80px" />
+                  </div>
+                )}
+                <div>
+                  <h3 className="font-semibold text-charcoal">
+                    {v.listing?.model_year} {v.listing?.model_name} {v.listing?.grade ?? ''}
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    Agent: {v.agent ? `${v.agent.first_name ?? ''} ${v.agent.last_name ?? ''}`.trim() : 'Being assigned'}
+                  </p>
+                </div>
+              </div>
+              <AuctionCountdown auctionTime={v.listing?.auction_time ?? null} auctionStatus={v.auction_status} showTimezone={false} />
+            </div>
+          </button>
+
+          {expandedId === v.id && (
+            <div className="border-t border-gray-200 p-5 space-y-4">
+              <div className="grid sm:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-gray-500">Estimated AUD: <span className="text-charcoal font-medium">${v.listing?.aud_estimate?.toLocaleString() ?? 'TBD'}</span></p>
+                  {v.max_bid_jpy && <p className="text-gray-500">Your max bid: <span className="text-ocean font-semibold">¥{v.max_bid_jpy.toLocaleString()}</span></p>}
+                </div>
+                <div>
+                  <AuctionCountdown auctionTime={v.listing?.auction_time ?? null} auctionStatus={v.auction_status} />
+                </div>
+              </div>
+
+              {/* Chat with agent */}
+              <div className="border border-gray-200 rounded-xl overflow-hidden">
+                <ChatThread customerVehicleId={v.id} currentUserRole="customer" />
+              </div>
+            </div>
+          )}
+        </div>
+      ))}
     </div>
   )
 }

@@ -30,7 +30,8 @@ export default async function ConfiguratorPage({ searchParams }: Props) {
     : rawFitout === 'grid' ? 'grid'
     : null
 
-  const mode: 'van-first' | 'build-first' = preSelectedVan ? 'van-first' : 'build-first'
+  // If both van AND fitout are specified, use build-first (they picked a fitout from a van page)
+  const mode: 'van-first' | 'build-first' = preSelectedVan && !preSelectedFitout ? 'van-first' : 'build-first'
 
   // Load products, available listings, and exchange rate in parallel
   const [{ data: products }, { data: listings }, jpyRate] = await Promise.all([

@@ -2,20 +2,27 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
+import { requireAuth } from '@/lib/api-auth'
 
 const BUCKET = 'listing-images'
 
 export async function POST(req: NextRequest) {
+  const { error } = await requireAuth()
+  if (error) return error
+
   try {
     const formData = await req.formData()
     const file = formData.get('file') as File | null
     if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 })
 
-    if (!file.type.startsWith('image/')) {
-      return NextResponse.json({ error: 'Only image files are allowed' }, { status: 400 })
+    const isImage = file.type.startsWith('image/')
+    const isVideo = file.type.startsWith('video/')
+    if (!isImage && !isVideo) {
+      return NextResponse.json({ error: 'Only image or video files are allowed' }, { status: 400 })
     }
-    if (file.size > 15 * 1024 * 1024) {
-      return NextResponse.json({ error: 'File too large (max 15 MB)' }, { status: 400 })
+    const maxSize = isVideo ? 50 * 1024 * 1024 : 15 * 1024 * 1024
+    if (file.size > maxSize) {
+      return NextResponse.json({ error: `File too large (max ${isVideo ? '50' : '15'} MB)` }, { status: 400 })
     }
 
     const supabase = createAdminClient()

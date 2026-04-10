@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
+import { requireAdmin } from '@/lib/api-auth'
 
 function extractField(html: string, label: string): string | null {
   const patterns = [
@@ -51,6 +52,9 @@ function parseNinjaUrl(url: string): { KaijoCode: string; AuctionCount: string; 
 }
 
 export async function POST(req: NextRequest) {
+  const { error: authErr } = await requireAdmin()
+  if (authErr) return authErr
+
   try {
     const { url, sessionCookie } = await req.json()
     if (!url) return NextResponse.json({ error: 'No URL provided' }, { status: 400 })

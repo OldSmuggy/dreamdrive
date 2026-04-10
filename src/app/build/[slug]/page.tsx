@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { createAdminClient } from '@/lib/supabase'
 import { centsToAud } from '@/lib/utils'
@@ -52,7 +53,7 @@ export default async function BuildSharePage({ params }: Props) {
       {/* Header bar */}
       <div className="bg-charcoal text-white py-4 px-6">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <Link href="/" className="text-xl text-white">Dream Drive</Link>
+          <Link href="/" className="text-xl text-white">Bare Camper</Link>
           <Link href="/configurator" className="btn-ghost btn-sm text-sm">
             Build One Like This →
           </Link>
@@ -82,7 +83,7 @@ export default async function BuildSharePage({ params }: Props) {
                 {van ? (
                   <div className="flex items-start gap-3">
                     {van.photos?.[0] && (
-                      <img src={van.photos[0]} alt="" className="w-20 h-14 object-cover rounded-lg shrink-0" />
+                      <Image src={van.photos[0]} alt="" width={80} height={56} className="object-cover rounded-lg shrink-0" />
                     )}
                     <div className="min-w-0">
                       <p className="font-semibold text-gray-900 leading-tight">{van.model_name}</p>

@@ -1,11 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
-import LeadFormModal from '@/components/leads/LeadFormModal'
+import Image from 'next/image'
+import EnquiryCTA from '@/components/EnquiryCTA'
 import PageEditToolbar from '@/components/admin/PageEditToolbar'
 import FitoutHero from '@/components/admin/FitoutHero'
 import { manaJpConversionAud, manaAuConversionAud, conversionPriceRange, formatAud } from '@/lib/pricing'
+import OptionsList, { UNIVERSAL_OPTIONS } from '@/components/options/OptionsList'
 
 interface Props { jpyRate: number; content: Record<string, string> }
 
@@ -18,15 +19,6 @@ const MANA_INCLUSIONS = [
   '10cm thick trifold mattress', '12L grey tank',
 ]
 
-const MANA_OPTIONS = [
-  { name: 'Recommended Package', detail: 'Black-out curtains, insect screens, insect net rear door, side-window rain cover, fan', price: '$3,800' },
-  { name: 'Solar Package', detail: 'Solar system 200W', price: '$2,000' },
-  { name: 'Hot Water Package', detail: 'Duoletto 12V/240V water system with 10L additional water storage', price: '$2,000' },
-  { name: 'Side Awning', detail: 'Fiamma 3.5M', price: '$2,300' },
-  { name: 'Shower Awning', detail: null, price: '$800' },
-  { name: 'Off-Road Tires', detail: null, price: '$2,000' },
-  { name: 'Half Wrap', detail: null, price: '$3,300' },
-]
 
 const MANA_QUALITY = [
   { title: 'Furniture & Hardware', body: 'Carefully finished furniture made using top quality wood and ply, free of harmful VOC and chemical adhesives. Hand crafted by Japanese craftsmen at our Tokyo facility. Walnut kitchen countertops. Quality hinges and hardware sourced from Japan and Europe.' },
@@ -48,22 +40,33 @@ export default function ManaProductClient({ jpyRate, content: initial }: Props) 
     <div className="min-h-screen bg-white">
       <PageEditToolbar pageSlug="mana-product" pageName="MANA Product" content={content} onContentChange={setContent} />
 
-      <FitoutHero fallbackImage="" heroImage={content.hero_image} heroVideo={content.hero_video}>
+      <FitoutHero fallbackImage="/images/mana/hero-interior.jpg" heroImage={content.hero_image} heroVideo={content.hero_video}>
         <div className="pt-16">
-          <p className="text-sand text-xs font-semibold tracking-[0.25em] uppercase mb-3">Dream Drive</p>
+          <p className="text-sand text-xs font-semibold tracking-[0.25em] uppercase mb-3">Bare Camper</p>
           <h1 className="text-7xl md:text-9xl text-white leading-none mb-3">MANA</h1>
+          <p className="sr-only">MANA Compact Campervan Conversion — Toyota Hiace</p>
           <p className="text-white/80 text-xl md:text-2xl font-light mb-2">Liveable Compact Campervan</p>
           <p className="text-white/60 text-base md:text-lg max-w-xl">Built for two. Designed for the long road.</p>
         </div>
       </FitoutHero>
 
-      {gallery.length > 0 && (
-        <section className="max-w-6xl mx-auto px-6 py-12">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {gallery.map((url, i) => <img key={i} src={url} alt="" className="w-full h-48 object-cover rounded-xl" />)}
-          </div>
-        </section>
-      )}
+      {/* Photo Gallery */}
+      <section className="max-w-6xl mx-auto px-6 py-12">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          {[
+            { src: '/images/mana/interior-full.jpg', alt: 'MANA interior with pop top, fridge and bed' },
+            { src: '/images/mana/kitchen-forward.jpg', alt: 'MANA kitchen and table looking forward' },
+            { src: '/images/mana/seating-toilet.jpg', alt: 'MANA seating area with toilet compartment' },
+            { src: '/images/mana/storage-open.jpg', alt: 'MANA under-bench storage' },
+            { src: '/images/mana/rear-platform.jpg', alt: 'MANA rear platform and bed area' },
+            { src: '/images/mana/walnut-poptop.jpg', alt: 'MANA walnut trim with pop top' },
+          ].map((img, i) => (
+            <div key={i} className="relative h-48 md:h-64 rounded-xl overflow-hidden">
+              <Image src={img.src} alt={img.alt} fill className="object-cover" sizes="(max-width: 768px) 50vw, 33vw" />
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* Overview */}
       <section className="max-w-6xl mx-auto px-6 py-20">
@@ -128,14 +131,7 @@ export default function ManaProductClient({ jpyRate, content: initial }: Props) 
         <div className="max-w-6xl mx-auto px-6">
           <p className="text-driftwood text-xs font-semibold tracking-widest uppercase mb-3">Make it yours</p>
           <h2 className="text-4xl text-charcoal mb-10">Select Options</h2>
-          <div className="divide-y divide-gray-100 border border-gray-200 rounded-2xl overflow-hidden bg-white">
-            {MANA_OPTIONS.map(opt => (
-              <div key={opt.name} className="flex items-start justify-between gap-4 px-6 py-5 hover:bg-cream transition-colors">
-                <div><p className="font-semibold text-charcoal text-sm">{opt.name}</p>{opt.detail && <p className="text-gray-500 text-xs mt-0.5">{opt.detail}</p>}</div>
-                <p className="text-ocean text-lg shrink-0">{opt.price}</p>
-              </div>
-            ))}
-          </div>
+          <OptionsList source="mana" />
         </div>
       </section>
 
@@ -154,21 +150,9 @@ export default function ManaProductClient({ jpyRate, content: initial }: Props) 
       </section>
 
       {/* CTA */}
-      <section className="bg-charcoal text-white py-20 text-center">
-        <div className="max-w-2xl mx-auto px-6">
-          <p className="text-sand text-xs font-semibold tracking-widest uppercase mb-4">Get started</p>
-          <h2 className="text-4xl md:text-5xl mb-4">Ready to build your MANA?</h2>
-          <p className="text-gray-300 text-lg mb-10 leading-relaxed">Browse available vans, start your build, or get in touch to discuss your needs.</p>
-          <div className="flex flex-wrap gap-4 justify-center">
-            <Link href="/configurator?fitout=mana" className="btn-primary text-base px-8 py-4">Start My MANA Build</Link>
-            <LeadFormModal trigger="Book a Free Consultation" source="product_page_mana" className="btn-ghost text-base px-8 py-4" />
-          </div>
-          <p className="mt-10 text-gray-400 text-sm">
-            <a href="mailto:jared@dreamdrive.life" className="text-sand hover:text-sand">jared@dreamdrive.life</a>
-            {' · '}<a href="tel:0432182892" className="text-sand hover:text-sand">0432 182 892</a>
-          </p>
-        </div>
-      </section>
+      <div className="max-w-6xl mx-auto px-6 py-16">
+        <EnquiryCTA defaultModel="mana" />
+      </div>
     </div>
   )
 }

@@ -22,11 +22,10 @@ export const maxDuration = 300
 //     -H "x-scrape-secret: <SCRAPE_SECRET from .env>"
 //
 //   With options:
-//   curl -X POST "https://dreamdrive.au/api/scrape?dryRun=true&max=5" \
+//   curl -X POST "https://dreamdrive.au/api/scrape?max=5" \
 //     -H "x-scrape-secret: <SCRAPE_SECRET from .env>"
 //
 // Query params:
-//   dryRun=true       — parse listings but do not write to DB
 //   max=50            — limit number of listings processed (useful for testing)
 //
 // Auth: x-scrape-secret header must match SCRAPE_SECRET env var.
@@ -44,7 +43,6 @@ export async function POST(req: NextRequest) {
   }
 
   const { searchParams } = req.nextUrl
-  const dryRun = searchParams.get('dryRun') === 'true'
   const maxParam = searchParams.get('max')
   const maxListings = maxParam ? parseInt(maxParam, 10) : undefined
 
@@ -60,10 +58,9 @@ export async function POST(req: NextRequest) {
       }
 
       try {
-        send(`Starting NINJA scrape — dryRun=${dryRun}${maxListings ? ` max=${maxListings}` : ''}`)
+        send(`Starting NINJA scrape${maxListings ? ` — max=${maxListings}` : ''}`)
 
         const result = await runNinjaScraper({
-          dryRun,
           maxListings,
           onProgress: send,
         })

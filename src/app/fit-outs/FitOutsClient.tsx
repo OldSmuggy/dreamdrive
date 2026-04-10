@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import PageEditToolbar from '@/components/admin/PageEditToolbar'
 import FitoutHero from '@/components/admin/FitoutHero'
 
@@ -48,8 +49,8 @@ export default function FitOutsClient({ content: initial }: { content: Record<st
       {/* Hero */}
       <FitoutHero fallbackImage={content.hero_image || STATIC_HERO} heroImage={content.hero_image} heroVideo={content.hero_video}>
         <div className="max-w-3xl mx-auto text-center">
-          <p className="text-sand text-sm font-semibold uppercase tracking-widest mb-3">Dream Drive</p>
-          <h1 className="text-5xl md:text-6xl text-white mb-5">Dream Drive Fit-Out Range</h1>
+          <p className="text-sand text-sm font-semibold uppercase tracking-widest mb-3">Bare Camper</p>
+          <h1 className="text-5xl md:text-6xl text-white mb-5">Bare Camper Fit-Out Range</h1>
           <p className="text-white/70 text-lg md:text-xl leading-relaxed">
             Purpose-built campervans handcrafted in Japan.<br className="hidden sm:block" />
             Every build designed for Australian adventure.
@@ -62,8 +63,9 @@ export default function FitOutsClient({ content: initial }: { content: Record<st
         <section className="max-w-6xl mx-auto px-4 py-12">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {gallery.map((url, i) => (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img key={i} src={url} alt={`Fit-outs gallery ${i + 1}`} className="w-full h-48 object-cover rounded-xl" />
+              <div key={i} className="relative h-48 rounded-xl overflow-hidden">
+                <Image src={url} alt={`Fit-outs gallery ${i + 1}`} fill className="object-cover" sizes="(max-width: 768px) 50vw, 25vw" />
+              </div>
             ))}
           </div>
         </section>

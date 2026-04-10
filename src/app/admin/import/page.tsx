@@ -14,7 +14,7 @@ interface ImportResult {
   price_jpy?: number | null
 }
 
-type Tab = 'ninja' | 'dealer'
+type Tab = 'ninja' | 'dealer' | 'search'
 
 export default function AdminImportPage() {
   const [tab, setTab] = useState<Tab>('ninja')
@@ -30,6 +30,22 @@ export default function AdminImportPage() {
   const [dealerUrls, setDealerUrls] = useState('')
   const [dealerLoading, setDealerLoading] = useState(false)
   const [dealerResults, setDealerResults] = useState<Array<{ url: string; success: boolean; data?: ImportResult; error?: string }>>([])
+
+  // Dealer Search state
+  const [searchModel, setSearchModel] = useState('hiace_van')
+  const [searchYearMin, setSearchYearMin] = useState('2015')
+  const [searchYearMax, setSearchYearMax] = useState('2025')
+  const [searchPriceMin, setSearchPriceMin] = useState('')
+  const [searchPriceMax, setSearchPriceMax] = useState('5000000')
+  const [searchDrive, setSearchDrive] = useState('any')
+  const [searchFuel, setSearchFuel] = useState('any')
+  const [searchTransmission, setSearchTransmission] = useState('any')
+  const [searchGrade, setSearchGrade] = useState('dx_only')
+  const [searchMaxPages, setSearchMaxPages] = useState('3')
+  const [searchDryRun, setSearchDryRun] = useState(true)
+  const [searchLoading, setSearchLoading] = useState(false)
+  const [searchLog, setSearchLog] = useState<string[]>([])
+  const [searchSummary, setSearchSummary] = useState<{ found: number; imported: number; skipped: number; errors: number } | null>(null)
 
   const handleSaveCookie = () => {
     if (sessionCookie.trim()) {
@@ -122,6 +138,66 @@ export default function AdminImportPage() {
     setDealerLoading(false)
   }
 
+  const handleDealerSearch = async () => {
+    setSearchLoading(true)
+    setSearchLog([])
+    setSearchSummary(null)
+
+    try {
+      const res = await fetch('/api/dealer-search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: searchModel,
+          yearMin: searchYearMin ? Number(searchYearMin) : undefined,
+          yearMax: searchYearMax ? Number(searchYearMax) : undefined,
+          priceMin: searchPriceMin ? Number(searchPriceMin) : undefined,
+          priceMax: searchPriceMax ? Number(searchPriceMax) : undefined,
+          drive: searchDrive,
+          fuel: searchFuel,
+          transmission: searchTransmission,
+          grade: searchGrade,
+          maxPages: Number(searchMaxPages),
+          dryRun: searchDryRun,
+        }),
+      })
+
+      const reader = res.body?.getReader()
+      if (!reader) throw new Error('No response stream')
+
+      const decoder = new TextDecoder()
+      let buffer = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() || ''
+
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue
+          try {
+            const data = JSON.parse(line.slice(6))
+            if (data.message) {
+              setSearchLog(prev => [...prev, data.message])
+            }
+            if (data.type === 'complete' && data.result) {
+              setSearchSummary(data.result)
+            }
+          } catch {
+            // Ignore parse errors
+          }
+        }
+      }
+    } catch (err) {
+      setSearchLog(prev => [...prev, `Error: ${String(err)}`])
+    }
+
+    setSearchLoading(false)
+  }
+
   const validDealerCount = dealerUrls
     .split('\n')
     .filter(u => u.includes('goo-net.com') || u.includes('carsensor.net')).length
@@ -156,6 +232,16 @@ export default function AdminImportPage() {
           }`}
         >
           Goo-net / Car Sensor
+        </button>
+        <button
+          onClick={() => setTab('search')}
+          className={`px-5 py-2 rounded-lg text-sm font-semibold transition-colors ${
+            tab === 'search'
+              ? 'bg-white text-charcoal shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          🔍 Dealer Search
         </button>
       </div>
 
@@ -319,6 +405,293 @@ export default function AdminImportPage() {
           {/* Dealer Results */}
           {dealerResults.length > 0 && (
             <ResultsList results={dealerResults} showSource />
+          )}
+
+          {/* Bulk Goo-net Scraper Guide */}
+          <div className="bg-white border border-gray-200 rounded-xl p-6 mt-8">
+            <h2 className="font-semibold text-charcoal text-lg mb-1">Bulk Import from Goo-net</h2>
+            <p className="text-sm text-gray-500 mb-4">
+              For importing many Goo-net listings at once with high-res photos, use the terminal scraper.
+              This downloads photos to our storage (so they persist after the listing expires) and extracts
+              full specs including engine type, condition scores, and equipment.
+            </p>
+
+            <div className="space-y-4 text-sm">
+              <div className="flex gap-3">
+                <div className="w-6 h-6 rounded-full bg-ocean text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">1</div>
+                <div>
+                  <p className="font-semibold text-gray-900">Browse Goo-net and open listings you want</p>
+                  <p className="text-gray-500 text-xs mt-0.5">
+                    Search on <a href="https://www.goo-net.com/usedcar/brand-TOYOTA/car-HIACE_VAN/" target="_blank" rel="noopener noreferrer" className="text-ocean underline">goo-net.com</a> and
+                    open each van you like in a new tab.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <div className="w-6 h-6 rounded-full bg-ocean text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">2</div>
+                <div>
+                  <p className="font-semibold text-gray-900">Copy all tab URLs to a file</p>
+                  <p className="text-gray-500 text-xs mt-0.5">
+                    In Chrome: select all tabs (click first, Shift+click last), right-click → &quot;Copy links for all tabs&quot;.
+                    Or use the &quot;Copy All URLs&quot; Chrome extension. Save to a text file (one URL per line).
+                  </p>
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 mt-2 font-mono text-xs text-gray-500">
+                    /tmp/goonet-urls.txt
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <div className="w-6 h-6 rounded-full bg-ocean text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">3</div>
+                <div>
+                  <p className="font-semibold text-gray-900">Run the scraper in Terminal</p>
+                  <p className="text-gray-500 text-xs mt-0.5">
+                    Takes ~15–30s per listing. Downloads up to 20 high-res photos each. Duplicates are automatically skipped.
+                  </p>
+                  <div className="bg-gray-950 text-green-400 rounded-lg p-3 mt-2 font-mono text-xs overflow-x-auto">
+                    cd ~/Desktop/&quot;DD App&quot;/dreamdrive && npx tsx scripts/run-goonet-scrape.ts --urls-file /tmp/goonet-urls.txt
+                  </div>
+                  <p className="text-gray-400 text-xs mt-1.5">
+                    Add <code className="bg-gray-100 px-1 rounded">--max 5</code> to test with just a few first.
+                    Full command builder available on the <a href="/admin/scrape" className="text-ocean underline">Scrape page</a>.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <div className="w-6 h-6 rounded-full bg-ocean text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">4</div>
+                <div>
+                  <p className="font-semibold text-gray-900">Review drafts and publish</p>
+                  <p className="text-gray-500 text-xs mt-0.5">
+                    Imported listings go to <strong>Draft</strong> status. Review them in{' '}
+                    <a href="/admin/listings" className="text-ocean underline">Listings</a>, check the photos and specs, then change status to &quot;available&quot; to publish.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-5 pt-4 border-t border-gray-100">
+              <p className="text-xs text-gray-400">
+                Requires <code className="bg-gray-100 px-1 rounded">ANTHROPIC_API_KEY</code> in <code className="bg-gray-100 px-1 rounded">.env.local</code> for AI translation.
+                First time setup: <code className="bg-gray-100 px-1 rounded">npx playwright install chromium</code>
+              </p>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* ---- DEALER SEARCH TAB ---- */}
+      {tab === 'search' && (
+        <>
+          <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 mb-5 text-sm text-purple-900">
+            <p className="font-semibold mb-1">Bulk Search — Car Sensor</p>
+            <p className="text-purple-800">Set your filters and scrape all matching listings. Results import as drafts — nothing goes live until you approve.</p>
+          </div>
+
+          {/* Filters */}
+          <div className="bg-white border border-gray-200 rounded-xl p-6 mb-5">
+            <h2 className="font-semibold text-gray-900 mb-4">Search Filters</h2>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">Model</label>
+                <select
+                  value={searchModel}
+                  onChange={e => setSearchModel(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ocean"
+                >
+                  <option value="hiace_van">Hiace Van</option>
+                  <option value="regius_ace">Regius Ace</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">Drive</label>
+                <select
+                  value={searchDrive}
+                  onChange={e => setSearchDrive(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ocean"
+                >
+                  <option value="any">Any</option>
+                  <option value="4WD">4WD only</option>
+                  <option value="2WD">2WD only</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">Year from</label>
+                <input
+                  type="number"
+                  value={searchYearMin}
+                  onChange={e => setSearchYearMin(e.target.value)}
+                  placeholder="2015"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ocean"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">Year to</label>
+                <input
+                  type="number"
+                  value={searchYearMax}
+                  onChange={e => setSearchYearMax(e.target.value)}
+                  placeholder="2025"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ocean"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">Price from (¥)</label>
+                <input
+                  type="number"
+                  value={searchPriceMin}
+                  onChange={e => setSearchPriceMin(e.target.value)}
+                  placeholder="e.g. 1000000"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ocean"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">Price to (¥)</label>
+                <input
+                  type="number"
+                  value={searchPriceMax}
+                  onChange={e => setSearchPriceMax(e.target.value)}
+                  placeholder="e.g. 5000000"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ocean"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">Fuel</label>
+                <select
+                  value={searchFuel}
+                  onChange={e => setSearchFuel(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ocean"
+                >
+                  <option value="any">Any</option>
+                  <option value="diesel">Diesel</option>
+                  <option value="petrol">Petrol</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">Transmission</label>
+                <select
+                  value={searchTransmission}
+                  onChange={e => setSearchTransmission(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ocean"
+                >
+                  <option value="any">Any</option>
+                  <option value="AT">Automatic</option>
+                  <option value="MT">Manual</option>
+                </select>
+              </div>
+
+              <div className="col-span-2">
+                <label className="block text-xs font-semibold text-gray-600 mb-1">Grade Filter</label>
+                <select
+                  value={searchGrade}
+                  onChange={e => setSearchGrade(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ocean"
+                >
+                  <option value="dx_only">DX + DX GL Package only (recommended)</option>
+                  <option value="all">All grades (includes Super GL, Dark Prime, etc.)</option>
+                </select>
+                <p className="text-xs text-gray-400 mt-1">DX grades are best for campervan conversions. Super GL and Dark Prime are excluded by default.</p>
+              </div>
+            </div>
+
+            {/* Controls row */}
+            <div className="flex items-center gap-4 mt-5 pt-4 border-t border-gray-100">
+              <div className="flex items-center gap-2">
+                <label className="text-xs font-semibold text-gray-600">Max pages:</label>
+                <select
+                  value={searchMaxPages}
+                  onChange={e => setSearchMaxPages(e.target.value)}
+                  className="border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ocean"
+                >
+                  {[1, 2, 3, 5, 10].map(n => (
+                    <option key={n} value={n}>{n} {n === 1 ? '(~30 vans)' : `(~${n * 30} vans)`}</option>
+                  ))}
+                </select>
+              </div>
+
+              <label className="flex items-center gap-2 text-sm cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={searchDryRun}
+                  onChange={e => setSearchDryRun(e.target.checked)}
+                  className="w-4 h-4 rounded border-gray-300 text-ocean focus:ring-ocean"
+                />
+                <span className="text-gray-700 font-medium">Dry run</span>
+                <span className="text-gray-400 text-xs">(test only, no DB writes)</span>
+              </label>
+            </div>
+          </div>
+
+          {/* Start button */}
+          <div className="mb-5">
+            <button
+              onClick={handleDealerSearch}
+              disabled={searchLoading}
+              className="w-full py-3 bg-ocean text-white font-semibold rounded-xl hover:bg-ocean/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {searchLoading ? '⏳ Searching & importing...' : '🔍 Start Dealer Search'}
+            </button>
+          </div>
+
+          {/* Summary card */}
+          {searchSummary && (
+            <div className="grid grid-cols-4 gap-3 mb-5">
+              <div className="bg-gray-50 rounded-xl p-4 text-center">
+                <p className="text-2xl font-bold text-charcoal">{searchSummary.found}</p>
+                <p className="text-xs text-gray-500 mt-1">Found</p>
+              </div>
+              <div className="bg-green-50 rounded-xl p-4 text-center">
+                <p className="text-2xl font-bold text-green-700">{searchSummary.imported}</p>
+                <p className="text-xs text-gray-500 mt-1">Imported</p>
+              </div>
+              <div className="bg-amber-50 rounded-xl p-4 text-center">
+                <p className="text-2xl font-bold text-amber-700">{searchSummary.skipped}</p>
+                <p className="text-xs text-gray-500 mt-1">Skipped</p>
+              </div>
+              <div className="bg-red-50 rounded-xl p-4 text-center">
+                <p className="text-2xl font-bold text-red-700">{searchSummary.errors}</p>
+                <p className="text-xs text-gray-500 mt-1">Errors</p>
+              </div>
+            </div>
+          )}
+
+          {/* Live progress log */}
+          {searchLog.length > 0 && (
+            <div className="bg-gray-900 rounded-xl p-4 mb-5 max-h-96 overflow-y-auto">
+              <div className="space-y-0.5 font-mono text-xs">
+                {searchLog.map((line, i) => (
+                  <div
+                    key={i}
+                    className={
+                      line.includes('✓') ? 'text-green-400'
+                        : line.includes('Skipped') ? 'text-amber-400'
+                        : line.includes('Error') || line.includes('error') ? 'text-red-400'
+                        : line.includes('===') ? 'text-white font-bold'
+                        : 'text-gray-400'
+                    }
+                  >
+                    {line}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {searchSummary && searchSummary.imported > 0 && !searchDryRun && (
+            <div className="text-center">
+              <a href="/admin/drafts" className="text-ocean text-sm font-semibold underline">
+                → Review draft listings
+              </a>
+            </div>
           )}
         </>
       )}

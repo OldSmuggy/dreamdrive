@@ -44,11 +44,9 @@ const ADDON_CATALOG: AddonItem[] = [
   { slug: 'shower-awning',       name: 'Shower Awning',           detail: null,                                                                     priceCents:  80000, fitouts: ['mana'] },
   { slug: 'off-road-tires',      name: 'Off-Road Tires',          detail: 'All-terrain tire upgrade',                                               priceCents: 230000, fitouts: ['tama', 'mana', 'grid', 'any'] },
   { slug: 'half-wrap',           name: 'Half Wrap',               detail: 'Colour wrap on lower half of van',                                       priceCents: 330000, fitouts: ['tama', 'mana', 'grid', 'any'] },
-  { slug: 'lift-kit',            name: 'Lift Kit 2" Ironman 4×4', detail: '2-inch suspension lift by Ironman 4×4',                                 priceCents: 258000, fitouts: ['tama', 'mana'] },
 ]
 
 const GRID_SLUG    = 'grid-bed-kit'
-const CABINET_SLUG = 'elec-cabinet'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function getBuildLocation(fitout: FitoutSlug, manaLoc: ManaLocation): BuildLocation {
@@ -94,9 +92,7 @@ export default function ConfiguratorV2({
   }, [fitoutSlug, products])
 
   const electricals = products.filter(p => p.category === 'electrical')
-  const allowedElectricals = isGrid
-    ? electricals.filter(e => e.slug === CABINET_SLUG || e.slug.includes('cabinet'))
-    : electricals
+  const allowedElectricals = electricals
   const poptopProduct = products.find(p => p.category === 'poptop') ?? null
 
   // ── Add-ons for current fitout ─────────────────────────────────────────────
@@ -138,26 +134,42 @@ export default function ConfiguratorV2({
       total += fp
     }
 
-    // ── Van price (always separate) ──────────────────────────────────────────
+    // ── Van price (split into vehicle + import costs) ─────────────────────────
+    const addVanLines = (van: Listing | null, label?: string) => {
+      if (!van) {
+        lines.push({ label: 'Van', price: null, note: 'To be selected — see price range above' })
+        return
+      }
+      const { priceCents: allInPrice } = listingDisplayPrice(van, jpyRate)
+      if (van.source === 'au_stock') {
+        lines.push({ label: label ?? van.model_name, price: allInPrice ?? 0, note: 'AU stock — price as listed' })
+        total += allInPrice ?? 0
+      } else {
+        // Japan-sourced: show van price and import costs separately
+        const rate = jpyRate && jpyRate > 0 ? jpyRate : 0.0095
+        const jpyPrice = van.start_price_jpy || van.buy_price_jpy || 0
+        const vehicleCents = jpyPrice > 0 ? Math.round(jpyPrice * rate * 100) : 0
+        const importCosts = (allInPrice ?? 0) - vehicleCents
+        lines.push({ label: label ?? van.model_name, price: vehicleCents, note: 'Vehicle purchase price (converted from ¥)' })
+        total += vehicleCents
+        if (importCosts > 0) {
+          lines.push({ label: 'Import, shipping, GST, compliance & rego', price: importCosts, note: 'All-in: fee, freight, customs, GST, compliance, QLD rego' })
+          total += importCosts
+        }
+      }
+    }
+
     if (isVanFirst) {
-      const { priceCents: vp } = selectedVan ? listingDisplayPrice(selectedVan, jpyRate) : { priceCents: 0 }
-      lines.push({ label: selectedVan?.model_name ?? 'Your Van', price: vp ?? 0, note: isJapanBuild ? 'Incl. $10,000 import fee' : undefined })
-      total += vp ?? 0
+      addVanLines(selectedVan, selectedVan?.model_name ?? 'Your Van')
     } else if (isTama || (isMana && manaLocation === 'japan')) {
-      // Japan build — show van as separate line if selected
       if (selectedVan) {
-        const { priceCents: vp } = listingDisplayPrice(selectedVan, jpyRate)
-        lines.push({ label: selectedVan.model_name, price: vp ?? 0, note: 'Incl. $10,000 import fee' })
-        total += vp ?? 0
+        addVanLines(selectedVan)
       } else {
         lines.push({ label: 'Van', price: null, note: 'To be selected — see price range above' })
       }
     } else if (fitoutSlug !== null) {
-      // AU build with fitout (MANA AU, Bare Camper)
       if (!isBYO && selectedVan) {
-        const { priceCents: vp } = listingDisplayPrice(selectedVan, jpyRate)
-        lines.push({ label: selectedVan.model_name, price: vp ?? 0, note: 'Incl. $10,000 import fee' })
-        total += vp ?? 0
+        addVanLines(selectedVan)
       } else if (isBYO) {
         lines.push({ label: 'Your own van', price: null, note: 'BYO — compatibility to be confirmed' })
       } else {
@@ -390,8 +402,8 @@ export default function ConfiguratorV2({
               Explore TAMA (6-seat family) or MANA (2-person campervan) — choose your conversion, then add your van.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Link href="/configurator?fitout=tama" className="btn-primary text-sm px-5 py-2.5">Explore TAMA</Link>
-              <Link href="/configurator?fitout=mana" className="btn-secondary text-sm px-5 py-2.5">Explore MANA</Link>
+              <Link href={`/configurator?fitout=tama${preSelectedVan ? `&van=${preSelectedVan.id}` : ''}`} className="btn-primary text-sm px-5 py-2.5">Explore TAMA</Link>
+              <Link href={`/configurator?fitout=mana${preSelectedVan ? `&van=${preSelectedVan.id}` : ''}`} className="btn-secondary text-sm px-5 py-2.5">Explore MANA</Link>
             </div>
           </div>
         </StepPanel>
@@ -492,7 +504,7 @@ export default function ConfiguratorV2({
               return (
                 <BuildOption
                   title="Bare Camper"
-                  subtitle="Modular Bed System by Skybridge"
+                  subtitle="Modular Bed System — Coming Soon"
                   detail="Installed in Australia. Compatible with Toyota Hiace H200 LWB — or bring your own."
                   fromPrice={gridProduct ? `From ${centsToAud(effectivePrice(gridProduct))}` : 'Contact for price'}
                   badge="AU Build"
@@ -746,44 +758,43 @@ export default function ConfiguratorV2({
           )}
 
           {/* Van listing cards */}
-          {!isBYO && (
-            <>
-              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">
-                {isJapanBuild ? 'Matching Japan Vans' : 'Available Vans'}
-              </p>
-              {suggestedVans.length > 0 ? (
-                <div className="space-y-3">
-                  {suggestedVans.slice(0, 6).map(van => (
-                    <div
-                      key={van.id}
-                      onClick={() => setSelectedVan(prev => prev?.id === van.id ? null : van)}
-                      className={`border-2 rounded-xl p-4 cursor-pointer transition-colors flex items-center gap-4 ${
-                        selectedVan?.id === van.id
-                          ? 'border-ocean bg-cream'
-                          : 'border-gray-200 hover:border-gray-300 bg-white'
-                      }`}
-                    >
+          {!isBYO && (() => {
+            // Get price of currently selected van for savings comparison
+            const selectedPrice = selectedVan ? listingDisplayPrice(selectedVan, jpyRate).priceCents : null
+            // Sort alternatives by price (cheapest first), exclude selected van
+            const alternatives = suggestedVans
+              .filter(v => v.id !== selectedVan?.id)
+              .map(v => ({ ...v, _price: listingDisplayPrice(v, jpyRate).priceCents }))
+              .sort((a, b) => (a._price ?? Infinity) - (b._price ?? Infinity))
+
+            return (
+              <>
+                {/* Currently selected van */}
+                {selectedVan && (
+                  <>
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Your Selected Van</p>
+                    <div className="border-2 border-ocean bg-cream rounded-xl p-4 flex items-center gap-4 mb-6">
                       <div className="w-16 h-12 bg-gray-200 rounded-lg overflow-hidden shrink-0">
-                        {van.photos[0]
-                          ? <img src={van.photos[0]} alt="" className="w-full h-full object-cover" />
+                        {selectedVan.photos[0]
+                          ? <img src={selectedVan.photos[0]} alt="" className="w-full h-full object-cover" />
                           : <div className="w-full h-full flex items-center justify-center text-lg">🚐</div>
                         }
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-sm truncate">{van.model_name}</p>
+                        <p className="font-semibold text-sm truncate">{selectedVan.model_name}</p>
                         <p className="text-xs text-gray-500">
-                          {van.model_year} · {van.drive} · {van.mileage_km?.toLocaleString() ?? '—'} km
+                          {selectedVan.model_year} · {selectedVan.drive} · {selectedVan.mileage_km?.toLocaleString() ?? '—'} km
                         </p>
-                        <span className={`inline-block mt-1 text-white text-xs font-bold px-1.5 py-0.5 rounded ${sourceBadgeColor(van.source)}`}>
-                          {sourceLabel(van.source)}
+                        <span className={`inline-block mt-1 text-white text-xs font-bold px-1.5 py-0.5 rounded ${sourceBadgeColor(selectedVan.source)}`}>
+                          {sourceLabel(selectedVan.source)}
                         </span>
                       </div>
                       <div className="text-right shrink-0">
                         {(() => {
-                          const { priceCents, isEstimate } = listingDisplayPrice(van, jpyRate)
+                          const { priceCents, isEstimate } = listingDisplayPrice(selectedVan, jpyRate)
                           return (
                             <>
-                              <p className="text-ocean text-base">
+                              <p className="text-ocean text-base font-semibold">
                                 {priceCents ? `${isEstimate ? '~' : ''}${centsToAud(priceCents)}` : 'POA'}
                               </p>
                               {isEstimate && priceCents && (
@@ -794,23 +805,80 @@ export default function ConfiguratorV2({
                         })()}
                       </div>
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-gray-500 text-sm py-4">No matching vans right now.</p>
-              )}
-              <div className="mt-4 flex flex-wrap gap-3">
-                <Link href={`/browse${isJapanBuild ? '?source=auction' : ''}`} className="btn-secondary text-sm px-4 py-2.5">
-                  Browse All Vans →
-                </Link>
-                {!selectedVan && (
-                  <button onClick={() => setStep(5)} className="text-gray-400 text-sm hover:underline">
-                    Skip — find a van later
-                  </button>
+                  </>
                 )}
-              </div>
-            </>
-          )}
+
+                {/* Alternative vans with savings */}
+                {alternatives.length > 0 && (
+                  <>
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
+                      {selectedVan ? 'Swap Vehicle — Save on Your Build' : (isJapanBuild ? 'Matching Japan Vans' : 'Available Vans')}
+                    </p>
+                    <div className="space-y-3">
+                      {alternatives.slice(0, 6).map(van => {
+                        const { priceCents, isEstimate } = listingDisplayPrice(van, jpyRate)
+                        const savingsCents = (selectedPrice && priceCents && priceCents < selectedPrice)
+                          ? selectedPrice - priceCents
+                          : null
+
+                        return (
+                          <div
+                            key={van.id}
+                            onClick={() => setSelectedVan(van)}
+                            className="border-2 rounded-xl p-4 cursor-pointer transition-colors flex items-center gap-4 border-gray-200 hover:border-ocean/40 bg-white"
+                          >
+                            <div className="w-16 h-12 bg-gray-200 rounded-lg overflow-hidden shrink-0">
+                              {van.photos[0]
+                                ? <img src={van.photos[0]} alt="" className="w-full h-full object-cover" />
+                                : <div className="w-full h-full flex items-center justify-center text-lg">🚐</div>
+                              }
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-sm truncate">{van.model_name}</p>
+                              <p className="text-xs text-gray-500">
+                                {van.model_year} · {van.drive} · {van.mileage_km?.toLocaleString() ?? '—'} km
+                              </p>
+                              <span className={`inline-block mt-1 text-white text-xs font-bold px-1.5 py-0.5 rounded ${sourceBadgeColor(van.source)}`}>
+                                {sourceLabel(van.source)}
+                              </span>
+                            </div>
+                            <div className="text-right shrink-0">
+                              <p className="text-ocean text-base">
+                                {priceCents ? `${isEstimate ? '~' : ''}${centsToAud(priceCents)}` : 'POA'}
+                              </p>
+                              {isEstimate && priceCents && (
+                                <p className="text-xs text-gray-400">est. incl. import</p>
+                              )}
+                              {savingsCents && (
+                                <p className="text-xs font-bold text-green-600 mt-0.5">
+                                  Save {centsToAud(savingsCents)}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </>
+                )}
+
+                {alternatives.length === 0 && !selectedVan && (
+                  <p className="text-gray-500 text-sm py-4">No matching vans right now.</p>
+                )}
+
+                <div className="mt-4 flex flex-wrap gap-3">
+                  <Link href={`/browse${isJapanBuild ? '?source=auction' : ''}`} className="btn-secondary text-sm px-4 py-2.5">
+                    Browse All Vans →
+                  </Link>
+                  {!selectedVan && (
+                    <button onClick={() => setStep(5)} className="text-gray-400 text-sm hover:underline">
+                      Skip — find a van later
+                    </button>
+                  )}
+                </div>
+              </>
+            )
+          })()}
         </StepPanel>
       )}
 
@@ -837,6 +905,7 @@ export default function ConfiguratorV2({
           onLeadSubmit={handleLeadSubmit}
           onBack={() => setStep(4)}
           onReset={() => { handleFitoutChange(null); setStep(0); saveAttempted.current = false; setSavedBuild(null) }}
+          onSwapVan={() => setStep(4)}
         />
       )}
 
@@ -1001,7 +1070,7 @@ function SummaryStep({
   priceLines, totalCents, selectedVan, isBYO, buildLocation, isVanFirst, fitoutSlug,
   manaLocation, electrical, popTop, manaIncludesPopTop, selectedAddons,
   savedBuild, saving, shareToast, onShare,
-  leadSent, onLeadSubmit, onBack, onReset,
+  leadSent, onLeadSubmit, onBack, onReset, onSwapVan,
 }: {
   priceLines: PriceLine[]
   totalCents: number
@@ -1023,11 +1092,12 @@ function SummaryStep({
   onLeadSubmit: (e: React.FormEvent<HTMLFormElement>) => void
   onBack: () => void
   onReset: () => void
+  onSwapVan?: () => void
 }) {
   const isDepositCTA = selectedVan?.source === 'auction' || selectedVan?.source === 'au_stock'
   const depositLeadType = isDepositCTA ? 'deposit_intent' : 'consultation'
-  const ctaLabel = selectedVan?.source === 'auction'  ? 'Hold This Van — $3,000 Deposit'
-    : selectedVan?.source === 'au_stock'              ? 'Reserve Now — $3,000 Deposit'
+  const ctaLabel = selectedVan?.source === 'auction'  ? 'Hold This Van — $2,750 Deposit'
+    : selectedVan?.source === 'au_stock'              ? 'Reserve Now — $2,750 Deposit'
     : selectedVan                                     ? 'Express Interest — Book a Call'
     : isBYO                                           ? 'Book a Consultation'
     :                                                   'Save My Build & Find a Van'
@@ -1099,6 +1169,14 @@ function SummaryStep({
                 </div>
               ) : (
                 <p className="text-sm text-gray-400 italic">No van selected yet — to be sourced.</p>
+              )}
+              {onSwapVan && (selectedVan || !isBYO) && (
+                <button
+                  onClick={onSwapVan}
+                  className="mt-3 text-ocean text-sm font-semibold hover:underline"
+                >
+                  {selectedVan ? '↻ Swap Vehicle — find a better price' : '+ Choose a van'}
+                </button>
               )}
             </div>
           </div>
@@ -1223,8 +1301,8 @@ function SummaryStep({
             <p className="px-5 pb-4 text-xs text-gray-400 leading-relaxed">
               {fitoutSlug === 'tama' || fitoutSlug === 'mana'
                 ? 'Base price includes van + full conversion.'
-                : 'Van price estimated from current exchange rates.'}
-              {' '}All prices AUD incl. GST.
+                : 'Total is all-in: van, sourcing fee, shipping, customs, GST, compliance & QLD rego.'}
+              {' '}All prices AUD incl. GST. Estimates based on current exchange rates.
             </p>
           </div>
 
@@ -1249,7 +1327,7 @@ function SummaryStep({
                 <h3 className="text-lg text-charcoal">{ctaLabel}</h3>
                 {isDepositCTA && (
                   <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-2">
-                    No payment here — we&apos;ll contact you to arrange the $3,000 refundable deposit.
+                    No payment here — we&apos;ll contact you to arrange the $2,750 refundable deposit.
                   </p>
                 )}
               </div>

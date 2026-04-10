@@ -61,7 +61,7 @@ export default function ImageCarousel({ images, alt }: { images: string[]; alt: 
             <img
               key={i}
               src={url}
-              alt=""
+              alt={`${alt} — thumbnail ${i + 1}`}
               onClick={() => setIndex(i)}
               className={`w-20 h-14 object-cover rounded-lg cursor-pointer shrink-0 transition-opacity ${
                 i === index ? 'ring-2 ring-ocean opacity-100' : 'opacity-60 hover:opacity-90'

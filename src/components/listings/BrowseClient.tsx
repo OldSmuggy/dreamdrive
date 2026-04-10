@@ -1,8 +1,9 @@
 'use client'
-import { useState, useMemo, useEffect, useCallback } from 'react'
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { centsToAud, scoreColor, scoreLabel, auctionUrgency, locationBadgeInfo, fitOutLevelInfo } from '@/lib/utils'
+import { centsToAud, scoreColor, scoreLabel, auctionUrgency, locationBadgeInfo, fitOutLevelInfo, curationBadgeInfo } from '@/lib/utils'
 import { listingDisplayPrice } from '@/lib/pricing'
 import SaveVanButton from '@/components/ui/SaveVanButton'
 import type { Listing } from '@/types'
@@ -50,6 +51,25 @@ const LOCATION_FILTERS = [
   { value: 'in_japan',    label: 'In Japan' },
 ]
 
+const SOURCE_FILTERS = [
+  { value: '',                label: 'All Sources' },
+  { value: 'auction',        label: 'Auction' },
+  { value: 'dealer',         label: 'Dealer' },
+  { value: 'au_stock',       label: 'AU Stock' },
+]
+
+const SIZE_FILTERS = [
+  { value: '',     label: 'All Sizes' },
+  { value: 'SLWB', label: 'Super Long (SLWB)' },
+  { value: 'LWB',  label: 'Long (LWB)' },
+]
+
+const DRIVE_FILTERS = [
+  { value: '',    label: 'All' },
+  { value: '4WD', label: '4WD' },
+  { value: '2WD', label: '2WD' },
+]
+
 const TYPE_FILTERS = [
   { value: '',       label: 'All Types' },
   { value: 'empty',  label: 'Empty Van' },
@@ -68,7 +88,7 @@ const MODEL_OPTIONS = [
 const ENGINE_FILTERS = [
   { value: '',       label: 'All' },
   { value: 'diesel', label: 'Diesel 2.8L' },
-  { value: 'petrol', label: 'Petrol 2.7L' },
+  { value: 'petrol', label: 'Petrol 2.0L' },
 ]
 
 const COLOUR_DOT_MAP: Record<string, string> = {
@@ -95,6 +115,9 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
 
   // ── Read initial filter state from URL params ──
   const [locationFilter, setLocationFilter] = useState(() => searchParams.get('location') ?? '')
+  const [sourceFilter, setSourceFilter] = useState(() => searchParams.get('source') ?? '')
+  const [sizeFilter, setSizeFilter] = useState(() => searchParams.get('size') ?? '')
+  const [driveFilterSingle, setDriveFilterSingle] = useState(() => searchParams.get('driveType') ?? '')
   const [typeFilter, setTypeFilter] = useState(() => searchParams.get('type') ?? '')
   const [modelFilter, setModelFilter] = useState(() => searchParams.get('model') ?? '')
   const [driveFilter, setDriveFilter] = useState<string[]>(() => {
@@ -122,10 +145,32 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
   // Mobile drawer
   const [drawerOpen, setDrawerOpen] = useState(false)
 
+  // Stock alert (notify me when stock arrives)
+  const [notifyEmail, setNotifyEmail] = useState('')
+  const [notifyName, setNotifyName] = useState('')
+  const [notifyNotes, setNotifyNotes] = useState('')
+  const [notifySending, setNotifySending] = useState(false)
+  const [notifySent, setNotifySent] = useState(false)
+
+  async function submitStockAlert() {
+    if (!notifyEmail) return
+    setNotifySending(true)
+    await fetch('/api/stock-alerts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: notifyEmail, name: notifyName, notes: notifyNotes }),
+    }).catch(() => {})
+    setNotifySending(false)
+    setNotifySent(true)
+  }
+
   // ── Sync filter state to URL ──
   const syncUrl = useCallback((overrides?: Record<string, string | string[] | undefined>) => {
     const state: Record<string, string | string[] | undefined> = {
       location: locationFilter || undefined,
+      source: sourceFilter || undefined,
+      size: sizeFilter || undefined,
+      driveType: driveFilterSingle || undefined,
       type: typeFilter || undefined,
       model: modelFilter || undefined,
       drive: driveFilter.length ? driveFilter.join(',') : undefined,
@@ -144,18 +189,27 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
     }
     const qs = params.toString()
     router.replace(qs ? `/browse?${qs}` : '/browse', { scroll: false })
-  }, [locationFilter, typeFilter, modelFilter, driveFilter, yearMin, mileageMax, sortBy, engineFilter, colourFilter, minPrice, maxPrice, router])
+  }, [locationFilter, sourceFilter, sizeFilter, driveFilterSingle, typeFilter, modelFilter, driveFilter, yearMin, mileageMax, sortBy, engineFilter, colourFilter, minPrice, maxPrice, router])
 
   // Sync URL whenever any filter changes
   useEffect(() => {
     syncUrl()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [locationFilter, typeFilter, modelFilter, driveFilter, yearMin, mileageMax, sortBy, engineFilter, colourFilter, minPrice, maxPrice])
+  }, [locationFilter, sourceFilter, sizeFilter, driveFilterSingle, typeFilter, modelFilter, driveFilter, yearMin, mileageMax, sortBy, engineFilter, colourFilter, minPrice, maxPrice])
 
   // ── Filtering ──
   const filtered = useMemo(() => {
     let list = [...initialListings]
     if (locationFilter) list = list.filter(l => effectiveLocation(l) === locationFilter)
+    if (sourceFilter) {
+      if (sourceFilter === 'dealer') {
+        list = list.filter(l => l.source === 'dealer_goonet' || l.source === 'dealer_carsensor')
+      } else {
+        list = list.filter(l => l.source === sourceFilter)
+      }
+    }
+    if (sizeFilter)     list = list.filter(l => l.size === sizeFilter)
+    if (driveFilterSingle) list = list.filter(l => l.drive === driveFilterSingle)
     if (typeFilter)     list = list.filter(l => (l.fit_out_level ?? 'empty') === typeFilter)
     if (modelFilter)    list = list.filter(l => (l.vehicle_model ?? 'hiace_h200') === modelFilter)
     if (driveFilter.length) list = list.filter(l => l.drive && driveFilter.includes(l.drive))
@@ -184,17 +238,28 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
       list = list.filter(l => (l.aud_estimate ?? Infinity) <= maxCents)
     }
 
-    // Sort
+    // Sort — default puts dealer vans first so visitors see available stock immediately
+    if (sortBy === 'default' || !sortBy) {
+      const sourcePriority = (s: string | null) => s?.startsWith('dealer') ? 0 : s === 'au_stock' ? 1 : 2
+      list.sort((a, b) => sourcePriority(a.source) - sourcePriority(b.source))
+    }
     if (sortBy === 'price_asc')   list.sort((a,b) => (a.aud_estimate ?? 9e9) - (b.aud_estimate ?? 9e9))
     if (sortBy === 'price_desc')  list.sort((a,b) => (b.aud_estimate ?? 0)   - (a.aud_estimate ?? 0))
     if (sortBy === 'year_desc')   list.sort((a,b) => (b.model_year ?? 0)     - (a.model_year ?? 0))
     if (sortBy === 'mileage_asc') list.sort((a,b) => (a.mileage_km ?? 9e9)  - (b.mileage_km ?? 9e9))
-    return list
-  }, [initialListings, locationFilter, typeFilter, modelFilter, driveFilter, yearMin, mileageMax, sortBy, engineFilter, colourFilter, minPrice, maxPrice])
+
+    // Sold listings always sort to end
+    const available = list.filter(l => l.status !== 'sold')
+    const sold = list.filter(l => l.status === 'sold')
+    return [...available, ...sold]
+  }, [initialListings, locationFilter, sourceFilter, sizeFilter, driveFilterSingle, typeFilter, modelFilter, driveFilter, yearMin, mileageMax, sortBy, engineFilter, colourFilter, minPrice, maxPrice])
 
   // ── Active filter count ──
   const activeFilterCount = [
     locationFilter,
+    sourceFilter,
+    sizeFilter,
+    driveFilterSingle,
     typeFilter,
     modelFilter,
     driveFilter.length > 0 ? 'yes' : '',
@@ -209,7 +274,8 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
   const hasActiveFilters = activeFilterCount > 0
 
   function clearAll() {
-    setLocationFilter(''); setTypeFilter(''); setModelFilter('')
+    setLocationFilter(''); setSourceFilter(''); setSizeFilter(''); setDriveFilterSingle('')
+    setTypeFilter(''); setModelFilter('')
     setDriveFilter([]); setYearMin(''); setMileageMax('')
     setEngineFilter(''); setColourFilter([]); setMinPrice(''); setMaxPrice('')
     setSortBy('default')
@@ -226,57 +292,69 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
   // ── Shared filter panel content ──
   const colourEntries = Object.entries(colourCounts).sort((a, b) => b[1] - a[1])
 
+  const pillCls = (active: boolean) =>
+    `px-3 py-1.5 text-sm font-medium rounded-full border transition-colors ${
+      active ? 'bg-charcoal text-white border-charcoal' : 'bg-white text-charcoal border-gray-300 hover:border-charcoal'
+    }`
+
+  const selectCls = 'border border-gray-300 rounded-full px-3 py-1.5 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-ocean'
+
   const filterPanelContent = (
     <>
-      {/* Row 1 — Location */}
-      <div className="flex flex-wrap gap-2 items-center">
-        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider w-20 shrink-0">Location</span>
-        <div className="flex flex-wrap gap-1.5">
-          {LOCATION_FILTERS.map(f => (
-            <button key={f.value} onClick={() => setLocationFilter(f.value)}
-              className={`px-4 py-1.5 text-sm font-medium rounded-full border transition-colors ${
-                locationFilter === f.value
-                  ? 'bg-charcoal text-white border-charcoal'
-                  : 'bg-white text-charcoal border-charcoal hover:bg-cream'
-              }`}>
+      {/* Row 1 — Source · Drive · Size pills */}
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+        {/* Source */}
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs font-bold text-gray-400 uppercase tracking-wider mr-1">Source</span>
+          {SOURCE_FILTERS.map(f => (
+            <button key={f.value} onClick={() => setSourceFilter(f.value)} className={pillCls(sourceFilter === f.value)}>
+              {f.label}
+            </button>
+          ))}
+        </div>
+        {/* Drive */}
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs font-bold text-gray-400 uppercase tracking-wider mr-1">Drive</span>
+          {DRIVE_FILTERS.map(f => (
+            <button key={f.value} onClick={() => setDriveFilterSingle(f.value)} className={pillCls(driveFilterSingle === f.value)}>
+              {f.label}
+            </button>
+          ))}
+        </div>
+        {/* Size */}
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs font-bold text-gray-400 uppercase tracking-wider mr-1">Size</span>
+          {SIZE_FILTERS.map(f => (
+            <button key={f.value} onClick={() => setSizeFilter(f.value)} className={pillCls(sizeFilter === f.value)}>
               {f.label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Row 2 — Type */}
-      <div className="flex flex-wrap gap-2 items-center">
-        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider w-20 shrink-0">Type</span>
-        <div className="flex flex-wrap gap-1.5">
-          {TYPE_FILTERS.map(f => (
-            <button key={f.value} onClick={() => setTypeFilter(f.value)}
-              className={`px-4 py-1.5 text-sm font-medium rounded-full border transition-colors ${
-                typeFilter === f.value
-                  ? 'bg-charcoal text-white border-charcoal'
-                  : 'bg-white text-charcoal border-charcoal hover:bg-cream'
-              }`}>
-              {f.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Row 3 — Model + sort + more filters toggle */}
-      <div className="flex flex-wrap gap-2 items-center">
-        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider w-20 shrink-0">Model</span>
-        <select value={modelFilter} onChange={e => setModelFilter(e.target.value)}
-          className="border border-charcoal text-charcoal rounded-full px-4 py-1.5 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-ocean">
+      {/* Row 2 — Dropdowns + More + Sort */}
+      <div className="flex flex-wrap items-center gap-2">
+        <select value={modelFilter} onChange={e => setModelFilter(e.target.value)} className={selectCls}>
           {MODEL_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </select>
+        <select value={engineFilter} onChange={e => setEngineFilter(e.target.value)} className={selectCls}>
+          <option value="">All Engines</option>
+          <option value="diesel">Diesel 2.8L</option>
+          <option value="petrol">Petrol 2.0L</option>
+        </select>
+        <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className={selectCls}>
+          {TYPE_FILTERS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </select>
+        <select value={locationFilter} onChange={e => setLocationFilter(e.target.value)} className={selectCls}>
+          {LOCATION_FILTERS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
 
         <div className="ml-auto flex items-center gap-2">
           <button onClick={() => setShowMore(v => !v)}
             className="text-xs text-gray-500 hover:text-gray-800 font-medium underline-offset-2 hover:underline">
-            {showMore ? 'Hide filters' : 'More filters'}
+            {showMore ? 'Less ▲' : 'More ▼'}
           </button>
-          <select value={sortBy} onChange={e => setSortBy(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm bg-white text-gray-700">
+          <select value={sortBy} onChange={e => setSortBy(e.target.value)} className={selectCls}>
             <option value="default">Sort: Default</option>
             <option value="price_asc">Price: Low → High</option>
             <option value="price_desc">Price: High → Low</option>
@@ -286,109 +364,55 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
         </div>
       </div>
 
-      {/* Row 4 — Engine Type */}
-      <div className="flex flex-wrap gap-2 items-center">
-        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider w-20 shrink-0">Engine</span>
-        <div className="flex flex-wrap gap-1.5">
-          {ENGINE_FILTERS.map(f => (
-            <button key={f.value} onClick={() => setEngineFilter(f.value)}
-              className={`px-4 py-1.5 text-sm font-medium rounded-full border transition-colors ${
-                engineFilter === f.value
-                  ? 'bg-charcoal text-white border-charcoal'
-                  : 'bg-white text-charcoal border-charcoal hover:bg-cream'
-              }`}>
-              {f.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* More filters (collapsible) */}
+      {/* Expandable — Year, Mileage, Price, Colour */}
       {showMore && (
-        <div className="border-t border-gray-100 pt-3 mt-1 space-y-4">
-          <div className="flex flex-wrap gap-6">
-            {/* Drive */}
-            <div>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Drive</p>
-              <div className="flex gap-2">
-                {['2WD', '4WD'].map(d => (
-                  <button key={d} onClick={() => toggleDrive(d)}
-                    className={`px-3 py-1 text-sm rounded-full border transition-colors ${
-                      driveFilter.includes(d) ? 'bg-charcoal text-white border-charcoal' : 'bg-white text-charcoal border-charcoal hover:bg-cream'
-                    }`}>
-                    {d}
-                  </button>
-                ))}
-              </div>
-            </div>
-            {/* Year */}
-            <div>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Year from</p>
-              <input type="number" placeholder="e.g. 2020" value={yearMin}
-                onChange={e => setYearMin(e.target.value)}
-                className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm w-28" />
-            </div>
-            {/* Mileage */}
-            <div>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Max mileage (km)</p>
-              <input type="number" placeholder="e.g. 80000" value={mileageMax}
-                onChange={e => setMileageMax(e.target.value)}
-                className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm w-32" />
-            </div>
-          </div>
-
-          {/* Price Range */}
+        <div className="border-t border-gray-100 pt-3 mt-1 flex flex-wrap gap-6 items-end">
           <div>
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Price Range (AUD)</p>
-            <div className="flex items-center gap-2">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Year from</p>
+            <input type="number" placeholder="e.g. 2020" value={yearMin}
+              onChange={e => setYearMin(e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm w-24" />
+          </div>
+          <div>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Max km</p>
+            <input type="number" placeholder="e.g. 80000" value={mileageMax}
+              onChange={e => setMileageMax(e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm w-28" />
+          </div>
+          <div>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Price (AUD)</p>
+            <div className="flex items-center gap-1.5">
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs">$</span>
                 <input type="number" placeholder="Min" value={minPrice}
                   onChange={e => setMinPrice(e.target.value)}
-                  className="border border-gray-300 rounded-lg pl-7 pr-3 py-1.5 text-sm w-28" />
+                  className="border border-gray-300 rounded-lg pl-6 pr-2 py-1.5 text-sm w-24" />
               </div>
-              <span className="text-gray-400 text-sm">to</span>
+              <span className="text-gray-400 text-xs">–</span>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs">$</span>
                 <input type="number" placeholder="Max" value={maxPrice}
                   onChange={e => setMaxPrice(e.target.value)}
-                  className="border border-gray-300 rounded-lg pl-7 pr-3 py-1.5 text-sm w-28" />
+                  className="border border-gray-300 rounded-lg pl-6 pr-2 py-1.5 text-sm w-24" />
               </div>
             </div>
-            <p className="text-xs text-gray-400 mt-1">Based on current exchange rate estimate</p>
           </div>
-
           {/* Colour */}
           {colourEntries.length > 0 && (
             <div>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Colour</p>
-              <div className="flex flex-wrap gap-2">
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Colour</p>
+              <div className="flex flex-wrap gap-1.5">
                 {colourEntries.map(([colour, count]) => (
-                  <label key={colour} className="flex items-center gap-1.5 cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={colourFilter.includes(colour)}
-                      onChange={() => toggleColour(colour)}
-                      className="sr-only"
-                    />
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-3 py-1 text-sm rounded-full border transition-colors ${
-                        colourFilter.includes(colour)
-                          ? 'bg-charcoal text-white border-charcoal'
-                          : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
-                      }`}
-                    >
-                      <span
-                        className="inline-block w-3 h-3 rounded-full shrink-0"
-                        style={{
-                          backgroundColor: colourDot(colour),
-                          border: colour === 'White' || colourDot(colour) === '#ffffff' ? '1px solid #d1d5db' : 'none',
-                        }}
-                      />
-                      {colour}
-                      <span className={`text-xs ${colourFilter.includes(colour) ? 'text-white/70' : 'text-gray-400'}`}>({count})</span>
-                    </span>
-                  </label>
+                  <button key={colour} onClick={() => toggleColour(colour)}
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-full border transition-colors ${
+                      colourFilter.includes(colour)
+                        ? 'bg-charcoal text-white border-charcoal'
+                        : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
+                    }`}>
+                    <span className="inline-block w-2.5 h-2.5 rounded-full shrink-0"
+                      style={{ backgroundColor: colourDot(colour), border: colour === 'White' ? '1px solid #d1d5db' : 'none' }} />
+                    {colour} <span className="opacity-60">({count})</span>
+                  </button>
                 ))}
               </div>
             </div>
@@ -409,9 +433,15 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="flex items-baseline justify-between mb-6">
-        <h1 className="text-3xl text-charcoal">Browse Vans</h1>
-        <span className="text-gray-500 text-sm">Showing {filtered.length} van{filtered.length !== 1 ? 's' : ''}</span>
+      <div className="mb-6">
+        <div className="flex items-baseline justify-between">
+          <h1 className="text-3xl text-charcoal">Browse Vans</h1>
+          <span className="text-gray-500 text-sm">Showing {filtered.length} van{filtered.length !== 1 ? 's' : ''}</span>
+        </div>
+        <p className="text-gray-500 mt-2 text-sm max-w-2xl">
+          Japanese auction vans and verified dealer stock — all graded with verified kilometres.<br />
+          Reserve from $2,750. Delivered to Brisbane in 6–8 weeks. Track your purchase at every stage.
+        </p>
       </div>
 
       {/* ── Desktop Filter Panel ── */}
@@ -474,11 +504,28 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
         </div>
       )}
 
+      {/* ── Sell a Van banner ── */}
+      {!hasActiveFilters && (
+        <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-cream rounded-xl px-4 py-3.5 border border-driftwood/20">
+          <p className="text-sm text-gray-600">
+            <span className="font-semibold text-charcoal">Got a van to sell?</span> List it here or tip us off about one — earn <strong className="text-charcoal">$200</strong> if it sells.
+          </p>
+          <div className="flex gap-2 shrink-0">
+            <Link href="/tip-a-van" className="text-xs font-semibold text-ocean border border-ocean rounded-full px-3 py-1.5 hover:bg-ocean hover:text-white transition-colors">
+              💡 Tip a Van
+            </Link>
+            <Link href="/account/my-listings" className="text-xs font-semibold text-ocean border border-ocean rounded-full px-3 py-1.5 hover:bg-ocean hover:text-white transition-colors">
+              📬 List Your Van
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* ── For Sale Vehicles ── */}
       {forSaleVehicles.length > 0 && !hasActiveFilters && (
         <div className="mb-8">
           <h2 className="text-xl text-charcoal mb-4">Contract for Sale</h2>
-          <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
             {forSaleVehicles.map(v => (
               <ForSaleCard key={v.id} vehicle={v} />
             ))}
@@ -488,24 +535,201 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
 
       {/* ── Grid ── */}
       {filtered.length === 0 && forSaleVehicles.length === 0 ? (
-        <div className="text-center py-20 text-gray-400">
+        <div className="text-center py-16">
           <div className="text-5xl mb-4">🔍</div>
-          <p className="text-lg font-semibold">No listings match your filters.</p>
-          <p className="text-sm mt-1">Try broadening your search.</p>
+          <p className="text-xl font-bold text-charcoal mb-2">No vans match your filters.</p>
+          <p className="text-gray-500 mb-4">Try broadening your search, or get notified when new vans arrive.</p>
+          {hasActiveFilters && (
+            <button onClick={clearAll} className="mb-8 text-ocean font-semibold hover:underline text-sm block mx-auto">
+              ← Clear all filters
+            </button>
+          )}
+          {notifySent ? (
+            <div className="max-w-sm mx-auto bg-ocean/10 text-ocean rounded-2xl p-6">
+              <div className="text-3xl mb-2">✓</div>
+              <p className="font-semibold">You&apos;re on the list!</p>
+              <p className="text-sm mt-1 text-ocean/70">We&apos;ll email you when new stock arrives that matches what you&apos;re after.</p>
+            </div>
+          ) : (
+            <div className="max-w-sm mx-auto bg-cream rounded-2xl p-6 text-left">
+              <p className="font-semibold text-charcoal mb-1">Get notified when stock arrives</p>
+              <p className="text-gray-500 text-sm mb-4">Leave your details and we&apos;ll give you a heads-up when the right van comes in.</p>
+              <input
+                type="text"
+                placeholder="Your name"
+                value={notifyName}
+                onChange={e => setNotifyName(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-ocean/30"
+              />
+              <input
+                type="email"
+                placeholder="Your email *"
+                value={notifyEmail}
+                onChange={e => setNotifyEmail(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-ocean/30"
+              />
+              <textarea
+                placeholder="What are you after? (e.g. diesel, 4WD, pop top)"
+                value={notifyNotes}
+                onChange={e => setNotifyNotes(e.target.value)}
+                rows={2}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-ocean/30 resize-none"
+              />
+              <button
+                onClick={submitStockAlert}
+                disabled={!notifyEmail || notifySending}
+                className="btn-primary w-full py-2.5 text-sm disabled:opacity-50"
+              >
+                {notifySending ? 'Sending…' : 'Notify Me'}
+              </button>
+            </div>
+          )}
         </div>
       ) : (
-        <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
-          {filtered.map(listing => (
-            <ListingCard
-              key={listing.id}
-              listing={listing}
-              userId={userId}
-              initialSaved={initialSavedIds.includes(listing.id)}
-              jpyRate={jpyRate}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
+            {filtered.slice(0, 12).map((listing, idx) => (
+              <React.Fragment key={listing.id}>
+                <ListingCard
+                  listing={listing}
+                  userId={userId}
+                  initialSaved={initialSavedIds.includes(listing.id)}
+                  jpyRate={jpyRate}
+                />
+                {/* Configurator upsell card after 6th listing */}
+                {idx === 5 && (
+                  <a
+                    href="https://configure.barecamper.com.au/?model=tama"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="col-span-2 flex items-center gap-6 bg-brand-charcoal text-white rounded-2xl p-6 hover:ring-2 hover:ring-brand-teal transition-all"
+                  >
+                    <div className="flex-1">
+                      <p className="text-brand-gold text-[10px] font-bold uppercase tracking-widest mb-1">Only at Bare Camper</p>
+                      <p className="text-lg font-bold mb-1">See what this van could become</p>
+                      <p className="text-gray-400 text-sm">Design a full build in our 3D configurator — seats, cabinets, floor, wrap, and more.</p>
+                    </div>
+                    <span className="shrink-0 bg-brand-teal text-white text-sm font-semibold px-4 py-2 rounded-lg">Build in 3D →</span>
+                  </a>
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+
+          {/* Van Scout — compact mid-page CTA */}
+          {filtered.length > 12 && (
+            <div className="my-8 bg-cream rounded-2xl p-6 text-center">
+              <h2 className="text-xl font-bold text-charcoal mb-2">Can&apos;t find the right one?</h2>
+              <p className="text-gray-500 text-sm mb-4 max-w-lg mx-auto">
+                Our buyer in Japan sources every week. Tell us what you&apos;re after and we&apos;ll find it.
+              </p>
+              <Link href="/van-scout" className="btn-primary inline-block text-sm px-6 py-2.5">
+                Find My Van →
+              </Link>
+            </div>
+          )}
+
+          {filtered.length > 12 && (
+            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
+              {filtered.slice(12).map(listing => (
+                <ListingCard
+                  key={listing.id}
+                  listing={listing}
+                  userId={userId}
+                  initialSaved={initialSavedIds.includes(listing.id)}
+                  jpyRate={jpyRate}
+                />
+              ))}
+            </div>
+          )}
+        </>
       )}
+
+      {/* ── Social Proof (below vehicles) ── */}
+      <div className="mt-10 mb-8 bg-charcoal text-white rounded-2xl p-6 text-center">
+        <p className="text-sand text-xs font-semibold tracking-widest uppercase mb-3">100+ vans delivered from Japan to Australia</p>
+        <p className="text-lg leading-relaxed max-w-xl mx-auto">
+          &ldquo;Reserved my van on a Tuesday. Had auction photos by Thursday. Picked it up in Brisbane 7 weeks later.&rdquo;
+        </p>
+        <p className="text-gray-400 text-sm mt-2">— Luke, H200 SLWB</p>
+        <Link href="/about" className="text-sand text-sm font-semibold mt-4 inline-block hover:underline">
+          See customer stories →
+        </Link>
+      </div>
+
+      {/* ── How It Works Strip ── */}
+      <div className="mb-8 bg-white border border-gray-200 rounded-2xl p-6">
+        <h2 className="text-lg font-bold text-charcoal mb-4 text-center">How It Works</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+          <div>
+            <div className="text-2xl mb-2">🔍</div>
+            <p className="text-xs font-bold text-charcoal uppercase tracking-wider mb-1">1. Browse</p>
+            <p className="text-xs text-gray-500">Pick your van from auction or dealer stock in Japan</p>
+          </div>
+          <div>
+            <div className="text-2xl mb-2">🔒</div>
+            <p className="text-xs font-bold text-charcoal uppercase tracking-wider mb-1">2. Reserve</p>
+            <p className="text-xs text-gray-500">$2,750 sourcing fee — fully refundable if we don&apos;t secure the van</p>
+          </div>
+          <div>
+            <div className="text-2xl mb-2">📦</div>
+            <p className="text-xs font-bold text-charcoal uppercase tracking-wider mb-1">3. Track</p>
+            <p className="text-xs text-gray-500">Follow your van from purchase to port to Brisbane</p>
+          </div>
+          <div>
+            <div className="text-2xl mb-2">🚐</div>
+            <p className="text-xs font-bold text-charcoal uppercase tracking-wider mb-1">4. Collect</p>
+            <p className="text-xs text-gray-500">Pick up in Brisbane — drive it home or book a conversion</p>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Why Bare Camper — Competitive Comparison ── */}
+      <details className="mb-8 bg-white border border-gray-200 rounded-2xl overflow-hidden group">
+        <summary className="px-6 py-4 cursor-pointer flex items-center justify-between hover:bg-gray-50 transition-colors">
+          <h2 className="text-lg font-bold text-charcoal">Why buy through Bare Camper?</h2>
+          <svg className="w-5 h-5 text-gray-400 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </summary>
+        <div className="px-6 pb-6">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left py-2 pr-4 text-gray-500 font-medium"></th>
+                  <th className="py-2 px-4 text-ocean font-bold text-center">Bare Camper</th>
+                  <th className="py-2 px-4 text-gray-500 font-medium text-center">Brisbane Dealer</th>
+                  <th className="py-2 px-4 text-gray-500 font-medium text-center">Private Sale</th>
+                </tr>
+              </thead>
+              <tbody className="text-gray-600">
+                {[
+                  ['Auction-graded', true, false, false],
+                  ['Verified km', true, false, false],
+                  ['Transparent pricing', true, false, false],
+                  ['Pop-top conversion', true, false, false],
+                  ['Track your purchase', true, false, false],
+                  ['After-sale support', true, 'varies', false],
+                ].map(([label, bc, dealer, priv], i) => (
+                  <tr key={i} className={i % 2 === 0 ? 'bg-gray-50' : ''}>
+                    <td className="py-2 pr-4 font-medium text-gray-700">{label as string}</td>
+                    <td className="py-2 px-4 text-center">{bc === true ? <span className="text-green-600 font-bold">✓</span> : bc === 'varies' ? <span className="text-gray-400">varies</span> : <span className="text-gray-300">✗</span>}</td>
+                    <td className="py-2 px-4 text-center">{dealer === true ? <span className="text-green-600 font-bold">✓</span> : dealer === 'varies' ? <span className="text-gray-400">varies</span> : <span className="text-gray-300">✗</span>}</td>
+                    <td className="py-2 px-4 text-center">{priv === true ? <span className="text-green-600 font-bold">✓</span> : priv === 'varies' ? <span className="text-gray-400">varies</span> : <span className="text-gray-300">✗</span>}</td>
+                  </tr>
+                ))}
+                <tr className="border-t border-gray-200">
+                  <td className="py-2 pr-4 font-medium text-gray-700">Avg saving vs dealer</td>
+                  <td className="py-2 px-4 text-center text-green-700 font-bold">$3,000–$8,000</td>
+                  <td className="py-2 px-4 text-center text-gray-300">—</td>
+                  <td className="py-2 px-4 text-center text-gray-300">—</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </details>
     </div>
   )
 }
@@ -540,40 +764,39 @@ function ForSaleCard({ vehicle }: { vehicle: ForSaleVehicle }) {
   }
 
   return (
-    <div className="bg-white border-2 border-amber-200 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow group">
+    <div className="bg-white border border-amber-200 rounded-lg sm:rounded-xl overflow-hidden hover:shadow-md transition-shadow duration-200 group">
       {/* Photo */}
-      <div className="relative h-[220px] overflow-hidden">
+      <div className="relative h-[150px] sm:h-[180px] lg:h-[220px] overflow-hidden">
         {photo ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={photo} alt={label} className="absolute inset-0 w-full h-full object-cover" />
+          <Image src={photo} alt={label} fill className="object-cover" sizes="(max-width: 768px) 50vw, 33vw" />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center bg-amber-50 text-amber-300 text-5xl">🚐</div>
+          <div className="absolute inset-0 flex items-center justify-center bg-amber-50 text-amber-300 text-3xl sm:text-5xl">🚐</div>
         )}
-        <div className="absolute top-3 left-3 flex gap-1 flex-wrap">
-          <span className="bg-amber-500 text-white text-xs font-bold px-2 py-0.5 rounded">{vehicle.sale_label ?? 'CONTRACT FOR SALE'}</span>
+        <div className="absolute top-2 left-2 sm:top-3 sm:left-3 flex gap-1 flex-wrap">
+          <span className="bg-amber-500 text-white text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 sm:px-2 rounded">{vehicle.sale_label ?? 'CONTRACT FOR SALE'}</span>
         </div>
       </div>
 
       {/* Info */}
-      <div className="p-4">
-        <p className="font-semibold text-sm text-gray-900 truncate">{label}</p>
+      <div className="p-2 sm:p-3">
+        <p className="font-semibold text-xs sm:text-sm text-gray-900 truncate">{label}</p>
         {vehicle.build?.build_type && vehicle.build.build_type !== 'none' && (
-          <p className="text-xs text-amber-700 font-medium mt-0.5">{vehicle.build.build_type.toUpperCase()} Build</p>
+          <p className="text-[10px] sm:text-xs text-amber-700 font-medium mt-0.5">{vehicle.build.build_type.toUpperCase()} Build</p>
         )}
         {stageLabel && (
-          <p className="text-xs text-gray-500 mt-1">Currently: {stageLabel}</p>
+          <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">Currently: {stageLabel}</p>
         )}
         {vehicle.sale_notes && (
-          <p className="text-xs text-gray-500 mt-1 line-clamp-2">{vehicle.sale_notes}</p>
+          <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1 line-clamp-2 hidden sm:block">{vehicle.sale_notes}</p>
         )}
 
-        <div className="flex items-center justify-between mt-3 pt-3 border-t border-amber-100">
-          <span className="text-amber-700 text-base font-semibold">
+        <div className="flex items-center justify-between mt-2 pt-2 sm:mt-3 sm:pt-3 border-t border-amber-100">
+          <span className="text-amber-700 text-sm sm:text-base font-bold">
             {vehicle.sale_price_aud ? centsToAud(vehicle.sale_price_aud) : 'POA'}
           </span>
           <button
             onClick={() => setShowInterest(true)}
-            className="bg-amber-500 text-white text-xs font-semibold px-3 py-1.5 rounded-full hover:bg-amber-600 transition-colors"
+            className="hidden sm:inline-flex bg-amber-500 text-white text-xs font-semibold px-3 py-1.5 rounded-full hover:bg-amber-600 transition-colors"
           >
             Express Interest
           </button>
@@ -619,10 +842,14 @@ function ForSaleCard({ vehicle }: { vehicle: ForSaleVehicle }) {
 function ListingCard({ listing, userId, initialSaved, jpyRate }: { listing: Listing; userId: string | null; initialSaved: boolean; jpyRate: number }) {
   const router = useRouter()
   const photo    = listing.photos[0] ?? null
+  const spinVideo = (listing as any).spin_video as string | null
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const [isHovering, setIsHovering] = useState(false)
   const urgency  = listing.source === 'auction' ? auctionUrgency(listing.auction_date) : null
   const sColor   = scoreColor(listing.inspection_score)
   const locBadge = locationBadgeInfo(listing)
   const foBadge  = fitOutLevelInfo(listing.fit_out_level)
+  const curBadge = curationBadgeInfo(listing.curation_badge)
   const auctionBlur = !userId && listing.source === 'auction'
 
   const { priceCents, isEstimate } = listingDisplayPrice(listing, jpyRate)
@@ -667,19 +894,47 @@ function ListingCard({ listing, userId, initialSaved, jpyRate }: { listing: List
   }, [auctionResult])
 
   return (
-    <Link href={`/van/${listing.id}`} className="bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow group block">
-      {/* Photo */}
-      <div className="relative h-[220px] overflow-hidden">
+    <Link
+      href={`/van/${listing.id}`}
+      className="bg-white border border-gray-100 rounded-lg sm:rounded-xl overflow-hidden hover:shadow-md transition-shadow duration-200 group block"
+      onMouseEnter={() => {
+        setIsHovering(true)
+        if (spinVideo && videoRef.current) {
+          videoRef.current.currentTime = 0
+          videoRef.current.play().catch(() => {})
+        }
+      }}
+      onMouseLeave={() => {
+        setIsHovering(false)
+        if (videoRef.current) {
+          videoRef.current.pause()
+        }
+      }}
+    >
+      {/* Photo / Spin Video */}
+      <div className="relative h-[150px] sm:h-[180px] lg:h-[220px] overflow-hidden bg-gray-900">
         {photo ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={photo}
             alt={listing.model_name}
-            className={`absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 ${auctionBlur ? 'blur-md scale-110' : ''}`}
+            className={`absolute inset-0 w-full h-full object-cover transition-all duration-500 ${auctionBlur ? 'blur-md scale-110' : ''} ${isHovering && spinVideo ? 'opacity-0 scale-95' : 'opacity-100 group-hover:scale-105'}`}
             style={{ objectPosition: listing.image_focal_point ?? 'center' }}
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center bg-gray-100 text-gray-300 text-5xl">🚐</div>
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-100 text-gray-300 text-3xl sm:text-5xl">🚐</div>
+        )}
+        {/* Spin video overlay */}
+        {spinVideo && (
+          <video
+            ref={videoRef}
+            src={spinVideo}
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-500 ${isHovering ? 'opacity-100' : 'opacity-0'}`}
+          />
         )}
         {/* Auction blur CTA */}
         {auctionBlur && (
@@ -702,40 +957,58 @@ function ListingCard({ listing, userId, initialSaved, jpyRate }: { listing: List
             <span className="mt-2 bg-white text-charcoal text-xs font-semibold px-3 py-1 rounded-full">Sign Up Free</span>
           </div>
         )}
+        {/* SOLD overlay */}
+        {listing.status === 'sold' && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center" style={{ background: 'rgba(0, 0, 0, 0.55)' }}>
+            <span className="text-white font-bold text-2xl sm:text-3xl tracking-widest">SOLD</span>
+          </div>
+        )}
         {/* Top-left: location badge */}
-        <div className="absolute top-3 left-3 flex gap-1 flex-wrap">
-          <span className={`${locBadge.bg} text-white text-xs font-bold px-2 py-0.5 rounded`}>
+        <div className="absolute top-2 left-2 sm:top-3 sm:left-3 flex gap-1 flex-wrap max-w-[65%]">
+          <span className={`${locBadge.bg} text-white text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 sm:px-2 rounded`}>
             {locBadge.label}
           </span>
           {countdownBadge && (
-            <span className={`text-xs font-bold px-2 py-0.5 rounded ${countdownBadge.cls} ${countdownBadge.pulse ? 'animate-pulse' : ''}`}>
+            <span className={`text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 sm:px-2 rounded ${countdownBadge.cls} ${countdownBadge.pulse ? 'animate-pulse' : ''}`}>
               {countdownBadge.text}
             </span>
           )}
           {resultBadge && (
-            <span className={`text-xs font-bold px-2 py-0.5 rounded ${resultBadge.cls}`}>
+            <span className={`text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 sm:px-2 rounded ${resultBadge.cls}`}>
               {resultBadge.text}
             </span>
           )}
           {listing.featured && listing.source === 'au_stock' && (
-            <span className="bg-ocean text-white text-xs font-bold px-2 py-0.5 rounded">FEATURED</span>
+            <span className="bg-ocean text-white text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 sm:px-2 rounded">FEATURED</span>
+          )}
+          {listing.is_community_find && (
+            <span className="bg-driftwood text-white text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 sm:px-2 rounded">COMMUNITY FIND</span>
+          )}
+          {listing.toyota_verified && (
+            <span className="text-white text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 sm:px-2 rounded flex items-center gap-0.5" style={{ background: '#EB0A1E' }}>
+              ✓ Toyota Partner — Japan
+            </span>
           )}
         </div>
-        {/* Top-right: save + grade */}
-        <div className="absolute top-3 right-3 flex flex-col items-end gap-1">
-          <SaveVanButton listingId={listing.id} userId={userId} initialSaved={initialSaved} />
+        {/* Top-right: grade + badges */}
+        <div className="absolute top-2 right-2 sm:top-3 sm:right-3 flex flex-col items-end gap-0.5 sm:gap-1">
           {listing.inspection_score && (
-            <div className={`score-${sColor} text-xs font-bold px-2 py-0.5 rounded`}>
+            <div className={`score-${sColor} text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 sm:px-2 rounded`}>
               Grade {listing.inspection_score}
             </div>
           )}
           {listing.has_fitout && (
-            <div className="text-white text-xs font-bold px-2 py-0.5 rounded" style={{ background: '#92400e' }}>
-              🏕 Campervan Build{listing.fitout_grade ? ` · ${listing.fitout_grade}` : ''}
+            <div className="text-white text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 sm:px-2 rounded" style={{ background: '#92400e' }}>
+              🏕 Campervan{listing.fitout_grade ? ` · ${listing.fitout_grade}` : ''}
+            </div>
+          )}
+          {curBadge && (
+            <div className={`${curBadge.bg} ${curBadge.text} text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 sm:px-2 rounded`}>
+              {curBadge.label}
             </div>
           )}
           {listing.power_system && listing.power_system !== 'None' && (
-            <div className="bg-gray-900/80 text-white text-xs px-2 py-0.5 rounded">
+            <div className="bg-gray-900/80 text-white text-[9px] sm:text-[10px] px-1.5 py-0.5 sm:px-2 rounded hidden sm:block">
               🔌 {listing.power_system === '240V Australian' ? '240V AU Ready' : '100V JP'}
             </div>
           )}
@@ -743,44 +1016,65 @@ function ListingCard({ listing, userId, initialSaved, jpyRate }: { listing: List
       </div>
 
       {/* Info */}
-      <div className="p-4">
-        <p className="font-semibold text-sm text-gray-900 truncate">{listing.model_name}</p>
-        <p className="text-xs text-gray-500 mt-0.5">
-          {[listing.model_year, listing.mileage_km ? `${listing.mileage_km.toLocaleString()} km` : null, listing.drive, listing.transmission]
+      <div className="p-2 sm:p-3">
+        <p className="font-semibold text-xs sm:text-sm text-gray-900 truncate">{listing.model_name}</p>
+        <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5">
+          {[listing.model_year, listing.mileage_km ? `${listing.mileage_km.toLocaleString()} km` : null, listing.drive, listing.engine?.match(/diesel/i) ? 'Diesel' : listing.engine?.match(/petrol|gasoline/i) ? 'Petrol' : null]
             .filter(Boolean).join(' · ')}
+        </p>
+
+        {/* Reserve / delivery subtext */}
+        <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5">
+          {effectiveLocation(listing) === 'in_brisbane'
+            ? 'In Brisbane — drive it this weekend'
+            : effectiveLocation(listing) === 'on_ship'
+            ? `On the water — arriving ${listing.eta_date ? new Date(listing.eta_date).toLocaleDateString('en-AU', { month: 'long' }) : 'soon'}`
+            : '$2,750 to reserve · Delivered to Brisbane in 6–8 weeks'}
         </p>
 
         {/* Location sub-text */}
         {locBadge.sub && (
-          <p className="text-xs mt-1 font-medium" style={{ color: locBadge.bg.replace('bg-', '').replace('-600', '') === 'green' ? '#15803d' : locBadge.bg.replace('bg-', '').replace('-600', '') === 'orange' ? '#ea580c' : '#dc2626' }}>
+          <p className="text-[10px] sm:text-xs mt-0.5 sm:mt-1 font-medium" style={{ color: locBadge.bg.replace('bg-', '').replace('-600', '') === 'green' ? '#15803d' : locBadge.bg.replace('bg-', '').replace('-600', '') === 'orange' ? '#ea580c' : '#dc2626' }}>
             {locBadge.sub}
           </p>
         )}
 
         {/* Fit-out level badge */}
         {foBadge && (
-          <span className={`inline-block mt-1.5 text-xs font-semibold px-2 py-0.5 rounded border ${foBadge.cls}`}>
+          <span className={`inline-block mt-1 sm:mt-1.5 text-[10px] sm:text-xs font-semibold px-1.5 sm:px-2 py-0.5 rounded border ${foBadge.cls}`}>
             {foBadge.label}
           </span>
         )}
 
         {listing.source === 'au_stock' && listing.eta_date && (
-          <p className="text-xs text-ocean font-medium mt-1">
+          <p className="text-[10px] sm:text-xs text-ocean font-medium mt-0.5 sm:mt-1">
             ETA ~{new Date(listing.eta_date).toLocaleDateString('en-AU', { month: 'short', year: 'numeric' })}
           </p>
         )}
         {listing.source === 'auction' && listing.auction_date && (
-          <p className="text-xs text-amber-700 font-medium mt-1">
+          <p className="text-[10px] sm:text-xs text-amber-700 font-medium mt-0.5 sm:mt-1">
             Auction {new Date(listing.auction_date).toLocaleDateString('en-AU', { weekday: 'short', month: 'short', day: 'numeric' })}
           </p>
         )}
 
-        <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-          <span className="text-ocean text-base font-semibold">
-            {displayPrice}
-            {isEstimate && priceCents && <span className="text-xs text-gray-400 font-normal ml-1">est.</span>}
-          </span>
-          <span className="btn-primary btn-sm text-xs">View & Build</span>
+        <div className="flex items-center justify-between mt-2 pt-2 sm:mt-3 sm:pt-3 border-t border-gray-100">
+          <div>
+            <span className="text-ocean text-sm sm:text-base font-bold">
+              {displayPrice}
+              {isEstimate && priceCents && <span className="text-[10px] sm:text-xs text-gray-400 font-normal ml-1">est.</span>}
+            </span>
+            {listing.au_market_price_low && listing.au_market_price_high && (
+              <p className="text-[11px] text-gray-400 leading-tight mt-0.5">
+                Similar in AU: ${Math.round(listing.au_market_price_low / 1000)}–{Math.round(listing.au_market_price_high / 1000)}K
+              </p>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="hidden sm:inline-flex btn-primary btn-sm text-xs">
+                  {listing.source === 'au_stock' ? 'View & Test Drive' : listing.source === 'auction' ? 'View & Bid' : 'View & Reserve'}
+                </span>
+            <SaveVanButton listingId={listing.id} userId={userId} initialSaved={initialSaved} />
+          </div>
         </div>
       </div>
     </Link>

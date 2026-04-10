@@ -2,9 +2,11 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import LeadFormModal from '@/components/leads/LeadFormModal'
 import PageEditToolbar, { EditableImage } from '@/components/admin/PageEditToolbar'
 import FitoutHero from '@/components/admin/FitoutHero'
+import OptionsList from '@/components/options/OptionsList'
 
 const EXTRA_IMAGES = [
   { key: 'poptop_image', label: 'Pop Top Section Photo' },
@@ -12,6 +14,7 @@ const EXTRA_IMAGES = [
   { key: 'base_van_image', label: 'Base Van Photo' },
   { key: 'electrical_image', label: 'Electrical Cabinet Photo' },
 ]
+
 
 export default function DiyClient({ content: initial }: { content: Record<string, string> }) {
   const [content, setContent] = useState(initial)
@@ -25,6 +28,7 @@ export default function DiyClient({ content: initial }: { content: Record<string
         <div className="pt-16">
           <p className="text-sand text-xs font-semibold tracking-[0.25em] uppercase mb-3">Bare Camper</p>
           <h1 className="text-7xl md:text-9xl text-white leading-none mb-3">DIY</h1>
+          <p className="sr-only">DIY Campervan Build — Toyota Hiace Pop Top and Base Van</p>
           <p className="text-white/80 text-xl md:text-2xl font-light mb-2">We handle the hard stuff. You make it yours.</p>
           <p className="text-white/60 text-base md:text-lg max-w-xl">Professional pop top conversion + modular bed kit. Your interior, your rules.</p>
         </div>
@@ -33,7 +37,7 @@ export default function DiyClient({ content: initial }: { content: Record<string
       {gallery.length > 0 && (
         <section className="max-w-6xl mx-auto px-6 py-12">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {gallery.map((url, i) => <img key={i} src={url} alt="" className="w-full h-48 object-cover rounded-xl" />)}
+            {gallery.map((url, i) => <div key={i} className="relative h-48 rounded-xl overflow-hidden"><Image src={url} alt="" fill className="object-cover" sizes="(max-width: 768px) 50vw, 25vw" /></div>)}
           </div>
         </section>
       )}
@@ -66,7 +70,7 @@ export default function DiyClient({ content: initial }: { content: Record<string
             <EditableImage src={content.bare_camper_image || '/images/diy-barecamper.jpg'} alt="Bare Camper" className="h-72 rounded-2xl overflow-hidden md:order-first order-last" placeholderText="Bare Camper photo coming soon" />
             <div>
               <p className="text-driftwood text-xs font-semibold tracking-widest uppercase mb-3">Step 2</p>
-              <h2 className="text-4xl text-charcoal mb-4">Bare Camper by Skybridge</h2>
+              <h2 className="text-4xl text-charcoal mb-4">Bare Camper Bed System — Coming Soon</h2>
               <p className="text-gray-500 leading-relaxed mb-6">
                 A modular bed system designed for the Toyota Hiace H200. Simple to install, easy to
                 reconfigure. The perfect foundation for a DIY interior — add your own mattress, panels,
@@ -109,10 +113,18 @@ export default function DiyClient({ content: initial }: { content: Record<string
                 wall-mount or under-bed electrical cabinet comes fully wired and ready to install —
                 lithium battery, inverter, charger, outlets, and more.
               </p>
-              <a href="mailto:jared@dreamdrive.life?subject=Electrical%20Cabinet%20Enquiry" className="btn-primary inline-block px-6 py-3 text-sm">Enquire About Electrical →</a>
+              <a href="mailto:hello@barecamper.com.au?subject=Electrical%20Cabinet%20Enquiry" className="btn-primary inline-block px-6 py-3 text-sm">Enquire About Electrical →</a>
             </div>
           </div>
         </div>
+      </section>
+
+      {/* Options */}
+      <section className="max-w-6xl mx-auto px-6 py-20">
+        <p className="text-driftwood text-xs font-semibold tracking-widest uppercase mb-3">Make it yours</p>
+        <h2 className="text-4xl text-charcoal mb-4">Add-On Options</h2>
+        <p className="text-gray-500 max-w-2xl mb-10 leading-relaxed">These options can be added to any van — whether you&apos;re doing a full DIY build or just want the essentials sorted by a pro.</p>
+        <OptionsList source="diy" />
       </section>
 
       {/* CTA */}
@@ -126,7 +138,7 @@ export default function DiyClient({ content: initial }: { content: Record<string
             <LeadFormModal trigger="Book a Consultation" source="product_page_diy" className="btn-ghost text-base px-8 py-4" />
           </div>
           <p className="mt-10 text-gray-400 text-sm">
-            <a href="mailto:jared@dreamdrive.life" className="text-sand hover:text-sand">jared@dreamdrive.life</a>
+            <a href="mailto:hello@barecamper.com.au" className="text-sand hover:text-sand">hello@barecamper.com.au</a>
             {' · '}<a href="tel:0432182892" className="text-sand hover:text-sand">0432 182 892</a>
           </p>
         </div>

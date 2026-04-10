@@ -13,6 +13,8 @@ interface Props {
 export default function ViewContentTracker(props: Props) {
   useEffect(() => {
     trackViewContent(props)
+    // Increment view count (fire-and-forget)
+    fetch(`/api/listings/${props.id}/view`, { method: 'POST' }).catch(() => {})
   }, [props.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return null

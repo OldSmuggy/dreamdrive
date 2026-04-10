@@ -14,7 +14,7 @@ import type { Listing } from '@/types'
  */
 export async function GET() {
   const supabase = createAdminClient()
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://barecamper.com'
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://barecamper.com.au'
 
   const [{ data: listings }, jpyRate] = await Promise.all([
     supabase

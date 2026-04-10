@@ -298,10 +298,15 @@ export default function DraftEditor({ initial }: { initial: Listing[] }) {
                 </div>
                 <p className="font-semibold text-gray-900">{l.model_name}</p>
                 <p className="text-sm text-gray-500 mt-0.5">
-                  {l.model_year} \u00B7 {l.mileage_km?.toLocaleString()} km \u00B7 {l.transmission} \u00B7 {l.drive}
-                  {l.grade && ` \u00B7 ${l.grade}`}
-                  {l.body_colour && ` \u00B7 ${l.body_colour}`}
+                  {l.model_year} · {l.mileage_km?.toLocaleString()} km · {l.transmission} · {l.drive}
+                  {l.grade && ` · ${l.grade}`}
+                  {l.body_colour && ` · ${l.body_colour}`}
                 </p>
+                {l.created_at && (
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    Uploaded {new Date(l.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                )}
                 {hasDescription && (
                   <p className="text-sm text-gray-600 mt-1 italic">
                     &ldquo;{(l as unknown as { description: string }).description}&rdquo;
@@ -353,12 +358,20 @@ export default function DraftEditor({ initial }: { initial: Listing[] }) {
                             Open in new tab
                           </a>
                         </div>
-                        <iframe
-                          src={pdfUrl}
+                        <object
+                          data={pdfUrl}
+                          type="application/pdf"
                           className="w-full rounded-xl border border-gray-200 bg-white"
                           style={{ height: 700 }}
-                          title="Auction sheet PDF"
-                        />
+                        >
+                          <div className="flex flex-col items-center justify-center h-full gap-3">
+                            <p className="text-sm text-gray-500">PDF preview not supported.</p>
+                            <a href={pdfUrl} target="_blank" rel="noopener noreferrer"
+                              className="px-4 py-2 bg-ocean text-white text-sm rounded-lg">
+                              Open PDF in new tab
+                            </a>
+                          </div>
+                        </object>
                       </div>
                     ) : (
                       <div className="flex items-center justify-center h-full bg-gray-100 rounded-xl border border-gray-200 text-gray-400 text-sm p-10 text-center">

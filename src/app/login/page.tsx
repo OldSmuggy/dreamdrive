@@ -72,7 +72,7 @@ function LoginForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ firstName }),
       }).catch(() => {})
-      setSuccessMsg('Account created! Welcome to Dream Drive.')
+      setSuccessMsg('Account created! Welcome to Bare Camper.')
       setSuccess(true)
       setTimeout(() => { window.location.href = next }, 800)
       setLoading(false)
@@ -84,7 +84,7 @@ function LoginForm() {
       password: signupPassword,
     })
     if (signInData.session) {
-      setSuccessMsg('Account created! Welcome to Dream Drive.')
+      setSuccessMsg('Account created! Welcome to Bare Camper.')
       setSuccess(true)
       setTimeout(() => { window.location.href = next }, 800)
       setLoading(false)
@@ -120,7 +120,7 @@ function LoginForm() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <Link href="/" className="text-2xl text-charcoal hover:text-ocean">Dream Drive</Link>
+          <Link href="/" className="text-2xl text-charcoal hover:text-ocean">Bare Camper</Link>
           <p className="text-gray-500 text-sm mt-1">{tab === 'signin' ? 'Sign in to your account' : 'Create your account'}</p>
         </div>
 

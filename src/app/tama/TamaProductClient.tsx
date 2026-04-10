@@ -1,13 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
-import LeadFormModal from '@/components/leads/LeadFormModal'
+import Image from 'next/image'
+import EnquiryCTA from '@/components/EnquiryCTA'
 import PageEditToolbar, { EditableImage } from '@/components/admin/PageEditToolbar'
 import FitoutHero from '@/components/admin/FitoutHero'
 import { formatAud } from '@/lib/pricing'
+import OptionsList, { UNIVERSAL_OPTIONS } from '@/components/options/OptionsList'
 
-interface Props { conversionAud: number; low: number; high: number; jpyRate: number; content: Record<string, string> }
+interface Props { conversionAud: number; low: number; high: number; jpyRate: number; content: Record<string, string>; vanId?: string | null; vanName?: string | null; vanPriceCents?: number | null }
 
 const TAMA_INCLUSIONS = [
   'Transforming rear seat with ISOFIX (except 2-seater options)', 'Walnut countertop',
@@ -19,27 +20,22 @@ const TAMA_INCLUSIONS = [
 ]
 
 const TAMA_LAYOUTS = [
-  { name: 'FAMILY SEAT', key: 'layout_family', desc: 'Rear folding seat with 3 extra seatbelts and ISOFIX child seat anchors. The ideal layout for families who need full seating capacity alongside all camping facilities.' },
-  { name: 'VANLIFE', key: 'layout_vanlife', desc: 'Rear bench seat with slide-out drawer, toilet and pantry space under the bench seat. Optimised for couples or solo adventurers wanting maximum storage and living space.' },
+  { name: 'FAMILY SEAT', key: 'layout_family', fallback: '/images/tama/interior-overview.jpg', desc: 'Rear folding seat with 3 extra seatbelts and ISOFIX child seat anchors. The ideal layout for families who need full seating capacity alongside all camping facilities.' },
+  { name: 'VANLIFE', key: 'layout_vanlife', fallback: '/images/tama/storage-underseat.jpg', desc: 'Rear bench seat with slide-out drawer, toilet and pantry space under the bench seat. Optimised for couples or solo adventurers wanting maximum storage and living space.' },
 ]
 
 const TAMA_BEDS = [
-  { name: 'TAMA', key: 'bed_tama', desc: 'Semi double bed, galley kitchen with sink, 40L fridge and cupboard for storage. A well-rounded setup that balances sleeping comfort with kitchen functionality.' },
-  { name: 'NICO', key: 'bed_nico', desc: 'Full width bed with fixed mattress and integrated storage. Features 2 slide-out drawers with table tops — great for those who prioritise a large, comfortable sleeping area.' },
+  { name: 'TAMA', key: 'bed_tama', fallback: '/images/tama/bed-blue.jpg', desc: 'Semi double bed, galley kitchen with sink, 40L fridge and cupboard for storage. A well-rounded setup that balances sleeping comfort with kitchen functionality.' },
+  { name: 'NICO', key: 'bed_nico', fallback: '/images/tama/bed-green.jpg', desc: 'Full width bed with fixed mattress and integrated storage. Features 2 slide-out drawers with table tops — great for those who prioritise a large, comfortable sleeping area.' },
 ]
 
-const TAMA_OPTIONS = [
-  { name: 'Recommended Package', detail: 'Black-out curtains, insect screens, insect net rear door, side-window rain cover, MAXXFAN', price: '$3,800' },
-  { name: 'Solar Package', detail: 'Solar system 175W', price: '$2,000' },
-  { name: 'FF Heater Package', detail: 'Thermal wool insulation + Webasto FF heater', price: '$5,500' },
-  { name: 'Side Awning', detail: 'Fiamma 3.5M', price: '$2,300' },
-  { name: 'Off-Road Tires', detail: null, price: '$2,300' },
-  { name: 'Half Wrap', detail: null, price: '$3,300' },
-  { name: 'Lift Kit 2 inch by Ironman 4×4', detail: null, price: '$2,580' },
-]
 
-export default function TamaProductClient({ conversionAud, low, high, jpyRate, content: initial }: Props) {
+export default function TamaProductClient({ conversionAud, low, high, jpyRate, content: initial, vanId, vanName, vanPriceCents }: Props) {
   const [content, setContent] = useState(initial)
+
+  const configuratorUrl = vanId
+    ? `https://configure.barecamper.com.au/?model=tama&source=barecamper&van_id=${vanId}&van_name=${encodeURIComponent(vanName ?? '')}&van_price=${vanPriceCents ? Math.round(vanPriceCents / 100) : ''}`
+    : 'https://configure.barecamper.com.au/?model=tama'
   const gallery: string[] = (() => { try { return JSON.parse(content.gallery_images || '[]') } catch { return [] } })()
 
   const extraImages = [
@@ -52,19 +48,38 @@ export default function TamaProductClient({ conversionAud, low, high, jpyRate, c
       <PageEditToolbar pageSlug="tama-product" pageName="TAMA Product" content={content} onContentChange={setContent} extraImages={extraImages} />
 
       {/* Hero */}
-      <FitoutHero fallbackImage="" heroImage={content.hero_image} heroVideo={content.hero_video}>
+      <FitoutHero fallbackImage="/images/tama/hero-exterior.jpg" heroImage={content.hero_image} heroVideo={content.hero_video}>
         <div className="pt-16">
-          <p className="text-sand text-xs font-semibold tracking-[0.25em] uppercase mb-3">Dream Drive</p>
+          <p className="text-sand text-xs font-semibold tracking-[0.25em] uppercase mb-3">Bare Camper</p>
           <h1 className="text-7xl md:text-9xl text-white leading-none mb-3">TAMA</h1>
+          <p className="sr-only">TAMA Family Campervan Conversion — Toyota Hiace</p>
           <p className="text-white/80 text-xl md:text-2xl font-light mb-2">The Family Adventure Van</p>
           <p className="text-white/60 text-base md:text-lg max-w-xl">6-seat people mover by day. Fully equipped campervan by night.</p>
         </div>
       </FitoutHero>
 
+      {/* Photo Gallery */}
+      <section className="max-w-6xl mx-auto px-6 py-12">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          {[
+            { src: '/images/tama/interior-overview.jpg', alt: 'TAMA interior with bench seat and kitchen' },
+            { src: '/images/tama/bed-blue.jpg', alt: 'TAMA bed laid out with timber ceiling' },
+            { src: '/images/tama/kitchen-walnut.jpg', alt: 'Walnut countertop detail' },
+            { src: '/images/tama/drawer-slideout.jpg', alt: 'Slide-out kitchen drawer' },
+            { src: '/images/tama/electrical-outlets.jpg', alt: 'Power outlets and USB charging' },
+            { src: '/images/tama/hero-side-open.jpg', alt: 'TAMA side view with pop top and door open' },
+          ].map((img, i) => (
+            <div key={i} className="relative h-48 md:h-64 rounded-xl overflow-hidden">
+              <Image src={img.src} alt={img.alt} fill className="object-cover" sizes="(max-width: 768px) 50vw, 33vw" />
+            </div>
+          ))}
+        </div>
+      </section>
+
       {gallery.length > 0 && (
         <section className="max-w-6xl mx-auto px-6 py-12">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {gallery.map((url, i) => <img key={i} src={url} alt="" className="w-full h-48 object-cover rounded-xl" />)}
+            {gallery.map((url, i) => <div key={i} className="relative h-48 rounded-xl overflow-hidden"><Image src={url} alt="" fill className="object-cover" sizes="(max-width: 768px) 50vw, 25vw" /></div>)}
           </div>
         </section>
       )}
@@ -117,7 +132,7 @@ export default function TamaProductClient({ conversionAud, low, high, jpyRate, c
         <div className="grid md:grid-cols-2 gap-8">
           {TAMA_LAYOUTS.map(opt => (
             <div key={opt.name} className="border border-gray-200 rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
-              <EditableImage src={content[opt.key + '_image'] || null} alt={opt.name} className="h-52" placeholderText={`${opt.name} photo coming soon`} />
+              <EditableImage src={content[opt.key + '_image'] || opt.fallback} alt={opt.name} className="h-52" placeholderText={`${opt.name} photo coming soon`} />
               <div className="p-6">
                 <p className="text-xs font-semibold tracking-widest text-driftwood uppercase mb-2">{opt.name}</p>
                 <p className="text-gray-600 text-sm leading-relaxed">{opt.desc}</p>
@@ -135,7 +150,7 @@ export default function TamaProductClient({ conversionAud, low, high, jpyRate, c
           <div className="grid md:grid-cols-2 gap-8">
             {TAMA_BEDS.map(opt => (
               <div key={opt.name} className="border border-gray-200 rounded-2xl overflow-hidden hover:shadow-md transition-shadow bg-white">
-                <EditableImage src={content[opt.key + '_image'] || null} alt={opt.name} className="h-52" placeholderText={`${opt.name} photo coming soon`} />
+                <EditableImage src={content[opt.key + '_image'] || opt.fallback} alt={opt.name} className="h-52" placeholderText={`${opt.name} photo coming soon`} />
                 <div className="p-6">
                   <p className="text-xs font-semibold tracking-widest text-driftwood uppercase mb-2">{opt.name}</p>
                   <p className="text-gray-600 text-sm leading-relaxed">{opt.desc}</p>
@@ -150,35 +165,13 @@ export default function TamaProductClient({ conversionAud, low, high, jpyRate, c
       <section className="max-w-6xl mx-auto px-6 py-20">
         <p className="text-driftwood text-xs font-semibold tracking-widest uppercase mb-3">Make it yours</p>
         <h2 className="text-4xl text-charcoal mb-10">Select Options</h2>
-        <div className="divide-y divide-gray-100 border border-gray-200 rounded-2xl overflow-hidden">
-          {TAMA_OPTIONS.map(opt => (
-            <div key={opt.name} className="flex items-start justify-between gap-4 px-6 py-5 hover:bg-cream transition-colors">
-              <div>
-                <p className="font-semibold text-charcoal text-sm">{opt.name}</p>
-                {opt.detail && <p className="text-gray-500 text-xs mt-0.5">{opt.detail}</p>}
-              </div>
-              <p className="text-ocean text-lg shrink-0">{opt.price}</p>
-            </div>
-          ))}
-        </div>
+        <OptionsList source="tama" />
       </section>
 
       {/* CTA */}
-      <section className="bg-charcoal text-white py-20 text-center">
-        <div className="max-w-2xl mx-auto px-6">
-          <p className="text-sand text-xs font-semibold tracking-widest uppercase mb-4">Get started</p>
-          <h2 className="text-4xl md:text-5xl mb-4">Ready to build your TAMA?</h2>
-          <p className="text-gray-300 text-lg mb-10 leading-relaxed">Browse available vans, start your build, or talk to us about what&apos;s right for your family.</p>
-          <div className="flex flex-wrap gap-4 justify-center">
-            <Link href="/configurator?fitout=tama" className="btn-primary text-base px-8 py-4">Start My TAMA Build</Link>
-            <LeadFormModal trigger="Book a Free Consultation" source="product_page_tama" className="btn-ghost text-base px-8 py-4" />
-          </div>
-          <p className="mt-10 text-gray-400 text-sm">
-            <a href="mailto:jared@dreamdrive.life" className="text-sand hover:text-sand">jared@dreamdrive.life</a>
-            {' · '}<a href="tel:0432182892" className="text-sand hover:text-sand">0432 182 892</a>
-          </p>
-        </div>
-      </section>
+      <div className="max-w-6xl mx-auto px-6 py-16">
+        <EnquiryCTA defaultModel="tama" />
+      </div>
     </div>
   )
 }

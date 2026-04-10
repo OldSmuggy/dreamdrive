@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
+import { requireAdmin } from '@/lib/api-auth'
 
 export async function GET() {
   const supabase = createAdminClient()
@@ -15,6 +16,9 @@ export async function GET() {
 }
 
 export async function PATCH(req: NextRequest) {
+  const { error: authErr } = await requireAdmin()
+  if (authErr) return authErr
+
   const body = await req.json()
   const { id, ...fields } = body
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })

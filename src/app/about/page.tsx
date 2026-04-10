@@ -1,236 +1,255 @@
+import Link from 'next/link'
+import Image from 'next/image'
 import { generateMeta } from '@/lib/seo'
-import Footer from '@/components/ui/Footer'
-import type { Metadata } from 'next'
 
-export const metadata: Metadata = generateMeta({
-  title: 'About | Bare Camper',
-  description: 'The team behind Bare Camper — end-to-end Toyota Hiace campervan conversions from Japan to your driveway.',
+export const metadata = generateMeta({
+  title: 'About Bare Camper — Australia\u2019s End-to-End Campervan Platform',
+  description: 'Bare Camper is Australia\u2019s only end-to-end campervan service. From Japanese auction to Australian road, one team handles every step. Dream Drive & DIY RV Solutions.',
   url: '/about',
 })
 
-const STEPS = [
-  {
-    number: '01',
-    title: 'Find your van',
-    body: 'Browse quality Hiace vans from Japanese auctions or local stock. Every van is inspected and graded.',
-  },
-  {
-    number: '02',
-    title: 'We handle the hard part',
-    body: 'Import, shipping, compliance, rego. Fixed price, no surprises.',
-  },
-  {
-    number: '03',
-    title: 'Choose your build level',
-    body: 'Bare van, roof conversion, or full turnkey. You pick where we stop.',
-  },
-  {
-    number: '04',
-    title: 'Get camping',
-    body: "Everything's lined up through one team, so you're on the road faster than doing it yourself.",
-  },
-]
-
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-white">
-
-      {/* Hero */}
-      <section className="bg-charcoal text-white py-20 px-4">
-        <div className="max-w-3xl mx-auto text-center">
+    <div className="min-h-screen">
+      {/* ─── Hero ────────────────────────────────────── */}
+      <section className="bg-charcoal text-white py-20">
+        <div className="max-w-4xl mx-auto px-4 text-center">
           <p className="text-sand text-sm font-semibold tracking-widest uppercase mb-4">About Bare Camper</p>
-          <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
-            The only end-to-end<br className="hidden md:block" /> Hiace campervan service in Australia
-          </h1>
-          <p className="text-white/70 text-lg leading-relaxed max-w-2xl mx-auto">
-            Bare Camper is a joint venture between Dream Drive and DIY RV Solutions — both based in
-            Capalaba, Queensland. Between us we cover every step: sourcing vans from Japan, bringing them
-            into Australia, and converting them into your perfect camper. One address. One handshake.
+          <h1 className="text-4xl md:text-5xl font-bold mb-6">One team. The whole journey.</h1>
+          <p className="text-gray-300 text-lg max-w-2xl mx-auto leading-relaxed">
+            Bare Camper is Australia&apos;s only end-to-end campervan service. We source your van from Japan, ship it, comply it, register it, and build it out — all through one team. No middlemen, no handoffs, no surprises.
           </p>
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="py-20 px-4 bg-cream">
-        <div className="max-w-5xl mx-auto">
-          <p className="text-ocean text-sm font-semibold tracking-widest uppercase mb-3 text-center">The process</p>
-          <h2 className="text-3xl md:text-4xl font-bold text-charcoal text-center mb-14">How it works</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {STEPS.map(step => (
-              <div key={step.number} className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
-                <span className="text-5xl font-black text-ocean/20 leading-none block mb-4">{step.number}</span>
-                <h3 className="text-xl font-bold text-charcoal mb-3">{step.title}</h3>
-                <p className="text-gray-600 leading-relaxed">{step.body}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* ─── Lifestyle image ─────────────────────────── */}
+      <div className="relative w-full h-72 md:h-96 overflow-hidden">
+        <Image
+          src="/images/about/beach.png"
+          alt="A Hiace campervan parked on the beach — the Bare Camper dream"
+          fill
+          className="object-cover object-center"
+          priority
+        />
+      </div>
 
-      {/* Dream Drive — Japan Infrastructure */}
-      <section className="py-20 px-4 bg-charcoal text-white">
-        <div className="max-w-5xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <div>
-              <p className="text-sand text-sm font-semibold tracking-widest uppercase mb-3">Dream Drive — Japan</p>
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">Real boots on the ground in Japan</h2>
-              <p className="text-white/70 leading-relaxed mb-5">
-                Most importers buy blind from an auction sheet. Dream Drive has a team physically in Japan —
-                attending auctions, inspecting vehicles before bidding, and building relationships with dealers
-                to access stock that never hits the open market.
-              </p>
-              <p className="text-white/70 leading-relaxed mb-5">
-                Our agents speak Japanese, know the auction houses, and have the eye to spot what the grade
-                sheets don&apos;t tell you. That&apos;s what makes the difference between a good van and a great one.
-              </p>
-              <ul className="space-y-3">
-                {[
-                  'Physical inspection before every bid',
-                  'Access to dealer and off-auction stock',
-                  'Honest condition reports in plain English',
-                  'Buying power built over years in market',
-                ].map(item => (
-                  <li key={item} className="flex items-start gap-3 text-white/80">
-                    <svg className="w-5 h-5 text-sand shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="rounded-2xl overflow-hidden bg-white/5 aspect-[4/3] flex items-center justify-center">
-              {/* Replace with Japan team photo */}
-              <div className="text-center text-white/30 p-8">
-                <svg className="w-16 h-16 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                <p className="text-sm">Japan team photo coming soon</p>
-              </div>
-            </div>
+      {/* ─── How It Works ────────────────────────────── */}
+      <section className="py-20">
+        <div className="max-w-5xl mx-auto px-4">
+          <div className="text-center mb-14">
+            <p className="text-driftwood text-sm font-semibold tracking-widest uppercase mb-4">How It Works</p>
+            <h2 className="text-4xl text-charcoal font-bold">Four steps. One team. You&apos;re camping.</h2>
           </div>
-        </div>
-      </section>
-
-      {/* DIY RV Solutions */}
-      <section className="py-20 px-4 bg-white">
-        <div className="max-w-5xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <div className="order-2 md:order-1 rounded-2xl overflow-hidden bg-gray-100 aspect-[4/3] flex items-center justify-center">
-              {/* Replace with workshop photo */}
-              <div className="text-center text-gray-400 p-8">
-                <svg className="w-16 h-16 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                <p className="text-sm">Workshop photo coming soon</p>
-              </div>
-            </div>
-            <div className="order-1 md:order-2">
-              <p className="text-ocean text-sm font-semibold tracking-widest uppercase mb-3">DIY RV Solutions × Dream Drive — Capalaba QLD</p>
-              <h2 className="text-3xl md:text-4xl font-bold text-charcoal mb-6">Australia&apos;s Hiace conversion specialists</h2>
-              <p className="text-gray-600 leading-relaxed mb-5">
-                Dream Drive and DIY RV Solutions share premises in Capalaba, Queensland — which means
-                your van goes from the import yard straight into the conversion workshop without leaving
-                the block. DIY RV Solutions has been building and converting Toyota Hiace vans for years,
-                from fiberglass pop tops and hi-tops to full turnkey campervans.
-              </p>
-              <p className="text-gray-600 leading-relaxed">
-                Every build is done in-house by people who actually use these vehicles. No outsourcing,
-                no middlemen — and the same team answers when you call.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* The Team */}
-      <section className="py-20 px-4 bg-cream">
-        <div className="max-w-4xl mx-auto">
-          <p className="text-ocean text-sm font-semibold tracking-widest uppercase mb-3 text-center">Who you&apos;re dealing with</p>
-          <h2 className="text-3xl md:text-4xl font-bold text-charcoal text-center mb-14">The team behind it</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-2xl mx-auto">
-            {[
-              {
-                name: 'Jared Campion',
-                role: 'Imports & Sales — Dream Drive',
-                bio: 'Jared runs the Japan-side sourcing and handles customer relationships from first enquiry through to delivery. He knows Hiace vans inside out.',
-              },
-              {
-                name: 'Andrew',
-                role: 'Builds & Conversions — DIY RV Solutions',
-                bio: 'Andrew heads up the workshop at Capalaba. If it involves fiberglass, wiring, or fit-out, Andrew and his team are the ones doing it.',
-              },
-            ].map(person => (
-              <div key={person.name} className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 text-center">
-                <div className="w-20 h-20 rounded-full bg-charcoal/10 mx-auto mb-5 flex items-center justify-center">
-                  <svg className="w-10 h-10 text-charcoal/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
+          <div className="grid md:grid-cols-2 gap-8">
+            {STEPS.map((step, i) => (
+              <div key={step.title} className="bg-white border border-gray-200 rounded-2xl p-8">
+                <div className="flex items-center gap-4 mb-4">
+                  <span className="flex items-center justify-center w-10 h-10 rounded-full bg-ocean text-white font-bold text-sm shrink-0">
+                    {i + 1}
+                  </span>
+                  <h3 className="text-xl text-charcoal font-bold">{step.title}</h3>
                 </div>
-                <h3 className="text-xl font-bold text-charcoal mb-1">{person.name}</h3>
-                <p className="text-ocean text-sm font-semibold mb-4">{person.role}</p>
-                <p className="text-gray-600 text-sm leading-relaxed">{person.bio}</p>
+                <p className="text-gray-500 leading-relaxed">{step.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Contact + Map */}
-      <section className="py-20 px-4 bg-white">
-        <div className="max-w-5xl mx-auto">
-          <p className="text-ocean text-sm font-semibold tracking-widest uppercase mb-3 text-center">Get in touch</p>
-          <h2 className="text-3xl md:text-4xl font-bold text-charcoal text-center mb-14">Find us</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
-            <div className="space-y-6">
-              <div>
-                <p className="text-sm font-semibold text-charcoal uppercase tracking-wider mb-2">Dream Drive &amp; DIY RV Solutions</p>
-                <p className="text-gray-600 leading-relaxed">
-                  1/10 Jones Road<br />
-                  Capalaba QLD 4157<br />
-                  Australia
-                </p>
+      {/* ─── Dream Drive — Japan Infrastructure ─────── */}
+      <section className="bg-cream py-20">
+        <div className="max-w-5xl mx-auto px-4">
+          <div className="text-center mb-14">
+            <p className="text-driftwood text-sm font-semibold tracking-widest uppercase mb-4">Our Japan Operations</p>
+            <h2 className="text-4xl text-charcoal font-bold mb-4">Dream Drive — boots on the ground in Japan</h2>
+            <p className="text-gray-500 text-lg max-w-2xl mx-auto leading-relaxed">
+              Dream Drive isn&apos;t a broker or a reseller — we&apos;re an import operation with real infrastructure and a full-time team in Japan. That&apos;s what makes this work.
+            </p>
+          </div>
+          {/* Real photo of the Japan team */}
+          <div className="relative w-full h-64 md:h-80 rounded-2xl overflow-hidden mb-12">
+            <Image
+              src="/images/about/team.jpg"
+              alt="Dream Drive team at the Komae facility, Japan — two Hiace vans ready for export"
+              fill
+              className="object-cover object-center"
+            />
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {JAPAN_INFRA.map(item => (
+              <div key={item.title} className="bg-white rounded-2xl p-6 border border-gray-200">
+                <div className="text-3xl mb-3">{item.icon}</div>
+                <h3 className="text-charcoal font-bold text-lg mb-2">{item.title}</h3>
+                <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
               </div>
-              <div>
-                <p className="text-sm font-semibold text-charcoal uppercase tracking-wider mb-2">Contact</p>
-                <p className="text-gray-600 leading-relaxed">
-                  <a href="mailto:hello@barecamper.com.au" className="text-ocean hover:underline">hello@barecamper.com.au</a><br />
-                  <a href="tel:0432182892" className="text-ocean hover:underline">0432 182 892</a>
-                </p>
+            ))}
+          </div>
+          <p className="text-center text-gray-500 mt-10 text-lg max-w-2xl mx-auto leading-relaxed">
+            We&apos;ve been doing this since 2018 and we&apos;ve delivered over 100 vehicles to Australia. We know which vans are worth buying, which auctions to trust, and how to avoid the traps that cost first-timers thousands.
+          </p>
+        </div>
+      </section>
+
+      {/* ─── The Only End-to-End Service ──────────────── */}
+      <section className="py-20">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <p className="text-driftwood text-sm font-semibold tracking-widest uppercase mb-4">Why It Matters</p>
+          <h2 className="text-4xl text-charcoal font-bold mb-6">The only campervan brand in Japan, Australia & New Zealand</h2>
+          <p className="text-gray-500 text-lg leading-relaxed mb-8 max-w-3xl mx-auto">
+            Most people who want a campervan have to piece it together themselves — find a van from one place, ship it through another, get compliance done somewhere else, then find a builder who may or may not know the vehicle. Every handoff is a chance for things to go wrong, blow out on cost, or stall for weeks.
+          </p>
+          <p className="text-gray-500 text-lg leading-relaxed mb-12 max-w-3xl mx-auto">
+            Bare Camper is the only campervan brand with our own people on the ground in Japan, Australia, and New Zealand. Our buyer in Japan, our workshop in Brisbane, our operations across the Tasman. One team handles every stage — from auction floor to registered campervan on an Australian road. No third-party agents, no handoffs between companies you&apos;ve never met.
+          </p>
+          <div className="grid sm:grid-cols-3 gap-6">
+            {END_TO_END.map(item => (
+              <div key={item.title} className="bg-charcoal text-white rounded-2xl p-6">
+                <div className="text-3xl mb-3">{item.icon}</div>
+                <h3 className="font-bold text-lg mb-2">{item.title}</h3>
+                <p className="text-gray-400 text-sm leading-relaxed">{item.desc}</p>
               </div>
-              <div>
-                <p className="text-sm font-semibold text-charcoal uppercase tracking-wider mb-2">Hours</p>
-                <p className="text-gray-600 leading-relaxed">
-                  Mon – Fri: 8am – 5pm<br />
-                  Saturday by appointment
-                </p>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── The People ──────────────────────────────── */}
+      <section className="bg-charcoal text-white py-20">
+        <div className="max-w-5xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <p className="text-sand text-sm font-semibold tracking-widest uppercase mb-4">The Team</p>
+            <h2 className="text-4xl font-bold mb-4">Two blokes. Two businesses. One platform.</h2>
+          </div>
+          <div className="grid md:grid-cols-2 gap-12">
+            <div>
+              <div className="relative w-32 h-32 rounded-full overflow-hidden mb-5 border-2 border-sand">
+                <Image
+                  src="/images/about/jared.jpg"
+                  alt="Jared Campion — Dream Drive"
+                  fill
+                  className="object-cover object-top"
+                />
               </div>
-              <a
-                href="mailto:hello@barecamper.com.au"
-                className="inline-block bg-ocean text-white font-semibold px-6 py-3 rounded-xl hover:bg-ocean/90 transition-colors"
-              >
-                Send us a message
-              </a>
+              <h3 className="text-2xl font-bold mb-3 text-sand">Jared Campion — Dream Drive</h3>
+              <p className="text-gray-300 leading-relaxed mb-3">
+                Jared&apos;s been importing vehicles from Japan since 2018. His team in Tokyo sources vans from auctions and trusted dealers, and handles everything from bidding to compliance to delivery. He knows which Hiace models actually work for conversions and which ones will give you grief.
+              </p>
+              <p className="text-gray-300 leading-relaxed">
+                Dream Drive has a full-time buyer in Japan, established relationships with auction houses and logistics providers, and handles all export documentation, shipping, quarantine, and REGO. It&apos;s not a side hustle — it&apos;s the operation.
+              </p>
             </div>
-            <div className="rounded-2xl overflow-hidden shadow-sm border border-gray-100 aspect-[4/3]">
-              <iframe
-                title="Bare Camper location"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3539.2!2d153.2135!3d-27.5270!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6b9147a00000000%3A0x0!2s1%2F10+Jones+Rd%2C+Capalaba+QLD+4157!5e0!3m2!1sen!2sau!4v1700000000000!5m2!1sen!2sau"
-                width="100%"
-                height="100%"
-                style={{ border: 0, display: 'block' }}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              />
+            <div>
+              <h3 className="text-2xl font-bold mb-3 text-sand">Andrew Taylor — DIY RV Solutions</h3>
+              <p className="text-gray-300 leading-relaxed mb-3">
+                Andrew runs DIY RV Solutions out of Capalaba, Brisbane — a workshop that&apos;s been building fiberglass pop tops and campervan components for over 25 years. If it goes on a Hiace, his team has built it. Pop tops, hi-tops, electrical systems, furniture — the lot.
+              </p>
+              <p className="text-gray-300 leading-relaxed">
+                DIY RV Solutions manufactures all fiberglass in-house, runs a full electrical and carpentry workshop, and supplies DIY kits to builders around the country. They&apos;re the build side of Bare Camper.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      <Footer />
+      {/* ─── CTA ─────────────────────────────────────── */}
+      <section className="py-20 text-center">
+        <div className="max-w-2xl mx-auto px-4">
+          <h2 className="text-4xl text-charcoal font-bold mb-4">Ready when you are.</h2>
+          <p className="text-gray-500 text-lg mb-10 leading-relaxed">
+            Browse available vans, check out our build options, or just have a yarn about what you&apos;re thinking. No commitment, no pressure.
+          </p>
+          <div className="flex flex-wrap gap-4 justify-center">
+            <Link href="/browse" className="btn-primary text-base px-8 py-4">Browse Vans</Link>
+            <a
+              href="https://wa.me/61432182892?text=Hi!%20I'm%20interested%20in%20a%20campervan%20from%20Bare%20Camper."
+              className="btn-ghost text-base px-8 py-4"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Book a Free Chat
+            </a>
+          </div>
+          <p className="mt-10 text-gray-400 text-sm">
+            <a href="mailto:hello@barecamper.com.au" className="text-ocean hover:underline">hello@barecamper.com.au</a>
+            {' · '}
+            <a href="tel:0432182892" className="text-ocean hover:underline">0432 182 892</a>
+            <br />
+            Workshop: 1/10 Jones Road, Capalaba QLD 4157
+          </p>
+        </div>
+      </section>
     </div>
   )
 }
+
+// ── Static data ───────────────────────────────────────────────────────────────
+
+const STEPS = [
+  {
+    title: 'Find your van',
+    desc: 'Browse quality Hiace vans from Japanese auctions or local stock. Every van is inspected and graded so you know exactly what you\u2019re getting.',
+  },
+  {
+    title: 'We handle the hard part',
+    desc: 'Import, shipping, compliance, rego. Fixed price, no surprises. We\u2019ve done this over 100 times and we know exactly how it works.',
+  },
+  {
+    title: 'Choose your build level',
+    desc: 'Bare van, roof conversion, or full turnkey. You pick where we stop. Come back for the next stage whenever you\u2019re ready — no lock-in.',
+  },
+  {
+    title: 'Get camping',
+    desc: 'Everything\u2019s lined up through one team, so you\u2019re on the road faster than doing it yourself. No chasing tradies, no waiting on parts.',
+  },
+]
+
+const JAPAN_INFRA = [
+  {
+    icon: '\uD83C\uDDEF\uD83C\uDDF5',
+    title: 'Full-time team in Japan',
+    desc: 'We have a dedicated buyer based in Japan who inspects, bids, and manages logistics on the ground. Not a third-party agent — our team.',
+  },
+  {
+    icon: '\uD83D\uDD28',
+    title: 'Auction house access',
+    desc: 'Direct access to Japanese vehicle auctions (USS, TAA, HAA, and more). We bid on your behalf with expert knowledge of grading, condition, and pricing.',
+  },
+  {
+    icon: '\uD83D\uDE22',
+    title: 'Established shipping lanes',
+    desc: 'Long-standing relationships with RORO and container shipping providers. Vans move on regular sailings from Japan to Brisbane and Melbourne.',
+  },
+  {
+    icon: '\uD83D\uDCCB',
+    title: 'Export & compliance sorted',
+    desc: 'We handle Japanese export paperwork, Australian import approvals, quarantine, compliance workshop booking, and state registration.',
+  },
+  {
+    icon: '\uD83D\uDCB0',
+    title: 'Transparent pricing',
+    desc: 'Fixed-cost import packages. You see the auction price, the shipping cost, and the compliance fee upfront. No hidden margins or surprise charges.',
+  },
+  {
+    icon: '\uD83D\uDD0D',
+    title: 'Vehicle knowledge',
+    desc: 'After 100+ imports, we know which Hiace models suit conversions, which grades to avoid, and what to look for in auction sheets. That experience saves you money.',
+  },
+]
+
+const END_TO_END = [
+  {
+    icon: '\uD83D\uDD17',
+    title: 'Single point of contact',
+    desc: 'One team from start to finish. No juggling between importers, shippers, compliance workshops, and builders.',
+  },
+  {
+    icon: '\u23F1\uFE0F',
+    title: 'Faster turnaround',
+    desc: 'Because we control every stage, your van moves through the pipeline without sitting in queues between providers.',
+  },
+  {
+    icon: '\uD83D\uDEE1\uFE0F',
+    title: 'Nothing falls through the cracks',
+    desc: 'Every handoff between companies is a risk. We\u2019ve eliminated them. If something goes wrong, it\u2019s on us to fix it.',
+  },
+]

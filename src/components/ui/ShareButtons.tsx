@@ -9,7 +9,7 @@ interface Props {
 
 export default function ShareButtons({ url, title }: Props) {
   const [copied, setCopied] = useState(false)
-  const fullUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://barecamper.com'}${url}`
+  const fullUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://barecamper.com.au'}${url}`
   const encodedUrl = encodeURIComponent(fullUrl)
   const encodedTitle = encodeURIComponent(title)
 

@@ -54,7 +54,7 @@ export default function ConversionDetails({ videoUrl, showSpecs = true }: Props)
     <div className="bg-cream rounded-2xl p-6 md:p-8">
       <h2 className="text-2xl text-charcoal mb-2">Pop Top Conversion Details</h2>
       <p className="text-gray-500 text-sm mb-6">
-        Dream Drive pop tops are fibreglass conversions that add ~600mm of standing height to your HiAce.
+        Bare Camper pop tops are fibreglass conversions that add ~600mm of standing height to your HiAce.
         They fold flat when driving and raise in seconds.
       </p>
 

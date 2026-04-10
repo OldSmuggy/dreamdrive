@@ -2,8 +2,12 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
+import { requireAdmin } from '@/lib/api-auth'
 
 export async function PATCH(req: NextRequest) {
+  const { error: authErr } = await requireAdmin()
+  if (authErr) return authErr
+
   try {
     const { key, value } = await req.json()
     if (!key) return NextResponse.json({ error: 'key required' }, { status: 400 })

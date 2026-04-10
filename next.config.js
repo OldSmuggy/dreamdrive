@@ -2,9 +2,7 @@
 const nextConfig = {
   images: {
     remotePatterns: [
-      { protocol: 'https', hostname: 'www.ninja-cartrade.jp' },
-      { protocol: 'https', hostname: '*.r2.cloudflarestorage.com' },
-      { protocol: 'https', hostname: 'pub-*.r2.dev' },
+      { protocol: 'https', hostname: '**' },
     ],
   },
   // Prevent webpack from bundling Playwright and Chromium — they are
@@ -13,10 +11,40 @@ const nextConfig = {
     serverComponentsExternalPackages: [
       'playwright-core',
       '@sparticuz/chromium',
+      '@mendable/firecrawl-js',
     ],
+    // Allow server actions to accept larger payloads (images up to 4 MB)
+    serverActions: {
+      bodySizeLimit: '4mb',
+    },
+  },
+  async redirects() {
+    return [
+      { source: '/fit-outs/tama', destination: '/tama', permanent: true },
+      { source: '/fit-outs/mana', destination: '/mana', permanent: true },
+      { source: '/fit-outs/kumaq', destination: '/kuma-q', permanent: true },
+    ]
+  },
+  async rewrites() {
+    return [
+      {
+        source: '/camperdesigner',
+        destination: 'https://dreamdrive-configurator-3d.vercel.app/',
+      },
+      {
+        source: '/camperdesigner/:path*',
+        destination: 'https://dreamdrive-configurator-3d.vercel.app/:path*',
+      },
+    ]
   },
   async headers() {
     return [
+      {
+        source: '/images/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
       {
         source: '/(.*)',
         headers: [
@@ -28,12 +56,13 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://connect.facebook.net https://www.google-analytics.com",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://connect.facebook.net https://www.google-analytics.com https://www.clarity.ms",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: blob: https: http:",
-              "connect-src 'self' https://*.supabase.co https://www.google-analytics.com https://www.facebook.com https://region1.google-analytics.com",
-              "frame-src 'self' https://www.facebook.com",
+              "connect-src 'self' https://*.supabase.co https://www.google-analytics.com https://www.facebook.com https://region1.google-analytics.com https://sketchfab.com https://*.sketchfab.com https://www.clarity.ms https://*.clarity.ms",
+              "frame-src 'self' https://www.facebook.com https://*.supabase.co https://sketchfab.com https://*.sketchfab.com",
+              "object-src 'self' https://*.supabase.co",
               "media-src 'self' https: blob:",
             ].join('; '),
           },

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import PageEditToolbar, { EditableImage } from '@/components/admin/PageEditToolbar'
 import FitoutHero from '@/components/admin/FitoutHero'
 
@@ -37,9 +38,14 @@ export default function TamaClient({ jpyApprox, content: initial }: { jpyApprox:
           </span>
           <h1 className="text-5xl md:text-6xl text-white mb-3">The TAMA Pop Top</h1>
           <p className="text-sand text-xl mb-8">Premium Handcrafted Campervan</p>
-          <a href="tel:0432182892" className="inline-block bg-sand text-charcoal font-semibold px-8 py-3.5 rounded-xl hover:bg-sand transition-colors text-base">
-            Book a Test Drive
-          </a>
+          <div className="flex flex-wrap gap-3">
+            <a href="https://dreamdrive-configurator-3d.vercel.app/?model=tama" target="_blank" rel="noopener noreferrer" className="inline-block bg-sand text-charcoal font-semibold px-8 py-3.5 rounded-xl hover:bg-sand transition-colors text-base">
+              Customise in 3D ↗
+            </a>
+            <a href="tel:0432182892" className="inline-block border border-white/30 text-white font-semibold px-8 py-3.5 rounded-xl hover:bg-white/10 transition-colors text-base">
+              Book a Test Drive
+            </a>
+          </div>
         </div>
       </FitoutHero>
 
@@ -68,8 +74,9 @@ export default function TamaClient({ jpyApprox, content: initial }: { jpyApprox:
         <section className="max-w-6xl mx-auto px-4 py-12">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {gallery.map((url, i) => (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img key={i} src={url} alt={`TAMA gallery ${i + 1}`} className="w-full h-48 object-cover rounded-xl" />
+              <div key={i} className="relative h-48 rounded-xl overflow-hidden">
+                <Image src={url} alt={`TAMA gallery ${i + 1}`} fill className="object-cover" sizes="(max-width: 768px) 50vw, 25vw" />
+              </div>
             ))}
           </div>
         </section>
@@ -86,7 +93,7 @@ export default function TamaClient({ jpyApprox, content: initial }: { jpyApprox:
               Fit-out price is separate from the base van. Van price depends on the specific vehicle and exchange rate at time of purchase.
             </p>
           </div>
-          <Link href="/build" className="btn-primary shrink-0 text-center px-8 py-3.5">Build With TAMA →</Link>
+          <a href="https://dreamdrive-configurator-3d.vercel.app/?model=tama" target="_blank" rel="noopener noreferrer" className="btn-primary shrink-0 text-center px-8 py-3.5">Customise in 3D →</a>
         </div>
       </section>
 
@@ -230,7 +237,7 @@ export default function TamaClient({ jpyApprox, content: initial }: { jpyApprox:
           <h2 className="text-4xl text-white mb-3">Ready to build your TAMA?</h2>
           <p className="text-white/60 mb-8">Configure your dream build or book a test drive to see it in person.</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link href="/build" className="bg-sand text-charcoal font-semibold px-8 py-3.5 rounded-xl hover:bg-sand transition-colors text-base text-center">Configure Your Build →</Link>
+            <a href="https://dreamdrive-configurator-3d.vercel.app/?model=tama" target="_blank" rel="noopener noreferrer" className="bg-sand text-charcoal font-semibold px-8 py-3.5 rounded-xl hover:bg-sand transition-colors text-base text-center">Customise in 3D →</a>
             <a href="tel:0432182892" className="border border-white/30 text-white font-semibold px-8 py-3.5 rounded-xl hover:bg-white/10 transition-colors text-base text-center">Book a Test Drive</a>
           </div>
         </div>

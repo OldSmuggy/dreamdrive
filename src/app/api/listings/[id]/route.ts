@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
+import { requireAdmin } from '@/lib/api-auth'
 
 // Columns that require a DB migration and may not exist yet.
 // If the update fails because of one of these, we strip them and retry
@@ -11,23 +12,28 @@ const OPTIONAL_COLUMNS = [
   'location_status', 'fit_out_level', 'vehicle_model', 'conversion_video_url',
   'engine', 'has_power_steering', 'has_power_windows', 'has_rear_ac',
   'auction_time', 'auction_result', 'sold_price_jpy', 'top_bid_jpy', 'auction_time_zone',
+  'price_aud', 'price_type',
 ]
 
 export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const { error: authErr } = await requireAdmin()
+  if (authErr) return authErr
+
   try {
     const body = await req.json()
     const supabase = createAdminClient()
 
-    const doUpdate = async (payload: Record<string, unknown>) =>
-      supabase
+    const doUpdate = async (payload: Record<string, unknown>) => {
+      const { data, error } = await supabase
         .from('listings')
         .update({ ...payload, updated_at: new Date().toISOString() })
         .eq('id', params.id)
         .select()
-        .single()
+      return { data: data?.[0] ?? null, error }
+    }
 
     let { data, error } = await doUpdate(body)
 
@@ -61,6 +67,9 @@ export async function DELETE(
   _req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const { error: authErr } = await requireAdmin()
+  if (authErr) return authErr
+
   try {
     const supabase = createAdminClient()
     const { error } = await supabase.from('listings').delete().eq('id', params.id)

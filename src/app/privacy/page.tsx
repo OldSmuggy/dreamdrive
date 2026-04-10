@@ -1,113 +1,120 @@
 import { generateMeta } from '@/lib/seo'
-import Footer from '@/components/ui/Footer'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = generateMeta({
   title: 'Privacy Policy | Bare Camper',
-  description: 'Privacy Policy for Bare Camper — how we collect, use, and protect your personal information.',
+  description: 'How Bare Camper collects, uses, and protects your personal information.',
   url: '/privacy',
 })
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-white">
-      <section className="bg-charcoal text-white py-16 px-4">
-        <div className="max-w-3xl mx-auto">
-          <h1 className="text-4xl font-bold mb-3">Privacy Policy</h1>
-          <p className="text-white/60 text-sm">Last updated: April 2025</p>
+    <div className="min-h-screen">
+      <div className="max-w-3xl mx-auto px-4 py-16">
+        <h1 className="text-4xl font-bold text-charcoal mb-2">Privacy Policy</h1>
+        <p className="text-gray-400 text-sm mb-10">Last updated: 25 March 2026</p>
+
+        <div className="prose prose-gray max-w-none space-y-8">
+          <section>
+            <h2 className="text-2xl font-bold text-charcoal">Who we are</h2>
+            <p className="text-gray-600 leading-relaxed">
+              Bare Camper is a joint venture between Dream Drive and DIY RV Solutions (ABN 13 030 224 315),
+              operating from 1/10 Jones Road, Capalaba QLD 4157. When we say &ldquo;we&rdquo;, &ldquo;us&rdquo;,
+              or &ldquo;our&rdquo; in this policy, we mean Bare Camper and its associated entities.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-bold text-charcoal">What we collect</h2>
+            <p className="text-gray-600 leading-relaxed">We collect information you provide to us directly, including:</p>
+            <ul className="text-gray-600 space-y-2 list-disc list-inside">
+              <li><strong>Account information</strong> — name, email address, phone number when you create an account</li>
+              <li><strong>Enquiry details</strong> — vehicle preferences, budget, build requirements when you submit a form or scout request</li>
+              <li><strong>Payment information</strong> — processed securely through our payment provider. We do not store card details on our servers.</li>
+              <li><strong>Communications</strong> — messages sent through our in-app chat or email</li>
+              <li><strong>Usage data</strong> — pages visited, vans browsed, filters used. Collected via Google Analytics (GA4).</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-bold text-charcoal">How we use it</h2>
+            <ul className="text-gray-600 space-y-2 list-disc list-inside">
+              <li>To provide our services — sourcing vehicles, processing builds, managing your account</li>
+              <li>To communicate with you — order updates, auction results, vehicle recommendations</li>
+              <li>To notify you when vans matching your preferences become available</li>
+              <li>To improve our website and services based on usage patterns</li>
+              <li>To comply with Australian legal obligations</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-bold text-charcoal">Who we share it with</h2>
+            <p className="text-gray-600 leading-relaxed">We may share your information with:</p>
+            <ul className="text-gray-600 space-y-2 list-disc list-inside">
+              <li><strong>Our buyer agents</strong> — Japan-based agents who source vehicles on your behalf. They receive only the information needed to find and bid on vehicles for you.</li>
+              <li><strong>Service providers</strong> — Supabase (database), Resend (email), Vercel (hosting), Google Analytics (analytics). These providers process data on our behalf under their own privacy policies.</li>
+              <li><strong>Compliance and shipping partners</strong> — when required to import and register your vehicle in Australia.</li>
+            </ul>
+            <p className="text-gray-600 leading-relaxed mt-3">
+              We do not sell your personal information to third parties.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-bold text-charcoal">Cookies and analytics</h2>
+            <p className="text-gray-600 leading-relaxed">
+              We use Google Analytics 4 to understand how visitors use our site. This collects anonymised usage data
+              including pages visited, time on site, and device information. No personally identifiable information
+              is shared with Google. You can opt out of Google Analytics by installing the
+              <a href="https://tools.google.com/dlpage/gaoptout" className="text-ocean hover:underline" target="_blank" rel="noopener noreferrer"> Google Analytics opt-out browser add-on</a>.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-bold text-charcoal">Data security</h2>
+            <p className="text-gray-600 leading-relaxed">
+              We take reasonable steps to protect your personal information from misuse, loss, unauthorised access,
+              and disclosure. Our website uses HTTPS encryption. Account data is stored securely in our database
+              with role-based access controls. However, no method of transmission over the internet is 100% secure.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-bold text-charcoal">Your rights</h2>
+            <p className="text-gray-600 leading-relaxed">Under the Australian Privacy Act 1988, you have the right to:</p>
+            <ul className="text-gray-600 space-y-2 list-disc list-inside">
+              <li>Access the personal information we hold about you</li>
+              <li>Request correction of inaccurate information</li>
+              <li>Request deletion of your account and associated data</li>
+              <li>Opt out of marketing communications at any time</li>
+            </ul>
+            <p className="text-gray-600 leading-relaxed mt-3">
+              To exercise any of these rights, email us at{' '}
+              <a href="mailto:hello@barecamper.com.au" className="text-ocean hover:underline">hello@barecamper.com.au</a>.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-bold text-charcoal">Changes to this policy</h2>
+            <p className="text-gray-600 leading-relaxed">
+              We may update this policy from time to time. We&apos;ll notify you of significant changes by email
+              or by posting a notice on our website. Your continued use of Bare Camper after changes constitutes
+              acceptance of the updated policy.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-bold text-charcoal">Contact us</h2>
+            <p className="text-gray-600 leading-relaxed">
+              If you have questions about this privacy policy or how we handle your data:<br />
+              <strong>Email:</strong>{' '}
+              <a href="mailto:hello@barecamper.com.au" className="text-ocean hover:underline">hello@barecamper.com.au</a><br />
+              <strong>Phone:</strong> 0432 182 892<br />
+              <strong>Address:</strong> 1/10 Jones Road, Capalaba QLD 4157
+            </p>
+          </section>
         </div>
-      </section>
-
-      <section className="py-16 px-4">
-        <div className="max-w-3xl mx-auto prose prose-gray prose-headings:text-charcoal prose-a:text-ocean">
-
-          <p>
-            Bare Camper is operated by DIY RV Solutions Pty Ltd (ABN 13 030 224 315) in
-            partnership with Dream Drive. This Privacy Policy explains how we collect, use,
-            disclose, and protect your personal information in accordance with the{' '}
-            <em>Privacy Act 1988</em> (Cth) and the Australian Privacy Principles (APPs).
-          </p>
-
-          <h2>1. Information we collect</h2>
-          <p>We may collect the following types of personal information:</p>
-          <ul>
-            <li>Name, email address, and phone number (when you register or enquire)</li>
-            <li>Vehicle preferences and watchlist activity</li>
-            <li>Payment information (processed securely via Stripe — we do not store card details)</li>
-            <li>IP address and browser/device information (via analytics tools)</li>
-            <li>Any information you provide when contacting us</li>
-          </ul>
-
-          <h2>2. How we use your information</h2>
-          <p>We use your personal information to:</p>
-          <ul>
-            <li>Process enquiries, expressions of interest, and deposits</li>
-            <li>Send you vehicle alerts and updates you have opted into</li>
-            <li>Communicate with you about listings, builds, and your order</li>
-            <li>Improve our website and services</li>
-            <li>Comply with legal obligations</li>
-          </ul>
-
-          <h2>3. Disclosure to third parties</h2>
-          <p>
-            We do not sell your personal information. We may share it with trusted third parties
-            who assist us in operating the website and conducting our business, including:
-          </p>
-          <ul>
-            <li>Supabase (database and authentication hosting)</li>
-            <li>Resend (transactional email delivery)</li>
-            <li>Stripe (payment processing)</li>
-            <li>Vercel (website hosting)</li>
-            <li>Google Analytics (website analytics — anonymised)</li>
-          </ul>
-          <p>
-            These providers are bound by their own privacy policies and are required to handle
-            your information securely.
-          </p>
-
-          <h2>4. Data security</h2>
-          <p>
-            We take reasonable steps to protect your personal information from misuse,
-            interference, loss, and unauthorised access. Our platform uses HTTPS encryption,
-            and access to personal data is restricted to authorised staff only.
-          </p>
-
-          <h2>5. Access and correction</h2>
-          <p>
-            You may request access to, or correction of, the personal information we hold about
-            you at any time by contacting us at{' '}
-            <a href="mailto:hello@barecamper.com.au">hello@barecamper.com.au</a>. We will respond
-            within a reasonable timeframe.
-          </p>
-
-          <h2>6. Cookies and analytics</h2>
-          <p>
-            Our website uses cookies and Google Analytics to understand how visitors use the site.
-            Analytics data is anonymised and aggregated. You can disable cookies in your browser
-            settings, though this may affect site functionality.
-          </p>
-
-          <h2>7. Contact us</h2>
-          <p>
-            For privacy-related enquiries or complaints, please contact us:
-          </p>
-          <ul>
-            <li>Email: <a href="mailto:hello@barecamper.com.au">hello@barecamper.com.au</a></li>
-            <li>Phone: <a href="tel:0432182892">0432 182 892</a></li>
-            <li>Address: 1/10 Jones Road, Capalaba QLD 4157, Australia</li>
-            <li>ABN: 13 030 224 315</li>
-          </ul>
-          <p>
-            If you are not satisfied with our response, you may contact the Office of the
-            Australian Information Commissioner (OAIC) at{' '}
-            <a href="https://www.oaic.gov.au" target="_blank" rel="noopener noreferrer">
-              www.oaic.gov.au
-            </a>.
-          </p>
-        </div>
-      </section>
-
-      <Footer />
+      </div>
     </div>
   )
 }
