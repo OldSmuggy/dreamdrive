@@ -36,7 +36,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const { logo_url } = await getSiteSettings()
   return (
     <html lang="en" className={body.variable}>
-      <GoogleTagManager gtmId="GTM-P7XP9LBV" />
+      <GoogleTagManager />
       <body className="font-body bg-white text-gray-900 antialiased">
         <noscript>
           <iframe
