@@ -4,6 +4,7 @@ import './globals.css'
 import Header from '@/components/ui/Header'
 import { GoogleAnalytics } from '@/components/GoogleAnalytics'
 import { MetaPixel } from '@/components/MetaPixel'
+import { GoogleTagManager } from '@/components/GoogleTagManager'
 import WhatsAppButton from '@/components/ui/WhatsAppButton'
 import { getSiteSettings } from '@/lib/site-settings'
 
@@ -35,7 +36,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const { logo_url } = await getSiteSettings()
   return (
     <html lang="en" className={body.variable}>
+      <GoogleTagManager gtmId="GTM-P7XP9LBV" />
       <body className="font-body bg-white text-gray-900 antialiased">
+        <noscript>
+          <iframe
+            src="https://www.googletagmanager.com/ns.html?id=GTM-P7XP9LBV"
+            height="0"
+            width="0"
+            style={{ display: 'none', visibility: 'hidden' }}
+          />
+        </noscript>
         <GoogleAnalytics />
         <MetaPixel />
         <Header logoUrl={logo_url} />
