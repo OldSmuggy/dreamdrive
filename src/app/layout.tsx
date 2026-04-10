@@ -4,7 +4,6 @@ import './globals.css'
 import Header from '@/components/ui/Header'
 import { GoogleAnalytics } from '@/components/GoogleAnalytics'
 import { MetaPixel } from '@/components/MetaPixel'
-import { GoogleTagManagerHead, GoogleTagManagerBody } from '@/components/GoogleTagManager'
 import WhatsAppButton from '@/components/ui/WhatsAppButton'
 import { getSiteSettings } from '@/lib/site-settings'
 
@@ -37,10 +36,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en" className={body.variable}>
       <head>
-        <GoogleTagManagerHead />
+        <script dangerouslySetInnerHTML={{ __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-P7XP9LBV');` }} />
       </head>
       <body className="font-body bg-white text-gray-900 antialiased">
-        <GoogleTagManagerBody />
+        <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P7XP9LBV" height="0" width="0" style={{ display: 'none', visibility: 'hidden' }} /></noscript>
         <GoogleAnalytics />
         <MetaPixel />
         <Header logoUrl={logo_url} />
