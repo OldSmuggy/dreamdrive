@@ -130,6 +130,7 @@ export function curationBadgeInfo(badge: CurationBadge | null | undefined): {
     adventure_spec: { label: 'Adventure Spec', bg: 'bg-stone-200',  text: 'text-stone-800' },
     arriving_soon:  { label: 'Arriving Soon',  bg: 'bg-orange-100', text: 'text-orange-800' },
     hot_this_week:  { label: '🔥 Hot This Week', bg: 'bg-red-50',    text: 'text-red-700' },
+    made_to_order:  { label: '🛠 Made to Order',  bg: 'bg-purple-100', text: 'text-purple-800' },
   }
   return map[badge] ?? null
 }

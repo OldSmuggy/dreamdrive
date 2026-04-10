@@ -61,6 +61,7 @@ type EditState = {
   sold_price_jpy: string
   top_bid_jpy: string
   curation_badge: string
+  lead_time_weeks: string
   pipeline_stage: string
   pipeline_eta: string
   au_market_price_low: string
@@ -131,6 +132,7 @@ function toEditState(l: Listing): EditState {
     sold_price_jpy: (l as any).sold_price_jpy?.toString() ?? '',
     top_bid_jpy: (l as any).top_bid_jpy?.toString() ?? '',
     curation_badge: l.curation_badge ?? '',
+    lead_time_weeks: (l as any).lead_time_weeks?.toString() ?? '',
     pipeline_stage: l.pipeline_stage ?? '',
     pipeline_eta: l.pipeline_eta ? l.pipeline_eta.slice(0, 10) : '',
     au_market_price_low: l.au_market_price_low?.toString() ?? '',
@@ -1485,6 +1487,7 @@ function ListingRow({
                   <option value="budget_entry">💰 Budget Entry</option>
                   <option value="adventure_spec">🏕 Adventure Spec</option>
                   <option value="arriving_soon">🚢 Arriving Soon</option>
+                  <option value="made_to_order">🛠 Made to Order</option>
                 </select>
               </div>
               <div>
@@ -1503,6 +1506,10 @@ function ListingRow({
               <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-1.5">Pipeline ETA</label>
                 <input type="date" value={editState.pipeline_eta} onChange={e => onSet('pipeline_eta', e.target.value)} className={inputClass} />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Lead Time (weeks)</label>
+                <input type="number" min="0" max="52" placeholder="e.g. 8" value={editState.lead_time_weeks} onChange={e => onSet('lead_time_weeks', e.target.value)} className={inputClass} />
               </div>
             </div>
           </div>
@@ -1993,6 +2000,7 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
         sold_price_jpy: editState.sold_price_jpy ? parseInt(editState.sold_price_jpy) : null,
         top_bid_jpy: editState.top_bid_jpy ? parseInt(editState.top_bid_jpy) : null,
         curation_badge: editState.curation_badge || null,
+        lead_time_weeks: editState.lead_time_weeks ? parseInt(editState.lead_time_weeks) : null,
         pipeline_stage: editState.pipeline_stage || null,
         pipeline_eta: editState.pipeline_eta || null,
         au_market_price_low: editState.au_market_price_low ? parseInt(editState.au_market_price_low) : null,
