@@ -1004,7 +1004,7 @@ function ListingCard({ listing, userId, initialSaved, jpyRate }: { listing: List
           )}
           {curBadge && (
             <div className={`${curBadge.bg} ${curBadge.text} text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 sm:px-2 rounded`}>
-              {curBadge.label}
+              {curBadge.label}{listing.curation_badge === 'made_to_order' && (listing as any).lead_time_weeks ? ` · ${(listing as any).lead_time_weeks}wk` : ''}
             </div>
           )}
           {listing.power_system && listing.power_system !== 'None' && (

@@ -224,7 +224,7 @@ export default async function VanDetailPage({ params }: { params: { id: string }
               )}
               {curBadge && (
                 <div className={`inline-flex items-center ${curBadge.bg} ${curBadge.text} text-xs font-bold px-2.5 py-1 rounded`}>
-                  {curBadge.label}
+                  {curBadge.label}{listing.curation_badge === 'made_to_order' && listing.lead_time_weeks ? ` · ${listing.lead_time_weeks} week lead time` : ''}
                 </div>
               )}
               {(listing.source === 'dealer_goonet' || listing.source === 'dealer_carsensor') && (
