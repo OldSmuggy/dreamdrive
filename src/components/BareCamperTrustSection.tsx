@@ -293,8 +293,8 @@ export default function BareCamperTrustSection() {
           Ready when you are.
         </h2>
         <p className="text-stone-500 max-w-lg mx-auto text-sm leading-relaxed">
-          Download a brochure, request a callback, or come see the builds in person
-          at our Capalaba workshop. No commitment, no pressure.
+          Our showroom is right here — browse and configure online, then pick up from our Capalaba workshop.
+          No showroom markup, no pressure. Request a callback or download a brochure below.
         </p>
       </div>
 

@@ -99,7 +99,7 @@ const ADVANTAGES = [
   {
     icon: '💰',
     title: 'Save $5,000–$10,000 vs dealers',
-    desc: 'You pay the actual auction price plus our flat $2,750 fee — which covers both the Japan-side buyer\'s agent and the Australia-side broker. Most importers charge separately for each. No hidden dealer margins, no inflated "market price".',
+    desc: 'You pay the actual auction price plus our flat $2,750 fee. No showroom rent, no lot full of stock to finance, no sales team on commission. We keep our overheads low and pass the savings on. Most importers charge separately for Japan and Australia sides — we don\'t.',
   },
   {
     icon: '🔍',
@@ -126,6 +126,11 @@ const ADVANTAGES = [
     title: 'No dealer games',
     desc: 'We don\'t buy stock to mark up. We source your specific van to order. That means you get exactly what you want, not whatever\'s sitting on a dealer\'s yard.',
   },
+  {
+    icon: '💻',
+    title: 'No showroom markup',
+    desc: 'Our showroom is online — not a flashy shopfront you end up paying for. Browse, configure, and get quotes from your couch. When your van\'s ready, pick it up from our Brisbane workshop. Lower overheads = better prices.',
+  },
 ]
 
 export default function WhyBareCamperPage() {
@@ -142,8 +147,8 @@ export default function WhyBareCamperPage() {
           <p className="text-gray-300 text-lg max-w-xl mb-10 leading-relaxed">
             We&apos;re the only campervan brand with our own team in Japan, Australia, and New Zealand —
             not brokers hiring third-party agents, but our people on the ground at every stage.
-            That means transparent pricing, professional conversion, and one point of contact
-            from auction floor to your driveway.
+            No expensive showroom to pay for. Browse online, configure in 3D, pick up from our Brisbane workshop.
+            That means transparent pricing, lower costs, and one point of contact from auction floor to your driveway.
           </p>
           <Link href="/browse" className="btn-primary inline-block text-base px-8 py-4">
             Browse vans →

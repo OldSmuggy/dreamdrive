@@ -269,6 +269,9 @@ export default async function HomePage() {
           <p>
             Bare Camper gives you exactly what you need, and nothing you don&apos;t. No locked-in packages. No pressure to go all-in. Just a quality starting point and a team who can help at every stage — if and when you want it.
           </p>
+          <p className="text-base text-gray-400">
+            We run our showroom online — not from an expensive shopfront. That means lower overheads and better prices for you. Browse, configure, and get quotes from your couch. When your van&apos;s ready, pick it up from our Brisbane workshop.
+          </p>
         </div>
       </section>
 
