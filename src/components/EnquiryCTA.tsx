@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { trackEvent } from '@/lib/analytics'
+import { useSpamGuard } from '@/hooks/useSpamGuard'
 
 // ── Config ──────────────────────────────────────────────────────────────────
 
@@ -87,6 +88,7 @@ export default function EnquiryCTA({ vanTitle, vanId, defaultModel, defaultTab }
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState<TabId | null>(null)
   const [utmParams, setUtmParams] = useState<Record<string, string>>({})
+  const { honeypotProps, isSpam, markSubmitted } = useSpamGuard()
 
   // Enquiry form
   const [eq, setEq] = useState({ firstName: '', lastName: '', email: '', phone: '', interest: defaultModel ? 'full-build' : '', message: '' })
@@ -135,6 +137,7 @@ export default function EnquiryCTA({ vanTitle, vanId, defaultModel, defaultTab }
 
   const submitEnquiry = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (isSpam()) { setSubmitted('enquiry'); return }
     setSubmitting(true)
     const interest = INTEREST_OPTIONS.find(o => o.value === eq.interest)?.label ?? eq.interest
 
@@ -160,6 +163,7 @@ export default function EnquiryCTA({ vanTitle, vanId, defaultModel, defaultTab }
 
   const submitBrochure = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (isSpam()) { setSubmitted('brochure'); return }
     setSubmitting(true)
     const brochureName = BROCHURE_OPTIONS.find(o => o.value === br.brochure)?.label ?? br.brochure
 
@@ -183,6 +187,7 @@ export default function EnquiryCTA({ vanTitle, vanId, defaultModel, defaultTab }
 
   const submitFinance = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (isSpam()) { setSubmitted('finance'); return }
     setSubmitting(true)
     const financingLabel = FINANCE_OPTIONS.find(o => o.value === fi.financing)?.label ?? fi.financing
 
@@ -276,6 +281,7 @@ export default function EnquiryCTA({ vanTitle, vanId, defaultModel, defaultTab }
           {/* ── TAB 1: ENQUIRY ─────────────────────── */}
           {tab === 'enquiry' && (
             <form onSubmit={submitEnquiry}>
+              <input {...honeypotProps} />
               <h3 className="text-xl font-bold text-stone-900 mb-1">Interested in this van?</h3>
               <p className="text-stone-500 text-sm mb-6">Tell us a few details and we&apos;ll help you take the next step — whether that&apos;s getting a quote, booking a walkthrough, or just asking a question.</p>
 
@@ -298,6 +304,7 @@ export default function EnquiryCTA({ vanTitle, vanId, defaultModel, defaultTab }
           {/* ── TAB 2: BROCHURE ────────────────────── */}
           {tab === 'brochure' && (
             <form onSubmit={submitBrochure}>
+              <input {...honeypotProps} />
               <h3 className="text-xl font-bold text-stone-900 mb-1">Download a spec sheet</h3>
               <p className="text-stone-500 text-sm mb-6">Get the full spec sheet and pricing for any of our campervan models. PDF sent straight to your inbox.</p>
 
@@ -316,6 +323,7 @@ export default function EnquiryCTA({ vanTitle, vanId, defaultModel, defaultTab }
           {/* ── TAB 3: FINANCE ─────────────────────── */}
           {tab === 'finance' && (
             <form onSubmit={submitFinance}>
+              <input {...honeypotProps} />
               <h3 className="text-xl font-bold text-stone-900 mb-1">Get a finance quote</h3>
               <p className="text-stone-500 text-sm mb-6">We partner with Stratton Finance to get you competitive rates. Fill in the basics and they&apos;ll be in touch within 24 hours.</p>
 

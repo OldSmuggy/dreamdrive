@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { trackEvent } from '@/lib/analytics'
+import { useSpamGuard } from '@/hooks/useSpamGuard'
 
 // ============================================================
 // Bare Camper — Trust & Conversion Section
@@ -16,9 +17,11 @@ function CallbackForm() {
   const [form, setForm] = useState({ name: '', phone: '', email: '', interest: 'mana', message: '' })
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const { honeypotProps, isSpam } = useSpamGuard()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (isSpam()) { setSubmitted(true); return }
     setSubmitting(true)
 
     try {
@@ -55,6 +58,7 @@ function CallbackForm() {
 
   return (
     <form onSubmit={handleSubmit} className="bg-white border border-stone-200 rounded-2xl p-6 md:p-8">
+      <input {...honeypotProps} />
       <h3 className="text-lg font-semibold text-stone-900 mb-1">Request a callback</h3>
       <p className="text-stone-500 text-sm mb-6">
         No pressure, no scripts. Just a chat with the people who build the vans.

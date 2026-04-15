@@ -18,6 +18,25 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     console.log('[leads] POST type=%s email=%s source=%s', body.type, body.email, body.source)
 
+    // Server-side spam checks
+    const email = (body.email ?? '').toLowerCase()
+    const name = (body.name ?? '').toLowerCase()
+    // Reject if honeypot field was filled (shouldn't be in the payload at all, but check anyway)
+    if (body.website_url) {
+      console.warn('[leads] spam: honeypot filled', ip)
+      return NextResponse.json({ ok: true }) // fake success so bots think it worked
+    }
+    // Reject gibberish emails (common spam patterns)
+    if (email && (/test@test|example\.com|mailinator|guerrillamail|tempmail|throwaway/.test(email))) {
+      console.warn('[leads] spam: disposable email', email)
+      return NextResponse.json({ ok: true })
+    }
+    // Reject if name contains URLs
+    if (name && /https?:\/\/|www\.|\.com|\.ru|\.cn/.test(name)) {
+      console.warn('[leads] spam: URL in name', name)
+      return NextResponse.json({ ok: true })
+    }
+
     const supabase = createAdminClient()
 
     const fullPayload = {

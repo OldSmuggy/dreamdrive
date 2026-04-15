@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { trackEvent } from '@/lib/analytics'
+import { useSpamGuard } from '@/hooks/useSpamGuard'
 
 const GRADES = [
   { value: '', label: 'Select minimum grade...' },
@@ -35,6 +36,7 @@ interface Props {
 export default function SourcingModal({ open, onClose, vanTitle, vanId }: Props) {
   const [step, setStep] = useState<'info' | 'form' | 'success'>('info')
   const [submitting, setSubmitting] = useState(false)
+  const { honeypotProps, isSpam } = useSpamGuard()
   const [form, setForm] = useState({
     firstName: '', lastName: '', email: '', phone: '',
     grade: '', maxKm: '', drive: '', size: '', notes: '',
@@ -47,6 +49,7 @@ export default function SourcingModal({ open, onClose, vanTitle, vanId }: Props)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (isSpam()) { setStep('success'); return }
     setSubmitting(true)
 
     const gradeLabel = GRADES.find(g => g.value === form.grade)?.label ?? form.grade
@@ -175,6 +178,7 @@ export default function SourcingModal({ open, onClose, vanTitle, vanId }: Props)
             )}
 
             <form onSubmit={handleSubmit}>
+              <input {...honeypotProps} />
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div><label className="block text-xs font-medium text-stone-500 mb-1">First Name *</label><input required value={form.firstName} onChange={set('firstName')} className="w-full border border-stone-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-300" placeholder="First name" /></div>
                 <div><label className="block text-xs font-medium text-stone-500 mb-1">Last Name *</label><input required value={form.lastName} onChange={set('lastName')} className="w-full border border-stone-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-300" placeholder="Last name" /></div>
