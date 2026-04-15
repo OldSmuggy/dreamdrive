@@ -385,40 +385,28 @@ export default async function VanDetailPage({ params }: { params: { id: string }
               </div>
             )}
 
-            {/* What You're Paying — transparency block */}
+            {/* What's included — transparency block */}
             {isJapanListing && priceCents && (
               <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 mb-6">
-                <h3 className="text-sm font-bold text-charcoal mb-3">What You&apos;re Paying</h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Van price (Japan)</span>
-                    <span className="text-gray-800 font-medium">{displayPrice}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Shipping + compliance + rego</span>
-                    <span className="text-gray-800 font-medium">~$5,800–$6,200</span>
-                  </div>
-                  <div className="flex justify-between pt-2 border-t border-gray-200">
-                    <span className="text-charcoal font-semibold">Total landed in Brisbane</span>
-                    <span className="text-charcoal font-semibold">
-                      {priceCents ? centsToAud(priceCents + 600000) : '—'}
+                <h3 className="text-sm font-bold text-charcoal mb-3">What&apos;s Included in {displayPrice}</h3>
+                <ul className="space-y-1.5 text-sm text-gray-600">
+                  <li className="flex items-start gap-2"><span className="text-ocean font-bold mt-px">✓</span>Vehicle purchase price</li>
+                  <li className="flex items-start gap-2"><span className="text-ocean font-bold mt-px">✓</span>$2,750 sourcing fee (inc GST)</li>
+                  <li className="flex items-start gap-2"><span className="text-ocean font-bold mt-px">✓</span>Shipping Japan → Brisbane</li>
+                  <li className="flex items-start gap-2"><span className="text-ocean font-bold mt-px">✓</span>GST, customs &amp; biosecurity</li>
+                  <li className="flex items-start gap-2"><span className="text-ocean font-bold mt-px">✓</span>RAWS compliance &amp; safety cert</li>
+                  <li className="flex items-start gap-2"><span className="text-ocean font-bold mt-px">✓</span>QLD registration &amp; stamp duty</li>
+                </ul>
+                {listing.au_market_price_low && listing.au_market_price_high && listing.au_market_price_low > 0 && (
+                  <div className="mt-3 pt-3 border-t border-gray-200 flex justify-between text-sm">
+                    <span className="text-gray-400">Similar spec locally</span>
+                    <span className="text-gray-400">
+                      ${Math.round(listing.au_market_price_low / 100).toLocaleString()}–${Math.round(listing.au_market_price_high / 100).toLocaleString()}
                     </span>
                   </div>
-                  {listing.au_market_price_low && listing.au_market_price_high && (
-                    <>
-                      <div className="flex justify-between pt-2 text-gray-400">
-                        <span>Same spec at a Brisbane dealer</span>
-                        <span>~${Math.round((listing.au_market_price_low + listing.au_market_price_high) / 200).toLocaleString()}</span>
-                      </div>
-                      <div className="flex justify-between text-green-700 font-semibold">
-                        <span>You save</span>
-                        <span>~${Math.round(((listing.au_market_price_low + listing.au_market_price_high) / 2 - priceCents - 600000) / 100).toLocaleString()}</span>
-                      </div>
-                    </>
-                  )}
-                </div>
+                )}
                 <p className="text-xs text-gray-400 mt-3">
-                  $2,750 sourcing fee — fully refundable if we don&apos;t secure the van.
+                  {isEstimate ? 'Estimate only — final price depends on auction result and exchange rate at time of purchase.' : 'All-in price — no hidden fees.'}
                 </p>
               </div>
             )}
