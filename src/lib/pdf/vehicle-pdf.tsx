@@ -1,5 +1,5 @@
 import {
-  Document, Page, Text, View, Image, StyleSheet,
+  Document, Page, Text, View, Image, StyleSheet, Link,
 } from '@react-pdf/renderer'
 
 // Brand colours
@@ -34,8 +34,9 @@ const s = StyleSheet.create({
   headerBrand: { fontSize: 15, fontFamily: 'Helvetica-Bold', color: C.white, letterSpacing: 1 },
   headerTagline: { fontSize: 8, color: C.sand, letterSpacing: 0.5 },
 
-  // Hero photo
-  heroPhoto: { width: '100%', height: 240, objectFit: 'fill' },
+  // Hero photo — aspect-ratio preserved
+  heroWrap: { width: '100%', height: 230, backgroundColor: '#f0f0f0' },
+  heroPhoto: { width: '100%', height: '100%', objectFit: 'contain' },
 
   // Content area
   content: { paddingHorizontal: 28, paddingTop: 18 },
@@ -83,20 +84,89 @@ const s = StyleSheet.create({
   descHeading: { fontSize: 9, fontFamily: 'Helvetica-Bold', color: C.gray, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 5 },
   desc: { fontSize: 9, color: C.charcoal, lineHeight: 1.5 },
 
+  // Build options section
+  buildSection: { marginTop: 4 },
+  buildTitle: { fontSize: 10, fontFamily: 'Helvetica-Bold', color: C.charcoal, marginBottom: 8 },
+  buildRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 7,
+    paddingHorizontal: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: C.grayLight,
+  },
+  buildRowAlt: { backgroundColor: C.cream },
+  buildLabel: { fontSize: 9, color: C.charcoal, flex: 1 },
+  buildDesc: { fontSize: 7, color: C.gray, marginTop: 1 },
+  buildPrice: { fontSize: 10, fontFamily: 'Helvetica-Bold', color: C.ocean, textAlign: 'right', width: 80 },
+  buildTotal: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    backgroundColor: C.ocean,
+    borderRadius: 3,
+    marginTop: 2,
+  },
+  buildTotalLabel: { fontSize: 9, fontFamily: 'Helvetica-Bold', color: C.white },
+  buildTotalPrice: { fontSize: 12, fontFamily: 'Helvetica-Bold', color: C.sand },
+
+  // Disclaimer
+  disclaimer: {
+    marginTop: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: '#FEF9C3',
+    borderRadius: 3,
+    borderLeftWidth: 3,
+    borderLeftColor: '#F59E0B',
+  },
+  disclaimerText: { fontSize: 7, color: '#92400E', lineHeight: 1.5 },
+
+  // Trust section
+  trustSection: {
+    marginHorizontal: 28,
+    marginTop: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    backgroundColor: C.cream,
+    borderRadius: 4,
+  },
+  trustTitle: { fontSize: 9, fontFamily: 'Helvetica-Bold', color: C.charcoal, marginBottom: 4 },
+  trustRow: { flexDirection: 'row', gap: 20 },
+  trustItem: { flex: 1 },
+  trustName: { fontSize: 8, fontFamily: 'Helvetica-Bold', color: C.ocean, marginBottom: 1 },
+  trustDesc: { fontSize: 7, color: C.gray, lineHeight: 1.4 },
+
   // CTA section
   ctaBox: {
     backgroundColor: C.ocean,
     marginHorizontal: 28,
-    marginTop: 14,
+    marginTop: 10,
     borderRadius: 4,
     paddingHorizontal: 18,
-    paddingVertical: 12,
+    paddingVertical: 10,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  ctaText: { color: C.white, fontSize: 9, lineHeight: 1.6 },
-  ctaUrl: { fontSize: 12, fontFamily: 'Helvetica-Bold', color: C.sand },
+  ctaText: { color: C.white, fontSize: 8, lineHeight: 1.5 },
+  ctaUrl: { fontSize: 11, fontFamily: 'Helvetica-Bold', color: C.sand },
+
+  // Next steps
+  nextSteps: {
+    marginHorizontal: 28,
+    marginTop: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: C.grayLight,
+    borderRadius: 4,
+  },
+  nextStepsTitle: { fontSize: 9, fontFamily: 'Helvetica-Bold', color: C.charcoal, marginBottom: 4 },
+  nextStep: { fontSize: 8, color: C.charcoal, lineHeight: 1.6 },
 
   // Footer
   footer: {
@@ -149,6 +219,7 @@ export interface VehiclePDFProps {
   size:         string | null
   location:     string | null
   price:        string | null
+  priceCents:   number | null
   priceNote:    string | null
   grade:        string | null
   gradeLabel:   string | null
@@ -157,6 +228,12 @@ export interface VehiclePDFProps {
   heroImage:    string | null   // base64 data URL
   photoImages:  string[]        // base64 data URLs (all photos incl. hero)
   isDealer:     boolean
+  // Build-up pricing
+  popTopPrice:  number          // AUD
+  manaPrice:    number          // AUD
+  tamaPrice:    number          // AUD
+  kumaQPrice:   number          // AUD (only shown for SLWB vans)
+  isSLWB:       boolean
 }
 
 function gradeColour(grade: string | null) {
@@ -180,10 +257,15 @@ function chunkPhotos(arr: string[], size: number): string[][] {
   return out
 }
 
+function fmtAud(n: number): string {
+  return `$${n.toLocaleString('en-AU')}`
+}
+
 export default function VehiclePDF({
   id, modelName, modelYear, mileageKm, drive, engine, size,
-  location, price, priceNote, grade, gradeLabel, description,
+  location, price, priceCents, priceNote, grade, gradeLabel, description,
   source, heroImage, photoImages, isDealer,
+  popTopPrice, manaPrice, tamaPrice, kumaQPrice, isSLWB,
 }: VehiclePDFProps) {
   const specs = [
     { label: 'Year',     value: modelYear?.toString() ?? '—' },
@@ -194,7 +276,25 @@ export default function VehiclePDF({
     { label: 'Location', value: locationLabel(location) ?? '—' },
   ]
 
+  const vanPrice = priceCents ? Math.round(priceCents / 100) : null
+
+  // Build option rows
+  const buildOptions = [
+    { label: 'This van only', desc: 'Imported, complied & registered — ready to drive', price: vanPrice },
+    { label: 'Van + Pop Top roof', desc: 'Fiberglass pop top conversion — standing room & ventilation', price: vanPrice ? vanPrice + popTopPrice : null },
+    { label: 'Van + MANA conversion', desc: 'Compact liveable build — pop top, kitchen, toilet, 200AH lithium', price: vanPrice ? vanPrice + manaPrice : null },
+    { label: 'Van + TAMA conversion', desc: '6-seat family campervan — ISOFIX, galley kitchen, full electrical', price: vanPrice ? vanPrice + tamaPrice : null },
+  ]
+  if (isSLWB) {
+    buildOptions.push({
+      label: 'Van + KUMA-Q conversion',
+      desc: 'Full-length SLWB build — queen bed, kitchen, 4-seat dining',
+      price: vanPrice ? vanPrice + kumaQPrice : null,
+    })
+  }
+
   const photoPages = chunkPhotos(photoImages, 6)
+  const listingUrl = `https://barecamper.com.au/van/${id}`
 
   return (
     <Document
@@ -215,9 +315,11 @@ export default function VehiclePDF({
           <Text style={{ fontSize: 8, color: '#9CA3AF' }}>barecamper.com.au</Text>
         </View>
 
-        {/* Hero photo */}
+        {/* Hero photo — contained, not stretched */}
         {heroImage && (
-          <Image src={heroImage} style={s.heroPhoto} />
+          <View style={s.heroWrap}>
+            <Image src={heroImage} style={s.heroPhoto} />
+          </View>
         )}
 
         <View style={s.content}>
@@ -226,7 +328,7 @@ export default function VehiclePDF({
             <Text style={s.title}>{modelName}</Text>
             {price && (
               <View style={s.priceBlock}>
-                <Text style={s.priceLabel}>Price (AUD)</Text>
+                <Text style={s.priceLabel}>Van Price (AUD)</Text>
                 <Text style={s.price}>{price}</Text>
                 {priceNote && <Text style={s.priceNote}>{priceNote}</Text>}
               </View>
@@ -241,7 +343,7 @@ export default function VehiclePDF({
               </Text>
             )}
             {isDealer && (
-              <Text style={[s.badge, s.badgeToyota]}>✓ Toyota Partner — Japan</Text>
+              <Text style={[s.badge, s.badgeToyota]}>Toyota Partner — Japan</Text>
             )}
             {locationLabel(location) && (
               <Text style={[s.badge, s.badgeOcean]}>{locationLabel(location)}</Text>
@@ -260,24 +362,72 @@ export default function VehiclePDF({
 
           {/* Description */}
           {description && (
-            <View style={{ marginBottom: 14 }}>
+            <View style={{ marginBottom: 10 }}>
               <Text style={s.descHeading}>About This Van</Text>
-              <Text style={s.desc}>{description.slice(0, 600)}{description.length > 600 ? '…' : ''}</Text>
+              <Text style={s.desc}>{description.slice(0, 400)}{description.length > 400 ? '…' : ''}</Text>
             </View>
           )}
+
+          {/* ── Build-up pricing ── */}
+          {vanPrice && (
+            <View style={s.buildSection}>
+              <Text style={s.buildTitle}>What could this van become?</Text>
+              {buildOptions.map((opt, i) => (
+                <View key={opt.label} style={[s.buildRow, i % 2 === 1 ? s.buildRowAlt : {}]}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={s.buildLabel}>{opt.label}</Text>
+                    <Text style={s.buildDesc}>{opt.desc}</Text>
+                  </View>
+                  <Text style={s.buildPrice}>{opt.price ? `~${fmtAud(opt.price)}` : '—'}</Text>
+                </View>
+              ))}
+
+              {/* Disclaimer */}
+              <View style={s.disclaimer}>
+                <Text style={s.disclaimerText}>
+                  Prices are approximate estimates only. Final pricing depends on exchange rates, auction result, vehicle condition, and your chosen options. We&apos;ll provide an accurate quote once we know more about your requirements.
+                </Text>
+              </View>
+            </View>
+          )}
+        </View>
+
+        {/* Trust section */}
+        <View style={s.trustSection}>
+          <Text style={s.trustTitle}>Backed by two specialist businesses</Text>
+          <View style={s.trustRow}>
+            <View style={s.trustItem}>
+              <Text style={s.trustName}>Dream Drive</Text>
+              <Text style={s.trustDesc}>Japan vehicle sourcing, import logistics, auction bidding, compliance and full turnkey campervan conversions. Motor Dealer Licence 4816576.</Text>
+            </View>
+            <View style={s.trustItem}>
+              <Text style={s.trustName}>DIY RV Solutions</Text>
+              <Text style={s.trustDesc}>Professional fiberglass pop top and hi-top roof conversions, electrical systems, and campervan parts. Brisbane factory, 10-day turnaround.</Text>
+            </View>
+          </View>
         </View>
 
         {/* CTA box */}
         <View style={s.ctaBox}>
           <View>
-            <Text style={s.ctaUrl}>barecamper.com.au</Text>
+            <Link src={listingUrl}>
+              <Text style={s.ctaUrl}>barecamper.com.au</Text>
+            </Link>
             <Text style={s.ctaText}>hello@barecamper.com.au  ·  0432 182 892</Text>
-            <Text style={s.ctaText}>Workshop: 1/10 Jones Road, Capalaba QLD 4157</Text>
           </View>
           <View style={{ alignItems: 'flex-end' }}>
-            <Text style={{ color: C.sand, fontSize: 9, fontFamily: 'Helvetica-Bold' }}>Reserve from $2,750</Text>
-            <Text style={{ color: '#9CA3AF', fontSize: 7 }}>Delivered to Brisbane in 6–8 weeks</Text>
+            <Text style={{ color: C.sand, fontSize: 9, fontFamily: 'Helvetica-Bold' }}>Finance available</Text>
+            <Text style={{ color: '#9CA3AF', fontSize: 7 }}>40+ lenders compared for you</Text>
           </View>
+        </View>
+
+        {/* Next steps */}
+        <View style={s.nextSteps}>
+          <Text style={s.nextStepsTitle}>What happens next?</Text>
+          <Text style={s.nextStep}>1. Call or message Jared on 0432 182 892 to chat about this van</Text>
+          <Text style={s.nextStep}>2. We&apos;ll confirm pricing and availability within 24 hours</Text>
+          <Text style={s.nextStep}>3. Pay $2,750 to reserve — we handle everything from there</Text>
+          <Text style={s.nextStep}>4. Delivered to Brisbane in 6–8 weeks, complied and registered</Text>
         </View>
 
         {/* Footer */}
