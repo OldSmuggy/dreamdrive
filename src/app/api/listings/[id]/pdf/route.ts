@@ -99,7 +99,7 @@ export async function GET(
       fetchAsDataUrl(`${baseUrl}/images/poptop/hero-golden.jpg`),
       fetchAsDataUrl(`${baseUrl}/images/mana/interior-full.jpg`),
       fetchAsDataUrl(`${baseUrl}/images/tama/interior-overview.jpg`),
-      fetchAsDataUrl(`${baseUrl}/barecamper-logo-dark-400.png`),
+      fetchAsDataUrl(`${baseUrl}/logos/bare-camper-white.png`),
     ])
 
     const validDataUrls = dataUrls.filter((u): u is string => u !== null)

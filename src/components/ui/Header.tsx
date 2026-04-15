@@ -84,10 +84,10 @@ export default function Header({ logoUrl }: { logoUrl?: string }) {
           <Link href="/" className="shrink-0 flex items-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/bare-camper-no-tagline-dark.svg"
+              src="/logos/bare-camper-white.png"
               alt="Bare Camper"
               className="w-auto object-contain"
-              style={{ height: 40 }}
+              style={{ height: 28 }}
             />
           </Link>
 
