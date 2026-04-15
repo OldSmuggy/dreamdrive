@@ -84,7 +84,7 @@ export async function GET(
     const tamaAud = tamaConversionAud(jpyRate)
     const manaAud = manaAuConversionAud()
     const kumaQAud = kumaQConversionAud(jpyRate)
-    const isSLWB = listing.size === 'SLWB' || listing.size === 'Super Long (SLWB)'
+    const isSLWB = listing.size === 'SLWB'
 
     // Fetch all photos as embedded base64 (no URLs exposed in PDF)
     const allPhotos: string[] = listing.photos ?? []
