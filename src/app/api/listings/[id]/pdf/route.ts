@@ -96,10 +96,10 @@ export async function GET(
 
     const [dataUrls, popTopImage, manaImage, tamaImage, logoImage] = await Promise.all([
       fetchImagesInBatches(allPhotos.slice(0, MAX_PHOTOS), 4),
-      fetchAsDataUrl(`${baseUrl}/images/poptop/three-quarter-up.jpg`),
+      fetchAsDataUrl(`${baseUrl}/images/poptop/hero-golden.jpg`),
       fetchAsDataUrl(`${baseUrl}/images/mana/interior-full.jpg`),
       fetchAsDataUrl(`${baseUrl}/images/tama/interior-overview.jpg`),
-      fetchAsDataUrl(`${baseUrl}/bare-camper-no-tagline-dark.svg`),
+      fetchAsDataUrl(`${baseUrl}/barecamper-logo-dark-400.png`),
     ])
 
     const validDataUrls = dataUrls.filter((u): u is string => u !== null)

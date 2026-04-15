@@ -265,24 +265,31 @@ export default function VehiclePDF({
           {/* ── Build-up pricing ── */}
           {vanPrice && (
             <View>
-              <Text style={{ fontSize: 10, fontFamily: 'Helvetica-Bold', color: C.charcoal, marginBottom: 6 }}>What could this van become?</Text>
+              <Text style={{ fontSize: 10, fontFamily: 'Helvetica-Bold', color: C.charcoal, marginBottom: 4 }}>What could this van become?</Text>
+              <Text style={{ fontSize: 7, color: C.gray, marginBottom: 8 }}>Van price: ~{fmtAudFull(vanPrice)} (imported, complied & registered in Brisbane)</Text>
 
-              {/* Line items: van only + pop top */}
-              <View style={[s.buildLineRow, { backgroundColor: C.cream }]}>
-                <View style={{ flex: 1 }}>
-                  <Text style={s.buildLineLabel}>This van — imported, complied & registered</Text>
+              {/* Row 1: Pop Top */}
+              <View style={s.cardRow}>
+                <View style={s.card}>
+                  {popTopImage && <Image src={popTopImage} style={s.cardImage} />}
+                  <View style={s.cardBody}>
+                    <Text style={s.cardName}>Pop Top Roof Conversion</Text>
+                    <Text style={s.cardDesc}>Professional fiberglass pop top — standing room, ventilation, bed platform up top. 10-day turnaround at our Brisbane factory.</Text>
+                    <View style={s.cardPriceRow}>
+                      <View>
+                        <Text style={s.cardPriceLabel}>Add to van</Text>
+                        <Text style={s.cardPriceSm}>+{fmtAudFull(popTopPrice)}</Text>
+                      </View>
+                      <View style={{ alignItems: 'flex-end' }}>
+                        <Text style={s.cardPriceLabel}>Van + Pop Top total</Text>
+                        <Text style={s.cardPrice}>~{fmtAudFull(vanPrice + popTopPrice)}</Text>
+                      </View>
+                    </View>
+                  </View>
                 </View>
-                <Text style={s.buildLinePrice}>~{fmtAudFull(vanPrice)}</Text>
-              </View>
-              <View style={s.buildLineRow}>
-                <View style={{ flex: 1 }}>
-                  <Text style={s.buildLineLabel}>+ Pop Top roof conversion</Text>
-                  <Text style={s.buildLineDesc}>Fiberglass pop top — standing room, ventilation, bed platform</Text>
-                </View>
-                <Text style={s.buildLinePrice}>+{fmtAudFull(popTopPrice)}</Text>
               </View>
 
-              {/* Conversion cards — 2 per row */}
+              {/* Row 2: MANA + TAMA side by side */}
               <View style={s.cardRow}>
                 {/* MANA */}
                 <View style={s.card}>
@@ -292,12 +299,18 @@ export default function VehiclePDF({
                     <Text style={s.cardDesc}>Compact liveable build for two — kitchen, toilet, 200AH lithium, external shower</Text>
                     <View style={s.cardPriceRow}>
                       <View>
-                        <Text style={s.cardPriceLabel}>Without pop top</Text>
-                        <Text style={s.cardPriceSm}>~{fmtAudFull(vanPrice + manaPrice)}</Text>
+                        <Text style={s.cardPriceLabel}>Conversion</Text>
+                        <Text style={s.cardPriceSm}>+{fmtAudFull(manaPrice)}</Text>
                       </View>
                       <View style={{ alignItems: 'flex-end' }}>
-                        <Text style={s.cardPriceLabel}>With pop top</Text>
-                        <Text style={s.cardPrice}>~{fmtAudFull(vanPrice + popTopPrice + manaPrice)}</Text>
+                        <Text style={s.cardPriceLabel}>Van + MANA total</Text>
+                        <Text style={s.cardPrice}>~{fmtAudFull(vanPrice + manaPrice)}</Text>
+                      </View>
+                    </View>
+                    <View style={{ marginTop: 3, paddingTop: 3, borderTopWidth: 1, borderTopColor: C.grayLight }}>
+                      <View style={s.cardPriceRow}>
+                        <Text style={{ fontSize: 6, color: C.gray }}>+ Pop Top</Text>
+                        <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: C.ocean }}>~{fmtAudFull(vanPrice + popTopPrice + manaPrice)}</Text>
                       </View>
                     </View>
                   </View>
@@ -311,33 +324,45 @@ export default function VehiclePDF({
                     <Text style={s.cardDesc}>6-seat family campervan — ISOFIX, galley kitchen, walnut counters, full electrical</Text>
                     <View style={s.cardPriceRow}>
                       <View>
-                        <Text style={s.cardPriceLabel}>Without pop top</Text>
-                        <Text style={s.cardPriceSm}>~{fmtAudFull(vanPrice + tamaPrice)}</Text>
+                        <Text style={s.cardPriceLabel}>Conversion</Text>
+                        <Text style={s.cardPriceSm}>+{fmtAudFull(tamaPrice)}</Text>
                       </View>
                       <View style={{ alignItems: 'flex-end' }}>
-                        <Text style={s.cardPriceLabel}>With pop top</Text>
-                        <Text style={s.cardPrice}>~{fmtAudFull(vanPrice + popTopPrice + tamaPrice)}</Text>
+                        <Text style={s.cardPriceLabel}>Van + TAMA total</Text>
+                        <Text style={s.cardPrice}>~{fmtAudFull(vanPrice + tamaPrice)}</Text>
+                      </View>
+                    </View>
+                    <View style={{ marginTop: 3, paddingTop: 3, borderTopWidth: 1, borderTopColor: C.grayLight }}>
+                      <View style={s.cardPriceRow}>
+                        <Text style={{ fontSize: 6, color: C.gray }}>+ Pop Top</Text>
+                        <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: C.ocean }}>~{fmtAudFull(vanPrice + popTopPrice + tamaPrice)}</Text>
                       </View>
                     </View>
                   </View>
                 </View>
               </View>
 
-              {/* KUMA-Q card for SLWB */}
+              {/* KUMA-Q row for SLWB */}
               {isSLWB && (
-                <View style={[s.cardRow, { marginTop: 0 }]}>
+                <View style={s.cardRow}>
                   <View style={[s.card, { flex: 0.5 }]}>
                     <View style={s.cardBody}>
-                      <Text style={s.cardName}>KUMA-Q Conversion (SLWB)</Text>
+                      <Text style={s.cardName}>KUMA-Q (SLWB only)</Text>
                       <Text style={s.cardDesc}>Full-length build — queen bed, kitchen, 4-seat dining</Text>
                       <View style={s.cardPriceRow}>
                         <View>
-                          <Text style={s.cardPriceLabel}>Without pop top</Text>
-                          <Text style={s.cardPriceSm}>~{fmtAudFull(vanPrice + kumaQPrice)}</Text>
+                          <Text style={s.cardPriceLabel}>Conversion</Text>
+                          <Text style={s.cardPriceSm}>+{fmtAudFull(kumaQPrice)}</Text>
                         </View>
                         <View style={{ alignItems: 'flex-end' }}>
-                          <Text style={s.cardPriceLabel}>With pop top</Text>
-                          <Text style={s.cardPrice}>~{fmtAudFull(vanPrice + popTopPrice + kumaQPrice)}</Text>
+                          <Text style={s.cardPriceLabel}>Van + KUMA-Q</Text>
+                          <Text style={s.cardPrice}>~{fmtAudFull(vanPrice + kumaQPrice)}</Text>
+                        </View>
+                      </View>
+                      <View style={{ marginTop: 3, paddingTop: 3, borderTopWidth: 1, borderTopColor: C.grayLight }}>
+                        <View style={s.cardPriceRow}>
+                          <Text style={{ fontSize: 6, color: C.gray }}>+ Pop Top</Text>
+                          <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: C.ocean }}>~{fmtAudFull(vanPrice + popTopPrice + kumaQPrice)}</Text>
                         </View>
                       </View>
                     </View>
