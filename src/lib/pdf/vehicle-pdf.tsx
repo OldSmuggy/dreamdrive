@@ -278,18 +278,18 @@ export default function VehiclePDF({
 
   const vanPrice = priceCents ? Math.round(priceCents / 100) : null
 
-  // Build option rows
+  // Build option rows — pop top is always separate, conversion prices are ON TOP of pop top
   const buildOptions = [
     { label: 'This van only', desc: 'Imported, complied & registered — ready to drive', price: vanPrice },
-    { label: 'Van + Pop Top roof', desc: 'Fiberglass pop top conversion — standing room & ventilation', price: vanPrice ? vanPrice + popTopPrice : null },
-    { label: 'Van + MANA conversion', desc: 'Compact liveable build — pop top, kitchen, toilet, 200AH lithium', price: vanPrice ? vanPrice + manaPrice : null },
-    { label: 'Van + TAMA conversion', desc: '6-seat family campervan — ISOFIX, galley kitchen, full electrical', price: vanPrice ? vanPrice + tamaPrice : null },
+    { label: 'Van + Pop Top roof', desc: 'Fiberglass pop top installed — standing room & ventilation (pop top not included in builds below)', price: vanPrice ? vanPrice + popTopPrice : null },
+    { label: 'Van + Pop Top + MANA build', desc: 'Compact liveable conversion — kitchen, toilet, 200AH lithium + pop top', price: vanPrice ? vanPrice + popTopPrice + manaPrice : null },
+    { label: 'Van + Pop Top + TAMA build', desc: '6-seat family campervan — ISOFIX, galley kitchen, full electrical + pop top', price: vanPrice ? vanPrice + popTopPrice + tamaPrice : null },
   ]
   if (isSLWB) {
     buildOptions.push({
-      label: 'Van + KUMA-Q conversion',
-      desc: 'Full-length SLWB build — queen bed, kitchen, 4-seat dining',
-      price: vanPrice ? vanPrice + kumaQPrice : null,
+      label: 'Van + Pop Top + KUMA-Q build',
+      desc: 'Full-length SLWB conversion — queen bed, kitchen, 4-seat dining + pop top',
+      price: vanPrice ? vanPrice + popTopPrice + kumaQPrice : null,
     })
   }
 
@@ -428,6 +428,21 @@ export default function VehiclePDF({
           <Text style={s.nextStep}>2. We&apos;ll confirm pricing and availability within 24 hours</Text>
           <Text style={s.nextStep}>3. Pay $2,750 to reserve — we handle everything from there</Text>
           <Text style={s.nextStep}>4. Delivered to Brisbane in 6–8 weeks, complied and registered</Text>
+        </View>
+
+        {/* Useful links */}
+        <View style={{ marginHorizontal: 28, marginTop: 8, flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+          <Link src="https://barecamper.com.au/finance"><Text style={{ fontSize: 7, color: C.ocean, textDecoration: 'underline' }}>Apply for Finance</Text></Link>
+          <Text style={{ fontSize: 7, color: C.grayLight }}>·</Text>
+          <Link src="https://barecamper.com.au/full-build"><Text style={{ fontSize: 7, color: C.ocean, textDecoration: 'underline' }}>View Full Builds</Text></Link>
+          <Text style={{ fontSize: 7, color: C.grayLight }}>·</Text>
+          <Link src="https://barecamper.com.au/pop-top"><Text style={{ fontSize: 7, color: C.ocean, textDecoration: 'underline' }}>Pop Top Conversions</Text></Link>
+          <Text style={{ fontSize: 7, color: C.grayLight }}>·</Text>
+          <Link src="https://barecamper.com.au/import-costs"><Text style={{ fontSize: 7, color: C.ocean, textDecoration: 'underline' }}>How Pricing Works</Text></Link>
+          <Text style={{ fontSize: 7, color: C.grayLight }}>·</Text>
+          <Link src="https://barecamper.com.au/browse"><Text style={{ fontSize: 7, color: C.ocean, textDecoration: 'underline' }}>Browse All Vans</Text></Link>
+          <Text style={{ fontSize: 7, color: C.grayLight }}>·</Text>
+          <Link src={listingUrl}><Text style={{ fontSize: 7, color: C.ocean, textDecoration: 'underline' }}>View This Van Online</Text></Link>
         </View>
 
         {/* Footer */}
