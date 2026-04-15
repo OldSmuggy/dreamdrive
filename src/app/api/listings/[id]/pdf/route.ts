@@ -90,8 +90,18 @@ export async function GET(
     const allPhotos: string[] = listing.photos ?? []
     const MAX_PHOTOS = 25
 
+    // Fetch van photos + build images + logo in parallel
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://barecamper.com.au'
     console.log(`[pdf] fetching ${Math.min(allPhotos.length, MAX_PHOTOS)} photos for ${listing.id}`)
-    const dataUrls = await fetchImagesInBatches(allPhotos.slice(0, MAX_PHOTOS), 4)
+
+    const [dataUrls, popTopImage, manaImage, tamaImage, logoImage] = await Promise.all([
+      fetchImagesInBatches(allPhotos.slice(0, MAX_PHOTOS), 4),
+      fetchAsDataUrl(`${baseUrl}/images/poptop/three-quarter-up.jpg`),
+      fetchAsDataUrl(`${baseUrl}/images/mana/interior-full.jpg`),
+      fetchAsDataUrl(`${baseUrl}/images/tama/interior-overview.jpg`),
+      fetchAsDataUrl(`${baseUrl}/bare-camper-no-tagline-dark.svg`),
+    ])
+
     const validDataUrls = dataUrls.filter((u): u is string => u !== null)
     console.log(`[pdf] ${validDataUrls.length}/${Math.min(allPhotos.length, MAX_PHOTOS)} photos embedded OK`)
 
@@ -117,11 +127,15 @@ export async function GET(
       heroImage,
       photoImages: validDataUrls,
       isDealer:    listing.source === 'dealer_goonet' || listing.source === 'dealer_carsensor',
+      logoImage,
       popTopPrice: POP_TOP_PRICE_AUD,
       manaPrice:   manaAud,
       tamaPrice:   tamaAud,
       kumaQPrice:  kumaQAud,
       isSLWB,
+      popTopImage,
+      manaImage,
+      tamaImage,
     })
 
     const buffer = await renderToBuffer(doc as React.ReactElement<any>)
