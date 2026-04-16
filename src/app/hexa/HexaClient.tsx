@@ -1,8 +1,7 @@
 'use client'
 
-import { useState } from 'react'
 import Image from 'next/image'
-import OptionsList, { UNIVERSAL_OPTIONS } from '@/components/options/OptionsList'
+import OptionsList from '@/components/options/OptionsList'
 
 // ============================================================
 // Bare Camper Build — barecamper.com.au/hexa
@@ -10,18 +9,6 @@ import OptionsList, { UNIVERSAL_OPTIONS } from '@/components/options/OptionsList
 // ============================================================
 
 const MODULE_PRICE = 25000
-
-const PRICING = {
-  standardRoof: [
-    { variant: '2WD Petrol', price: 69500, fuel: 'Petrol', drive: '2WD' },
-    { variant: '2WD Diesel', price: 75500, fuel: 'Diesel', drive: '2WD' },
-    { variant: '4WD Diesel', price: 79500, fuel: 'Diesel', drive: '4WD' },
-  ],
-  highRoof: [
-    { variant: '2WD Petrol', price: 72500, fuel: 'Petrol', drive: '2WD' },
-    { variant: '4WD Diesel', price: 82500, fuel: 'Diesel', drive: '4WD' },
-  ],
-}
 
 const STANDARD_INCLUSIONS = [
   {
@@ -36,9 +23,18 @@ const STANDARD_INCLUSIONS = [
     ],
   },
   {
+    category: 'Water System',
+    note: 'Fitted as standard — no add-on required',
+    items: [
+      '45L fresh water tank',
+      '12V water pump',
+      'Sink with bamboo countertop',
+    ],
+  },
+  {
     category: 'Finishing',
     items: [
-      'Cypress (檜) timber ceiling',
+      'Cypress timber ceiling',
       'Full floor installation',
       'Dimmable LED downlights',
     ],
@@ -46,17 +42,12 @@ const STANDARD_INCLUSIONS = [
 ]
 
 const SPECS = [
-  { label: 'Base Vehicle', value: 'Toyota Hiace H200 (DX grade)' },
-  { label: 'Vehicle Age', value: 'Less than 7 years old' },
-  { label: 'Odometer', value: 'Under 70,000 km — verified' },
   { label: 'Module Design', value: '3D CAD, CNC precision machined' },
   { label: 'Materials', value: 'Aluminium frame + birch waterproof plywood' },
   { label: 'Bed Size', value: 'Semi-double (expandable)' },
   { label: 'Bed Structure', value: 'Wood-spring slat system' },
   { label: 'Storage', value: 'Euro container standard — stackable, modular' },
-  { label: 'Ceiling', value: 'Japanese cypress (檜 / hinoki)' },
-  { label: 'Battery', value: '230Ah LiFePO₄ lithium' },
-  { label: 'Inverter', value: '2000W pure sine wave' },
+  { label: 'Ceiling', value: 'Japanese cypress (hinoki)' },
   { label: 'Water', value: '45L fresh water tank with 12V pump' },
   { label: 'Warranty', value: '12-month structural warranty on conversion' },
 ]
@@ -68,47 +59,6 @@ function formatPrice(price: number) {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(price)
-}
-
-function PricingCard({ title, vehicles, selectedRoof, onSelect }: {
-  title: string
-  vehicles: { variant: string; price: number; fuel: string; drive: string }[]
-  selectedRoof: string
-  onSelect: (t: string) => void
-}) {
-  const isSelected = selectedRoof === title
-  return (
-    <div
-      onClick={() => onSelect(title)}
-      className={`relative cursor-pointer rounded-2xl border-2 transition-all duration-300 p-6 ${
-        isSelected
-          ? 'border-ocean bg-white shadow-lg'
-          : 'border-gray-200 bg-white hover:border-gray-300'
-      }`}
-    >
-      {isSelected && (
-        <div className="absolute -top-3 left-6 bg-ocean text-white text-xs font-bold px-3 py-1 rounded-full tracking-wide">
-          SELECTED
-        </div>
-      )}
-      <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-widest mb-4">{title}</h3>
-      <div className="space-y-3">
-        {vehicles.map((v) => (
-          <div key={v.variant} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-            <div>
-              <span className="text-charcoal font-medium">{v.variant}</span>
-              <div className="flex gap-2 mt-1">
-                <span className="text-xs bg-cream text-charcoal/60 px-2 py-0.5 rounded">{v.drive}</span>
-                <span className="text-xs bg-cream text-charcoal/60 px-2 py-0.5 rounded">{v.fuel}</span>
-              </div>
-            </div>
-            <span className="text-xl font-bold text-charcoal tabular-nums">{formatPrice(v.price)}</span>
-          </div>
-        ))}
-      </div>
-      <p className="text-xs text-gray-400 mt-4">Inc. GST · Drive away · Vehicle + module (electrical separate)</p>
-    </div>
-  )
 }
 
 function InclusionBlock({ group }: { group: { category: string; note?: string; items: string[] } }) {
@@ -129,8 +79,6 @@ function InclusionBlock({ group }: { group: { category: string; note?: string; i
 }
 
 export default function HexaClient() {
-  const [selectedRoof, setSelectedRoof] = useState('Standard Roof')
-
   return (
     <div className="min-h-screen bg-white text-charcoal">
       {/* ── HERO ── */}
@@ -144,14 +92,10 @@ export default function HexaClient() {
             <span className="text-gray-400">Less than a full campervan.</span>
           </h1>
 
-          <p className="text-lg text-gray-400 max-w-xl mb-2">
-            車中泊仕様以上、キャンピングカー未満。
-          </p>
-
           <p className="text-base text-gray-300 max-w-xl mb-8">
             A precision-engineered modular system for the Toyota Hiace — designed in Tokyo,
-            CNC-machined from aluminium and birch plywood, and delivered to Australia with a verified
-            low-kilometre vehicle. Everything you need to sleep, work, and travel. Nothing you don&apos;t.
+            CNC-machined from aluminium and birch plywood. Includes the interior system,
+            finishing, and water. Electrical is available as an add-on.
           </p>
 
           <div className="flex flex-wrap gap-4">
@@ -185,33 +129,15 @@ export default function HexaClient() {
         </div>
       </section>
 
-      {/* ── VEHICLE SPEC STRIP ── */}
-      <section className="border-y border-gray-100 bg-cream">
-        <div className="max-w-5xl mx-auto px-6 py-6">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
-            {[
-              { label: 'Vehicle', value: 'Toyota Hiace H200' },
-              { label: 'Age', value: '< 7 years' },
-              { label: 'Odometer', value: '< 70,000 km' },
-              { label: 'Grade', value: 'Auction Verified' },
-            ].map((s) => (
-              <div key={s.label}>
-                <div className="text-ocean text-lg font-bold">{s.value}</div>
-                <div className="text-gray-400 text-xs uppercase tracking-wider mt-1">{s.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ── WHAT'S INCLUDED ── */}
       <section className="max-w-5xl mx-auto px-6 py-16">
         <h2 className="text-2xl font-bold text-charcoal mb-2">What&apos;s Included in the Module</h2>
         <p className="text-gray-500 mb-8 max-w-xl">
-          The {formatPrice(MODULE_PRICE)} module includes the interior system and finishing. Electrical, water, and pop-top are available as add-ons.
+          The {formatPrice(MODULE_PRICE)} module includes the interior system, finishing, and the water system.
+          Electrical is available as an add-on below.
         </p>
 
-        <div className="grid sm:grid-cols-2 gap-4">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {STANDARD_INCLUSIONS.map((group) => (
             <InclusionBlock key={group.category} group={group} />
           ))}
@@ -223,34 +149,20 @@ export default function HexaClient() {
         <div className="max-w-5xl mx-auto px-6 py-16">
           <h2 className="text-2xl font-bold text-charcoal mb-2">Pricing</h2>
           <p className="text-gray-500 mb-8 max-w-xl">
-            The Bare Camper Build module is <strong className="text-charcoal">{formatPrice(MODULE_PRICE)}</strong> installed. Electrical, water, and pop-top are available as add-ons below. Van + module packages start from {formatPrice(PRICING.standardRoof[0].price)}.
+            The Bare Camper Build module is <strong className="text-charcoal">{formatPrice(MODULE_PRICE)}</strong> installed,
+            including the water system. Electrical and pop-top are available as add-ons.
           </p>
 
           {/* Module price highlight */}
           <div className="bg-ocean text-white rounded-xl p-6 mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h3 className="text-lg font-bold">Bare Camper Build — Module Only</h3>
-              <p className="text-white/70 text-sm">Interior module system + cypress ceiling + floor + LED lighting. Fitted to your vehicle.</p>
+              <h3 className="text-lg font-bold">Bare Camper Build — Module</h3>
+              <p className="text-white/70 text-sm">Interior module system + water system + cypress ceiling + floor + LED lighting. Fitted to your vehicle.</p>
             </div>
             <div className="text-right shrink-0">
               <div className="text-3xl font-bold text-sand">{formatPrice(MODULE_PRICE)}</div>
               <div className="text-xs text-white/60">inc. GST · installed</div>
             </div>
-          </div>
-
-          <div className="grid sm:grid-cols-2 gap-6 mb-8">
-            <PricingCard
-              title="Standard Roof"
-              vehicles={PRICING.standardRoof}
-              selectedRoof={selectedRoof}
-              onSelect={setSelectedRoof}
-            />
-            <PricingCard
-              title="High Roof"
-              vehicles={PRICING.highRoof}
-              selectedRoof={selectedRoof}
-              onSelect={setSelectedRoof}
-            />
           </div>
 
           {/* Pop-top callout */}
@@ -277,7 +189,8 @@ export default function HexaClient() {
       <section className="max-w-5xl mx-auto px-6 py-16">
         <h2 className="text-2xl font-bold text-charcoal mb-2">Options & Add-ons</h2>
         <p className="text-gray-500 mb-8 max-w-xl">
-          Start with the base build and add what you need. All options are professionally installed at our Capalaba workshop.
+          Start with the base build and add what you need. Electrical systems, solar, heating and more — professionally
+          installed at our Capalaba workshop.
         </p>
         <OptionsList source="hexa_options" />
       </section>
@@ -340,8 +253,8 @@ export default function HexaClient() {
                 to how you use your van.
               </p>
               <p className="text-gray-500">
-                For Australia, we add the KickAss PowerBoss electrical system and a 45L water setup —
-                everything you need for off-grid weekends and extended touring.
+                The 45L water system is built in as standard. If you want power for fridges, lights or
+                inverters, pick an electrical package from the add-ons below.
               </p>
             </div>
             <div className="bg-white border border-gray-200 rounded-xl p-8 space-y-5">
@@ -349,7 +262,7 @@ export default function HexaClient() {
                 { icon: '⬡', title: 'Modular by design', desc: 'Work, life, or disaster-prep — reconfigure without tools.' },
                 { icon: '◇', title: 'Precision engineered', desc: '3D CAD design, CNC machined to millimetre accuracy.' },
                 { icon: '▣', title: 'Euro container standard', desc: 'Everything stacks. Everything fits. Everything travels.' },
-                { icon: '⚡', title: 'Off-grid ready', desc: 'KickAss PowerBoss 2000W + 45L water, straight out of the box.' },
+                { icon: '◎', title: 'Water ready', desc: '45L fresh water tank + 12V pump fitted as standard.' },
               ].map((f) => (
                 <div key={f.title} className="flex items-start gap-3">
                   <span className="text-ocean text-lg mt-0.5">{f.icon}</span>
@@ -370,10 +283,10 @@ export default function HexaClient() {
 
         <div className="grid sm:grid-cols-4 gap-6">
           {[
-            { step: '01', title: 'Choose your spec', desc: 'Pick your drivetrain, fuel type, and roof height. We\'ll source a verified vehicle from Japan.' },
+            { step: '01', title: 'Configure your module', desc: 'Tell us your vehicle and how you\'ll use it. We\'ll confirm the module spec and any add-ons.' },
             { step: '02', title: 'We build in Tokyo', desc: 'Our team fits the full module system to your vehicle at our Tokyo workshop.' },
             { step: '03', title: 'Ship to Brisbane', desc: 'RORO shipping to Australia. We handle compliance, registration, and delivery.' },
-            { step: '04', title: 'Finish in Brisbane', desc: 'PowerBoss electrical, 45L water, and any options fitted at our Capalaba workshop. Pop-top if you want it.' },
+            { step: '04', title: 'Finish in Brisbane', desc: 'Any electrical, solar, heating or pop-top add-ons fitted at our Capalaba workshop.' },
           ].map((s) => (
             <div key={s.step} className="relative">
               <div className="text-ocean/20 text-4xl font-black mb-2">{s.step}</div>
@@ -416,8 +329,7 @@ export default function HexaClient() {
       <div className="border-t border-gray-100 bg-cream">
         <div className="max-w-5xl mx-auto px-6 py-8 text-center">
           <p className="text-gray-400 text-xs leading-relaxed max-w-lg mx-auto">
-            All prices include GST and are based on a Toyota-verified Hiace H200 (DX grade), less than 7 years old with under 70,000km.
-            Prices may vary based on specific vehicle sourced. Vehicle availability subject to Japan auction supply.
+            Module fitted to a customer-supplied or Bare Camper-sourced Toyota Hiace. Prices include GST.
             Finance available through Stratton Finance — <a href="/finance" className="text-ocean hover:underline">learn more</a>.
           </p>
           <div className="flex items-center justify-center gap-4 mt-4 text-gray-300 text-xs">

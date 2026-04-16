@@ -2,8 +2,8 @@ import { generateMeta } from '@/lib/seo'
 import HexaClient from './HexaClient'
 
 export const metadata = generateMeta({
-  title: 'Bare Camper Build — Modular Campervan Conversion | Toyota Hiace H200 | Bare Camper',
-  description: 'The Bare Camper Build is a precision-engineered modular system for the Toyota Hiace — designed in Tokyo, CNC-machined from aluminium and birch plywood. From $25,000 for the conversion module.',
+  title: 'Bare Camper Build — Modular Campervan Conversion | Toyota Hiace | Bare Camper',
+  description: 'Bare Camper Build — a precision-engineered modular system for the Toyota Hiace. Module from $25,000 installed, includes interior system, finishing, and water. Electrical available as an add-on.',
   url: '/hexa',
 })
 
@@ -12,15 +12,13 @@ export default function HexaPage() {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: 'Bare Camper Build — Modular Campervan Conversion',
-    description: 'Precision-engineered modular system for Toyota Hiace H200. Designed in Tokyo, CNC-machined from aluminium and birch plywood. Module system from $25,000, electrical and water systems available separately.',
+    description: 'Precision-engineered modular system for the Toyota Hiace. Designed in Tokyo, CNC-machined from aluminium and birch plywood. Module from $25,000 installed — includes interior system, finishing, and water. Electrical available as an add-on.',
     brand: { '@type': 'Brand', name: 'Bare Camper' },
     url: 'https://barecamper.com.au/hexa',
     offers: {
-      '@type': 'AggregateOffer',
+      '@type': 'Offer',
+      price: 25000,
       priceCurrency: 'AUD',
-      lowPrice: 25000,
-      highPrice: 82500,
-      offerCount: 5,
       availability: 'https://schema.org/InStock',
     },
     category: 'Campervan Conversion',
