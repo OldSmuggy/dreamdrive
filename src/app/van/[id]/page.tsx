@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createSupabaseServer } from '@/lib/supabase-server'
 import { getJpyRate } from '@/lib/settings'
-import { listingDisplayPrice, importBreakdown, importFixedCosts } from '@/lib/pricing'
+import { listingDisplayPrice, importBreakdown, importFixedCosts, BARE_CAMPER_BUILD_INC_GST_AUD, BARE_CAMPER_BUILD_EX_GST_AUD } from '@/lib/pricing'
 import { generateMeta } from '@/lib/seo'
 import { centsToAud, scoreColor, scoreLabel, sourceLabel, sourceBadgeColor, auctionUrgency, locationBadgeInfo, fitOutLevelInfo, curationBadgeInfo } from '@/lib/utils'
 import AuctionBanner from '@/components/ui/AuctionBanner'
@@ -542,12 +542,26 @@ export default async function VanDetailPage({ params }: { params: { id: string }
           </div>
         </div>
 
-        {/* Pop-top / conversion upsell — show on vans without fitout */}
-        {!listing.has_fitout && listing.status !== 'sold' && (
-          <div className="mt-10 space-y-4">
-            <h2 className="text-xl text-charcoal font-bold">Add to Your Van</h2>
+        {/* Bare Camper Build module — shown on all listings */}
+        <div className="mt-10 space-y-4">
+          <h2 className="text-xl text-charcoal font-bold">Add to Your Van</h2>
 
-            {/* Pop Top */}
+          {/* Bare Camper Build */}
+          <div className="border border-gray-200 rounded-xl p-5 hover:border-ocean/40 transition-colors">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h3 className="font-bold text-charcoal mb-1">Bare Camper Build Module</h3>
+                <p className="text-sm text-gray-500 leading-relaxed">CNC-machined modular interior — bed, storage, water. Designed in Tokyo, fitted in Australia.</p>
+                <p className="text-xs text-gray-400 mt-1">${BARE_CAMPER_BUILD_EX_GST_AUD.toLocaleString('en-AU')} Ex GST (${BARE_CAMPER_BUILD_INC_GST_AUD.toLocaleString('en-AU')} inc. GST) · Electrical available as an add-on.</p>
+              </div>
+              <Link href="/hexa" className="text-ocean text-sm font-semibold whitespace-nowrap hover:underline shrink-0">
+                See the module →
+              </Link>
+            </div>
+          </div>
+
+          {/* Pop Top — only on vans without fitout and not sold */}
+          {!listing.has_fitout && listing.status !== 'sold' && (
             <div className="border border-gray-200 rounded-xl p-5 hover:border-ocean/40 transition-colors">
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -560,7 +574,12 @@ export default async function VanDetailPage({ params }: { params: { id: string }
                 </Link>
               </div>
             </div>
+          )}
+        </div>
 
+        {/* Full camper conversion upsell — show on vans without fitout */}
+        {!listing.has_fitout && listing.status !== 'sold' && (
+          <div className="mt-10 space-y-4">
             {/* Full camper conversion */}
             <div className="bg-cream border border-sand rounded-2xl p-6">
               <p className="font-semibold text-charcoal mb-1">Want a full campervan conversion?</p>

@@ -27,6 +27,12 @@ export const KUMA_Q_CONVERSION_JPY  = 5_400_000   // ¥5,400,000 (Japan build �
 export const MANA_JP_CONVERSION_JPY = 4_500_000   // ¥4,500,000 (Japan build)
 export const MANA_AU_CONVERSION_AUD = 45_000       // $45,000 AUD (Australia build)
 
+// ── Bare Camper Build (Hexa module) ──────────────────────────────────────────
+// Single source of truth for the module price. Stored ex-GST; inc-GST is
+// derived via GST_RATE so both are always consistent.
+export const BARE_CAMPER_BUILD_EX_GST_AUD  = 27_000
+export const BARE_CAMPER_BUILD_INC_GST_AUD = Math.round(BARE_CAMPER_BUILD_EX_GST_AUD * (1 + GST_RATE))
+
 // ── Price range assumptions for product page display ──────────────────────────
 // Cheapest realistic Japan Hiace: ~$15k vehicle + ~$8k import costs = $23k
 // Most expensive realistic Japan Hiace: ~$40k vehicle + ~$12k import costs = $52k

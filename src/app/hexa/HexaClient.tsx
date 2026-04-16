@@ -2,13 +2,15 @@
 
 import Image from 'next/image'
 import OptionsList from '@/components/options/OptionsList'
+import { BARE_CAMPER_BUILD_INC_GST_AUD, BARE_CAMPER_BUILD_EX_GST_AUD } from '@/lib/pricing'
 
 // ============================================================
 // Bare Camper Build — barecamper.com.au/hexa
 // Powered by Dream Drive Japan × Bare Camper Australia
 // ============================================================
 
-const MODULE_PRICE = 25000
+const MODULE_PRICE = BARE_CAMPER_BUILD_INC_GST_AUD
+const MODULE_PRICE_EX_GST = BARE_CAMPER_BUILD_EX_GST_AUD
 
 const STANDARD_INCLUSIONS = [
   {
@@ -162,6 +164,7 @@ export default function HexaClient() {
             <div className="text-right shrink-0">
               <div className="text-3xl font-bold text-sand">{formatPrice(MODULE_PRICE)}</div>
               <div className="text-xs text-white/60">inc. GST · installed</div>
+              <div className="text-xs text-white/50 mt-0.5">({formatPrice(MODULE_PRICE_EX_GST)} ex GST)</div>
             </div>
           </div>
 
