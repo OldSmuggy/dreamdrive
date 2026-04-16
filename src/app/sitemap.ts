@@ -35,6 +35,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/kuma-q`, priority: 0.8 },
     { url: `${baseUrl}/pop-top`, priority: 0.7 },
     { url: `${baseUrl}/diy`, priority: 0.7 },
+    { url: `${baseUrl}/hexa`, priority: 0.8 },
     { url: `${baseUrl}/sell`, priority: 0.7 },
     { url: `${baseUrl}/compare`, priority: 0.5 },
     { url: `${baseUrl}/privacy`, priority: 0.3 },
