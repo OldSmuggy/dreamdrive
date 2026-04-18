@@ -22,9 +22,18 @@ const REQUIRED_SLOTS = [
   { key: 'rear',      label: 'Rear' },
   { key: 'driver',    label: "Driver's Side" },
   { key: 'passenger', label: "Passenger's Side" },
-  { key: 'interior1', label: 'Interior 1' },
-  { key: 'interior2', label: 'Interior 2' },
+  { key: 'interior1', label: 'Interior' },
 ]
+
+export interface ListingInterest {
+  id: string
+  listing_id: string
+  name: string
+  email: string
+  phone: string | null
+  message: string | null
+  created_at: string
+}
 
 type PhotoMap = Record<string, string>
 
@@ -80,13 +89,15 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 // ─── Listing card ────────────────────────────────────────────────────────────
-function ListingCard({ listing, onPublish, onDelete, publishing, deleting }: {
+function ListingCard({ listing, interests, onPublish, onDelete, publishing, deleting }: {
   listing: MyListing
+  interests: ListingInterest[]
   onPublish: () => void
   onDelete: () => void
   publishing: boolean
   deleting: boolean
 }) {
+  const [showInterests, setShowInterests] = useState(false)
   const title = `${listing.model_year ? `${listing.model_year} ` : ''}${listing.model_name}`
   const thumb = listing.photos?.[0]
 
@@ -161,7 +172,32 @@ function ListingCard({ listing, onPublish, onDelete, publishing, deleting }: {
               View listing →
             </a>
           )}
+          {interests.length > 0 && (
+            <button onClick={() => setShowInterests(v => !v)}
+              className="text-xs text-ocean font-medium border border-ocean/30 rounded-lg px-3 py-1.5 hover:bg-ocean/5 transition-colors">
+              ✉️ Interested Buyers ({interests.length}) {showInterests ? '▲' : '▼'}
+            </button>
+          )}
         </div>
+
+        {/* Interested buyers */}
+        {showInterests && interests.length > 0 && (
+          <div className="mt-3 space-y-2">
+            {interests.map(interest => (
+              <div key={interest.id} className="bg-cream rounded-xl px-4 py-3 text-xs">
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <span className="font-semibold text-charcoal">{interest.name}</span>
+                  <span className="text-gray-400 shrink-0">{new Date(interest.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}</span>
+                </div>
+                <div className="flex flex-wrap gap-3 text-gray-600">
+                  <a href={`mailto:${interest.email}`} className="text-ocean hover:underline">{interest.email}</a>
+                  {interest.phone && <a href={`tel:${interest.phone}`} className="text-ocean hover:underline">{interest.phone}</a>}
+                </div>
+                {interest.message && <p className="text-gray-500 mt-1 leading-relaxed">{interest.message}</p>}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
@@ -223,7 +259,7 @@ function AddListingForm({ onCreated }: { onCreated: (listing: MyListing) => void
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!requiredFilled) { setErrorMsg('Please upload all 6 required photos.'); return }
+    if (!requiredFilled) { setErrorMsg('Please upload all 5 required photos.'); return }
     setSaving(true); setErrorMsg('')
     try {
       const res = await fetch('/api/customer/listings', {
@@ -384,7 +420,7 @@ function AddListingForm({ onCreated }: { onCreated: (listing: MyListing) => void
       {/* Photos */}
       <div>
         <p className="text-sm font-semibold text-charcoal mb-1">Photos <span className="text-red-400">*</span></p>
-        <p className="text-xs text-gray-400 mb-3">Upload all 6 required shots before you can submit.</p>
+        <p className="text-xs text-gray-400 mb-3">Upload all 5 required shots before you can submit.</p>
         <div className="grid grid-cols-3 gap-3 mb-4">
           {REQUIRED_SLOTS.map(slot => (
             <PhotoSlot key={slot.key} label={slot.label} required url={photos[slot.key]} uploading={uploading[slot.key]}
@@ -419,9 +455,9 @@ function AddListingForm({ onCreated }: { onCreated: (listing: MyListing) => void
         {/* Progress */}
         <div className="flex items-center gap-3 mt-4">
           <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-            <div className="h-1.5 bg-ocean rounded-full transition-all" style={{ width: `${Math.round((Object.keys(photos).length / 6) * 100)}%` }} />
+            <div className="h-1.5 bg-ocean rounded-full transition-all" style={{ width: `${Math.round((Object.keys(photos).length / 5) * 100)}%` }} />
           </div>
-          <span className="text-xs text-gray-500 whitespace-nowrap">{Object.keys(photos).length}/6 required</span>
+          <span className="text-xs text-gray-500 whitespace-nowrap">{Object.keys(photos).length}/5 required</span>
         </div>
       </div>
 
@@ -443,12 +479,20 @@ function AddListingForm({ onCreated }: { onCreated: (listing: MyListing) => void
 export default function MyListingsClient({
   isTrusted,
   initialListings,
+  interests = [],
 }: {
   userId: string
   userEmail: string
   isTrusted: boolean
   initialListings: MyListing[]
+  interests?: ListingInterest[]
 }) {
+  // Group interests by listing_id
+  const interestsByListing = interests.reduce<Record<string, ListingInterest[]>>((acc, i) => {
+    if (!acc[i.listing_id]) acc[i.listing_id] = []
+    acc[i.listing_id].push(i)
+    return acc
+  }, {})
   const [listings, setListings]   = useState(initialListings)
   const [publishing, setPublishing] = useState<string | null>(null)
   const [deleting, setDeleting]   = useState<string | null>(null)
@@ -512,6 +556,7 @@ export default function MyListingsClient({
               <ListingCard
                 key={listing.id}
                 listing={listing}
+                interests={interestsByListing[listing.id] ?? []}
                 onPublish={() => publish(listing.id)}
                 onDelete={() => deleteListing(listing.id)}
                 publishing={publishing === listing.id}
@@ -538,6 +583,7 @@ export default function MyListingsClient({
               <ListingCard
                 key={listing.id}
                 listing={listing}
+                interests={interestsByListing[listing.id] ?? []}
                 onPublish={() => {}}
                 onDelete={() => {}}
                 publishing={false}

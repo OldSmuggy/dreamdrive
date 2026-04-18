@@ -1509,7 +1509,10 @@ function ListingRow({
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-1.5">Lead Time (weeks)</label>
-                <input type="number" min="0" max="52" placeholder="e.g. 8" value={editState.lead_time_weeks} onChange={e => onSet('lead_time_weeks', e.target.value)} className={inputClass} />
+                <input type="number" min="0" max="52" placeholder="e.g. 20" value={editState.lead_time_weeks} onChange={e => onSet('lead_time_weeks', e.target.value)} className={inputClass} />
+                {editState.curation_badge === 'made_to_order' && (
+                  <p className="text-xs text-purple-600 mt-1">Sample listing — always visible on browse as a build-to-order option</p>
+                )}
               </div>
             </div>
           </div>

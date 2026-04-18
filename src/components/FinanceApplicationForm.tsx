@@ -203,7 +203,7 @@ export default function FinanceApplicationForm() {
             { name: 'phone', value: form.phone },
             { name: 'message', value: `[Finance Application]\n${notes}` },
           ],
-          context: { pageUri: typeof window !== 'undefined' ? window.location.href : '', pageName: 'Finance Application' },
+          context: { hutk: typeof document !== 'undefined' ? document.cookie.match(/hubspotutk=([^;]*)/)?.[1] || undefined : undefined, pageUri: typeof window !== 'undefined' ? window.location.href : '', pageName: 'Finance Application' },
         }),
       })
     } catch {}

@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
     const {
-      name, email, phone,
+      name, email, phone, contact_preference,
       model_name, model_year, body_type, mileage_km,
       transmission, asking_price_aud, location, notes,
       photos,
@@ -23,8 +23,8 @@ export async function POST(req: NextRequest) {
     if (!name || !email || !model_name) {
       return NextResponse.json({ error: 'Name, email, and van model are required.' }, { status: 400 })
     }
-    if (!photos || photos.length < 6) {
-      return NextResponse.json({ error: 'Please upload at least 6 photos.' }, { status: 400 })
+    if (!photos || photos.length < 5) {
+      return NextResponse.json({ error: 'Please upload at least 5 photos.' }, { status: 400 })
     }
 
     const supabase = createAdminClient()
@@ -56,6 +56,7 @@ export async function POST(req: NextRequest) {
           status: 'available',
           is_community_find: true,
           featured: false,
+          contact_preference: contact_preference ?? 'email',
         })
         .select('id')
         .single()
@@ -92,6 +93,7 @@ export async function POST(req: NextRequest) {
         asking_price_aud: asking_price_aud ?? null,
         location: location ?? null,
         notes: notes ?? null,
+        contact_preference: contact_preference ?? 'email',
         photos,
         status: isTrusted ? 'approved' : 'pending_review',
         listing_id: listingId,

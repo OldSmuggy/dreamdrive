@@ -89,6 +89,7 @@ export default function SourcingModal({ open, onClose, vanTitle, vanId }: Props)
             { name: 'message', value: `[Sourcing Request]\nGrade: ${gradeLabel}\nMax kms: ${form.maxKm || 'No pref'}\nDrive: ${driveLabel}\nSize: ${sizeLabel}\n${vanTitle ? `Ref: ${vanTitle}` : ''}\n${form.notes}` },
           ],
           context: {
+            hutk: typeof document !== 'undefined' ? document.cookie.match(/hubspotutk=([^;]*)/)?.[1] || undefined : undefined,
             pageUri: typeof window !== 'undefined' ? window.location.href : '',
             pageName: typeof document !== 'undefined' ? document.title : '',
           },

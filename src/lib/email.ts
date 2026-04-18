@@ -659,6 +659,58 @@ export const emailTemplates = {
     `,
   }),
 
+  listingInterestSellerEmail: (sellerName: string, vanTitle: string, buyerName: string, buyerEmail: string, buyerPhone: string, message: string, listingUrl: string) => ({
+    subject: `Someone's interested in your ${vanTitle}!`,
+    html: `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+        ${EMAIL_HEADER}
+        <div style="padding: 2rem;">
+          <h2 style="color: #2C2C2A; margin: 0 0 1rem;">G'day ${sellerName}!</h2>
+          <p style="color: #444; line-height: 1.6;">
+            Great news — someone is interested in your van listing on Bare Camper.
+          </p>
+          <div style="background: #F5F3ED; padding: 1.25rem; border-radius: 12px; margin: 1.5rem 0;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+              <tr><td style="padding: 0.4rem 0; color: #888; width: 80px;">Name</td><td style="padding: 0.4rem 0; color: #2C2C2A; font-weight: 600;">${buyerName}</td></tr>
+              <tr><td style="padding: 0.4rem 0; color: #888;">Email</td><td style="padding: 0.4rem 0; color: #2C2C2A;"><a href="mailto:${buyerEmail}" style="color: #3D6B73;">${buyerEmail}</a></td></tr>
+              ${buyerPhone ? `<tr><td style="padding: 0.4rem 0; color: #888;">Phone</td><td style="padding: 0.4rem 0; color: #2C2C2A;"><a href="tel:${buyerPhone}" style="color: #3D6B73;">${buyerPhone}</a></td></tr>` : ''}
+              ${message ? `<tr><td style="padding: 0.4rem 0; color: #888; vertical-align: top;">Message</td><td style="padding: 0.4rem 0; color: #2C2C2A;">${message}</td></tr>` : ''}
+            </table>
+          </div>
+          <p style="color: #444; line-height: 1.6;">
+            You can reply to them directly using the details above. Good luck with the sale!
+          </p>
+          <a href="${listingUrl}" style="display: inline-block; background: #3D6B73; color: white; padding: 0.6rem 1.25rem; border-radius: 8px; text-decoration: none; font-size: 0.9rem; margin-top: 0.5rem;">
+            View Your Listing
+          </a>
+          ${EMAIL_FOOTER}
+        </div>
+      </div>
+    `,
+  }),
+
+  listingInterestAdminEmail: (vanTitle: string, sellerEmail: string, buyerName: string, buyerEmail: string, buyerPhone: string, message: string, listingUrl: string) => ({
+    subject: `Listing interest — ${vanTitle} — ${buyerName}`,
+    html: `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+        ${EMAIL_HEADER}
+        <div style="padding: 2rem;">
+          <h2 style="color: #2C2C2A; margin: 0 0 0.5rem;">New Listing Interest</h2>
+          <p style="color: #888; font-size: 0.85rem; margin: 0 0 1.5rem;">Community listing: ${vanTitle}</p>
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+            <tr><td style="padding: 0.4rem 0; color: #888; width: 80px;">Buyer</td><td style="padding: 0.4rem 0; color: #2C2C2A;">${buyerName} (${buyerEmail}${buyerPhone ? `, ${buyerPhone}` : ''})</td></tr>
+            <tr><td style="padding: 0.4rem 0; color: #888;">Seller</td><td style="padding: 0.4rem 0; color: #2C2C2A;">${sellerEmail}</td></tr>
+            ${message ? `<tr><td style="padding: 0.4rem 0; color: #888;">Message</td><td style="padding: 0.4rem 0; color: #2C2C2A;">${message}</td></tr>` : ''}
+          </table>
+          <a href="${listingUrl}" style="display: inline-block; background: #3D6B73; color: white; padding: 0.6rem 1.25rem; border-radius: 8px; text-decoration: none; font-size: 0.9rem; margin-top: 1rem;">
+            View Listing
+          </a>
+          ${EMAIL_FOOTER}
+        </div>
+      </div>
+    `,
+  }),
+
   financeEnquiryEmail: (name: string, email: string, phone: string, budget: string, financeType: string, notes: string) => ({
     subject: `New finance enquiry — ${name}`,
     html: `

@@ -23,6 +23,7 @@ import PipelineTimeline from '@/components/van/PipelineTimeline'
 import InspirationBlock from '@/components/van/InspirationBlock'
 import StickyMobileCTA from '@/components/van/StickyMobileCTA'
 import AskAboutVan from '@/components/van/AskAboutVan'
+import InterestForm from '@/components/van/InterestForm'
 import type { Listing } from '@/types'
 
 export async function generateMetadata({ params }: { params: { id: string } }) {
@@ -510,6 +511,14 @@ export default async function VanDetailPage({ params }: { params: { id: string }
                 <Link href="/browse"
                   className="btn-primary w-full text-center text-base py-4 block">
                   Browse Available Vans →
+                </Link>
+              </div>
+            ) : listing.is_community_find ? (
+              <div className="space-y-3">
+                <InterestForm listingId={listing.id} />
+                <Link href="/browse"
+                  className="text-ocean font-semibold hover:underline text-sm text-center block">
+                  Browse more vans →
                 </Link>
               </div>
             ) : (

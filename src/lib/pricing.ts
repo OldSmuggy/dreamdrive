@@ -26,6 +26,9 @@ export const TAMA_CONVERSION_JPY    = 4_800_000   // ¥4,800,000 (Japan build)
 export const KUMA_Q_CONVERSION_JPY  = 5_400_000   // ¥5,400,000 (Japan build — SLWB Hiace)
 export const MANA_JP_CONVERSION_JPY = 4_500_000   // ¥4,500,000 (Japan build)
 export const MANA_AU_CONVERSION_AUD = 45_000       // $45,000 AUD (Australia build)
+export const HEXA_BASE_2WD_AUD     = 75_000       // $75,000 AUD (2WD unleaded, delivered)
+export const HEXA_BASE_4WD_AUD     = 85_000       // $85,000 AUD (4WD diesel, delivered)
+export const HEXA_POP_TOP_AUD      = 13_090       // $13,090 AUD (pop-top upgrade)
 
 // ── Price range assumptions for product page display ──────────────────────────
 // Cheapest realistic Japan Hiace: ~$15k vehicle + ~$8k import costs = $23k

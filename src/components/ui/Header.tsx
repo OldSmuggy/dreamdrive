@@ -15,6 +15,7 @@ const NAV: NavItem[] = [
   {
     label: 'Conversions',
     dropdown: [
+      { label: 'HEXA — Adventure Van', href: '/hexa' },
       { label: 'TAMA — Full Fit-Out', href: '/tama' },
       { label: 'MANA — Off-Grid Pro', href: '/mana' },
       { label: 'Roof Conversions', href: '/pop-top' },

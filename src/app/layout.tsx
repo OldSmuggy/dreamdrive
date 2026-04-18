@@ -45,6 +45,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Bare Camper" />
         <link rel="apple-touch-icon" href="/icon-192.png" />
+        <script async defer src="https://js.hs-scripts.com/8672029.js" />
       </head>
       <body className="font-body bg-white text-gray-900 antialiased">
         <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P7XP9LBV" height="0" width="0" style={{ display: 'none', visibility: 'hidden' }} /></noscript>
