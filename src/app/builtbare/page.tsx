@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
 export const metadata = generateMeta({
   title: 'HEXA — Modular Adventure Van | Toyota Hiace H200 | From $75,000 | Bare Camper',
   description: "Dream Drive's entry-level campervan. Used Toyota Hiace H200 + precision-engineered modular fitout from Tokyo. Optional pop-top. From $75,000 delivered in Australia.",
-  url: '/hexa',
+  url: '/builtbare',
 })
 
 export default async function HexaPage() {
@@ -27,7 +27,7 @@ export default async function HexaPage() {
     name: 'HEXA — Modular Adventure Van',
     description: "Entry-level campervan on a hand-picked Toyota Hiace H200 from Japan. Precision-engineered modular fitout, sub-battery system, optional pop-top. From $75,000.",
     brand: { '@type': 'Brand', name: 'Bare Camper' },
-    url: 'https://barecamper.com.au/hexa',
+    url: 'https://builtbare.com.au/builtbare',
     offers: {
       '@type': 'AggregateOffer',
       priceCurrency: 'AUD',
