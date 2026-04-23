@@ -1321,12 +1321,12 @@ function ListingRow({
                     onClick={() => {
                       const jpyPrice = parseInt(editState.start_price_jpy)
                       if (!jpyPrice || jpyPrice <= 0) return
-                      const cents = estimateLandedAud(jpyPrice)
+                      const cents = estimateLandedAud(jpyPrice, null, editState.source)
                       onSet('price_aud', (cents / 100).toFixed(0))
                       onSet('price_type', 'estimate')
                     }}
                   >
-                    Calculate from ¥{parseInt(editState.start_price_jpy).toLocaleString()} → est. ${Math.round(estimateLandedAud(parseInt(editState.start_price_jpy)) / 100).toLocaleString()} AUD
+                    Calculate from ¥{parseInt(editState.start_price_jpy).toLocaleString()} → est. ${Math.round(estimateLandedAud(parseInt(editState.start_price_jpy), null, editState.source) / 100).toLocaleString()} AUD
                   </button>
                 )}
                 <p className="text-[10px] text-gray-400 mt-0.5">This is the price customers see. Set type to &ldquo;Estimate&rdquo; for Japan-sourced vans.</p>

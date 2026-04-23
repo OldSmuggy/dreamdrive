@@ -20,6 +20,18 @@ export const REGO_STAMP_QLD_CENTS = 118_545  // $1,185.45 (6 months rego + stamp
 export const REGO_ARRANGE_CENTS   = 11_000   // $110 inc GST
 export const GST_RATE             = 0.10
 
+// ── Japan-side auction fees (in JPY) ─────────────────────────────────────────
+// Applied on top of the winning bid for vehicles sourced from auction.
+export const AUCTION_TAX_RATE         = 0.10     // 10% Japanese consumption tax on bid
+export const AUCTION_HOUSE_FEE_JPY    = 22_000   // ¥22,000 auction house buyer's fee
+export const AUCTION_RECYCLE_FEE_JPY  = 11_570   // ¥11,570 mandatory recycling fee
+export const AUCTION_INSPECTION_JPY   = 55_000   // ¥55,000 export inspection at auction
+export const AUCTION_TRANSPORT_JPY    = 25_000   // ¥25,000 transport (auction → export port)
+
+/** Total fixed JP-side auction fees (excluding the 10% tax on bid). */
+export const AUCTION_FIXED_FEES_JPY =
+  AUCTION_HOUSE_FEE_JPY + AUCTION_RECYCLE_FEE_JPY + AUCTION_INSPECTION_JPY + AUCTION_TRANSPORT_JPY
+
 // ── Conversion fee constants ───────────────────────────────────────────────────
 // Separation from van price: customer sees conversion fee + van estimate separately
 export const TAMA_CONVERSION_JPY    = 4_800_000   // ¥4,800,000 (Japan build)
@@ -36,11 +48,22 @@ export const HEXA_POP_TOP_AUD      = 13_090       // $13,090 AUD (pop-top upgrad
 const VAN_RANGE_LOW_AUD  = 23_000
 const VAN_RANGE_HIGH_AUD = 52_000
 
+/** Total Japan-side auction fees in AUD cents for a given bid price.
+ *  10% JP tax on bid + fixed fees (auction, recycle, inspection, transport).
+ */
+export function auctionExtraCostsCents(jpyBidPrice: number, jpyRate?: number | null): number {
+  const rate = jpyRate && jpyRate > 0 ? jpyRate : FALLBACK_RATE
+  const taxJpy = jpyBidPrice * AUCTION_TAX_RATE
+  const totalJpy = taxJpy + AUCTION_FIXED_FEES_JPY
+  return Math.round(totalJpy * rate * 100)
+}
+
 /** Estimate landed AUD cost for a Japan-sourced van given a JPY price.
  *  Returns price in CENTS, rounded to nearest $100.
  *  Uses the full itemised import cost stack.
+ *  When `source === 'auction'`, also adds Japan-side auction fees on top of the bid.
  */
-export function estimateLandedAud(jpyPrice: number, jpyRate?: number | null): number {
+export function estimateLandedAud(jpyPrice: number, jpyRate?: number | null, source?: string | null): number {
   const rate = jpyRate && jpyRate > 0 ? jpyRate : FALLBACK_RATE
   const vehicleCents = Math.round(jpyPrice * rate * 100)
   const shippingCents = SHIPPING_DEFAULT_CENTS
@@ -48,7 +71,8 @@ export function estimateLandedAud(jpyPrice: number, jpyRate?: number | null): nu
   const fixedCents = SOURCING_FEE_INC_GST_CENTS + CUSTOMS_ENTRY_CENTS + BMSB_CENTS
     + DOLPHIN_INSPECT_CENTS + DOLPHIN_TRANSPORT_CENTS + COMPLIANCE_CENTS
     + WHARF_TRANSPORT_CENTS + SAFETY_CERT_CENTS + REGO_STAMP_QLD_CENTS + REGO_ARRANGE_CENTS
-  const rawCents = vehicleCents + shippingCents + gstCents + fixedCents
+  const auctionCents = source === 'auction' ? auctionExtraCostsCents(jpyPrice, rate) : 0
+  const rawCents = vehicleCents + shippingCents + gstCents + fixedCents + auctionCents
   return Math.round(rawCents / 10_000) * 10_000  // round to nearest $100
 }
 
@@ -83,7 +107,7 @@ export function listingDisplayPrice(
   const jpyPrice = listing.start_price_jpy || listing.buy_price_jpy || null
 
   if (jpyPrice && jpyPrice > 0) {
-    const priceCents = estimateLandedAud(jpyPrice, jpyRate)
+    const priceCents = estimateLandedAud(jpyPrice, jpyRate, listing.source)
     return { priceCents, isEstimate: true, priceType: 'estimate' }
   }
 
@@ -152,11 +176,34 @@ export function importBreakdown(
   const complianceCents = COMPLIANCE_CENTS + WHARF_TRANSPORT_CENTS + SAFETY_CERT_CENTS
   const regoStampCents = REGO_STAMP_QLD_CENTS + REGO_ARRANGE_CENTS
 
-  const totalCents = vehicleCents + SOURCING_FEE_INC_GST_CENTS + shippingCents + gstCents
-    + CUSTOMS_ENTRY_CENTS + BMSB_CENTS + dolphinCents + complianceCents + regoStampCents
+  // Auction-specific JP-side fees (only for auction listings)
+  const isAuction = listing.source === 'auction'
+  const auctionTaxCents       = isAuction ? Math.round(jpyPrice * AUCTION_TAX_RATE * rate * 100) : 0
+  const auctionHouseFeeCents  = isAuction ? Math.round(AUCTION_HOUSE_FEE_JPY * rate * 100) : 0
+  const auctionRecycleCents   = isAuction ? Math.round(AUCTION_RECYCLE_FEE_JPY * rate * 100) : 0
+  const auctionInspectionCents = isAuction ? Math.round(AUCTION_INSPECTION_JPY * rate * 100) : 0
+  const auctionTransportCents = isAuction ? Math.round(AUCTION_TRANSPORT_JPY * rate * 100) : 0
+  const auctionTotalCents = auctionTaxCents + auctionHouseFeeCents + auctionRecycleCents
+    + auctionInspectionCents + auctionTransportCents
+
+  const totalCents = vehicleCents + auctionTotalCents + SOURCING_FEE_INC_GST_CENTS + shippingCents
+    + gstCents + CUSTOMS_ENTRY_CENTS + BMSB_CENTS + dolphinCents + complianceCents + regoStampCents
 
   const lines: ImportBreakdownLine[] = [
     { label: 'Vehicle purchase price', cents: vehicleCents, note: `¥${jpyPrice.toLocaleString()} × ${rate.toFixed(4)}` },
+  ]
+
+  if (isAuction) {
+    lines.push(
+      { label: 'Japan consumption tax (10% of bid)', cents: auctionTaxCents, note: `¥${Math.round(jpyPrice * AUCTION_TAX_RATE).toLocaleString()}` },
+      { label: 'Auction house fee', cents: auctionHouseFeeCents, note: `¥${AUCTION_HOUSE_FEE_JPY.toLocaleString()}` },
+      { label: 'Recycling fee', cents: auctionRecycleCents, note: `¥${AUCTION_RECYCLE_FEE_JPY.toLocaleString()}` },
+      { label: 'Auction inspection', cents: auctionInspectionCents, note: `¥${AUCTION_INSPECTION_JPY.toLocaleString()}` },
+      { label: 'Transport (auction → port)', cents: auctionTransportCents, note: `¥${AUCTION_TRANSPORT_JPY.toLocaleString()}` },
+    )
+  }
+
+  lines.push(
     { label: 'Japan Import Service Fee', cents: SOURCING_FEE_INC_GST_CENTS, note: '$2,500 + GST' },
     { label: `Shipping (Japan → Australia${isSlwb ? ', SLWB' : ''})`, cents: shippingCents },
     { label: 'GST (10% on vehicle + shipping)', cents: gstCents },
@@ -164,7 +211,7 @@ export function importBreakdown(
     { label: 'Port handling + transport', cents: dolphinCents },
     { label: 'Compliance (RAWS + safety cert)', cents: complianceCents },
     { label: 'Registration + stamp duty (QLD est.)', cents: regoStampCents },
-  ]
+  )
 
   return {
     vehicleCents,
