@@ -41,6 +41,14 @@ const NAV_SECTIONS: NavSection[] = [
     ],
   },
   {
+    label: 'DEALERS',
+    items: [
+      { href: '/admin/dealers',        label: '🤝 Dealers' },
+      { href: '/admin/dealer-orders',  label: '📦 Dealer Orders' },
+      { href: '/admin/funds',          label: '💰 Funds Ledger' },
+    ],
+  },
+  {
     label: 'PRODUCTS',
     items: [
       { href: '/admin/products', label: '💰 Products & Pricing' },

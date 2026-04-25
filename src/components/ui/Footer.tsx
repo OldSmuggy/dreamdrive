@@ -120,6 +120,7 @@ export default function Footer() {
 
             {/* Legal */}
             <div className="flex items-center gap-4 text-xs text-white/30">
+              <Link href="/your-money" className="hover:text-white/60 transition-colors">Your Money</Link>
               <Link href="/privacy" className="hover:text-white/60 transition-colors">Privacy</Link>
               <Link href="/terms" className="hover:text-white/60 transition-colors">Terms</Link>
               <span>ABN 13 030 224 315</span>

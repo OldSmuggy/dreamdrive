@@ -711,6 +711,82 @@ export const emailTemplates = {
     `,
   }),
 
+  dealerInviteEmail: (name: string, companyName: string, territory: string) => ({
+    subject: `Welcome to the Bare Camper Founding Dealer Programme — ${companyName}`,
+    html: `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+        ${EMAIL_HEADER}
+        <div style="padding: 2rem;">
+          <h2 style="color: #2C2C2A; margin: 0 0 1rem;">Welcome aboard, ${name}!</h2>
+          <p style="color: #444; line-height: 1.6;">
+            You've been invited to join the <strong>Bare Camper Founding Dealer Programme</strong>${territory ? ` for the <strong>${territory}</strong> territory` : ''}.
+          </p>
+          <p style="color: #444; line-height: 1.6;">
+            Check your inbox for a separate email from Supabase with your secure sign-in link. Once you're in, you'll have access to your dealer portal where you can:
+          </p>
+          <ul style="color: #444; line-height: 1.8;">
+            <li>Place new vehicle orders (Shell, Nest or MANA tier)</li>
+            <li>Track each van through sourcing, build and delivery</li>
+            <li>See your ring-fenced funds in real time</li>
+            <li>Access marketing materials and training (coming soon)</li>
+          </ul>
+          <a href="https://barecamper.com.au/dealer" style="display: inline-block; background: #3D6B73; color: white; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 1rem;">
+            Open Dealer Portal
+          </a>
+          <p style="color: #444; line-height: 1.6; margin-top: 1.5rem;">
+            Any questions, reply directly or call Jared on +61 432 182 892.
+          </p>
+          ${EMAIL_FOOTER}
+        </div>
+      </div>
+    `,
+  }),
+
+  dealerOrderConfirmedEmail: (companyName: string, orderNumber: string, tier: string, grade: string, wholesaleCents: number) => ({
+    subject: `New dealer order — ${orderNumber} — ${companyName}`,
+    html: `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+        ${EMAIL_HEADER}
+        <div style="padding: 2rem;">
+          <h2 style="color: #2C2C2A; margin: 0 0 1rem;">New dealer order placed</h2>
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem; margin: 1rem 0;">
+            <tr><td style="padding: 0.4rem 0; color: #888; width: 120px;">Dealer</td><td style="padding: 0.4rem 0; color: #2C2C2A; font-weight: 600;">${companyName}</td></tr>
+            <tr><td style="padding: 0.4rem 0; color: #888;">Order #</td><td style="padding: 0.4rem 0; color: #2C2C2A;">${orderNumber}</td></tr>
+            <tr><td style="padding: 0.4rem 0; color: #888;">Tier</td><td style="padding: 0.4rem 0; color: #2C2C2A;">${tier}</td></tr>
+            <tr><td style="padding: 0.4rem 0; color: #888;">Vehicle grade</td><td style="padding: 0.4rem 0; color: #2C2C2A;">${grade}</td></tr>
+            <tr><td style="padding: 0.4rem 0; color: #888;">Wholesale</td><td style="padding: 0.4rem 0; color: #2C2C2A;">$${(wholesaleCents / 100).toLocaleString('en-AU')}</td></tr>
+          </table>
+          <a href="https://barecamper.com.au/admin/dealer-orders" style="display: inline-block; background: #3D6B73; color: white; padding: 0.6rem 1.25rem; border-radius: 8px; text-decoration: none; font-size: 0.9rem;">
+            Manage Order
+          </a>
+          ${EMAIL_FOOTER}
+        </div>
+      </div>
+    `,
+  }),
+
+  fundsReceivedEmail: (name: string, amountCents: number, description: string) => ({
+    subject: `Payment received — held safely in your account`,
+    html: `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+        ${EMAIL_HEADER}
+        <div style="padding: 2rem;">
+          <h2 style="color: #2C2C2A; margin: 0 0 1rem;">G'day ${name}!</h2>
+          <p style="color: #444; line-height: 1.6;">
+            We've received your payment of <strong>$${(amountCents / 100).toLocaleString('en-AU')}</strong> for <strong>${description}</strong>.
+          </p>
+          <p style="color: #444; line-height: 1.6;">
+            Your funds are held in our dedicated ring-fenced account, separate from our day-to-day operating funds. You can see your balance and transaction history any time in your account dashboard.
+          </p>
+          <a href="https://barecamper.com.au/account" style="display: inline-block; background: #3D6B73; color: white; padding: 0.6rem 1.25rem; border-radius: 8px; text-decoration: none; font-size: 0.9rem;">
+            View My Account
+          </a>
+          ${EMAIL_FOOTER}
+        </div>
+      </div>
+    `,
+  }),
+
   financeEnquiryEmail: (name: string, email: string, phone: string, budget: string, financeType: string, notes: string) => ({
     subject: `New finance enquiry — ${name}`,
     html: `

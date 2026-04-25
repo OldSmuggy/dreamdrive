@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createSupabaseServer } from '@/lib/supabase-server'
 import { getJpyRate } from '@/lib/settings'
+import { getUserFundsSummary } from '@/lib/funds'
 import AccountClient from './AccountClient'
 import type { Listing, Product } from '@/types'
 
@@ -11,7 +12,7 @@ export default async function AccountPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login?next=/account')
 
-  const [savedVansRes, buildsRes, depositsRes, importsRes, profileRes, productsRes, jpyRate] = await Promise.all([
+  const [savedVansRes, buildsRes, depositsRes, importsRes, profileRes, productsRes, jpyRate, fundsSummary] = await Promise.all([
     supabase.from('saved_vans').select('*, listing:listings(*)').eq('user_id', user.id).order('created_at', { ascending: false }),
     supabase.from('builds')
       .select('id, share_slug, total_aud_min, total_aud_max, created_at, listing_id, fitout_product_id, elec_product_id, poptop_product_id')
@@ -22,6 +23,7 @@ export default async function AccountPage() {
     supabase.from('profiles').select('*').eq('id', user.id).single(),
     supabase.from('products').select('id, name, rrp_aud, slug, category').eq('visible', true),
     getJpyRate(),
+    getUserFundsSummary(user.id),
   ])
 
   // Fetch listings used in builds
@@ -71,6 +73,7 @@ export default async function AccountPage() {
       invoices={invoicesRes.data ?? []}
       payments={paymentsRes.data ?? []}
       jpyRate={jpyRate}
+      fundsSummary={fundsSummary}
     />
   )
 }
