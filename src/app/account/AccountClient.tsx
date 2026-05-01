@@ -8,6 +8,9 @@ import type { Listing, Product } from '@/types'
 import OptionsList from '@/components/options/OptionsList'
 import AuctionCountdown from '@/components/ui/AuctionCountdown'
 import ChatThread from '@/components/ui/ChatThread'
+import FundsBalanceCard from '@/components/funds/FundsBalanceCard'
+import FundsLedgerTable from '@/components/funds/FundsLedgerTable'
+import type { FundsSummary } from '@/lib/funds'
 
 // ── Stage definitions ─────────────────────────────────────────────────────────
 
@@ -133,6 +136,7 @@ interface Props {
   invoices: unknown[]
   payments: unknown[]
   jpyRate: number
+  fundsSummary: FundsSummary
 }
 
 const depositStatusStyle: Record<string, string> = {
@@ -152,7 +156,7 @@ const invoiceStatusStyle: Record<string, string> = {
 
 export default function AccountClient({
   user, profile, savedVans: initialSaved, builds, depositHolds,
-  importOrders, products, invoices: rawInvoices, payments: rawPayments, jpyRate,
+  importOrders, products, invoices: rawInvoices, payments: rawPayments, jpyRate, fundsSummary,
 }: Props) {
   const [tab, setTab]               = useState<Tab>('saved')
   const [savedVans, setSavedVans]   = useState(initialSaved)
@@ -200,6 +204,24 @@ export default function AccountClient({
       </div>
 
       <div className="max-w-5xl mx-auto px-4 py-8">
+        {/* Ring-fenced funds widget — only shows when user has activity */}
+        {fundsSummary.totalEverDepositedCents > 0 && (
+          <div className="mb-8 space-y-4">
+            <FundsBalanceCard summary={fundsSummary} variant="customer" />
+            {fundsSummary.entries.length > 0 && (
+              <details className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+                <summary className="cursor-pointer px-5 py-3.5 text-sm font-semibold text-charcoal hover:bg-gray-50 transition-colors flex items-center justify-between">
+                  <span>Transaction history ({fundsSummary.entries.length})</span>
+                  <span className="text-gray-400 text-xs">▼</span>
+                </summary>
+                <div className="border-t border-gray-100">
+                  <FundsLedgerTable entries={fundsSummary.entries} />
+                </div>
+              </details>
+            )}
+          </div>
+        )}
+
         <div className="flex gap-1 bg-white border border-gray-200 rounded-xl p-1.5 mb-8 overflow-x-auto">
           {tabs.map(t => (
             <button key={t.key} onClick={() => setTab(t.key)}

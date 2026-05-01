@@ -125,6 +125,7 @@ export default function EnquiryCTA({ vanTitle, vanId, defaultModel, defaultTab }
         body: JSON.stringify({
           fields: allFields,
           context: {
+            hutk: typeof document !== 'undefined' ? document.cookie.match(/hubspotutk=([^;]*)/)?.[1] || undefined : undefined,
             pageUri: typeof window !== 'undefined' ? window.location.href : '',
             pageName: typeof document !== 'undefined' ? document.title : '',
           },

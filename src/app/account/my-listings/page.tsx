@@ -21,6 +21,16 @@ export default async function MyListingsPage() {
     .eq('submitted_by', user.id)
     .order('created_at', { ascending: false })
 
+  // Fetch interests for this user's listings
+  const listingIds = (listings ?? []).map(l => l.id)
+  const { data: interests } = listingIds.length > 0
+    ? await admin
+        .from('listing_interests')
+        .select('id, listing_id, name, email, phone, message, created_at')
+        .in('listing_id', listingIds)
+        .order('created_at', { ascending: false })
+    : { data: [] }
+
   // Is this user a trusted submitter?
   const { data: trusted } = await admin
     .from('trusted_submitters')
@@ -56,6 +66,7 @@ export default async function MyListingsPage() {
           userEmail={user.email ?? ''}
           isTrusted={!!trusted}
           initialListings={(listings ?? []) as MyListing[]}
+          interests={interests ?? []}
         />
       </div>
     </div>

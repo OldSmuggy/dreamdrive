@@ -23,6 +23,7 @@ const nextConfig = {
       { source: '/fit-outs/tama', destination: '/tama', permanent: true },
       { source: '/fit-outs/mana', destination: '/mana', permanent: true },
       { source: '/fit-outs/kumaq', destination: '/kuma-q', permanent: true },
+      { source: '/barecamper', destination: '/hexa', permanent: true },
     ]
   },
   async rewrites() {

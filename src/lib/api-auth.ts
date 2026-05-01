@@ -41,3 +41,26 @@ export async function requireAdmin() {
 
   return { user, error: null }
 }
+
+/**
+ * Require an authenticated DEALER user for API routes.
+ * Returns 404 if not logged in or not a dealer (or if dealer is inactive).
+ */
+export async function requireDealer() {
+  const supabase = createSupabaseServer()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { user: null, profile: null, error: NextResponse.json({ error: 'Not found' }, { status: 404 }) }
+
+  const admin = createAdminClient()
+  const { data: profile } = await admin
+    .from('profiles')
+    .select('id, role, dealer_company_name, dealer_territory, dealer_active, is_admin')
+    .eq('id', user.id)
+    .single()
+
+  if (!profile || profile.role !== 'dealer' || profile.dealer_active === false) {
+    return { user: null, profile: null, error: NextResponse.json({ error: 'Not found' }, { status: 404 }) }
+  }
+
+  return { user, profile, error: null }
+}

@@ -9,8 +9,7 @@ const REQUIRED_SLOTS = [
   { key: 'rear',      label: 'Rear' },
   { key: 'driver',    label: "Driver's Side" },
   { key: 'passenger', label: "Passenger's Side" },
-  { key: 'interior1', label: 'Interior 1' },
-  { key: 'interior2', label: 'Interior 2' },
+  { key: 'interior1', label: 'Interior' },
 ]
 
 type PhotoMap = Record<string, string>  // slot key → uploaded URL
@@ -117,7 +116,7 @@ export default function SubmitVanForm() {
   const [errorMsg, setErrorMsg] = useState('')
 
   // Step 1 — contact details
-  const [contact, setContact] = useState({ name: '', email: '', phone: '' })
+  const [contact, setContact] = useState({ name: '', email: '', phone: '', contact_preference: 'email' })
 
   // Step 2 — van details
   const [van, setVan] = useState({
@@ -188,13 +187,16 @@ export default function SubmitVanForm() {
   // ── Submit ────────────────────────────────────────────────────────────────
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!requiredFilled) { setErrorMsg('Please upload all 6 required photos.'); return }
+    if (!requiredFilled) { setErrorMsg('Please upload all 5 required photos.'); return }
     setStatus('submitting')
     setErrorMsg('')
 
     try {
       const payload = {
-        ...contact,
+        name: contact.name,
+        email: contact.email,
+        phone: contact.phone,
+        contact_preference: contact.contact_preference,
         model_name: van.model_name,
         model_year: van.model_year ? parseInt(van.model_year) : null,
         body_type: van.body_type || null,
@@ -228,10 +230,10 @@ export default function SubmitVanForm() {
         <div className="text-5xl mb-5">🚐</div>
         <h3 className="text-2xl font-bold text-charcoal mb-3">Van submitted!</h3>
         <p className="text-gray-500 leading-relaxed max-w-sm mx-auto">
-          We&apos;ll review it and let you know when it goes live. If it sells through Bare Camper, your $200 is on its way.
+          We&apos;ll review your listing and let you know when it&apos;s live. Interested buyers will be able to reach out to you directly.
         </p>
         <button
-          onClick={() => { setStatus('idle'); setStep(1); setContact({ name: '', email: '', phone: '' }); setVan({ model_name: 'Toyota Hiace', model_year: '', body_type: '', mileage_km: '', transmission: '', asking_price_aud: '', location: '', notes: '' }); setPhotos({}); setExtraPhotos([]) }}
+          onClick={() => { setStatus('idle'); setStep(1); setContact({ name: '', email: '', phone: '', contact_preference: 'email' }); setVan({ model_name: 'Toyota Hiace', model_year: '', body_type: '', mileage_km: '', transmission: '', asking_price_aud: '', location: '', notes: '' }); setPhotos({}); setExtraPhotos([]) }}
           className="mt-6 text-ocean text-sm hover:underline"
         >
           Submit another van →
@@ -270,6 +272,24 @@ export default function SubmitVanForm() {
             <input type="tel" value={contact.phone} onChange={e => setContact(c => ({ ...c, phone: e.target.value }))}
               placeholder="04xx xxx xxx"
               className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30 focus:border-ocean" />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-charcoal mb-2">How should interested buyers contact you?</label>
+            <div className="flex flex-wrap gap-3">
+              {[
+                { value: 'email', label: 'Email only' },
+                { value: 'phone', label: 'Phone only' },
+                { value: 'both', label: 'Both email and phone' },
+              ].map(opt => (
+                <label key={opt.value} className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm cursor-pointer transition-colors
+                  ${contact.contact_preference === opt.value ? 'border-ocean bg-ocean/5 text-ocean font-medium' : 'border-gray-200 text-gray-600 hover:border-gray-300'}`}>
+                  <input type="radio" name="contact_preference" value={opt.value} checked={contact.contact_preference === opt.value}
+                    onChange={e => setContact(c => ({ ...c, contact_preference: e.target.value }))} className="sr-only" />
+                  {opt.label}
+                </label>
+              ))}
+            </div>
           </div>
 
           <button type="button" disabled={!canProceedStep1()} onClick={() => setStep(2)}
@@ -348,9 +368,9 @@ export default function SubmitVanForm() {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-charcoal mb-1.5">Extra notes <span className="text-gray-400 font-normal">(optional)</span></label>
-            <textarea value={van.notes} onChange={e => setVan(v => ({ ...v, notes: e.target.value }))} rows={3}
-              placeholder="Condition, features, why it's a good one, or if you want to buy it yourself…"
+            <label className="block text-sm font-semibold text-charcoal mb-1.5">Description</label>
+            <textarea value={van.notes} onChange={e => setVan(v => ({ ...v, notes: e.target.value }))} rows={5}
+              placeholder="Tell buyers about your van — what's been done, the build, condition, any modifications or features…"
               className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30 focus:border-ocean resize-none" />
           </div>
 
@@ -372,7 +392,7 @@ export default function SubmitVanForm() {
         <div className="space-y-6">
           <div>
             <h2 className="text-xl font-bold text-charcoal mb-1">Upload photos</h2>
-            <p className="text-gray-400 text-sm">6 required shots + up to 6 extras. Larger, higher quality photos = more buyer interest.</p>
+            <p className="text-gray-400 text-sm">5 required shots + extras if you&apos;ve got them. Higher quality photos = more buyer interest.</p>
           </div>
 
           {/* Required slots */}
@@ -433,11 +453,11 @@ export default function SubmitVanForm() {
             <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
               <div
                 className="h-2 bg-ocean rounded-full transition-all"
-                style={{ width: `${Math.round((Object.keys(photos).length / 6) * 100)}%` }}
+                style={{ width: `${Math.round((Object.keys(photos).length / 5) * 100)}%` }}
               />
             </div>
             <span className="text-sm text-gray-500 whitespace-nowrap">
-              {Object.keys(photos).length}/6 required
+              {Object.keys(photos).length}/5 required
             </span>
           </div>
 

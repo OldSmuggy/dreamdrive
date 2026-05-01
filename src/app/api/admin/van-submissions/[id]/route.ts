@@ -49,6 +49,7 @@ export async function PATCH(
           status: publish ? 'available' : 'available',  // always available, admin controls visibility
           is_community_find: true,
           featured: false,
+          contact_preference: sub.contact_preference ?? 'email',
           submission_id: sub.id,
         })
         .select('id')

@@ -659,6 +659,220 @@ export const emailTemplates = {
     `,
   }),
 
+  listingInterestSellerEmail: (sellerName: string, vanTitle: string, buyerName: string, buyerEmail: string, buyerPhone: string, message: string, listingUrl: string) => ({
+    subject: `Someone's interested in your ${vanTitle}!`,
+    html: `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+        ${EMAIL_HEADER}
+        <div style="padding: 2rem;">
+          <h2 style="color: #2C2C2A; margin: 0 0 1rem;">G'day ${sellerName}!</h2>
+          <p style="color: #444; line-height: 1.6;">
+            Great news — someone is interested in your van listing on Bare Camper.
+          </p>
+          <div style="background: #F5F3ED; padding: 1.25rem; border-radius: 12px; margin: 1.5rem 0;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+              <tr><td style="padding: 0.4rem 0; color: #888; width: 80px;">Name</td><td style="padding: 0.4rem 0; color: #2C2C2A; font-weight: 600;">${buyerName}</td></tr>
+              <tr><td style="padding: 0.4rem 0; color: #888;">Email</td><td style="padding: 0.4rem 0; color: #2C2C2A;"><a href="mailto:${buyerEmail}" style="color: #3D6B73;">${buyerEmail}</a></td></tr>
+              ${buyerPhone ? `<tr><td style="padding: 0.4rem 0; color: #888;">Phone</td><td style="padding: 0.4rem 0; color: #2C2C2A;"><a href="tel:${buyerPhone}" style="color: #3D6B73;">${buyerPhone}</a></td></tr>` : ''}
+              ${message ? `<tr><td style="padding: 0.4rem 0; color: #888; vertical-align: top;">Message</td><td style="padding: 0.4rem 0; color: #2C2C2A;">${message}</td></tr>` : ''}
+            </table>
+          </div>
+          <p style="color: #444; line-height: 1.6;">
+            You can reply to them directly using the details above. Good luck with the sale!
+          </p>
+          <a href="${listingUrl}" style="display: inline-block; background: #3D6B73; color: white; padding: 0.6rem 1.25rem; border-radius: 8px; text-decoration: none; font-size: 0.9rem; margin-top: 0.5rem;">
+            View Your Listing
+          </a>
+          ${EMAIL_FOOTER}
+        </div>
+      </div>
+    `,
+  }),
+
+  listingInterestAdminEmail: (vanTitle: string, sellerEmail: string, buyerName: string, buyerEmail: string, buyerPhone: string, message: string, listingUrl: string) => ({
+    subject: `Listing interest — ${vanTitle} — ${buyerName}`,
+    html: `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+        ${EMAIL_HEADER}
+        <div style="padding: 2rem;">
+          <h2 style="color: #2C2C2A; margin: 0 0 0.5rem;">New Listing Interest</h2>
+          <p style="color: #888; font-size: 0.85rem; margin: 0 0 1.5rem;">Community listing: ${vanTitle}</p>
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+            <tr><td style="padding: 0.4rem 0; color: #888; width: 80px;">Buyer</td><td style="padding: 0.4rem 0; color: #2C2C2A;">${buyerName} (${buyerEmail}${buyerPhone ? `, ${buyerPhone}` : ''})</td></tr>
+            <tr><td style="padding: 0.4rem 0; color: #888;">Seller</td><td style="padding: 0.4rem 0; color: #2C2C2A;">${sellerEmail}</td></tr>
+            ${message ? `<tr><td style="padding: 0.4rem 0; color: #888;">Message</td><td style="padding: 0.4rem 0; color: #2C2C2A;">${message}</td></tr>` : ''}
+          </table>
+          <a href="${listingUrl}" style="display: inline-block; background: #3D6B73; color: white; padding: 0.6rem 1.25rem; border-radius: 8px; text-decoration: none; font-size: 0.9rem; margin-top: 1rem;">
+            View Listing
+          </a>
+          ${EMAIL_FOOTER}
+        </div>
+      </div>
+    `,
+  }),
+
+  dealerInviteEmail: (name: string, companyName: string, territory: string) => ({
+    subject: `Welcome to the Bare Camper Founding Dealer Programme — ${companyName}`,
+    html: `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+        ${EMAIL_HEADER}
+        <div style="padding: 2rem;">
+          <h2 style="color: #2C2C2A; margin: 0 0 1rem;">Welcome aboard, ${name}!</h2>
+          <p style="color: #444; line-height: 1.6;">
+            You've been invited to join the <strong>Bare Camper Founding Dealer Programme</strong>${territory ? ` for the <strong>${territory}</strong> territory` : ''}.
+          </p>
+          <p style="color: #444; line-height: 1.6;">
+            Check your inbox for a separate email from Supabase with your secure sign-in link. Once you're in, you'll have access to your dealer portal where you can:
+          </p>
+          <ul style="color: #444; line-height: 1.8;">
+            <li>Place new vehicle orders (Shell, Nest or MANA tier)</li>
+            <li>Track each van through sourcing, build and delivery</li>
+            <li>See your ring-fenced funds in real time</li>
+            <li>Access marketing materials and training (coming soon)</li>
+          </ul>
+          <a href="https://barecamper.com.au/dealer" style="display: inline-block; background: #3D6B73; color: white; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 1rem;">
+            Open Dealer Portal
+          </a>
+          <p style="color: #444; line-height: 1.6; margin-top: 1.5rem;">
+            Any questions, reply directly or call Jared on +61 432 182 892.
+          </p>
+          ${EMAIL_FOOTER}
+        </div>
+      </div>
+    `,
+  }),
+
+  dealerOrderConfirmedEmail: (companyName: string, orderNumber: string, tier: string, grade: string, wholesaleCents: number) => ({
+    subject: `New dealer order — ${orderNumber} — ${companyName}`,
+    html: `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+        ${EMAIL_HEADER}
+        <div style="padding: 2rem;">
+          <h2 style="color: #2C2C2A; margin: 0 0 1rem;">New dealer order placed</h2>
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem; margin: 1rem 0;">
+            <tr><td style="padding: 0.4rem 0; color: #888; width: 120px;">Dealer</td><td style="padding: 0.4rem 0; color: #2C2C2A; font-weight: 600;">${companyName}</td></tr>
+            <tr><td style="padding: 0.4rem 0; color: #888;">Order #</td><td style="padding: 0.4rem 0; color: #2C2C2A;">${orderNumber}</td></tr>
+            <tr><td style="padding: 0.4rem 0; color: #888;">Tier</td><td style="padding: 0.4rem 0; color: #2C2C2A;">${tier}</td></tr>
+            <tr><td style="padding: 0.4rem 0; color: #888;">Vehicle grade</td><td style="padding: 0.4rem 0; color: #2C2C2A;">${grade}</td></tr>
+            <tr><td style="padding: 0.4rem 0; color: #888;">Wholesale</td><td style="padding: 0.4rem 0; color: #2C2C2A;">$${(wholesaleCents / 100).toLocaleString('en-AU')}</td></tr>
+          </table>
+          <a href="https://barecamper.com.au/admin/dealer-orders" style="display: inline-block; background: #3D6B73; color: white; padding: 0.6rem 1.25rem; border-radius: 8px; text-decoration: none; font-size: 0.9rem;">
+            Manage Order
+          </a>
+          ${EMAIL_FOOTER}
+        </div>
+      </div>
+    `,
+  }),
+
+  fundsReceivedEmail: (name: string, amountCents: number, description: string) => ({
+    subject: `Payment received — held safely in your account`,
+    html: `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+        ${EMAIL_HEADER}
+        <div style="padding: 2rem;">
+          <h2 style="color: #2C2C2A; margin: 0 0 1rem;">G'day ${name}!</h2>
+          <p style="color: #444; line-height: 1.6;">
+            We've received your payment of <strong>$${(amountCents / 100).toLocaleString('en-AU')}</strong> for <strong>${description}</strong>.
+          </p>
+          <p style="color: #444; line-height: 1.6;">
+            Your funds are held in our dedicated ring-fenced account, separate from our day-to-day operating funds. You can see your balance and transaction history any time in your account dashboard.
+          </p>
+          <a href="https://barecamper.com.au/account" style="display: inline-block; background: #3D6B73; color: white; padding: 0.6rem 1.25rem; border-radius: 8px; text-decoration: none; font-size: 0.9rem;">
+            View My Account
+          </a>
+          ${EMAIL_FOOTER}
+        </div>
+      </div>
+    `,
+  }),
+
+  partnerAgreementEmail: (contactName: string, partnerName: string, commissionAud: number, commissionType: string, termsNotes: string) => ({
+    subject: `Bare Camper × ${partnerName} — referral agreement`,
+    html: `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+        ${EMAIL_HEADER}
+        <div style="padding: 2rem;">
+          <h2 style="color: #2C2C2A; margin: 0 0 1rem;">G'day ${contactName},</h2>
+          <p style="color: #444; line-height: 1.6;">
+            This email confirms the referral arrangement between <strong>Bare Camper</strong> (Dream Drive Pty Ltd, ABN 13 030 224 315) and <strong>${partnerName}</strong>.
+          </p>
+
+          <div style="background: #F5F3ED; padding: 1.25rem; border-radius: 12px; margin: 1.5rem 0;">
+            <h3 style="color: #2C2C2A; margin: 0 0 0.75rem; font-size: 1rem;">The deal</h3>
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+              <tr><td style="padding: 0.4rem 0; color: #888; width: 140px;">Per-vehicle ${commissionType}</td><td style="padding: 0.4rem 0; color: #2C2C2A; font-weight: 600;">$${commissionAud.toLocaleString('en-AU')} AUD</td></tr>
+              <tr><td style="padding: 0.4rem 0; color: #888;">Applies to</td><td style="padding: 0.4rem 0; color: #2C2C2A;">Vehicles sold from your stock to a Bare Camper customer</td></tr>
+              <tr><td style="padding: 0.4rem 0; color: #888;">How it works</td><td style="padding: 0.4rem 0; color: #2C2C2A;">We list your eligible vehicles on barecamper.com.au. When a customer books to view or buy, we'll email you the customer's details and confirm the referral.</td></tr>
+            </table>
+          </div>
+
+          ${termsNotes ? `
+          <div style="background: #FFF8EC; padding: 1.25rem; border-radius: 12px; margin: 1.5rem 0; border-left: 4px solid #E8CFA0;">
+            <p style="color: #2C2C2A; margin: 0; font-size: 0.9rem; line-height: 1.6;"><strong>Specific terms:</strong><br>${termsNotes.replace(/\n/g, '<br>')}</p>
+          </div>` : ''}
+
+          <h3 style="color: #2C2C2A; margin: 1.5rem 0 0.5rem; font-size: 1rem;">Next steps</h3>
+          <ol style="color: #444; line-height: 1.7; padding-left: 1.25rem;">
+            <li>Send back any specific stock you'd like featured</li>
+            <li>We'll list it on barecamper.com.au within 24 hours</li>
+            <li>You'll get an email when a customer expresses interest</li>
+            <li>${commissionType === 'discount' ? `On sale, you discount the agreed $${commissionAud.toLocaleString('en-AU')} from your invoice` : `On sale, you invoice us for the agreed $${commissionAud.toLocaleString('en-AU')} ${commissionType}`}</li>
+          </ol>
+
+          <p style="color: #444; line-height: 1.6; margin-top: 1.5rem;">
+            If you're happy with the above, just reply <strong>"agreed"</strong> and we're good to go. Any tweaks, jump on the phone with Jared on +61 432 182 892.
+          </p>
+
+          <p style="color: #444; line-height: 1.6; margin-top: 1rem;">
+            Cheers,<br>
+            <strong>Jared Campion</strong><br>
+            Bare Camper / Dream Drive
+          </p>
+
+          ${EMAIL_FOOTER}
+        </div>
+      </div>
+    `,
+  }),
+
+  partnerSaleNotificationEmail: (contactName: string, partnerName: string, vanTitle: string, sourceUrl: string, commissionAud: number, commissionType: string, customerName: string | null) => ({
+    subject: `Customer for ${vanTitle} — Bare Camper referral`,
+    html: `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+        ${EMAIL_HEADER}
+        <div style="padding: 2rem;">
+          <h2 style="color: #2C2C2A; margin: 0 0 1rem;">G'day ${contactName},</h2>
+          <p style="color: #444; line-height: 1.6;">
+            We've sent a Bare Camper customer your way for the <strong>${vanTitle}</strong>${sourceUrl ? ` (<a href="${sourceUrl}" style="color: #3D6B73;">your listing</a>)` : ''}.
+          </p>
+
+          <div style="background: #EEF7ED; padding: 1.25rem; border-radius: 12px; margin: 1.5rem 0; border-left: 4px solid #3D6B73;">
+            <p style="color: #2C2C2A; margin: 0; font-weight: 600; font-size: 0.95rem;">This sale is a Bare Camper referral.</p>
+            <p style="color: #444; margin: 0.5rem 0 0; font-size: 0.85rem;">
+              Per our agreement, ${commissionType === 'discount' ? `please apply the agreed $${commissionAud.toLocaleString('en-AU')} discount to your invoice.` : `please invoice us $${commissionAud.toLocaleString('en-AU')} ${commissionType} when the sale completes.`}
+            </p>
+          </div>
+
+          ${customerName ? `<p style="color: #444; line-height: 1.6;"><strong>Customer:</strong> ${customerName}</p>` : ''}
+
+          <p style="color: #444; line-height: 1.6;">
+            We'll be in touch shortly with the customer's details and to confirm any next steps.
+          </p>
+
+          <p style="color: #444; line-height: 1.6; margin-top: 1rem;">
+            Cheers,<br>
+            <strong>Jared Campion</strong><br>
+            Bare Camper / Dream Drive<br>
+            +61 432 182 892
+          </p>
+
+          ${EMAIL_FOOTER}
+        </div>
+      </div>
+    `,
+  }),
+
   financeEnquiryEmail: (name: string, email: string, phone: string, budget: string, financeType: string, notes: string) => ({
     subject: `New finance enquiry — ${name}`,
     html: `
