@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
 import { requireAdmin } from '@/lib/api-auth'
+import { sendEmail, emailTemplates } from '@/lib/email'
 
 // Columns that require a DB migration and may not exist yet.
 // If the update fails because of one of these, we strip them and retry
@@ -26,6 +27,13 @@ export async function PATCH(
   try {
     const body = await req.json()
     const supabase = createAdminClient()
+
+    // Snapshot previous status + partner so we can detect status transitions
+    const { data: prev } = await supabase
+      .from('listings')
+      .select('id, status, supplier_partner_id, model_name, model_year, source_url')
+      .eq('id', params.id)
+      .single()
 
     const doUpdate = async (payload: Record<string, unknown>) => {
       const { data, error } = await supabase
@@ -58,6 +66,51 @@ export async function PATCH(
       console.error('[listings PATCH] Save failed:', error.message)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
+
+    // Auto-notify partner when this listing transitions to "sold"
+    if (
+      data &&
+      prev?.supplier_partner_id &&
+      prev.status !== 'sold' &&
+      data.status === 'sold'
+    ) {
+      try {
+        const { data: partner } = await supabase
+          .from('supplier_partners')
+          .select('name, contact_name, contact_email, commission_aud, commission_type')
+          .eq('id', prev.supplier_partner_id)
+          .single()
+
+        if (partner?.contact_email) {
+          // Best-effort: grab the most recent customer name from deposit_holds
+          const { data: depo } = await supabase
+            .from('deposit_holds')
+            .select('customer_name')
+            .eq('listing_id', params.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle()
+
+          const vanTitle = `${prev.model_year ?? ''} ${prev.model_name}`.trim()
+          await sendEmail({
+            to: partner.contact_email,
+            ...emailTemplates.partnerSaleNotificationEmail(
+              partner.contact_name ?? partner.name,
+              partner.name,
+              vanTitle,
+              prev.source_url ?? '',
+              partner.commission_aud ?? 0,
+              partner.commission_type ?? 'discount',
+              depo?.customer_name ?? null,
+            ),
+          })
+          console.log(`[listings PATCH] Sale notification sent to partner ${partner.name}`)
+        }
+      } catch (notifyErr) {
+        console.warn('[listings PATCH] Partner sale notification failed:', notifyErr)
+      }
+    }
+
     return NextResponse.json(data)
   } catch (err) {
     return NextResponse.json({ error: String(err) }, { status: 500 })
