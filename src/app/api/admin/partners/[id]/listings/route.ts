@@ -14,7 +14,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const body = await req.json()
     const {
       model_name, model_year, body_type, mileage_km, transmission, drive,
-      colour, price_aud, photos, description, source_url, vin, stock_number,
+      colour, price_aud, photos, description, source_url,
     } = body
 
     if (!model_name) return NextResponse.json({ error: 'model_name required' }, { status: 400 })
@@ -27,18 +27,18 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         supplier_partner_id: partnerId,
         model_name,
         model_year: model_year ?? null,
-        body_type: body_type ?? null,
+        size: body_type ?? null,                    // form sends body_type, DB column is size
         mileage_km: mileage_km ?? null,
         transmission: transmission ?? null,
         drive: drive ?? null,
         body_colour: colour ?? null,
+        fuel_type: 'petrol',
         au_price_aud: price_aud ? Math.round(price_aud * 100) : null,
         price_aud: price_aud ? Math.round(price_aud * 100) : null,
         price_type: 'fixed',
         photos: photos ?? [],
         description: description ?? null,
         source_url: source_url ?? null,
-        vin: vin ?? null,
         status: 'available',
       })
       .select('id')
