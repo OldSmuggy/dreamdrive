@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { trackEvent } from '@/lib/analytics'
+import { useSpamGuard } from '@/hooks/useSpamGuard'
 
 // ── Step definitions ────────────────────────────────────────────────────────
 const STEPS = [
@@ -66,6 +67,7 @@ function StepHeader({ title, subtitle }: { title: string; subtitle?: string }) {
 export default function FinanceApplicationForm() {
   const [step, setStep] = useState(0)
   const [submitting, setSubmitting] = useState(false)
+  const { honeypotProps, isSpam } = useSpamGuard()
   const [form, setForm] = useState({
     purpose: '',
     vehicleType: '',
@@ -129,6 +131,7 @@ export default function FinanceApplicationForm() {
   const back = () => { if (step > 0) setStep(s => s - 1) }
 
   const handleSubmit = async () => {
+    if (isSpam()) { setStep(12); return }
     setSubmitting(true)
     const notes = [
       `Purpose: ${form.purpose}`,
@@ -288,6 +291,7 @@ export default function FinanceApplicationForm() {
 
       {/* Main content */}
       <div className="flex-1 bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100">
+        <input {...honeypotProps} />
         <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1">Step {step + 1} of 12</p>
 
         {/* ── Step 1: Purpose ── */}

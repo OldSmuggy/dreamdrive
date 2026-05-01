@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { trackEvent } from '@/lib/analytics'
+import { useSpamGuard } from '@/hooks/useSpamGuard'
 
 export default function AdQuoteBar() {
   const searchParams = useSearchParams()
@@ -10,6 +11,7 @@ export default function AdQuoteBar() {
   const [expanded, setExpanded] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [form, setForm] = useState({ name: '', phone: '', interest: 'Just the van' })
+  const { honeypotProps, isSpam } = useSpamGuard()
 
   useEffect(() => {
     // Show for UTM-tagged traffic (ads) or referrals from social
@@ -23,6 +25,7 @@ export default function AdQuoteBar() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (isSpam()) { setSubmitted(true); return }
     try {
       await fetch('/api/leads', {
         method: 'POST',
@@ -72,6 +75,7 @@ export default function AdQuoteBar() {
           <button onClick={() => setExpanded(false)} className="text-white/60 hover:text-white text-xs">Close</button>
         </div>
         <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2">
+          <input {...honeypotProps} />
           <input
             required
             type="text"

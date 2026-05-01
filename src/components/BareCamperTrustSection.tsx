@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { trackEvent } from '@/lib/analytics'
+import { useSpamGuard } from '@/hooks/useSpamGuard'
 
 // ============================================================
 // Bare Camper — Trust & Conversion Section
@@ -16,9 +17,11 @@ function CallbackForm() {
   const [form, setForm] = useState({ name: '', phone: '', email: '', interest: 'mana', message: '' })
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const { honeypotProps, isSpam } = useSpamGuard()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (isSpam()) { setSubmitted(true); return }
     setSubmitting(true)
 
     try {
@@ -55,6 +58,7 @@ function CallbackForm() {
 
   return (
     <form onSubmit={handleSubmit} className="bg-white border border-stone-200 rounded-2xl p-6 md:p-8">
+      <input {...honeypotProps} />
       <h3 className="text-lg font-semibold text-stone-900 mb-1">Request a callback</h3>
       <p className="text-stone-500 text-sm mb-6">
         No pressure, no scripts. Just a chat with the people who build the vans.
@@ -289,8 +293,8 @@ export default function BareCamperTrustSection() {
           Ready when you are.
         </h2>
         <p className="text-stone-500 max-w-lg mx-auto text-sm leading-relaxed">
-          Download a brochure, request a callback, or come see the builds in person
-          at our Capalaba workshop. No commitment, no pressure.
+          Our showroom is right here — browse and configure online, then pick up from our Capalaba workshop.
+          No showroom markup, no pressure. Request a callback or download a brochure below.
         </p>
       </div>
 

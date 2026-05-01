@@ -98,8 +98,11 @@ export default function AboutPage() {
           <p className="text-gray-500 text-lg leading-relaxed mb-8 max-w-3xl mx-auto">
             Most people who want a campervan have to piece it together themselves — find a van from one place, ship it through another, get compliance done somewhere else, then find a builder who may or may not know the vehicle. Every handoff is a chance for things to go wrong, blow out on cost, or stall for weeks.
           </p>
-          <p className="text-gray-500 text-lg leading-relaxed mb-12 max-w-3xl mx-auto">
+          <p className="text-gray-500 text-lg leading-relaxed mb-6 max-w-3xl mx-auto">
             Bare Camper is the only campervan brand with our own people on the ground in Japan, Australia, and New Zealand. Our buyer in Japan, our workshop in Brisbane, our operations across the Tasman. One team handles every stage — from auction floor to registered campervan on an Australian road. No third-party agents, no handoffs between companies you&apos;ve never met.
+          </p>
+          <p className="text-gray-400 text-base leading-relaxed mb-12 max-w-2xl mx-auto">
+            We run our showroom online — not from a costly shopfront. That keeps our overheads down and your prices honest. Browse vans, configure your build in 3D, and get a quote without leaving home. When your campervan&apos;s ready, pick it up from our Brisbane workshop.
           </p>
           <div className="grid sm:grid-cols-3 gap-6">
             {END_TO_END.map(item => (

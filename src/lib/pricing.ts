@@ -42,6 +42,12 @@ export const HEXA_BASE_2WD_AUD     = 75_000       // $75,000 AUD (2WD unleaded, 
 export const HEXA_BASE_4WD_AUD     = 85_000       // $85,000 AUD (4WD diesel, delivered)
 export const HEXA_POP_TOP_AUD      = 13_090       // $13,090 AUD (pop-top upgrade)
 
+// ── Bare Camper Build (Hexa module) ──────────────────────────────────────────
+// Single source of truth for the module price. Stored ex-GST; inc-GST is
+// derived via GST_RATE so both are always consistent.
+export const BARE_CAMPER_BUILD_EX_GST_AUD  = 27_000
+export const BARE_CAMPER_BUILD_INC_GST_AUD = Math.round(BARE_CAMPER_BUILD_EX_GST_AUD * (1 + GST_RATE))
+
 // ── Price range assumptions for product page display ──────────────────────────
 // Cheapest realistic Japan Hiace: ~$15k vehicle + ~$8k import costs = $23k
 // Most expensive realistic Japan Hiace: ~$40k vehicle + ~$12k import costs = $52k

@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createSupabaseServer } from '@/lib/supabase-server'
 import { getJpyRate } from '@/lib/settings'
-import { listingDisplayPrice, importBreakdown, importFixedCosts } from '@/lib/pricing'
+import { listingDisplayPrice, importBreakdown, importFixedCosts, BARE_CAMPER_BUILD_INC_GST_AUD, BARE_CAMPER_BUILD_EX_GST_AUD } from '@/lib/pricing'
 import { generateMeta } from '@/lib/seo'
 import { centsToAud, scoreColor, scoreLabel, sourceLabel, sourceBadgeColor, auctionUrgency, locationBadgeInfo, fitOutLevelInfo, curationBadgeInfo } from '@/lib/utils'
 import AuctionBanner from '@/components/ui/AuctionBanner'
@@ -386,40 +386,28 @@ export default async function VanDetailPage({ params }: { params: { id: string }
               </div>
             )}
 
-            {/* What You're Paying — transparency block */}
+            {/* What's included — transparency block */}
             {isJapanListing && priceCents && (
               <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 mb-6">
-                <h3 className="text-sm font-bold text-charcoal mb-3">What You&apos;re Paying</h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Van price (Japan)</span>
-                    <span className="text-gray-800 font-medium">{displayPrice}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Shipping + compliance + rego</span>
-                    <span className="text-gray-800 font-medium">~$5,800–$6,200</span>
-                  </div>
-                  <div className="flex justify-between pt-2 border-t border-gray-200">
-                    <span className="text-charcoal font-semibold">Total landed in Brisbane</span>
-                    <span className="text-charcoal font-semibold">
-                      {priceCents ? centsToAud(priceCents + 600000) : '—'}
+                <h3 className="text-sm font-bold text-charcoal mb-3">What&apos;s Included in {displayPrice}</h3>
+                <ul className="space-y-1.5 text-sm text-gray-600">
+                  <li className="flex items-start gap-2"><span className="text-ocean font-bold mt-px">✓</span>Vehicle purchase price</li>
+                  <li className="flex items-start gap-2"><span className="text-ocean font-bold mt-px">✓</span>$2,750 sourcing fee (inc GST)</li>
+                  <li className="flex items-start gap-2"><span className="text-ocean font-bold mt-px">✓</span>Shipping Japan → Brisbane</li>
+                  <li className="flex items-start gap-2"><span className="text-ocean font-bold mt-px">✓</span>GST, customs &amp; biosecurity</li>
+                  <li className="flex items-start gap-2"><span className="text-ocean font-bold mt-px">✓</span>RAWS compliance &amp; safety cert</li>
+                  <li className="flex items-start gap-2"><span className="text-ocean font-bold mt-px">✓</span>QLD registration &amp; stamp duty</li>
+                </ul>
+                {listing.au_market_price_low && listing.au_market_price_high && listing.au_market_price_low > 0 && (
+                  <div className="mt-3 pt-3 border-t border-gray-200 flex justify-between text-sm">
+                    <span className="text-gray-400">Similar spec locally</span>
+                    <span className="text-gray-400">
+                      ${Math.round(listing.au_market_price_low / 100).toLocaleString()}–${Math.round(listing.au_market_price_high / 100).toLocaleString()}
                     </span>
                   </div>
-                  {listing.au_market_price_low && listing.au_market_price_high && (
-                    <>
-                      <div className="flex justify-between pt-2 text-gray-400">
-                        <span>Same spec at a Brisbane dealer</span>
-                        <span>~${Math.round((listing.au_market_price_low + listing.au_market_price_high) / 200).toLocaleString()}</span>
-                      </div>
-                      <div className="flex justify-between text-green-700 font-semibold">
-                        <span>You save</span>
-                        <span>~${Math.round(((listing.au_market_price_low + listing.au_market_price_high) / 2 - priceCents - 600000) / 100).toLocaleString()}</span>
-                      </div>
-                    </>
-                  )}
-                </div>
+                )}
                 <p className="text-xs text-gray-400 mt-3">
-                  $2,750 sourcing fee — fully refundable if we don&apos;t secure the van.
+                  {isEstimate ? 'Estimate only — final price depends on auction result and exchange rate at time of purchase.' : 'All-in price — no hidden fees.'}
                 </p>
               </div>
             )}
@@ -563,12 +551,26 @@ export default async function VanDetailPage({ params }: { params: { id: string }
           </div>
         </div>
 
-        {/* Pop-top / conversion upsell — show on vans without fitout */}
-        {!listing.has_fitout && listing.status !== 'sold' && (
-          <div className="mt-10 space-y-4">
-            <h2 className="text-xl text-charcoal font-bold">Add to Your Van</h2>
+        {/* Bare Camper Build module — shown on all listings */}
+        <div className="mt-10 space-y-4">
+          <h2 className="text-xl text-charcoal font-bold">Add to Your Van</h2>
 
-            {/* Pop Top */}
+          {/* Bare Camper Build */}
+          <div className="border border-gray-200 rounded-xl p-5 hover:border-ocean/40 transition-colors">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h3 className="font-bold text-charcoal mb-1">Bare Camper Build Module</h3>
+                <p className="text-sm text-gray-500 leading-relaxed">CNC-machined modular interior — bed, storage, water. Designed in Tokyo, fitted in Australia.</p>
+                <p className="text-xs text-gray-400 mt-1">${BARE_CAMPER_BUILD_EX_GST_AUD.toLocaleString('en-AU')} Ex GST (${BARE_CAMPER_BUILD_INC_GST_AUD.toLocaleString('en-AU')} inc. GST) · Electrical available as an add-on.</p>
+              </div>
+              <Link href="/hexa" className="text-ocean text-sm font-semibold whitespace-nowrap hover:underline shrink-0">
+                See the module →
+              </Link>
+            </div>
+          </div>
+
+          {/* Pop Top — only on vans without fitout and not sold */}
+          {!listing.has_fitout && listing.status !== 'sold' && (
             <div className="border border-gray-200 rounded-xl p-5 hover:border-ocean/40 transition-colors">
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -581,7 +583,12 @@ export default async function VanDetailPage({ params }: { params: { id: string }
                 </Link>
               </div>
             </div>
+          )}
+        </div>
 
+        {/* Full camper conversion upsell — show on vans without fitout */}
+        {!listing.has_fitout && listing.status !== 'sold' && (
+          <div className="mt-10 space-y-4">
             {/* Full camper conversion */}
             <div className="bg-cream border border-sand rounded-2xl p-6">
               <p className="font-semibold text-charcoal mb-1">Want a full campervan conversion?</p>
