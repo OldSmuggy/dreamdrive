@@ -13,9 +13,9 @@ const BUILDS = [
   {
     name: 'MANA',
     tag: 'The Compact Adventurer',
-    desc: 'Built for two. Pop top roof, full kitchen, toilet, 200AH lithium. Everything you need for extended trips in a compact package.',
+    desc: 'Built for two. Full kitchen, toilet, 200AH lithium. Everything you need for extended trips in a compact package — add a pop top for standing height.',
     image: '/images/mana/interior-full.jpg',
-    price: 'From ~$68,000',
+    price: 'From ~$71,000',
     vehicle: 'H200 LWB HiAce',
     href: '/mana',
     configUrl: 'https://configure.barecamper.com.au/?model=mana',

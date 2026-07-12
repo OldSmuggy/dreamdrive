@@ -5,7 +5,7 @@ import { renderToBuffer } from '@react-pdf/renderer'
 import React from 'react'
 import { createAdminClient } from '@/lib/supabase'
 import { centsToAud, scoreLabel } from '@/lib/utils'
-import { listingDisplayPrice, tamaConversionAud, manaAuConversionAud, kumaQConversionAud } from '@/lib/pricing'
+import { listingDisplayPrice, tamaConversionAud, manaConversionAud, kumaQConversionAud } from '@/lib/pricing'
 import { getJpyRate } from '@/lib/settings'
 import VehiclePDF from '@/lib/pdf/vehicle-pdf'
 import type { Listing } from '@/types'
@@ -82,7 +82,7 @@ export async function GET(
 
     // Conversion prices
     const tamaAud = tamaConversionAud(jpyRate)
-    const manaAud = manaAuConversionAud()
+    const manaAud = manaConversionAud(jpyRate)
     const kumaQAud = kumaQConversionAud(jpyRate)
     const isSLWB = listing.size === 'SLWB'
 

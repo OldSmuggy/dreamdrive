@@ -36,8 +36,6 @@ export const AUCTION_FIXED_FEES_JPY =
 // Separation from van price: customer sees conversion fee + van estimate separately
 export const TAMA_CONVERSION_JPY    = 4_800_000   // ¥4,800,000 (Japan build)
 export const KUMA_Q_CONVERSION_JPY  = 5_400_000   // ¥5,400,000 (Japan build — SLWB Hiace)
-export const MANA_JP_CONVERSION_JPY = 4_500_000   // ¥4,500,000 (Japan build)
-export const MANA_AU_CONVERSION_AUD = 45_000       // $45,000 AUD (Australia build)
 export const HEXA_BASE_2WD_AUD     = 75_000       // $75,000 AUD (2WD unleaded, delivered)
 export const HEXA_BASE_4WD_AUD     = 85_000       // $85,000 AUD (4WD diesel, delivered)
 export const HEXA_POP_TOP_AUD      = 13_090       // $13,090 AUD (pop-top upgrade)
@@ -240,15 +238,9 @@ export function kumaQConversionAud(jpyRate?: number | null): number {
   return Math.round((KUMA_Q_CONVERSION_JPY * rate) / 100) * 100
 }
 
-/** Get the MANA Japan conversion fee in AUD (calculated from JPY). */
-export function manaJpConversionAud(jpyRate?: number | null): number {
-  const rate = jpyRate && jpyRate > 0 ? jpyRate : FALLBACK_RATE
-  return Math.round((MANA_JP_CONVERSION_JPY * rate) / 100) * 100
-}
-
-/** Get the MANA Australia conversion fee in AUD (fixed). */
-export function manaAuConversionAud(): number {
-  return MANA_AU_CONVERSION_AUD
+/** Get the MANA conversion fee in AUD. Matches TAMA's fee exactly (same Japan or Australia build). */
+export function manaConversionAud(jpyRate?: number | null): number {
+  return tamaConversionAud(jpyRate)
 }
 
 /** Get the total price range (low/high) for a product page display.

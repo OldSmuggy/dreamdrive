@@ -1,13 +1,12 @@
 import { createAdminClient } from '@/lib/supabase'
 import { getJpyRate } from '@/lib/settings'
-import { manaJpConversionAud, manaAuConversionAud, conversionPriceRange, formatAud } from '@/lib/pricing'
 import ManaProductClient from './ManaProductClient'
 import { generateMeta } from '@/lib/seo'
 
 export const dynamic = 'force-dynamic'
 export const metadata = generateMeta({
   title: 'MANA — Liveable Compact Campervan Conversion | Bare Camper',
-  description: 'The MANA is built for two on the long road. Pop top, 75L fridge, toilet, external shower, 200AH lithium. From $105,000.',
+  description: 'The MANA is built for two on the long road. 75L fridge, toilet, external shower, 200AH lithium. Pop top optional. From $105,000.',
   url: '/mana',
 })
 
@@ -23,7 +22,7 @@ export default async function ManaPage() {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: 'MANA — Liveable Compact Campervan Conversion',
-    description: 'Compact campervan conversion on Toyota Hiace LWB. Pop top, 75L fridge, toilet, external shower, 200AH lithium. Built for two on the long road.',
+    description: 'Compact campervan conversion on Toyota Hiace LWB. 75L fridge, toilet, external shower, 200AH lithium. Pop top optional. Built for two on the long road.',
     brand: { '@type': 'Brand', name: 'Bare Camper' },
     url: 'https://barecamper.com.au/mana',
     offers: {

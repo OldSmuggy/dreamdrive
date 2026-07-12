@@ -127,7 +127,7 @@ const CATEGORIES = [
     faqs: [
       {
         q: 'What conversion options do you offer?',
-        a: 'Three paths: (1) Pop top or hi-top roof conversion only — from $13,090, 10 business days. (2) MANA build — couples adventure van with pop top, kitchen, 75L fridge, toilet, shower, 200Ah lithium. (3) TAMA build — family 6-seater with ISOFIX, galley kitchen, walnut countertops, full electrical. Or just take the van as-is and DIY it.',
+        a: 'Three paths: (1) Pop top or hi-top roof conversion only — from $13,090, 10 business days. (2) MANA build — couples adventure van with kitchen, 75L fridge, toilet, shower, 200Ah lithium (pop top optional, +$13,090). (3) TAMA build — family 6-seater with ISOFIX, galley kitchen, walnut countertops, full electrical (pop top optional, +$13,090). Or just take the van as-is and DIY it.',
       },
       {
         q: 'How long does a conversion take?',

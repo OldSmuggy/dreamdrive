@@ -2,12 +2,11 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { centsToAud, effectivePrice, activeSpecial, sourceLabel, sourceBadgeColor } from '@/lib/utils'
-import { listingDisplayPrice, tamaConversionAud, manaJpConversionAud, manaAuConversionAud } from '@/lib/pricing'
+import { listingDisplayPrice, tamaConversionAud, manaConversionAud } from '@/lib/pricing'
 import type { Listing, Product } from '@/types'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type FitoutSlug = 'tama' | 'mana' | 'grid' | null
-type ManaLocation = 'japan' | 'australia'
 type BuildLocation = 'japan' | 'australia'
 
 interface Props {
@@ -49,9 +48,8 @@ const ADDON_CATALOG: AddonItem[] = [
 const GRID_SLUG    = 'grid-bed-kit'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-function getBuildLocation(fitout: FitoutSlug, manaLoc: ManaLocation): BuildLocation {
-  if (fitout === 'tama') return 'japan'
-  if (fitout === 'mana' && manaLoc === 'japan') return 'japan'
+function getBuildLocation(fitout: FitoutSlug): BuildLocation {
+  if (fitout === 'tama' || fitout === 'mana') return 'japan'
   return 'australia'
 }
 
@@ -64,7 +62,6 @@ export default function ConfiguratorV2({
   // ── State ──────────────────────────────────────────────────────────────────
   const [step,           setStep]           = useState(0)
   const [fitoutSlug,     setFitoutSlug]     = useState<FitoutSlug>(preSelectedFitout)
-  const [manaLocation,   setManaLocation]   = useState<ManaLocation>('japan')
   const [electrical,     setElectrical]     = useState<Product | null>(null)
   const [popTop,         setPopTop]         = useState(false)
   const [selectedAddons, setSelectedAddons] = useState<string[]>([])
@@ -77,12 +74,11 @@ export default function ConfiguratorV2({
   const saveAttempted = useRef(false)
 
   // ── Derived ────────────────────────────────────────────────────────────────
-  const buildLocation      = getBuildLocation(fitoutSlug, manaLocation)
+  const buildLocation      = getBuildLocation(fitoutSlug)
   const isJapanBuild       = buildLocation === 'japan'
   const isTama             = fitoutSlug === 'tama'
   const isMana             = fitoutSlug === 'mana'
   const isGrid             = fitoutSlug === 'grid'
-  const manaIncludesPopTop = isMana
 
   // ── Products ───────────────────────────────────────────────────────────────
   const fitoutProduct = useMemo(() => {
@@ -120,13 +116,9 @@ export default function ConfiguratorV2({
       const fee = tamaConversionAud(jpyRate) * 100  // convert to cents
       lines.push({ label: 'TAMA Conversion (¥4,800,000)', price: fee, note: 'Built at our Tokyo facility' })
       total += fee
-    } else if (isMana && manaLocation === 'japan') {
-      const fee = manaJpConversionAud(jpyRate) * 100
-      lines.push({ label: 'MANA Conversion (¥4,500,000)', price: fee, note: 'Built at our Tokyo facility' })
-      total += fee
-    } else if (isMana && manaLocation === 'australia') {
-      const fee = manaAuConversionAud() * 100  // $45,000 in cents
-      lines.push({ label: 'MANA Conversion', price: fee, note: 'Built at our Brisbane workshop' })
+    } else if (isMana) {
+      const fee = manaConversionAud(jpyRate) * 100  // convert to cents
+      lines.push({ label: 'MANA Conversion (¥4,800,000)', price: fee, note: 'Built at our Tokyo facility' })
       total += fee
     } else if (fitoutProduct && isGrid) {
       const fp = effectivePrice(fitoutProduct)
@@ -161,7 +153,7 @@ export default function ConfiguratorV2({
 
     if (isVanFirst) {
       addVanLines(selectedVan, selectedVan?.model_name ?? 'Your Van')
-    } else if (isTama || (isMana && manaLocation === 'japan')) {
+    } else if (isTama || isMana) {
       if (selectedVan) {
         addVanLines(selectedVan)
       } else {
@@ -185,9 +177,7 @@ export default function ConfiguratorV2({
     }
 
     // ── Pop Top ──────────────────────────────────────────────────────────────
-    if (manaIncludesPopTop) {
-      lines.push({ label: 'Pop Top Roof', price: null, note: 'Included with MANA' })
-    } else if (popTop && poptopProduct) {
+    if (popTop && poptopProduct) {
       const pp = effectivePrice(poptopProduct)
       lines.push({ label: 'Pop Top Conversion', price: pp, note: 'Fitted in Brisbane on arrival' })
       total += pp
@@ -204,9 +194,9 @@ export default function ConfiguratorV2({
 
     return { totalCents: total, priceLines: lines }
   }, [
-    isVanFirst, isTama, isMana, isGrid, manaLocation, isBYO, fitoutProduct, fitoutSlug,
+    isVanFirst, isTama, isMana, isGrid, isBYO, fitoutProduct, fitoutSlug,
     selectedVan, jpyRate, isJapanBuild,
-    electrical, manaIncludesPopTop, popTop, poptopProduct, selectedAddons,
+    electrical, popTop, poptopProduct, selectedAddons,
   ])
 
   // ── Callbacks ──────────────────────────────────────────────────────────────
@@ -245,12 +235,12 @@ export default function ConfiguratorV2({
           listing_id:        selectedVan?.id ?? null,
           fitout_product_id: fitoutProduct?.id ?? null,
           elec_product_id:   electrical?.id ?? null,
-          poptop_product_id: (popTop && poptopProduct && !manaIncludesPopTop) ? poptopProduct.id : null,
+          poptop_product_id: (popTop && poptopProduct) ? poptopProduct.id : null,
           poptop_japan:      false,
           total_aud_min:     totalCents,
           total_aud_max:     totalCents,
           build_location:    buildLocation,
-          mana_location:     isMana ? manaLocation : null,
+          mana_location:     isMana ? 'japan' : null,
           entry_mode:        mode,
           is_byo:            isBYO,
         }),
@@ -418,10 +408,8 @@ export default function ConfiguratorV2({
           buildLocation={null}
           isVanFirst
           fitoutSlug={fitoutSlug}
-          manaLocation={manaLocation}
           electrical={electrical}
           popTop={popTop}
-          manaIncludesPopTop={manaIncludesPopTop}
           selectedAddons={selectedAddons}
           savedBuild={savedBuild}
           saving={saving}
@@ -455,48 +443,17 @@ export default function ConfiguratorV2({
               onSelect={() => handleFitoutChange('tama')}
             />
 
-            {/* MANA — with location chooser */}
-            <div>
-              <BuildOption
-                title="MANA"
-                subtitle="Compact 2-Person Campervan"
-                detail="Full standing room, pop top included, 75L fridge, toilet, external shower."
-                fromPrice={manaLocation === 'australia'
-                  ? `Conversion $${manaAuConversionAud().toLocaleString('en-AU')}`
-                  : `Conversion ~$${manaJpConversionAud(jpyRate).toLocaleString('en-AU')}`}
-                badge={fitoutSlug === 'mana'
-                  ? (manaLocation === 'japan' ? 'Japan Build' : 'AU Build')
-                  : 'Japan or AU'}
-                badgeColor={fitoutSlug === 'mana' && manaLocation === 'australia'
-                  ? 'bg-blue-600' : 'bg-ocean'}
-                selected={fitoutSlug === 'mana'}
-                onSelect={() => handleFitoutChange('mana')}
-              />
-              {fitoutSlug === 'mana' && (
-                <div className="mt-3 border border-gray-200 rounded-xl p-4 bg-white">
-                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Where is your MANA built?</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {[
-                      { val: 'japan',     label: 'Built in Japan',     note: 'Van arrives fully converted. Japan vans only.', color: 'forest' },
-                      { val: 'australia', label: 'Built in Australia',  note: 'Van arrives bare, converted in Brisbane. BYO option available.', color: 'blue' },
-                    ].map(opt => (
-                      <button
-                        key={opt.val}
-                        onClick={() => setManaLocation(opt.val as ManaLocation)}
-                        className={`rounded-xl p-3 border-2 text-sm text-left transition-colors ${
-                          manaLocation === opt.val
-                            ? opt.color === 'forest' ? 'border-ocean bg-cream' : 'border-blue-500 bg-blue-50'
-                            : 'border-gray-200 hover:border-gray-300'
-                        }`}
-                      >
-                        <p className="font-semibold text-gray-900 mb-0.5">{opt.label}</p>
-                        <p className="text-xs text-gray-500 leading-snug">{opt.note}</p>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+            {/* MANA */}
+            <BuildOption
+              title="MANA"
+              subtitle="Compact 2-Person Campervan"
+              detail="Built at our Tokyo facility. 75L fridge, toilet, external shower. Pop top available as an add-on."
+              fromPrice={`Conversion ~$${manaConversionAud(jpyRate).toLocaleString('en-AU')}`}
+              badge="Japan Build"
+              badgeColor="bg-ocean"
+              selected={fitoutSlug === 'mana'}
+              onSelect={() => handleFitoutChange('mana')}
+            />
 
             {/* Bare Camper */}
             {(() => {
@@ -539,8 +496,7 @@ export default function ConfiguratorV2({
               <span className="shrink-0">{isJapanBuild ? '🇯🇵' : '🇦🇺'}</span>
               <p>
                 {isTama && 'TAMA is built at our Tokyo facility. Van must be sourced from Japan auction or dealer.'}
-                {isMana && manaLocation === 'japan' && 'MANA Japan build: van sourced from Japan, arrives fully converted.'}
-                {isMana && manaLocation === 'australia' && 'MANA AU build: van arrives bare, converted at our Brisbane workshop. BYO van option available.'}
+                {isMana && 'MANA is built at our Tokyo facility. Van sourced from Japan, arrives fully converted.'}
                 {isGrid && 'Bare Camper is installed in Australia. All van sources and BYO available.'}
               </p>
             </div>
@@ -611,16 +567,7 @@ export default function ConfiguratorV2({
       {/* Step 2 — Pop Top */}
       {!isVanFirst && step === 2 && (
         <StepPanel title="Pop Top Roof" onBack={() => setStep(1)} onNext={() => setStep(3)}>
-          {manaIncludesPopTop && (
-            <div className="flex gap-3 bg-cream border border-ocean rounded-xl px-4 py-3 text-sm text-charcoal mb-5">
-              <span className="shrink-0 mt-0.5">✓</span>
-              <p>
-                <strong>Pop top included with your MANA</strong> — included in your build price.
-                Fitted at our Brisbane factory on arrival.
-              </p>
-            </div>
-          )}
-          {poptopProduct && !manaIncludesPopTop && (
+          {poptopProduct && (
             <div
               onClick={() => setPopTop(v => !v)}
               className={`border-2 rounded-2xl p-6 cursor-pointer transition-colors mb-4 ${
@@ -656,7 +603,7 @@ export default function ConfiguratorV2({
               </div>
             </div>
           )}
-          {!manaIncludesPopTop && !popTop && (
+          {!popTop && (
             <button onClick={() => setStep(3)} className="text-gray-400 text-sm hover:underline mt-2">
               Skip — no pop top →
             </button>
@@ -744,7 +691,7 @@ export default function ConfiguratorV2({
                       Already own a Hiace? We can convert your van. Contact us to confirm compatibility.
                     </p>
                     <p className="text-xs text-gray-400 mt-1.5">
-                      Compatible: Toyota Hiace H200 LWB (MANA/Bare Camper). H200, 300 Series, VW T5, Mercedes Vito/Sprinter (pop top).
+                      Compatible: Toyota Hiace H200 LWB (Bare Camper). H200, 300 Series, VW T5, Mercedes Vito/Sprinter (pop top).
                     </p>
                   </div>
                   <div className={`mt-0.5 w-6 h-6 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
@@ -892,10 +839,8 @@ export default function ConfiguratorV2({
           buildLocation={buildLocation}
           isVanFirst={false}
           fitoutSlug={fitoutSlug}
-          manaLocation={manaLocation}
           electrical={electrical}
           popTop={popTop}
-          manaIncludesPopTop={manaIncludesPopTop}
           selectedAddons={selectedAddons}
           savedBuild={savedBuild}
           saving={saving}
@@ -923,8 +868,7 @@ export default function ConfiguratorV2({
                   fitoutSlug === 'mana' && 'MANA',
                   fitoutSlug === 'grid' && 'Bare Camper',
                   electrical?.name,
-                  (popTop && !manaIncludesPopTop) && 'Pop Top',
-                  manaIncludesPopTop && 'Pop Top (incl.)',
+                  popTop && 'Pop Top',
                   selectedAddons.length > 0 && `${selectedAddons.length} add-on${selectedAddons.length > 1 ? 's' : ''}`,
                 ].filter(Boolean).join(' + ') || 'Configure your build →'}
               </p>
@@ -1068,7 +1012,7 @@ function VanSummaryCard({ listing, showPrice = false }: { listing: Listing; show
 
 function SummaryStep({
   priceLines, totalCents, selectedVan, isBYO, buildLocation, isVanFirst, fitoutSlug,
-  manaLocation, electrical, popTop, manaIncludesPopTop, selectedAddons,
+  electrical, popTop, selectedAddons,
   savedBuild, saving, shareToast, onShare,
   leadSent, onLeadSubmit, onBack, onReset, onSwapVan,
 }: {
@@ -1079,10 +1023,8 @@ function SummaryStep({
   buildLocation: BuildLocation | null
   isVanFirst: boolean
   fitoutSlug: FitoutSlug
-  manaLocation: ManaLocation
   electrical: Product | null
   popTop: boolean
-  manaIncludesPopTop: boolean
   selectedAddons: string[]
   savedBuild: { id: string; slug: string } | null
   saving: boolean
@@ -1192,7 +1134,7 @@ function SummaryStep({
                   <div>
                     <p className="font-semibold text-gray-900">{fitoutLabel}</p>
                     {fitoutSlug === 'tama' && <p className="text-xs text-gray-500 mt-0.5">6-seat family campervan · Japan build</p>}
-                    {fitoutSlug === 'mana' && <p className="text-xs text-gray-500 mt-0.5">Premium adventure van · {manaLocation === 'japan' ? 'Japan build' : 'AU build'}</p>}
+                    {fitoutSlug === 'mana' && <p className="text-xs text-gray-500 mt-0.5">Premium adventure van · Japan build</p>}
                     {fitoutSlug === 'grid' && <p className="text-xs text-gray-500 mt-0.5">Off-grid specialist · Brisbane workshop</p>}
                   </div>
                 </div>
@@ -1201,11 +1143,9 @@ function SummaryStep({
                     <span className="text-gray-600">⚡ {electricalLabel}</span>
                   </div>
                 )}
-                {(popTopLabel || manaIncludesPopTop) && (
+                {popTopLabel && (
                   <div className="flex justify-between text-sm border-t border-gray-100 pt-3">
-                    <span className="text-gray-600">
-                      {manaIncludesPopTop ? '🔼 Pop Top — included with MANA' : `🔼 ${popTopLabel}`}
-                    </span>
+                    <span className="text-gray-600">🔼 {popTopLabel}</span>
                   </div>
                 )}
               </div>
@@ -1252,14 +1192,14 @@ function SummaryStep({
                     <p className="text-gray-500 text-xs">{buildLocation === 'japan' ? '6–10 weeks build + 4–6 weeks shipping' : '4–8 weeks'}</p>
                   </div>
                 </li>
-                {buildLocation === 'japan' && (popTopLabel || manaIncludesPopTop) && (
+                {buildLocation === 'japan' && popTopLabel && (
                   <li className="flex gap-3">
                     <span className="w-6 h-6 rounded-full bg-ocean text-white text-xs font-bold flex items-center justify-center shrink-0">3</span>
                     <div><p className="font-medium text-gray-800">Pop top fitted in Brisbane</p><p className="text-gray-500 text-xs">After van arrives from Japan</p></div>
                   </li>
                 )}
                 <li className="flex gap-3">
-                  <span className="w-6 h-6 rounded-full bg-sand text-white text-xs font-bold flex items-center justify-center shrink-0">{buildLocation === 'japan' && (popTopLabel || manaIncludesPopTop) ? '4' : '3'}</span>
+                  <span className="w-6 h-6 rounded-full bg-sand text-white text-xs font-bold flex items-center justify-center shrink-0">{buildLocation === 'japan' && popTopLabel ? '4' : '3'}</span>
                   <div><p className="font-medium text-gray-800">Handover &amp; on the road</p><p className="text-gray-500 text-xs">QLD rego, full walk-through</p></div>
                 </li>
               </ol>
