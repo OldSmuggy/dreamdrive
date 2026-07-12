@@ -7,9 +7,8 @@ import PageEditToolbar from '@/components/admin/PageEditToolbar'
 import FitoutHero from '@/components/admin/FitoutHero'
 
 const STATIC_HERO = '/images/package-explorer.jpg'
-const FITOUT_AUD = 47000
 
-export default function ManaClient({ jpyApprox, content: initial }: { jpyApprox: number; content: Record<string, string> }) {
+export default function ManaClient({ fitoutAud, content: initial }: { fitoutAud: number; content: Record<string, string> }) {
   const [content, setContent] = useState(initial)
 
   const gallery: string[] = (() => { try { return JSON.parse(content.gallery_images || '[]') } catch { return [] } })()
@@ -30,7 +29,7 @@ export default function ManaClient({ jpyApprox, content: initial }: { jpyApprox:
         </Link>
         <div className="max-w-2xl">
           <span className="inline-block bg-sand text-charcoal text-xs font-bold px-3 py-1 rounded-full mb-4 uppercase tracking-wide">
-            From $107,000 Driveaway
+            From ~$69,000 Driveaway
           </span>
           <h1 className="text-5xl md:text-6xl text-white mb-3">The MANA Pop Top</h1>
           <p className="text-sand text-xl mb-8">Liveable Compact Campervan</p>
@@ -79,10 +78,10 @@ export default function ManaClient({ jpyApprox, content: initial }: { jpyApprox:
         <div className="bg-cream border border-ocean-light rounded-2xl p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-6">
           <div className="flex-1">
             <p className="text-xs font-bold text-ocean uppercase tracking-wider mb-1">Fit-Out Price (fit-out only)</p>
-            <p className="text-3xl text-charcoal">${FITOUT_AUD.toLocaleString('en-AU')} AUD</p>
-            <p className="text-gray-500 text-sm mt-1">approx. ¥{jpyApprox.toLocaleString('en-AU')} JPY</p>
+            <p className="text-3xl text-charcoal">${fitoutAud.toLocaleString('en-AU')} AUD</p>
+            <p className="text-gray-500 text-sm mt-1">¥4,800,000 at today&apos;s rate</p>
             <p className="text-xs text-gray-400 mt-3">
-              Fit-out price is separate from the base van. Van price depends on the specific vehicle and exchange rate at time of purchase.
+              Fit-out price is separate from the base van. Van price depends on the specific vehicle and exchange rate at time of purchase. Pop top roof optional — +$13,090, fitted in Brisbane.
             </p>
           </div>
           <Link href="/build" className="btn-primary shrink-0 text-center px-8 py-3.5">

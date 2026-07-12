@@ -9,16 +9,16 @@ import FitoutHero from '@/components/admin/FitoutHero'
 const FITOUTS = [
   {
     slug: 'tama',
-    name: 'TAMA Pop Top',
-    price: 'From $109,000 driveaway',
-    desc: 'The perfect family campervan — 6 seats, sleeps 4, full galley kitchen.',
+    name: 'TAMA',
+    price: 'From ~$69,000 driveaway',
+    desc: 'The perfect family campervan — 6 seats, sleeps 4, full galley kitchen. Pop top optional.',
     image: '/images/tama-family-seat.jpg',
   },
   {
     slug: 'mana',
-    name: 'MANA Pop Top',
-    price: 'From $107,000 driveaway',
-    desc: 'Built for couples and solo adventurers — sleeps 2, full kitchen, toilet and shower.',
+    name: 'MANA',
+    price: 'From ~$69,000 driveaway',
+    desc: 'Built for couples and solo adventurers — sleeps 2, full kitchen, toilet and shower. Pop top optional.',
     image: '/images/package-explorer.jpg',
   },
   {

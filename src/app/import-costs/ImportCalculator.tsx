@@ -20,7 +20,7 @@ const ADDONS = [
   { id: 'poptop',   label: 'Pop top roof conversion',     cost: 13090 },
   { id: 'hitop',    label: 'Hi-top roof conversion',      cost: 15090 },
   { id: 'fitout',   label: 'Basic fit-out (estimate)',     cost: 8000  },
-  { id: 'mana',     label: 'Full turnkey build — MANA',   cost: 45000 },
+  { id: 'mana',     label: 'Full turnkey build — TAMA or MANA', cost: 45600 },
 ]
 
 function fmt(n: number) {

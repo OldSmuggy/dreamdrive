@@ -7,7 +7,7 @@ import { generateMeta } from '@/lib/seo'
 export const dynamic = 'force-dynamic'
 export const metadata = generateMeta({
   title: 'TAMA — 6-Seat Family Campervan Conversion | Bare Camper',
-  description: 'The TAMA converts your Toyota Hiace into a 6-seat people mover with ISOFIX, galley kitchen, walnut countertops, and full electrical. From $106,000.',
+  description: 'The TAMA converts your Toyota Hiace into a 6-seat people mover with ISOFIX, galley kitchen, walnut countertops, and full electrical. From ~$69,000.',
   url: '/tama',
 })
 
@@ -33,7 +33,7 @@ export default async function TamaPage({ searchParams }: { searchParams: Promise
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: 'TAMA — 6-Seat Family Campervan Conversion',
-    description: 'Full turnkey campervan conversion on Toyota Hiace LWB. 6-seat ISOFIX layout, galley kitchen, walnut countertops, pop top roof, 200AH lithium, and full electrical.',
+    description: 'Full turnkey campervan conversion on Toyota Hiace LWB. 6-seat ISOFIX layout, galley kitchen, walnut countertops, 200AH lithium, and full electrical. Pop top optional.',
     brand: { '@type': 'Brand', name: 'Bare Camper' },
     url: 'https://barecamper.com.au/tama',
     image: 'https://barecamper.com.au/images/og-full-build.png',
