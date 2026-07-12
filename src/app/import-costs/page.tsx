@@ -316,8 +316,8 @@ const BUILD_OPTIONS = [
   {
     icon: '🔑',
     title: 'Full turnkey build',
-    desc: 'TAMA (family) or MANA (couples). Complete interior — kitchen, bed, electrical, toilet. Keys and go.',
-    price: 'From ~$45,000 all-in',
+    desc: 'TAMA (family) or MANA (couples). Complete interior — kitchen, bed, electrical, toilet. Keys and go. Pop top +$13,090.',
+    price: 'From ~$45,600 + van',
     href: '/fit-outs',
   },
 ]
