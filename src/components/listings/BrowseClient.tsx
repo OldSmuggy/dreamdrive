@@ -56,6 +56,7 @@ const SOURCE_FILTERS = [
   { value: 'auction',        label: 'Auction' },
   { value: 'dealer',         label: 'Dealer' },
   { value: 'au_stock',       label: 'AU Stock' },
+  { value: 'community',      label: 'Community' },
 ]
 
 const SIZE_FILTERS = [
@@ -226,6 +227,8 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
     if (sourceFilter) {
       if (sourceFilter === 'dealer') {
         list = list.filter(l => l.source === 'dealer_goonet' || l.source === 'dealer_carsensor')
+      } else if (sourceFilter === 'community') {
+        list = list.filter(l => l.source === 'customer_upload')
       } else {
         list = list.filter(l => l.source === sourceFilter)
       }

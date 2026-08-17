@@ -56,6 +56,10 @@ export default async function BrowsePage({ searchParams }: Props) {
     if (sources.includes('dealer')) {
       sources = sources.filter(s => s !== 'dealer').concat('dealer_goonet', 'dealer_carsensor')
     }
+    // "community" is a UI shorthand for customer-submitted used vans
+    if (sources.includes('community')) {
+      sources = sources.filter(s => s !== 'community').concat('customer_upload')
+    }
     query = query.in('source', sources)
   }
 
