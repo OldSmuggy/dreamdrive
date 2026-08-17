@@ -117,6 +117,7 @@ export async function GET(
       engine:      (listing as any).engine ?? null,
       size:        listing.size,
       location:    listing.location_status,
+      auLocation:  listing.au_location,
       price:       priceStr,
       priceCents:  priceCents,
       priceNote,

@@ -1,13 +1,14 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { centsToAud, sourceLabel } from '@/lib/utils'
+import { centsToAud, sourceLabel, COMMON_VEHICLE_MAKES, COMMON_AU_LOCATIONS } from '@/lib/utils'
 import { getAuMarketPrice } from '@/lib/au-market-price'
 import { estimateLandedAud, listingDisplayPrice } from '@/lib/pricing'
 import type { Listing, Source } from '@/types'
 import PhotoUploadButton from '@/components/ui/PhotoUploadButton'
 
 type EditState = {
+  make: string
   model_name: string
   grade: string
   body_colour: string
@@ -27,6 +28,7 @@ type EditState = {
   status: string
   au_status: string
   location_status: string
+  au_location: string
   fit_out_level: string
   vehicle_model: string
   conversion_video_url: string
@@ -79,6 +81,7 @@ type EditState = {
 
 function toEditState(l: Listing): EditState {
   return {
+    make: l.make ?? '',
     model_name: l.model_name ?? '',
     grade: l.grade ?? '',
     body_colour: l.body_colour ?? '',
@@ -98,6 +101,7 @@ function toEditState(l: Listing): EditState {
     status: l.status,
     au_status: l.au_status ?? '',
     location_status: l.location_status ?? '',
+    au_location: l.au_location ?? '',
     fit_out_level: l.fit_out_level ?? '',
     vehicle_model: l.vehicle_model ?? '',
     conversion_video_url: l.conversion_video_url ?? '',
@@ -986,13 +990,28 @@ function ListingRow({
 
             {/* Left — main fields */}
             <div className="md:col-span-2 space-y-3">
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Model Name</label>
-                <input
-                  value={editState.model_name}
-                  onChange={e => onSet('model_name', e.target.value)}
-                  className={inputClass}
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">Make</label>
+                  <input
+                    list="listing-make-options"
+                    value={editState.make}
+                    onChange={e => onSet('make', e.target.value)}
+                    className={inputClass}
+                    placeholder="Toyota, Nissan…"
+                  />
+                  <datalist id="listing-make-options">
+                    {COMMON_VEHICLE_MAKES.map(m => <option key={m} value={m} />)}
+                  </datalist>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">Model Name</label>
+                  <input
+                    value={editState.model_name}
+                    onChange={e => onSet('model_name', e.target.value)}
+                    className={inputClass}
+                  />
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -1121,6 +1140,20 @@ function ListingRow({
                     <option value="in_brisbane">In Brisbane (Available Now)</option>
                     <option value="sold">Sold</option>
                   </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">AU Location (actual city)</label>
+                  <input
+                    list="listing-location-options"
+                    value={editState.au_location}
+                    onChange={e => onSet('au_location', e.target.value)}
+                    className={inputClass}
+                    placeholder="e.g. Sydney, NSW — leave blank for Brisbane"
+                  />
+                  <datalist id="listing-location-options">
+                    {COMMON_AU_LOCATIONS.map(loc => <option key={loc} value={loc} />)}
+                  </datalist>
+                  <p className="text-[10px] text-gray-400 mt-0.5">Overrides the Brisbane default for AU-stock/community-find vans parked elsewhere.</p>
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-600 mb-1.5">Fit-Out Level</label>
@@ -1950,6 +1983,7 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
     setError(null)
     try {
       const payload = {
+        make: editState.make.trim() || null,
         model_name: editState.model_name.trim(),
         grade: editState.grade.trim() || null,
         body_colour: editState.body_colour.trim() || null,
@@ -1969,6 +2003,7 @@ export default function ListingEditor({ initial }: { initial: Listing[] }) {
         status: editState.status,
         au_status: editState.au_status || null,
         location_status: editState.location_status || null,
+        au_location: editState.au_location.trim() || null,
         fit_out_level: editState.fit_out_level || null,
         vehicle_model: editState.vehicle_model || null,
         conversion_video_url: editState.conversion_video_url || null,

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import { COMMON_VEHICLE_MAKES, COMMON_AU_LOCATIONS } from '@/lib/utils'
 import Image from 'next/image'
 import type { MyListing } from './page'
 
@@ -125,9 +126,11 @@ function ListingCard({ listing, interests, onPublish, onDelete, publishing, dele
         </div>
 
         <div className="flex flex-wrap gap-3 text-xs text-gray-500 mb-3">
+          {listing.make && <span>{listing.make}</span>}
           {listing.mileage_km && <span>{listing.mileage_km.toLocaleString()} km</span>}
           {listing.transmission && <span>{listing.transmission === 'AT' ? 'Auto' : 'Manual'}</span>}
           {listing.body_colour && <span>{listing.body_colour}</span>}
+          {listing.au_location && <span>📍 {listing.au_location}</span>}
           {listing.au_price_aud && <span className="font-semibold text-charcoal">${(listing.au_price_aud / 100).toLocaleString()}</span>}
         </div>
 
@@ -214,6 +217,7 @@ function AddListingForm({ onCreated }: { onCreated: (listing: MyListing) => void
   const extraRef = useRef<HTMLInputElement>(null)
 
   const [form, setForm] = useState({
+    make: 'Toyota',
     model_name: 'Toyota Hiace',
     model_year: '',
     body_type: '',
@@ -222,6 +226,7 @@ function AddListingForm({ onCreated }: { onCreated: (listing: MyListing) => void
     transmission: '',
     drive: '2WD',
     au_price_aud: '',
+    location: '',
     notes: '',
     source_category: '',
     source_url: '',
@@ -272,6 +277,7 @@ function AddListingForm({ onCreated }: { onCreated: (listing: MyListing) => void
       // Build a minimal MyListing to show in list immediately
       const newListing: MyListing = {
         id: data.id,
+        make: form.make || null,
         model_name: form.model_name,
         model_year: form.model_year ? parseInt(form.model_year) : null,
         grade: form.body_type || null,
@@ -279,6 +285,7 @@ function AddListingForm({ onCreated }: { onCreated: (listing: MyListing) => void
         mileage_km: form.mileage_km ? parseInt(form.mileage_km) : null,
         transmission: form.transmission || null,
         au_price_aud: form.au_price_aud ? Math.round(parseFloat(form.au_price_aud) * 100) : null,
+        au_location: form.location || null,
         photos: allPhotos,
         status: data.status,
         is_community_find: true,
@@ -290,7 +297,7 @@ function AddListingForm({ onCreated }: { onCreated: (listing: MyListing) => void
       onCreated(newListing)
       // Reset
       setOpen(false)
-      setForm({ model_name: 'Toyota Hiace', model_year: '', body_type: '', body_colour: '', mileage_km: '', transmission: '', drive: '2WD', au_price_aud: '', notes: '', source_category: '', source_url: '' })
+      setForm({ make: 'Toyota', model_name: 'Toyota Hiace', model_year: '', body_type: '', body_colour: '', mileage_km: '', transmission: '', drive: '2WD', au_price_aud: '', location: '', notes: '', source_category: '', source_url: '' })
       setPhotos({}); setExtraPhotos([])
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Something went wrong.')
@@ -320,12 +327,26 @@ function AddListingForm({ onCreated }: { onCreated: (listing: MyListing) => void
       {/* Van details */}
       <div className="grid sm:grid-cols-2 gap-4">
         <div>
+          <label className="block text-sm font-semibold text-charcoal mb-1.5">Make</label>
+          <input type="text" list="my-listing-make-options" value={form.make} onChange={e => set('make', e.target.value)} className={inputCls} placeholder="e.g. Toyota, Nissan" />
+          <datalist id="my-listing-make-options">
+            {COMMON_VEHICLE_MAKES.map(m => <option key={m} value={m} />)}
+          </datalist>
+        </div>
+        <div>
           <label className="block text-sm font-semibold text-charcoal mb-1.5">Van model <span className="text-red-400">*</span></label>
-          <input type="text" value={form.model_name} onChange={e => set('model_name', e.target.value)} required className={inputCls} placeholder="e.g. Toyota Hiace H200" />
+          <input type="text" value={form.model_name} onChange={e => set('model_name', e.target.value)} required className={inputCls} placeholder="e.g. Hiace H200, Caravan" />
         </div>
         <div>
           <label className="block text-sm font-semibold text-charcoal mb-1.5">Year</label>
           <input type="number" value={form.model_year} onChange={e => set('model_year', e.target.value)} className={inputCls} placeholder="e.g. 2019" min={1990} max={2030} />
+        </div>
+        <div>
+          <label className="block text-sm font-semibold text-charcoal mb-1.5">Current location <span className="text-red-400">*</span></label>
+          <input type="text" list="my-listing-location-options" value={form.location} onChange={e => set('location', e.target.value)} required className={inputCls} placeholder="e.g. Sydney, NSW" />
+          <datalist id="my-listing-location-options">
+            {COMMON_AU_LOCATIONS.map(loc => <option key={loc} value={loc} />)}
+          </datalist>
         </div>
         <div>
           <label className="block text-sm font-semibold text-charcoal mb-1.5">Body type</label>

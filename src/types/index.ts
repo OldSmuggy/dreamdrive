@@ -51,6 +51,7 @@ export interface Listing {
   auction_count: string | null
   bid_no: string | null
   auction_date: string | null
+  make: string | null
   model_name: string
   grade: string | null
   chassis_code: string | null
@@ -92,6 +93,7 @@ export interface Listing {
   created_at: string
   updated_at: string
   location_status: LocationStatus | null
+  au_location: string | null
   fit_out_level: FitOutLevel | null
   vehicle_model: VehicleModel | null
   conversion_video_url: string | null
@@ -376,6 +378,7 @@ export interface VanSubmission {
   name: string
   email: string
   phone: string | null
+  make: string | null
   model_name: string
   model_year: number | null
   body_type: string | null

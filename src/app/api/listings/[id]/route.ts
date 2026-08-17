@@ -15,6 +15,7 @@ const OPTIONAL_COLUMNS = [
   'auction_time', 'auction_result', 'sold_price_jpy', 'top_bid_jpy', 'auction_time_zone',
   'price_aud', 'price_type',
   'lead_time_weeks',
+  'make', 'au_location',
 ]
 
 export async function PATCH(

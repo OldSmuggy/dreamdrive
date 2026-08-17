@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react'
 import Image from 'next/image'
+import { COMMON_VEHICLE_MAKES, COMMON_AU_LOCATIONS } from '@/lib/utils'
 
 // ─── Photo slot definitions ──────────────────────────────────────────────────
 const REQUIRED_SLOTS = [
@@ -120,6 +121,7 @@ export default function SubmitVanForm() {
 
   // Step 2 — van details
   const [van, setVan] = useState({
+    make: 'Toyota',
     model_name: 'Toyota Hiace',
     model_year: '',
     body_type: '',
@@ -197,6 +199,7 @@ export default function SubmitVanForm() {
         email: contact.email,
         phone: contact.phone,
         contact_preference: contact.contact_preference,
+        make: van.make || null,
         model_name: van.model_name,
         model_year: van.model_year ? parseInt(van.model_year) : null,
         body_type: van.body_type || null,
@@ -233,7 +236,7 @@ export default function SubmitVanForm() {
           We&apos;ll review your listing and let you know when it&apos;s live. Interested buyers will be able to reach out to you directly.
         </p>
         <button
-          onClick={() => { setStatus('idle'); setStep(1); setContact({ name: '', email: '', phone: '', contact_preference: 'email' }); setVan({ model_name: 'Toyota Hiace', model_year: '', body_type: '', mileage_km: '', transmission: '', asking_price_aud: '', location: '', notes: '' }); setPhotos({}); setExtraPhotos([]) }}
+          onClick={() => { setStatus('idle'); setStep(1); setContact({ name: '', email: '', phone: '', contact_preference: 'email' }); setVan({ make: 'Toyota', model_name: 'Toyota Hiace', model_year: '', body_type: '', mileage_km: '', transmission: '', asking_price_aud: '', location: '', notes: '' }); setPhotos({}); setExtraPhotos([]) }}
           className="mt-6 text-ocean text-sm hover:underline"
         >
           Submit another van →
@@ -307,17 +310,27 @@ export default function SubmitVanForm() {
 
           <div className="grid sm:grid-cols-2 gap-5">
             <div>
-              <label className="block text-sm font-semibold text-charcoal mb-1.5">Van model <span className="text-red-400">*</span></label>
-              <input type="text" value={van.model_name} onChange={e => setVan(v => ({ ...v, model_name: e.target.value }))} required
-                placeholder="e.g. Toyota Hiace H200"
+              <label className="block text-sm font-semibold text-charcoal mb-1.5">Make</label>
+              <input type="text" list="make-options" value={van.make} onChange={e => setVan(v => ({ ...v, make: e.target.value }))}
+                placeholder="e.g. Toyota, Nissan"
                 className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30 focus:border-ocean" />
+              <datalist id="make-options">
+                {COMMON_VEHICLE_MAKES.map(m => <option key={m} value={m} />)}
+              </datalist>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-charcoal mb-1.5">Year <span className="text-red-400">*</span></label>
-              <input type="number" value={van.model_year} onChange={e => setVan(v => ({ ...v, model_year: e.target.value }))} required
-                placeholder="e.g. 2019" min={1990} max={2030}
+              <label className="block text-sm font-semibold text-charcoal mb-1.5">Van model <span className="text-red-400">*</span></label>
+              <input type="text" value={van.model_name} onChange={e => setVan(v => ({ ...v, model_name: e.target.value }))} required
+                placeholder="e.g. Hiace H200, Caravan"
                 className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30 focus:border-ocean" />
             </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-charcoal mb-1.5">Year <span className="text-red-400">*</span></label>
+            <input type="number" value={van.model_year} onChange={e => setVan(v => ({ ...v, model_year: e.target.value }))} required
+              placeholder="e.g. 2019" min={1990} max={2030}
+              className="w-full sm:w-1/2 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30 focus:border-ocean" />
           </div>
 
           <div className="grid sm:grid-cols-2 gap-5">
@@ -362,9 +375,13 @@ export default function SubmitVanForm() {
 
           <div>
             <label className="block text-sm font-semibold text-charcoal mb-1.5">Current location <span className="text-red-400">*</span></label>
-            <input type="text" value={van.location} onChange={e => setVan(v => ({ ...v, location: e.target.value }))} required
-              placeholder="e.g. Brisbane, QLD"
+            <input type="text" list="location-options" value={van.location} onChange={e => setVan(v => ({ ...v, location: e.target.value }))} required
+              placeholder="e.g. Sydney, NSW"
               className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30 focus:border-ocean" />
+            <datalist id="location-options">
+              {COMMON_AU_LOCATIONS.map(loc => <option key={loc} value={loc} />)}
+            </datalist>
+            <p className="text-xs text-gray-400 mt-1">Any Australian city or town — doesn&apos;t need to be Brisbane.</p>
           </div>
 
           <div>

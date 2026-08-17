@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const {
       name, email, phone, contact_preference,
-      model_name, model_year, body_type, mileage_km,
+      make, model_name, model_year, body_type, mileage_km,
       transmission, asking_price_aud, location, notes,
       photos,
     } = body
@@ -46,11 +46,13 @@ export async function POST(req: NextRequest) {
         .from('listings')
         .insert({
           source: 'customer_upload',
+          make: make || null,
           model_name,
           model_year: model_year ?? null,
           transmission: transmission ?? null,
           mileage_km: mileage_km ?? null,
           au_price_aud: asking_price_aud ?? null,
+          au_location: location ?? null,
           description: notes ?? null,
           photos,
           status: 'available',
@@ -86,6 +88,7 @@ export async function POST(req: NextRequest) {
       .insert({
         name, email: email.toLowerCase().trim(),
         phone: phone || null,
+        make: make || null,
         model_name, model_year: model_year ?? null,
         body_type: body_type ?? null,
         mileage_km: mileage_km ?? null,

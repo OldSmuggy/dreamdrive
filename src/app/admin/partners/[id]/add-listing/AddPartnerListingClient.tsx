@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import { COMMON_VEHICLE_MAKES, COMMON_AU_LOCATIONS } from '@/lib/utils'
 
 interface Partner {
   id: string
@@ -20,6 +21,7 @@ export default function AddPartnerListingClient({ partner }: { partner: Partner 
   const fileRef = useRef<HTMLInputElement>(null)
 
   const [form, setForm] = useState({
+    make: 'Toyota',
     model_name: 'Toyota Hiace',
     model_year: '',
     body_type: '',
@@ -28,6 +30,7 @@ export default function AddPartnerListingClient({ partner }: { partner: Partner 
     drive: '2WD',
     colour: '',
     price_aud: '',
+    location: '',
     description: '',
     source_url: '',
     vin: '',
@@ -91,12 +94,26 @@ export default function AddPartnerListingClient({ partner }: { partner: Partner 
       <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-2xl p-6 space-y-4">
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
+            <label className="block text-xs font-semibold text-gray-600 mb-1">Make</label>
+            <input list="partner-make-options" value={form.make} onChange={e => set('make', e.target.value)} className={inputCls} placeholder="Toyota, Nissan…" />
+            <datalist id="partner-make-options">
+              {COMMON_VEHICLE_MAKES.map(m => <option key={m} value={m} />)}
+            </datalist>
+          </div>
+          <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1">Model name *</label>
             <input required value={form.model_name} onChange={e => set('model_name', e.target.value)} className={inputCls} />
           </div>
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1">Year</label>
             <input type="number" value={form.model_year} onChange={e => set('model_year', e.target.value)} className={inputCls} />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 mb-1">Location</label>
+            <input list="partner-location-options" value={form.location} onChange={e => set('location', e.target.value)} className={inputCls} placeholder="e.g. Sydney, NSW" />
+            <datalist id="partner-location-options">
+              {COMMON_AU_LOCATIONS.map(loc => <option key={loc} value={loc} />)}
+            </datalist>
           </div>
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1">Body type</label>

@@ -39,11 +39,13 @@ export async function PATCH(
         .from('listings')
         .insert({
           source: 'customer_upload',
+          make: sub.make,
           model_name: sub.model_name,
           model_year: sub.model_year,
           transmission: sub.transmission,
           mileage_km: sub.mileage_km,
           au_price_aud: sub.asking_price_aud,
+          au_location: sub.location,
           description: sub.notes,
           photos: sub.photos,
           status: publish ? 'available' : 'available',  // always available, admin controls visibility

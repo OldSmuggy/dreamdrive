@@ -13,8 +13,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const { id: partnerId } = await params
     const body = await req.json()
     const {
-      model_name, model_year, body_type, mileage_km, transmission, drive,
-      colour, price_aud, photos, description, source_url,
+      make, model_name, model_year, body_type, mileage_km, transmission, drive,
+      colour, price_aud, location, photos, description, source_url,
     } = body
 
     if (!model_name) return NextResponse.json({ error: 'model_name required' }, { status: 400 })
@@ -25,6 +25,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       .insert({
         source: 'au_stock',
         supplier_partner_id: partnerId,
+        make: make || null,
         model_name,
         model_year: model_year ?? null,
         size: body_type ?? null,                    // form sends body_type, DB column is size
@@ -33,6 +34,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         drive: drive ?? null,
         body_colour: colour ?? null,
         fuel_type: 'petrol',
+        au_location: location || null,
         au_price_aud: price_aud ? Math.round(price_aud * 100) : null,
         price_aud: price_aud ? Math.round(price_aud * 100) : null,
         price_type: 'fixed',

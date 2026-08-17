@@ -6,6 +6,17 @@ export function cn(...inputs: ClassValue[]) {
   return clsx(inputs)
 }
 
+// ---- Vehicle makes (free text — this list is just convenient suggestions) ----
+export const COMMON_VEHICLE_MAKES = [
+  'Toyota', 'Nissan', 'Mazda', 'Mitsubishi', 'Ford', 'Volkswagen', 'Mercedes-Benz', 'Fiat', 'Renault', 'Other',
+]
+
+// ---- Common AU cities (free text — just convenient suggestions) ----
+export const COMMON_AU_LOCATIONS = [
+  'Brisbane, QLD', 'Sydney, NSW', 'Melbourne, VIC', 'Perth, WA', 'Adelaide, SA',
+  'Gold Coast, QLD', 'Sunshine Coast, QLD', 'Newcastle, NSW', 'Canberra, ACT', 'Hobart, TAS', 'Darwin, NT',
+]
+
 // ---- Money ----
 export function centsToAud(cents: number | null | undefined): string {
   if (cents == null) return '—'
@@ -92,12 +103,13 @@ export function sourceBadgeColor(source: string): string {
 }
 
 // ---- Location-based status badges ----
-export function locationBadgeInfo(listing: { location_status?: string | null; source: string }): {
+export function locationBadgeInfo(listing: { location_status?: string | null; source: string; au_location?: string | null }): {
   label: string; bg: string; sub: string
 } {
   const ls = listing.location_status
   if (ls === 'sold')        return { label: 'SOLD',         bg: 'bg-gray-500',   sub: '' }
   if (ls === 'on_ship')     return { label: 'ON SHIP',      bg: 'bg-orange-600', sub: 'Arriving soon · Fees paid' }
+  if (listing.au_location)  return { label: `IN ${listing.au_location.toUpperCase()}`, bg: 'bg-green-600', sub: 'Ready for test drive · All fees paid' }
   if (ls === 'in_brisbane' || listing.source === 'au_stock')
                             return { label: 'IN BRISBANE',  bg: 'bg-green-600',  sub: 'Ready for test drive · All fees paid' }
   // default: in_japan (auction / dealer)

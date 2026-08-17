@@ -319,6 +319,7 @@ function SubmissionCard({
       {/* Specs */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
         {[
+          { label: 'Make', value: sub.make },
           { label: 'Body', value: sub.body_type },
           { label: 'Transmission', value: sub.transmission === 'AT' ? 'Auto' : sub.transmission === 'MT' ? 'Manual' : null },
           { label: 'Mileage', value: sub.mileage_km ? `${sub.mileage_km.toLocaleString()} km` : null },

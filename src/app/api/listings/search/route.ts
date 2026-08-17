@@ -14,8 +14,8 @@ export async function GET(req: NextRequest) {
 
   const { data, error } = await supabase
     .from('listings')
-    .select('id, model_name, model_year, chassis_code, photos, bid_no')
-    .or(`model_name.ilike.%${q}%,chassis_code.ilike.%${q}%,bid_no.ilike.%${q}%`)
+    .select('id, model_name, model_year, chassis_code, photos, bid_no, make')
+    .or(`model_name.ilike.%${q}%,chassis_code.ilike.%${q}%,bid_no.ilike.%${q}%,make.ilike.%${q}%`)
     .order('model_year', { ascending: false })
     .limit(10)
 

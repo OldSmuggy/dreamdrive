@@ -122,6 +122,7 @@ export interface VehiclePDFProps {
   engine:       string | null
   size:         string | null
   location:     string | null
+  auLocation?:  string | null
   price:        string | null
   priceCents:   number | null
   priceNote:    string | null
@@ -152,7 +153,8 @@ function gradeColour(grade: string | null) {
   return { backgroundColor: C.grayLight, color: C.charcoal, ...s.badge }
 }
 
-function locationLabel(loc: string | null) {
+function locationLabel(loc: string | null, auLocation?: string | null) {
+  if (auLocation) return `In ${auLocation}`
   if (!loc) return null
   if (loc === 'in_brisbane') return 'In Brisbane'
   if (loc === 'on_ship')     return 'On Ship — Arriving Soon'
@@ -176,7 +178,7 @@ function fmtAudFull(n: number): string {
 
 export default function VehiclePDF({
   id, modelName, modelYear, mileageKm, drive, engine, size,
-  location, price, priceCents, priceNote, grade, gradeLabel, description,
+  location, auLocation, price, priceCents, priceNote, grade, gradeLabel, description,
   source, heroImage, photoImages, isDealer, logoImage,
   popTopPrice, manaPrice, tamaPrice, kumaQPrice, isSLWB,
   popTopImage, manaImage, tamaImage,
@@ -187,7 +189,7 @@ export default function VehiclePDF({
     { label: 'Drive',    value: drive ?? '—' },
     { label: 'Engine',   value: engine ?? '—' },
     { label: 'Size',     value: size ?? '—' },
-    { label: 'Location', value: locationLabel(location) ?? '—' },
+    { label: 'Location', value: locationLabel(location, auLocation) ?? '—' },
   ]
 
   const vanPrice = priceCents ? Math.round(priceCents / 100) : null
@@ -241,7 +243,7 @@ export default function VehiclePDF({
           <View style={s.badgeRow}>
             {grade && <Text style={[s.badge, gradeColour(grade)]}>Grade {grade}{gradeLabel ? ` — ${gradeLabel}` : ''}</Text>}
             {isDealer && <Text style={[s.badge, s.badgeToyota]}>Toyota Partner — Japan</Text>}
-            {locationLabel(location) && <Text style={[s.badge, s.badgeOcean]}>{locationLabel(location)}</Text>}
+            {locationLabel(location, auLocation) && <Text style={[s.badge, s.badgeOcean]}>{locationLabel(location, auLocation)}</Text>}
           </View>
 
           {/* Specs grid */}

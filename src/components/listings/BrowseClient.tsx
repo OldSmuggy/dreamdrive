@@ -77,6 +77,8 @@ const TYPE_FILTERS = [
   { value: 'full',   label: 'Full Campervan' },
 ]
 
+const MAKE_FILTER_ALL = { value: '', label: 'All Makes' }
+
 const MODEL_OPTIONS = [
   { value: '',            label: 'All Models' },
   { value: 'hiace_h200',  label: 'Hiace H200 (2005-2019)' },
@@ -103,10 +105,16 @@ function colourDot(colour: string): string {
   return COLOUR_DOT_MAP[colour] ?? '#9ca3af'
 }
 
-// Derive effective location from listing (respecting location_status field if set)
+// Derive effective location from listing (a real AU city wins over the pipeline status)
 function effectiveLocation(l: Listing): string {
+  if (l.au_location) return l.au_location
   if (l.location_status) return l.location_status
   return l.source === 'au_stock' ? 'in_brisbane' : 'in_japan'
+}
+
+// Derive effective make — existing catalogue defaults to Toyota when unset
+function effectiveMake(l: Listing): string {
+  return l.make ?? 'Toyota'
 }
 
 export default function BrowseClient({ initialListings, userId, initialSavedIds, jpyRate, forSaleVehicles = [], colourCounts = {} }: Props) {
@@ -120,6 +128,7 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
   const [driveFilterSingle, setDriveFilterSingle] = useState(() => searchParams.get('driveType') ?? '')
   const [typeFilter, setTypeFilter] = useState(() => searchParams.get('type') ?? '')
   const [modelFilter, setModelFilter] = useState(() => searchParams.get('model') ?? '')
+  const [makeFilter, setMakeFilter] = useState(() => searchParams.get('make') ?? '')
   const [driveFilter, setDriveFilter] = useState<string[]>(() => {
     const d = searchParams.get('drive')
     return d ? d.split(',').filter(Boolean) : []
@@ -152,6 +161,18 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
   const [notifySending, setNotifySending] = useState(false)
   const [notifySent, setNotifySent] = useState(false)
 
+  // ── Makes present in the catalogue (Toyota + whatever else has been listed) ──
+  const makeOptions = useMemo(() => {
+    const makes = new Set(initialListings.map(effectiveMake))
+    return [MAKE_FILTER_ALL, ...Array.from(makes).sort().map(m => ({ value: m, label: m }))]
+  }, [initialListings])
+
+  // ── AU cities present in the catalogue, added on top of the fixed pipeline stages ──
+  const locationOptions = useMemo(() => {
+    const cities = new Set(initialListings.map(l => l.au_location).filter((v): v is string => !!v))
+    return [...LOCATION_FILTERS, ...Array.from(cities).sort().map(c => ({ value: c, label: c }))]
+  }, [initialListings])
+
   async function submitStockAlert() {
     if (!notifyEmail) return
     setNotifySending(true)
@@ -173,6 +194,7 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
       driveType: driveFilterSingle || undefined,
       type: typeFilter || undefined,
       model: modelFilter || undefined,
+      make: makeFilter || undefined,
       drive: driveFilter.length ? driveFilter.join(',') : undefined,
       yearMin: yearMin || undefined,
       mileageMax: mileageMax || undefined,
@@ -189,13 +211,13 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
     }
     const qs = params.toString()
     router.replace(qs ? `/browse?${qs}` : '/browse', { scroll: false })
-  }, [locationFilter, sourceFilter, sizeFilter, driveFilterSingle, typeFilter, modelFilter, driveFilter, yearMin, mileageMax, sortBy, engineFilter, colourFilter, minPrice, maxPrice, router])
+  }, [locationFilter, sourceFilter, sizeFilter, driveFilterSingle, typeFilter, modelFilter, makeFilter, driveFilter, yearMin, mileageMax, sortBy, engineFilter, colourFilter, minPrice, maxPrice, router])
 
   // Sync URL whenever any filter changes
   useEffect(() => {
     syncUrl()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [locationFilter, sourceFilter, sizeFilter, driveFilterSingle, typeFilter, modelFilter, driveFilter, yearMin, mileageMax, sortBy, engineFilter, colourFilter, minPrice, maxPrice])
+  }, [locationFilter, sourceFilter, sizeFilter, driveFilterSingle, typeFilter, modelFilter, makeFilter, driveFilter, yearMin, mileageMax, sortBy, engineFilter, colourFilter, minPrice, maxPrice])
 
   // ── Filtering ──
   const filtered = useMemo(() => {
@@ -212,6 +234,7 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
     if (driveFilterSingle) list = list.filter(l => l.drive === driveFilterSingle)
     if (typeFilter)     list = list.filter(l => (l.fit_out_level ?? 'empty') === typeFilter)
     if (modelFilter)    list = list.filter(l => (l.vehicle_model ?? 'hiace_h200') === modelFilter)
+    if (makeFilter)     list = list.filter(l => effectiveMake(l) === makeFilter)
     if (driveFilter.length) list = list.filter(l => l.drive && driveFilter.includes(l.drive))
     if (yearMin)        list = list.filter(l => (l.model_year ?? 0) >= parseInt(yearMin))
     if (mileageMax)     list = list.filter(l => (l.mileage_km ?? 999999) <= parseInt(mileageMax))
@@ -252,7 +275,7 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
     const available = list.filter(l => l.status !== 'sold')
     const sold = list.filter(l => l.status === 'sold')
     return [...available, ...sold]
-  }, [initialListings, locationFilter, sourceFilter, sizeFilter, driveFilterSingle, typeFilter, modelFilter, driveFilter, yearMin, mileageMax, sortBy, engineFilter, colourFilter, minPrice, maxPrice])
+  }, [initialListings, locationFilter, sourceFilter, sizeFilter, driveFilterSingle, typeFilter, modelFilter, makeFilter, driveFilter, yearMin, mileageMax, sortBy, engineFilter, colourFilter, minPrice, maxPrice])
 
   // ── Active filter count ──
   const activeFilterCount = [
@@ -262,6 +285,7 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
     driveFilterSingle,
     typeFilter,
     modelFilter,
+    makeFilter,
     driveFilter.length > 0 ? 'yes' : '',
     yearMin,
     mileageMax,
@@ -275,7 +299,7 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
 
   function clearAll() {
     setLocationFilter(''); setSourceFilter(''); setSizeFilter(''); setDriveFilterSingle('')
-    setTypeFilter(''); setModelFilter('')
+    setTypeFilter(''); setModelFilter(''); setMakeFilter('')
     setDriveFilter([]); setYearMin(''); setMileageMax('')
     setEngineFilter(''); setColourFilter([]); setMinPrice(''); setMaxPrice('')
     setSortBy('default')
@@ -334,6 +358,9 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
 
       {/* Row 2 — Dropdowns + More + Sort */}
       <div className="flex flex-wrap items-center gap-2">
+        <select value={makeFilter} onChange={e => setMakeFilter(e.target.value)} className={selectCls}>
+          {makeOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </select>
         <select value={modelFilter} onChange={e => setModelFilter(e.target.value)} className={selectCls}>
           {MODEL_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
@@ -346,7 +373,7 @@ export default function BrowseClient({ initialListings, userId, initialSavedIds,
           {TYPE_FILTERS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
         <select value={locationFilter} onChange={e => setLocationFilter(e.target.value)} className={selectCls}>
-          {LOCATION_FILTERS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+          {locationOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
 
         <div className="ml-auto flex items-center gap-2">
@@ -1025,7 +1052,9 @@ function ListingCard({ listing, userId, initialSaved, jpyRate }: { listing: List
 
         {/* Reserve / delivery subtext */}
         <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5">
-          {effectiveLocation(listing) === 'in_brisbane'
+          {listing.au_location
+            ? `In ${listing.au_location} — drive it this weekend`
+            : effectiveLocation(listing) === 'in_brisbane'
             ? 'In Brisbane — drive it this weekend'
             : effectiveLocation(listing) === 'on_ship'
             ? `On the water — arriving ${listing.eta_date ? new Date(listing.eta_date).toLocaleDateString('en-AU', { month: 'long' }) : 'soon'}`

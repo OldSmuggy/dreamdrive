@@ -14,7 +14,7 @@ export async function GET() {
   // Use the session client — RLS ensures the user only sees their own rows
   const { data, error } = await supabase
     .from('listings')
-    .select('id, model_name, model_year, body_colour, mileage_km, transmission, au_price_aud, photos, status, is_community_find, created_at, description, location_status')
+    .select('id, make, model_name, model_year, body_colour, mileage_km, transmission, au_price_aud, photos, status, is_community_find, created_at, description, location_status, au_location')
     .eq('submitted_by', user.id)
     .order('created_at', { ascending: false })
 
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
     const {
-      model_name, model_year, body_type, body_colour,
+      make, model_name, model_year, body_type, body_colour,
       mileage_km, transmission, drive,
       au_price_aud, location, notes, photos,
       source_url, source_category,
@@ -58,6 +58,7 @@ export async function POST(req: NextRequest) {
       .from('listings')
       .insert({
         source: 'customer_upload',
+        make: make || null,
         model_name: model_name.trim(),
         model_year: model_year ? parseInt(model_year) : null,
         grade: body_type || null,
@@ -67,6 +68,7 @@ export async function POST(req: NextRequest) {
         drive: drive || null,
         description: notes || null,
         au_price_aud: auPriceCents,
+        au_location: location || null,
         photos,
         status: listingStatus,
         is_community_find: true,
